@@ -1,0 +1,88 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MGmStdLinkNodeMngInfoMapper'>
+
+	<insert id="saveMGmStdLinkNodeMngInfo" parameterType="mGmStdLinkNodeMngInfo">
+		INSERT INTO M_GM_STD_LINK_NODE_MNG_INFO (
+			STD_INFO_ID,
+			STD_INFO_NM,
+			APLCN_YMD,
+			SAVE_INFO,
+			RMRK,
+			ETL_DT
+		) VALUES (
+			#{stdInfoId},
+			#{stdInfoNm},
+			#{aplcnYmd},
+			#{saveInfo},
+			#{rmrk},
+			#{etlDt}
+		)
+	</insert>
+	
+	<select id="countByStdInfoNm" parameterType="mGmStdLinkNodeMngInfo" resultType="int">
+		SELECT COUNT(*)
+		FROM M_GM_STD_LINK_NODE_MNG_INFO
+		WHERE 1=1
+		<if test="stdInfoNm != null and stdInfoNm != ''">
+			AND STD_INFO_NM LIKE CONCAT('%', #{stdInfoNm}, '%')
+		</if>
+		<if test="searchContent != null and searchContent != ''">
+			AND STD_INFO_NM LIKE CONCAT('%', #{searchContent}, '%')
+		</if>
+	</select>
+	
+	<select id="findByNodeLinkMngInfoByStdInfoNm" resultType="mGmStdLinkNodeMngInfo" parameterType="mGmStdLinkNodeMngInfo">
+		SELECT
+			ROW_NUMBER() OVER(ORDER BY APLCN_YMD) 	AS rownum,
+			STD_INFO_ID,
+			STD_INFO_NM,
+			APLCN_YMD,
+			SAVE_INFO,
+			RMRK,
+			ETL_DT
+		FROM
+			M_GM_STD_LINK_NODE_MNG_INFO
+		WHERE 1=1
+		<if test="stdInfoNm != null and stdInfoNm != ''">
+			AND STD_INFO_NM LIKE CONCAT('%', #{stdInfoNm}, '%')
+		</if>
+		<if test="searchContent != null and searchContent != ''">
+			AND STD_INFO_NM LIKE CONCAT('%', #{searchContent}, '%')
+		</if>
+		ORDER BY rownum DESC
+		LIMIT 10 OFFSET (#{page} - 1) * 10
+	</select>
+	
+	<select id="findOneByStdInfoId" parameterType="String" resultType="mGmStdLinkNodeMngInfo">
+		SELECT
+			STD_INFO_ID,
+			STD_INFO_NM,
+			APLCN_YMD,
+			SAVE_INFO,
+			RMRK,
+			ETL_DT
+		FROM
+			M_GM_STD_LINK_NODE_MNG_INFO
+		WHERE
+			STD_INFO_ID = #{stdInfoId};
+	</select>
+	
+	<delete id="deleteByStdInfoId" parameterType="String">
+		DELETE FROM M_GM_STD_LINK_NODE_MNG_INFO
+		WHERE STD_INFO_ID = #{stdInfoId};
+	</delete>
+	
+	<update id="updateMGmStdLinkNodeMngInfo" parameterType="mGmStdLinkNodeMngInfo">
+		UPDATE M_GM_STD_LINK_NODE_MNG_INFO SET 
+			STD_INFO_NM = #{stdInfoNm},
+			<if test="aplcnYmd != null and aplcnYmd !=''">
+				APLCN_YMD = #{aplcnYmd},
+			</if>
+			SAVE_INFO = #{saveInfo},
+			RMRK = #{rmrk},
+			ETL_DT = #{etlDt}
+		WHERE STD_INFO_ID = #{stdInfoId}
+	</update>
+</mapper>

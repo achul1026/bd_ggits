@@ -1,0 +1,182 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MrtSigCrsdTrfAnalMapper'>
+
+    <select id="findAllMergeDataGroupByLinkId" parameterType="mapBigdataSearchDTO" resultType="mrtSigCrsdTrfAnal">
+        SELECT
+            BF_ANAL.LINK_ID
+             ,(AF_ANAL.AF_AVG_VHCL_SPEED_AVG - BF_ANAL.BF_AVG_VHCL_SPEED_AVG) AS AVG_VHCL_SPEED_AVG
+             ,(AF_ANAL.AF_VHCL_TRFVLM_TOTAL  - BF_ANAL.BF_VHCL_TRFVLM_TOTAL ) AS VHCL_TRFVLM_TOTAL
+             ,BF_ANAL.GEOJSON
+             ,BF_ANAL.ROAD_RANK
+             ,BF_ANAL.ROAD_NAME
+             ,BF_ANAL.ROAD_TYPE
+        FROM
+            (
+                SELECT
+                    MSCTA.LINK_ID
+                     ,AVG(AVG_VHCL_SPEED) AS BF_AVG_VHCL_SPEED_AVG
+                     ,SUM(VHCL_TRFVLM) AS BF_VHCL_TRFVLM_TOTAL
+                     ,ST_ASGEOJSON(ST_LINEMERGE(GCIL.GEOM)) AS GEOJSON
+                     ,GCIL.ROAD_RANK
+                     ,GCIL.ROAD_NAME
+                     ,GCIL.ROAD_TYPE
+                FROM MRT_SIG_CRSD_TRF_ANAL MSCTA
+                         INNER JOIN GY_COMM_INFO_LINK GCIL ON MSCTA.LINK_ID = GCIL.LINK_ID
+                WHERE
+                    MSCTA.ETL_DT = REPLACE(#{endDate},'-', '')
+                <if test="startTime != null and startTime != ''and  endTime != null and endTime != ''">
+                    AND TO_CHAR(MSCTA.ANLS_DT, 'HH24') BETWEEN #{startTime} AND #{endTime}
+                </if>
+                <if test="searchRoadRank != null and searchRoadRank != ''">
+                    AND GCIL.ROAD_RANK IN
+                    <foreach item="roadRank" collection="searchRoadRank.split(',')" open="(" separator="," close=")">
+                        #{roadRank}
+                    </foreach>
+                </if>
+                <if test="searchCrossroadsLinkId != null and searchCrossroadsLinkId != '' ">
+                    AND MSCTA.LINK_ID IN
+                    <foreach item="linkId" collection="searchCrossroadsLinkId.split(',')" open="(" separator="," close=")">
+                        #{linkId}
+                    </foreach>
+                </if>
+                GROUP BY MSCTA.LINK_ID, GCIL.ROAD_RANK , GCIL.ROAD_NAME , GCIL.ROAD_TYPE,GEOJSON
+            ) BF_ANAL INNER JOIN (SELECT
+                                      MSCTA.LINK_ID
+                                       ,AVG(AVG_VHCL_SPEED) AS AF_AVG_VHCL_SPEED_AVG
+                                       ,SUM(VHCL_TRFVLM) AS AF_VHCL_TRFVLM_TOTAL
+                                       ,ST_ASGEOJSON(ST_LINEMERGE(GCIL.GEOM)) AS GEOJSON
+                                       ,GCIL.ROAD_RANK
+                                       ,GCIL.ROAD_NAME
+                                       ,GCIL.ROAD_TYPE
+                                  FROM MRT_SIG_CRSD_TRF_ANAL MSCTA
+                                           INNER JOIN GY_COMM_INFO_LINK GCIL ON MSCTA.LINK_ID = GCIL.LINK_ID
+                                  WHERE
+                                      MSCTA.ETL_DT = REPLACE(#{startDate},'-', '')
+                                <if test="startTime != null and startTime != ''and  endTime != null and endTime != ''">
+                                    AND TO_CHAR(MSCTA.ANLS_DT, 'HH24') BETWEEN #{startTime} AND #{endTime}
+                                </if>
+                                <if test="searchRoadRank != null and searchRoadRank != ''">
+                                    AND GCIL.ROAD_RANK IN
+                                    <foreach item="roadRank" collection="searchRoadRank.split(',')" open="(" separator="," close=")">
+                                        #{roadRank}
+                                    </foreach>
+                                </if>
+                                <if test="searchCrossroadsLinkId != null and searchCrossroadsLinkId != '' ">
+                                    AND MSCTA.LINK_ID IN
+                                    <foreach item="linkId" collection="searchCrossroadsLinkId.split(',')" open="(" separator="," close=")">
+                                        #{linkId}
+                                    </foreach>
+                                </if>
+                                  GROUP BY MSCTA.LINK_ID, GCIL.ROAD_RANK , GCIL.ROAD_NAME , GCIL.ROAD_TYPE,GEOJSON
+            )AF_ANAL ON BF_ANAL.LINK_ID = AF_ANAL.LINK_ID
+    </select>
+
+	<select id="findAllGroupByLinkId" parameterType="mapBigdataSearchDTO" resultType="mrtSigCrsdTrfAnal">
+   		SELECT
+            MSCTA.LINK_ID
+            ,AVG(AVG_VHCL_SPEED) AS AVG_VHCL_SPEED_AVG
+            ,SUM(VHCL_TRFVLM) AS VHCL_TRFVLM_TOTAL
+            ,ST_ASGEOJSON(ST_LINEMERGE(GCIL.GEOM)) AS GEOJSON
+            ,GCIL.ROAD_RANK
+            ,GCIL.ROAD_NAME
+            ,GCIL.ROAD_TYPE
+        FROM MRT_SIG_CRSD_TRF_ANAL MSCTA
+        INNER JOIN GY_COMM_INFO_LINK GCIL ON MSCTA.LINK_ID = GCIL.LINK_ID  
+        WHERE 1=1
+        <if test="startDate != null and startDate != ''">
+        AND MSCTA.ETL_DT = REPLACE(#{startDate},'-', '')
+        </if>
+        <if test="endDate != null and endDate != ''">
+        AND MSCTA.ETL_DT = REPLACE(#{endDate},'-', '')
+        </if>
+        <if test="startTime != null and startTime != ''and  endTime != null and endTime != ''">
+        AND TO_CHAR(MSCTA.ANLS_DT, 'HH24') BETWEEN #{startTime} AND #{endTime}
+        </if>
+        <if test="searchRoadRank != null and searchRoadRank != ''">
+        AND GCIL.ROAD_RANK IN 
+        					<foreach item="roadRank" collection="searchRoadRank.split(',')" open="(" separator="," close=")">
+			        			#{roadRank}
+			  				</foreach>
+        </if>
+        <if test="searchCrossroadsLinkId != null and searchCrossroadsLinkId != '' ">
+        AND MSCTA.LINK_ID IN 
+        					<foreach item="linkId" collection="searchCrossroadsLinkId.split(',')" open="(" separator="," close=")">
+			        			#{linkId}
+			  				</foreach>	
+        </if>
+        GROUP BY MSCTA.LINK_ID, GCIL.ROAD_RANK , GCIL.ROAD_NAME , GCIL.ROAD_TYPE,GEOJSON
+    </select>
+    
+    <select id="findAllRecent" resultType="mrtSigCrsdTrfAnal">
+        SELECT
+            MSCTA.LINK_ID
+             ,MSCTA.ANLS_DT
+             ,AVG(AVG_VHCL_SPEED) AS AVG_VHCL_SPEED_AVG
+             ,SUM(VHCL_TRFVLM) AS VHCL_TRFVLM_TOTAL
+             ,ST_ASGEOJSON(ST_LINEMERGE(GCIL.GEOM)) AS GEOJSON
+             ,GCIL.ROAD_RANK
+             ,GCIL.ROAD_NAME
+             ,GCIL.ROAD_TYPE
+        FROM MRT_SIG_CRSD_TRF_ANAL MSCTA
+                 INNER JOIN GY_COMM_INFO_LINK GCIL ON MSCTA.LINK_ID = GCIL.LINK_ID
+                 INNER JOIN (
+            SELECT
+                MAX(MSCTA.ANLS_DT) AS RCT_ANLS_DT
+                 ,MSCTA.LINK_ID
+            FROM MRT_SIG_CRSD_TRF_ANAL MSCTA
+            GROUP BY MSCTA.LINK_ID
+        ) RCT ON RCT.LINK_ID = MSCTA.LINK_ID AND RCT.RCT_ANLS_DT = MSCTA.ANLS_DT
+        GROUP BY MSCTA.LINK_ID, MSCTA.ANLS_DT,GCIL.ROAD_RANK , GCIL.ROAD_NAME , GCIL.ROAD_TYPE,GEOJSON
+    </select>
+    
+    <select id="findAllDataYears" resultType="map">
+        SELECT
+				TO_CHAR(ANLS_DT,'YYYY') AS "year"
+		FROM
+				MRT_SIG_CRSD_TRF_ANAL MSCTA
+		GROUP BY TO_CHAR(ANLS_DT,'YYYY')
+		ORDER BY TO_CHAR(ANLS_DT,'YYYY') DESC  
+    </select>
+    
+    <select id="findTop5DelayTrfInfo" parameterType="mrtSigCrsdTrfAnal" resultType="map">
+    	SELECT 
+			A.CRSRD_ID AS "crsrdId",
+			A."VHCL_TRFVLM" AS "vhclTrfvlm",
+			A."AVG_VHCL_SPEED" AS "avgVhclSpeed",
+			A.CRSRD_NM AS "crsrdNm",
+			<![CDATA[
+			CASE WHEN (A.ROAD_RANK = '101' AND  0 <= A."AVG_VHCL_SPEED" AND A."AVG_VHCL_SPEED" < 30) 
+			 OR (A.ROAD_RANK = '102' AND  0 <= A."AVG_VHCL_SPEED" AND A."AVG_VHCL_SPEED" < 30)
+			 OR ((A.ROAD_RANK != '101'AND A.ROAD_RANK != '102') AND  0 <= A."AVG_VHCL_SPEED" AND A."AVG_VHCL_SPEED" < 20) THEN '3'
+			 WHEN (A.ROAD_RANK = '101' AND  30 <= A."AVG_VHCL_SPEED" AND A."AVG_VHCL_SPEED" < 70) 
+			 OR (A.ROAD_RANK = '102' AND  30 <= A."AVG_VHCL_SPEED" AND A."AVG_VHCL_SPEED" < 50)
+			 OR ((A.ROAD_RANK != '101'AND A.ROAD_RANK != '102') AND  20 <= A."AVG_VHCL_SPEED" AND A."AVG_VHCL_SPEED" < 40) THEN '2'
+			 ELSE '1'
+			]]>
+			END AS "delayStts" 
+		FROM  (
+		SELECT 
+			MSCTA.CRSRD_ID ,
+			SUM(MSCTA.VHCL_TRFVLM) AS "VHCL_TRFVLM",
+			ROUND(AVG(MSCTA.AVG_VHCL_SPEED)) AS "AVG_VHCL_SPEED",
+			ASCI.CRSRD_NM,
+			GCIL.ROAD_RANK
+		FROM MRT_SIG_CRSD_TRF_ANAL MSCTA 
+		LEFT JOIN GY_COMM_INFO_LINK GCIL 
+		ON MSCTA.LINK_ID = GCIL.LINK_ID
+		LEFT JOIN ADSI_SMCRSRD_CRSRD_INFO ASCI
+		ON MSCTA.CRSRD_ID = ASCI.CRSRD_ID 
+		WHERE 1=1
+		<if test="strDt != null and endDt != null">
+			AND MSCTA.ANLS_DT BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+			AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		GROUP BY MSCTA.CRSRD_ID ,ASCI.CRSRD_NM ,GCIL.ROAD_RANK
+		) A
+		ORDER BY "delayStts" DESC , A."VHCL_TRFVLM" DESC
+		LIMIT 5
+    </select>
+    
+</mapper>

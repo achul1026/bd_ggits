@@ -1,0 +1,108 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MetaColInfoMapper'>
+
+	<select id="findColsqnoNextVal" resultType="int">
+		SELECT COALESCE(MAX(COL_SQNO),0)
+		FROM META_COL_INFO
+	</select>
+	
+	<insert id="saveMetaColInfo" parameterType="metaColInfo">
+		INSERT INTO META_COL_INFO (
+			TBL_ID,
+			COL_SQNO,
+			DSET_ID,
+			COL_ENG_NM,
+			COL_KOREAN_NM,
+			COL_DESCR,
+			DATA_TYPE,
+			DATA_LEN,
+			DATA_FORMAT,
+			NN_YN,
+			PK_INFO,
+			FK_INFO,
+			CTRL_COND,
+			PRVC_YN,
+			ENCPT_YN,
+			PRVT_YN
+		) VALUES (
+			#{tblId},
+			#{colSqno},
+			#{dsetId},
+			#{colEngNm},
+			#{colKoreanNm},
+			#{colDescr},
+			#{dataType},
+			#{dataLen},
+			#{dataFormat},
+			#{nnYn},
+			#{pkInfo},
+			#{fkInfo},
+			#{ctrlCond},
+			#{prvcYn},
+			#{encptYn},
+			#{prvtYn}
+		)
+	</insert>
+	
+	<select	id="findAllByTblId" resultType="metaColInfo" parameterType="String">
+		SELECT
+			MCI.TBL_ID,
+			MCI.COL_SQNO,
+			MCI.DSET_ID,
+			MCI.COL_ENG_NM,
+			MCI.COL_KOREAN_NM,
+			MCI.COL_DESCR,
+			MCI.DATA_TYPE,
+			MCI.DATA_LEN,
+			MCI.DATA_FORMAT,
+			MCI.NN_YN,
+			MCI.PK_INFO,
+			MCI.FK_INFO,
+			MCI.CTRL_COND,
+			MCI.PRVC_YN,
+			MCI.ENCPT_YN,
+			MCI.PRVT_YN
+		FROM 
+			META_COL_INFO MCI
+		WHERE MCI.TBL_ID = #{tblId}
+	</select>
+	
+	<delete id="deleteMetaColInfo" parameterType="metaColInfo">
+		DELETE FROM META_COL_INFO
+		WHERE 
+			TBL_ID = #{tblId} 
+			AND COL_SQNO = #{colSqno}
+			AND DSET_ID = #{dsetId};	
+	</delete>
+
+	<delete id="deleteMetaColInfoByTblIdAndDsetId" parameterType="metaColInfo">
+		DELETE FROM META_COL_INFO
+		WHERE 
+			TBL_ID = #{tblId} 
+			AND DSET_ID = #{dsetId}
+	</delete>
+	
+	<update id="updateMetaColInfo" parameterType="metaColInfo">
+		UPDATE META_COL_INFO
+		SET 
+			COL_ENG_NM = #{colEngNm},
+			COL_KOREAN_NM = #{colKoreanNm},
+			COL_DESCR = #{colDescr},
+			DATA_TYPE = #{dataType},
+			DATA_LEN = #{dataLen},
+			DATA_FORMAT = #{dataFormat},
+			NN_YN = #{nnYn},
+			PK_INFO = #{pkInfo},
+			FK_INFO = #{fkInfo},
+			CTRL_COND = #{ctrlCond},
+			PRVC_YN = #{prvcYn},
+			ENCPT_YN = #{encptYn},
+			PRVT_YN = #{prvtYn}
+		WHERE 
+			TBL_ID = #{tblId} 
+			AND COL_SQNO = #{colSqno} 
+			AND DSET_ID = #{dsetId}
+	</update>
+</mapper>

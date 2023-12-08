@@ -1,0 +1,61 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.KmaShtrmWthrFrcstMapper'>
+
+    <select id="findAllWeatherList" parameterType="kmaShtrmWthrFrcst" resultType="kmaShtrmWthrFrcst">
+        SELECT
+            PRSNTN_YMD
+            ,PRSNTN_TIME
+            ,PRDCTN_YMD
+            ,PRDCTN_TIME
+            ,FRCST_POINT_XCORD
+            ,FRCST_POINT_YCORD
+            ,FRCST_DIV_CD
+            ,FRCST_VAL
+        FROM KMA_SHTRM_WTHR_FRCST
+    </select>
+
+    <select id="findAllWeatherListByFrcstDivCdAndPrdctnYmdAndprdctnTime" resultType="kmaShtrmWthrFrcst">
+        SELECT PRSNTN_YMD
+             ,PRSNTN_TIME
+             ,PRDCTN_YMD
+             ,PRDCTN_TIME
+             ,FRCST_POINT_XCORD
+             ,FRCST_POINT_YCORD
+             ,FRCST_DIV_CD
+             ,FRCST_VAL
+        FROM KMA_SHTRM_WTHR_FRCST EKSWF,
+             (SELECT MAX(PRSNTN_YMD) RECENT_YMD
+                   , MAX(PRSNTN_TIME) AS RECENT_TIME
+              FROM KMA_SHTRM_WTHR_FRCST EKSWF
+              GROUP BY PRSNTN_YMD , PRSNTN_TIME
+              ORDER BY PRSNTN_YMD DESC, PRSNTN_TIME DESC LIMIT 1) RCT
+        WHERE FRCST_DIV_CD = 'PTY'
+            AND PRSNTN_YMD = RECENT_YMD
+            AND PRSNTN_TIME = RECENT_TIME
+            AND PRDCTN_YMD = #{prdctnYmd}
+            AND PRDCTN_TIME = #{prdctnTime}
+    </select>
+
+    <select id="findRecentAllWeatherList" parameterType="kmaShtrmWthrFrcst" resultType="kmaShtrmWthrFrcst">
+        SELECT PRSNTN_YMD
+             ,PRSNTN_TIME
+             ,PRDCTN_YMD
+             ,PRDCTN_TIME
+             ,FRCST_POINT_XCORD
+             ,FRCST_POINT_YCORD
+             ,FRCST_DIV_CD
+             ,FRCST_VAL
+        FROM KMA_SHTRM_WTHR_FRCST EKSWF,
+            (SELECT MAX(PRSNTN_YMD) RECENT_YMD
+                  , MAX(PRSNTN_TIME) AS RECENT_TIME
+            FROM KMA_SHTRM_WTHR_FRCST EKSWF
+            GROUP BY PRSNTN_YMD , PRSNTN_TIME
+            ORDER BY PRSNTN_YMD DESC, PRSNTN_TIME DESC LIMIT 1)
+                RCT
+        WHERE FRCST_DIV_CD = 'PTY'
+          AND PRDCTN_YMD = RECENT_YMD
+          AND PRDCTN_TIME = RECENT_TIME
+    </select>
+</mapper>

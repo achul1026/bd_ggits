@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MrtBusSttnFctlAnalMapper'>
+	<sql id="mrtBusSttnFctlAnal-Where">
+		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
+			AND mbsfa.ANLS_DT 
+			BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
+			<![CDATA[
+			AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS')  <= mbsfa.ANLS_DT
+			]]>
+		</if>
+		<if test="(strDt == '' or strDt == null) and (endDt != '' and endDt != null)">
+			<![CDATA[
+			AND mbsfa.ANLS_DT <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			]]>
+		</if>
+		<if test="searchContent != null and searchContent != ''">
+			AND gbsi.BSTP_NM LIKE '%' || #{searchContent} || '%' 
+		</if>
+		<if test="dayOfTheWeek != null">
+			AND EXTRACT (ISODOW from mbsfa.ANLS_DT)::varchar(1) IN 
+				<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+		</if>
+	</sql>
+	
+	<select id="countBusSttnFcltList" parameterType="commonEntity" resultType="int">	
+		SELECT	
+			COUNT(*)
+		FROM
+			MRT_BUS_STTN_FCTL_ANAL mbsfa
+		LEFT JOIN 
+			GGDTDR_BUS_STTN_INFO gbsi
+			ON mbsfa.BSTP_ID = gbsi.BSTP_ID
+		WHERE
+			1=1
+			<include refid="mrtBusSttnFctlAnal-Where"/>
+	</select>
+	
+	<select id="findAllBusSttnFcltsList" parameterType="commonEntity" resultType="mrtBusSttnFctlAnal">
+		SELECT	
+			gbsi.BSTP_NM
+		FROM
+			MRT_BUS_STTN_FCTL_ANAL mbsfa
+		LEFT JOIN 
+			GGDTDR_BUS_STTN_INFO gbsi
+			ON mbsfa.BSTP_ID = gbsi.BSTP_ID
+		WHERE
+			1=1
+			<include refid="mrtBusSttnFctlAnal-Where"/>
+	</select>
+</mapper>

@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.TaasDrnkgAcdntDstrctMapper'>
+    <select id="findAll" resultType="taasDrnkgAcdntDstrct" parameterType="String">
+        SELECT
+            CLCT_DT
+             ,ACDNT_DSTRCT_IDENTIFIER
+             ,ACDNT_DSTRCT_ID
+             ,ADSTDG_CD
+             ,POINT_CD
+             ,ADSI_NM
+             ,POINT_NM
+             ,ACDNT_CNT
+             ,CASLT_CNT
+             ,DCSD_CNT
+             ,SWPSN_CNT
+             ,SINJPSN_CNT
+             ,INJ_DCLR_CNT
+             ,LON_CRDN
+             ,LAT_CRDN
+             ,ACDNT_DSTRCT_PYN
+        FROM taas_bcycl_acdnt_dstrct
+    </select>
+</mapper>

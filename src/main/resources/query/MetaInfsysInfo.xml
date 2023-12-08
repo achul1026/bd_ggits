@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MetaInfsysInfoMapper'>
+	<select id="findAllMetaInfsysInfo" parameterType="metaInfsysInfo" resultType="metaInfsysInfo">
+		SELECT 
+			RLTINST_ID,
+			RLTINST_NM,
+			INFO_SYSTEM_NM,
+			CSTD_RSN, 
+			INSTL_YY,
+			OPRT_DEPT_NM,
+			PIC_NM
+		FROM META_INFSYS_INFO MII
+	</select>
+
+</mapper>

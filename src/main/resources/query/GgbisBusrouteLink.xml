@@ -1,0 +1,119 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.GgbisBusrouteLinkMapper'>
+    <select id="findAllByRouteId" resultType="ggbisBusrouteLink">
+        SELECT
+            EGBL.ROUTE_ID
+             ,EGBL.LINK_ID
+             ,EGBL.FNODE_ID
+             ,EGBL.TNODE_ID
+             ,EGBL.FNODE_X
+             ,EGBL.FNODE_Y
+             ,EGBL.TNODE_X
+             ,EGBL.TNODE_Y
+             ,EGBL.ROAD_LENGTH
+             ,EGBL.ROAD_WIDTH
+             ,EGBL.ROUTE_LENGTH
+             ,EGBL.TOTAL_LENGTH
+             ,EGBL.LINK_ORDER
+             ,EGBL.ST_LINK_ID
+             ,EGBL.ST_LINK_ORDER
+             ,EGBR.ROUTE_NM
+             ,EGBR.ROUTE_TP
+             ,EGBR.ROUTE_LENGTH
+             ,EGBR.ROUTE_INTERVAL
+             ,EGBR.ST_STA_NM
+             ,EGBR.ED_STA_NM
+             ,EGBR.ST_STA_ID
+             ,EGBR.ED_STA_ID
+             ,EGBR.SIDO_CD
+             ,EGBR.MANAGE_TP
+             ,EGBR.PERM_VOL
+             ,EGBR.BEGIN_DATE
+             ,EGBR.CLOSE_DATE
+             ,EGBR.ROUTE_EX
+             ,EGBR.COMPANY_ID
+             ,EGBR.COMPANY_NM
+             ,EGBR.ADMIN_NM
+             ,EGBR.TURN_SEQ
+             ,EGBR.ROUTE_ALLOC
+             ,EGBR.EB_ROUTE_ID
+             ,EGBR.ROUTE_ALLOC_COMPNAY_ID
+             ,EGBR.USE_YN
+             ,EGBR.REMARK
+             ,EGBR.AREA_CD
+             ,EGBR.TURN_STA_ID
+             ,EGBR.TURN_USE_YN
+             ,EGBR.TURNINFO_FLAG
+             ,EGBR.LASTVEH_FLAG
+             ,EGBR.TURNPROCESS_FLAG
+             ,EGBR.FIRSTVEH_FLAG
+             ,ST_ASGEOJSON(ST_LINEMERGE(GCIL.GEOM)) AS GEOJSON
+             ,GCIL.ROAD_NAME
+        FROM
+            GGBIS_BUSROUTE_LINK EGBL
+                INNER JOIN GGBIS_BUS_ROUTE EGBR ON EGBL.ROUTE_ID = EGBR.ROUTE_ID
+                INNER JOIN GY_COMM_INFO_LINK GCIL ON EGBL.LINK_ID = GCIL.LINK_ID
+        WHERE EGBL.ROUTE_ID = #{routeId}
+        ORDER BY EGBL.ROUTE_ID ,EGBL.LINK_ORDER ASC
+    </select>
+
+    <select id="findAll" resultType="ggbisBusrouteLink">
+        SELECT
+            EGBL.LINK_ID
+             ,EGBL.FNODE_ID
+             ,EGBL.TNODE_ID
+             ,EGBL.FNODE_X
+             ,EGBL.FNODE_Y
+             ,EGBL.TNODE_X
+             ,EGBL.TNODE_Y
+             ,EGBL.ST_LINK_ID
+             ,string_agg(EGBR.ROUTE_ID, '||' order by egbr.route_id) as ROUTE_IDS
+             ,string_agg(EGBR.ROUTE_TP, '||' order by egbr.route_id) as ROUTE_TPS
+             ,string_agg(EGBR.ROUTE_LENGTH::character , '||' order by egbr.route_id) as ROUTE_LENGTHS
+             ,string_agg(EGBR.ROUTE_NM, '||' order by egbr.route_id)  as ROUTE_NMS
+             ,string_agg(EGBR.ROUTE_INTERVAL::character , '||' order by egbr.route_id) as ROUTE_INTERVALS
+             ,string_agg(EGBR.ST_STA_NM, '||' order by egbr.route_id) as ST_STA_NMS
+             ,string_agg(EGBR.ED_STA_NM, '||' order by egbr.route_id) as ED_STA_NMS
+             ,string_agg(EGBR.ST_STA_ID, '||' order by egbr.route_id) as ST_STA_IDS
+             ,string_agg(EGBR.ED_STA_ID, '||' order by egbr.route_id) as ED_STA_IDS
+             ,string_agg(EGBR.SIDO_CD, '||' order by egbr.route_id) as SIDO_CDS
+             ,string_agg(EGBR.MANAGE_TP, '||' order by egbr.route_id) as MANAGE_TPS
+             ,string_agg(EGBR.PERM_VOL::character , '||' order by egbr.route_id) as PERM_VOLS
+             ,string_agg(to_char(EGBR.BEGIN_DATE, 'YYYY-MM-DD'), '||' order by egbr.route_id) as BEGIN_DATES
+             ,string_agg(to_char(EGBR.CLOSE_DATE, 'YYYY-MM-DD'), '||' order by egbr.route_id) as CLOSE_DATES
+             ,string_agg(EGBR.ROUTE_EX, '||' order by egbr.route_id) as ROUTE_EXS
+             ,string_agg(EGBR.COMPANY_ID, '||' order by egbr.route_id) as COMPANY_IDS
+             ,string_agg(EGBR.COMPANY_NM, '||' order by egbr.route_id) as COMPANY_NMS
+             ,string_agg(EGBR.ADMIN_NM, '||' order by egbr.route_id) as ADMIN_NMS
+             ,string_agg(EGBR.TURN_SEQ::character , '||' order by egbr.route_id) as TURN_SEQS
+             ,string_agg(EGBR.ROUTE_ALLOC, '||' order by egbr.route_id) as ROUTE_ALLOCS
+             ,string_agg(EGBR.EB_ROUTE_ID, '||' order by egbr.route_id) as EB_ROUTE_IDS
+             ,string_agg(EGBR.ROUTE_ALLOC_COMPNAY_ID, '||' order by egbr.route_id) as ROUTE_ALLOC_COMPNAY_IDS
+             ,string_agg(EGBR.USE_YN, '||' order by egbr.route_id) as USE_YNS
+             ,string_agg(EGBR.REMARK, '||' order by egbr.route_id) as REMARKS
+             ,string_agg(EGBR.AREA_CD, '||' order by egbr.route_id) as AREA_CDS
+             ,string_agg(EGBR.TURN_STA_ID, '||' order by egbr.route_id) as TURN_STA_IDS
+             ,string_agg(EGBR.TURN_USE_YN, '||' order by egbr.route_id) as TURN_USE_YNS
+             ,string_agg(EGBR.TURNINFO_FLAG, '||' order by egbr.route_id) as TURNINFO_FLAGS
+             ,string_agg(EGBR.LASTVEH_FLAG, '||' order by egbr.route_id) as LASTVEH_FLAGS
+             ,string_agg(EGBR.TURNPROCESS_FLAG, '||' order by egbr.route_id) as TURNPROCESS_FLAGS
+             ,string_agg(EGBR.FIRSTVEH_FLAG, '||' order by egbr.route_id) as FIRSTVEH_FLAGS
+             ,ST_ASGEOJSON(ST_LINEMERGE(GCIL.GEOM)) as  GEOJSON
+             ,GCIL.ROAD_NAME
+        FROM
+            GGBIS_BUSROUTE_LINK EGBL
+                INNER JOIN GGBIS_BUS_ROUTE EGBR ON EGBL.ROUTE_ID = EGBR.ROUTE_ID
+                INNER JOIN GY_COMM_INFO_LINK GCIL ON EGBL.LINK_ID = GCIL.LINK_ID
+        group by
+            EGBL.LINK_ID
+               ,EGBL.FNODE_ID
+               ,EGBL.TNODE_ID
+               ,EGBL.FNODE_X
+               ,EGBL.FNODE_Y
+               ,EGBL.TNODE_X
+               ,EGBL.TNODE_Y
+               ,EGBL.ST_LINK_ID, geojson,GCIL.ROAD_NAME
+    </select>
+</mapper>

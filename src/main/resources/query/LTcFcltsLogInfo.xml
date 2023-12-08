@@ -1,0 +1,101 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.LTcFcltsLogInfoMapper'>
+	
+	<sql id="lTcFcltsLogInfo-Where">
+		 <if test="searchType == 'all'">
+		 	AND (ltfli.LOG_ID LIKE '%' ||  #{searchContent} || '%' 
+		 		OR ltfli.SESN_ID LIKE '%' ||  #{searchContent} || '%' 
+		 		OR ltfli.RQSTR_NM LIKE '%' ||  #{searchContent} || '%'
+		 		OR ltfli.LGN_IP LIKE '%' ||  #{searchContent} || '%')
+		 	<if test="strDt != null and strDt != '' and endDt != null and endDt != ''" >
+	            	AND ltfli.OCCUR_DT
+	            	BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+	            	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+	        </if>
+	       	<if test="strDt != null and strDt != '' and (endDt == null or endDt == '')">
+				<![CDATA[
+					AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS')  <= ltfli.OCCUR_DT
+				]]>
+			</if>
+			<if test="(strDt == null or strDt == '') and endDt != null and endDt != ''">
+				<![CDATA[
+					AND ltfli.OCCUR_DT <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+				]]>
+			</if>
+		 </if>
+		 <if test="searchType == 'logId' and searchContent != '' and searchContent != null">
+		 	AND (ltfli.LOG_ID LIKE '%' ||  #{searchContent} || '%')
+		 </if>
+		 <if test="searchType == 'sesnId' and searchContent != '' and searchContent != null">
+		 	AND (ltfli.PRGRM_SESN_ID LIKE '%' ||  #{searchContent} || '%')
+		 </if>
+		 <if test="searchType == 'rqstrNm' and searchContent != '' and searchContent != null">
+		 	AND (ltfli.RQSTR_NM LIKE '%' ||  #{searchContent} || '%')
+		 </if>		 
+		 <if test="searchType == 'lgnIp' and searchContent != '' and searchContent != null">
+		 	AND (ltfli.LGN_IP LIKE '%' ||  #{searchContent} || '%')
+		 </if>
+		 <if test="searchType == 'occurDt'">
+	        <if test="strDt != null and strDt != '' and endDt != null and endDt != ''" >
+	            <![CDATA[
+	            	AND ltfli.OCCUR_DT
+	            	BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+	            	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+	            ]]>
+	        </if>
+	        <if test="strDt != null and strDt != '' and (endDt == null or endDt == '')">
+				<![CDATA[
+					AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS')  <= ltfli.OCCUR_DT
+				]]>
+			</if>
+			<if test="(strDt == null or strDt == '') and endDt != null and endDt != ''">
+				<![CDATA[
+					AND ltfli.OCCUR_DT <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+				]]>
+			</if>		 	 
+		 </if>
+	</sql>
+	
+	<select id="countFcltsLogBySearchInfo" parameterType="lTcFcltsLogInfo" resultType="int">
+     	SELECT
+     		COUNT(*)
+     	FROM L_TC_FCLTS_LOG_INFO ltfli
+     	WHERE 1=1
+		<include refid="lTcFcltsLogInfo-Where"/>
+     </select>
+     
+     <select id="findOneLTcFcltsLogInfoByLogId" parameterType="String" resultType="lTcFcltsLogInfo">
+     	SELECT
+     		ltfli.LOG_ID
+     		, TO_CHAR(ltfli.OCCUR_DT,'YYYY-MM-DD') AS OCCUR_DT_STR
+     		, ltfli.LOG_TYPE
+     		, ltfli.SESN_ID
+     		, ltfli.RQSTR_NM
+     		, ltfli.LGN_IP
+     		, moc.CD_NM
+     	FROM L_TC_FCLTS_LOG_INFO ltfli
+     	LEFT JOIN M_OP_CODE moc ON ltfli.LOG_TYPE = moc.CD_ID
+     	WHERE LOG_ID = #{logId}
+     </select>
+     
+     <select id="findAllFcltsLogList" parameterType="lTcFcltsLogInfo" resultType="lTcFcltsLogInfo">
+		SELECT
+			ROW_NUMBER() OVER(ORDER BY ltfli.OCCUR_DT) AS rownum,
+			ltfli.LOG_ID,
+			ltfli.FCLTS_ID,
+			ltfli.SESN_ID,
+			ltfli.LGN_IP,
+			TO_CHAR(ltfli.OCCUR_DT,'YYYY-MM-DD') AS OCCUR_DT_STR,
+			ltfli.RQSTR_NM,
+			ltfli.LOG_TYPE,
+			moc.CD_NM
+		FROM L_TC_FCLTS_LOG_INFO ltfli
+		LEFT JOIN M_OP_CODE moc ON ltfli.LOG_TYPE = moc.CD_ID
+		WHERE 1=1
+		<include refid="lTcFcltsLogInfo-Where"/>
+		ORDER BY ROWNUM DESC 
+		limit 10 offset (#{page} - 1) * 10
+     </select>
+</mapper>

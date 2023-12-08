@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.LTcSrvrProcsCtrlMapper'>
+	<select id="findLTcSrvrProcsCtrl" resultType="lTcSrvrProcsCtrl" parameterType="lTcSrvrProcsCtrl">
+		SELECT 
+			CLCT_DT,
+			SRVR_PROCS_ID,
+			PROCS_CTRL_CD,
+			SRVR_MNG_TYPE,
+			SRVR_STTS_CD,
+			SRVR_NM
+		FROM L_TC_SRVR_PROCS_CTRL LTSPC
+		WHERE 1=1
+		<if test="srvrMngType != null and srvrMngType != ''">
+			AND SRVR_MNG_TYPE = #{srvrMngType}
+		</if>
+		
+	</select>
+	
+	<select id="countAll" resultType="int" parameterType="lTcSrvrProcsCtrl"> 
+		SELECT COUNT(*)
+		FROM L_TC_SRVR_PROCS_CTRL LTSPC
+	</select>
+</mapper>

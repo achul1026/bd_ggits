@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MrtSmcAbnLosMapper'>
+	<sql id="mrtSmcAbnLos-Where">
+		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
+			AND mssl.ANLS_DT 
+			BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
+			<![CDATA[
+			AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS')  <= mssl.ANLS_DT
+			]]>
+		</if>
+		<if test="(strDt == '' or strDt == null) and (endDt != '' and endDt != null)">
+			<![CDATA[
+			AND mssl.ANLS_DT <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			]]>
+		</if>
+		<if test="dayOfTheWeek != null">
+			AND EXTRACT (ISODOW from mssl.ANLS_DT)::varchar(1) IN 
+				<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+		</if>
+	</sql>
+	
+	<select id="countSmcAbnLosList" parameterType="commonEntity" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM MRT_SMC_SPOT_LOS mssl
+		LEFT JOIN 
+			ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO ascari
+			ON mssl.ACS_ROAD_ID = ascari.ACS_ROAD_ID 
+			AND mssl.MNG_INST_CD = ascari.MNG_INST_CD 
+			AND mssl.CRSRD_ID = ascari.CRSRD_ID
+		WHERE
+			1=1
+			<include refid="mrtSmcAbnLos-Where"/>
+	</select>
+	
+	<select id="findAllSmcAbnLosList" parameterType="commonEntity" resultType="mrtSmcAbnLos">
+		select
+			mssl.VHCL_TRFVLM
+			, mssl.AVG_VHCL_SPEED
+			, ascari.ACS_ROAD_NM
+		FROM MRT_SMC_SPOT_LOS mssl
+		LEFT JOIN 
+			ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO ascari
+			ON mssl.ACS_ROAD_ID = ascari.ACS_ROAD_ID 
+			AND mssl.MNG_INST_CD = ascari.MNG_INST_CD 
+			AND mssl.CRSRD_ID = ascari.CRSRD_ID
+		WHERE
+			1=1
+			<include refid="mrtSmcAbnLos-Where"/>
+	</select>
+	
+	<select id="findByTrfvimCngrtAndAvgVhclSpeed" parameterType="mrtSmcAbnLos" resultType="mrtSmcAbnLos">
+		SELECT
+			ROW_NUMBER() OVER(ORDER BY MSAL.ANLS_DT) 		AS rownum,
+			MSAL.MNG_INST_CD,
+			MSAL.ANLS_DT,
+			MSAL.LINK_ID,
+			MSAL.DYWK_CD,
+			MSAL.AVG_VHCL_SPEED,
+			MSAL.TRFVLM_CNGRT,
+			MSAL.ETL_DT 
+		FROM MRT_SMC_ABN_LOS MSAL
+		WHERE 1=1
+		<!-- TODO:: 혼잡에 관련된 데이터를 알 수 있는 방법이 필요함 -->
+		ORDER BY ROWNUM DESC 
+		LIMIT 10 OFFSET (#{page} - 1) * 10
+	</select>
+</mapper>

@@ -1,0 +1,228 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MetaTabInfoMapper'>
+	<select id="findAllMetadataList" parameterType="metaTabInfo" resultType="metaTabInfo">
+	SELECT
+		ROW_NUMBER() OVER(
+		ORDER BY MTI.UPDT_DT) AS ROWNUM,
+		MTI.TBL_ID,
+		MTI.DSET_ID,
+		MTI.TBL_OWNR_NM,
+		MTI.TBL_ENG_NM,
+		MTI.TBL_KOREAN_NM,
+		MTI.TBL_TYPE,
+		MTI.TBL_DESCR,
+		MTI.TPBIZ_CLSF,
+		MTI.PRSRV_PERIOD,
+		MTI.TBL_SIZE,
+		MTI.OCCUR_CYCL,
+		MTI.PRVT_YN,
+		MTI.OPNG_DATA_LIST_NM,
+		MTI.DATA_KEYWORD,
+		MTI.ORG_DATA_NM,
+		MTI.CLSCHM_ID,
+		MTI.DATA_SAVE_CYCL,
+		MTI.UPDT_DT
+	FROM
+		META_TAB_INFO MTI
+	WHERE
+		1 = 1
+		<if test="clschmId != null and clschmId != ''">
+			AND MTI.CLSCHM_ID = #{clschmId}
+		</if>
+		<if test="dataType != null and dataType != ''">
+			AND (
+			SELECT
+				unnest (ARRAY_AGG(DATA_TYPE))
+				FROM 
+				META_COL_INFO MCI
+			WHERE
+				MTI.TBL_ID = MCI.TBL_ID ) IN (#{dataType})
+		</if>
+		<if test="opngDataListNm != null and opngDataListNm != ''">
+			AND MTI.OPNG_DATA_LIST_NM LIKE CONCAT('%', #{opngDataListNm}, '%')
+		</if>
+		<if test="tblEngNm != null and tblEngNm != ''">
+			AND MTI.TBL_ENG_NM LIKE CONCAT('%', #{tblEngNm}, '%')
+		</if>
+		<if test="tblKoreanNm != null and tblKoreanNm != ''">
+			AND MTI.TBL_KOREAN_NM LIKE CONCAT('%', #{tblKoreanNm}, '%')
+		</if>
+		<if test="tblKoreanNm != null and tblKoreanNm != ''">
+			AND MTI.TBL_KOREAN_NM LIKE CONCAT('%', #{tblKoreanNm}, '%')
+		</if>
+		<if test="tblOwnrNm != null and tblOwnrNm != ''">
+			AND MTI.TBL_OWNR_NM LIKE CONCAT('%', #{tblOwnrNm}, '%')
+		</if>
+		<if test="dataKeyword != null and dataKeyword != ''">
+			AND MTI.DATA_KEYWORD LIKE CONCAT('%', #{dataKeyword}, '%')
+		</if>
+		ORDER BY ROWNUM DESC 
+		LIMIT 10 OFFSET (#{page} - 1) * 10
+	</select>
+	
+	<select id="findAllSearchOption" resultType="metaTabInfo">
+		SELECT 
+			MTI.DATA_KEYWORD,
+			MTI.CLSCHM_ID,
+			MTI.OPNG_DATA_LIST_NM,
+			MCI.DATA_TYPE
+		FROM META_TAB_INFO MTI
+		LEFT JOIN META_COL_INFO MCI
+		ON MTI.TBL_ID = MCI.TBL_ID
+	</select>
+	
+	 <select id="countAllMetaTabInfoList" parameterType="metaTabInfo" resultType="int">
+     	SELECT
+     		COUNT(*)
+     	FROM META_TAB_INFO MTI
+		WHERE 1=1
+		<if test="clschmId != null and clschmId != ''">
+			AND MTI.CLSCHM_ID = #{clschmId}
+		</if>
+		<if test="dataType != null and dataType != ''">
+			AND (
+			SELECT
+				unnest (ARRAY_AGG(DATA_TYPE))
+				FROM 
+				META_COL_INFO MCI
+			WHERE
+				MTI.TBL_ID = MCI.TBL_ID ) IN (#{dataType})
+		</if>
+		<if test="opngDataListNm != null and opngDataListNm != ''">
+			AND MTI.OPNG_DATA_LIST_NM LIKE CONCAT('%', #{opngDataListNm}, '%')
+		</if>
+		<if test="tblEngNm != null and tblEngNm != ''">
+			AND MTI.TBL_ENG_NM LIKE CONCAT('%', #{tblEngNm}, '%')
+		</if>
+		<if test="tblKoreanNm != null and tblKoreanNm != ''">
+			AND MTI.TBL_KOREAN_NM LIKE CONCAT('%', #{tblKoreanNm}, '%')
+		</if>
+		<if test="tblKoreanNm != null and tblKoreanNm != ''">
+			AND MTI.TBL_KOREAN_NM LIKE CONCAT('%', #{tblKoreanNm}, '%')
+		</if>
+		<if test="tblOwnrNm != null and tblOwnrNm != ''">
+			AND MTI.TBL_OWNR_NM LIKE CONCAT('%', #{tblOwnrNm}, '%')
+		</if>
+		<if test="dataKeyword != null and dataKeyword != ''">
+			AND MTI.DATA_KEYWORD LIKE CONCAT('%', #{dataKeyword}, '%')
+		</if>
+     </select>
+     
+     <select id="findOneByTblId" parameterType="String" resultType="metaTabInfo">
+     	SELECT 
+			MTI.TBL_ID,
+			MTI.DSET_ID,
+			MTI.TBL_OWNR_NM,
+			MTI.TBL_ENG_NM,
+			MTI.TBL_KOREAN_NM,
+			MTI.TBL_TYPE,
+			MTI.TBL_DESCR,
+			MTI.TPBIZ_CLSF,
+			MTI.PRSRV_PERIOD,
+			MTI.TBL_SIZE,
+			MTI.OCCUR_CYCL,
+			MTI.PRVT_YN,
+			MTI.OPNG_DATA_LIST_NM,
+			MTI.DATA_KEYWORD,
+			MTI.ORG_DATA_NM,
+			MTI.CLSCHM_ID,
+			MTI.DATA_SAVE_CYCL,
+			MTI.UPDT_DT,
+			MDI.RLTINST_ID
+		FROM META_TAB_INFO MTI
+		LEFT JOIN META_DB_INFO MDI 
+		ON MTI.DSET_ID = MDI.DB_ID 
+		WHERE MTI.TBL_ID = #{tblId}	
+     </select>
+     
+     <insert id="saveMetaTabInfo" parameterType="metaTabInfo">
+		INSERT INTO META_TAB_INFO ( 
+			TBL_ID,
+			DSET_ID,
+			TBL_OWNR_NM,
+			TBL_ENG_NM,
+			TBL_KOREAN_NM,
+			TBL_TYPE,
+			TBL_DESCR,
+			TPBIZ_CLSF,
+			PRSRV_PERIOD,
+			TBL_SIZE,
+			OCCUR_CYCL,
+			PRVT_YN,
+			OPNG_DATA_LIST_NM,
+			DATA_KEYWORD,
+			ORG_DATA_NM,
+			CLSCHM_ID,
+			DATA_SAVE_CYCL,
+			UPDT_DT
+		) VALUES ( 
+			#{tblId},
+			#{dsetId},
+			#{tblOwnrNm},
+			#{tblEngNm},
+			#{tblKoreanNm},
+			#{tblType},
+			#{tblDescr},
+			#{tpbizClsf},
+			#{prsrvPeriod},
+			#{tblSize},
+			#{occurCycl},
+			#{prvtYn},
+			#{opngDataListNm},
+			#{dataKeyword},
+			#{orgDataNm},
+			#{clschmId},
+			#{dataSaveCycl},
+			NOW()
+		)
+     </insert>
+     
+     <update id="updateMetaTabInfo" parameterType="metaTabInfo">
+     	UPDATE META_TAB_INFO SET 
+     		TBL_OWNR_NM = #{tblOwnrNm},
+     		TBL_ENG_NM = #{tblEngNm},
+     		TBL_KOREAN_NM = #{tblKoreanNm},
+     		TBL_TYPE = #{tblType},
+     		TBL_DESCR = #{tblDescr},
+     		TPBIZ_CLSF = #{tpbizClsf},
+     		PRSRV_PERIOD = #{prsrvPeriod},
+     		TBL_SIZE = #{tblSize},
+     		OCCUR_CYCL = #{occurCycl},
+     		PRVT_YN = #{prvtYn},
+     		OPNG_DATA_LIST_NM = #{opngDataListNm},
+     		DATA_KEYWORD = #{dataKeyword},
+     		ORG_DATA_NM = #{orgDataNm},
+     		CLSCHM_ID = #{clschmId},
+     		DATA_SAVE_CYCL = #{dataSaveCycl},
+     		DSET_ID = #{dsetId},
+     		UPDT_DT = NOW()
+			WHERE TBL_ID = #{tblId}
+     </update>
+     
+     <select id="findOneSearchOptionForArrayList" resultType="map">
+		WITH META_DATA_ARRAY_LIST AS (
+			SELECT 
+					UNNEST(STRING_TO_ARRAY(MTI.DATA_KEYWORD,',')) AS DATA_KEYWORD_ARRAY ,
+					UNNEST(STRING_TO_ARRAY(MTI.CLSCHM_ID  ,',')) AS CLSCHM_ID_ARRAY ,
+					UNNEST(STRING_TO_ARRAY(MCI.data_type ,',')) AS DATA_TYPE_ARRAY 
+			FROM
+					META_TAB_INFO MTI
+			LEFT JOIN META_COL_INFO MCI ON MTI.TBL_ID = MCI.TBL_ID
+		) 
+		SELECT 	
+					ARRAY_REMOVE(ARRAY_AGG(DISTINCT  DATA_KEYWORD_ARRAY), NULL) AS "dataKeywordList", 
+					ARRAY_REMOVE(ARRAY_AGG(DISTINCT  CLSCHM_ID_ARRAY), NULL) AS "clschmIdList", 
+					ARRAY_REMOVE(ARRAY_AGG(DISTINCT  DATA_TYPE_ARRAY), NULL) AS "dataTypeList"
+		FROM 
+			META_DATA_ARRAY_LIST
+     </select>
+     
+     <delete id="deleteMetaTabInfo" parameterType="metaTabInfo">
+	     DELETE FROM META_TAB_INFO
+			WHERE
+				TBL_ID = #{tblId} 
+			AND DSET_ID = #{dsetId}
+     </delete>
+</mapper>

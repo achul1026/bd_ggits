@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MrtBusRouteSectnAnalMapper'>
+	<select id="findAllDataYears" resultType="map">
+		SELECT
+			TO_CHAR(ANLS_DT,'YYYY') AS "year"
+		FROM
+			MRT_BUS_ROUTE_SECTN_ANAL
+		GROUP BY TO_CHAR(ANLS_DT,'YYYY')
+		ORDER BY TO_CHAR(ANLS_DT,'YYYY') DESC  
+	</select>
+	
+	<select id="countAllPubTrfDuplSetAdequacyList" parameterType="mapBigdataSearchDTO" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM MRT_BUS_ROUTE_SECTN_ANAL
+	</select>
+	
+	<select id="findAllPubTrfDuplSetAdequacyList" parameterType="mapBigdataSearchDTO" resultType="mrtBusRouteSectnAnal">
+		SELECT
+			gbr.ROUTE_NM
+			,gbr.ROUTE_INTERVAL
+		FROM MRT_BUS_ROUTE_SECTN_ANAL mbrsa
+		LEFT JOIN GGBIS_BUS_ROUTE gbr
+			ON mbrsa.BUS_ROUTE_ID = gbr.ROUTE_ID
+	</select>
+</mapper>

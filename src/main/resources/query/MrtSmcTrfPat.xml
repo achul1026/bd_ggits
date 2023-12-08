@@ -1,0 +1,170 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MrtSmcTrfPatMapper'>
+    <!--TODO :: 가데이터 수집 추후 제거-->
+    <insert id="insertDev">
+        insert into mrt_smc_trf_pat (
+                     mng_inst_cd
+                    ,anls_dt
+                    ,link_id
+                    ,dywk_cd
+                    ,vhcl_trfvlm
+                    ,avg_vhcl_speed
+                    ,etl_dt
+        ) values (
+                     'bluedusdev',
+                     NOW(),
+                     #{linkId},
+                     '01',
+                     #{vol},
+                     #{spd},
+                     '20230922'
+                 )
+    </insert>
+    <select id="findAll">
+        SELECT
+            ANLS_DT
+            ,AVG_VHCL_SPEED
+            ,DYWK_CD
+            ,LINK_ID
+            ,MNG_INST_CD
+            ,VHCL_TRFVLM
+        FROM MRT_SMC_TRF_PAT
+    </select>
+
+    <select id="findAllGroupByLinkId" parameterType="mapBigdataSearchDTO" resultType="mrtSmcTrfPat">
+   		SELECT
+            MSTP.LINK_ID
+            ,AVG(AVG_VHCL_SPEED) AS AVG_VHCL_SPEED_AVG
+            ,SUM(VHCL_TRFVLM) AS VHCL_TRFVLM_TOTAL
+            ,AVG(VHCL_TRFVLM) AS VHCL_TRFVLM_AVG
+            ,STRING_AGG(TO_CHAR(ANLS_DT, 'YYYY-MM-DD HH24:MI')||'|'|| AVG_VHCL_SPEED || '|' || VHCL_TRFVLM, '$$') AS TIME_GROUP_TXT
+            ,ST_ASGEOJSON(ST_LINEMERGE(GCIL.GEOM)) AS GEOJSON
+            ,GCIL.ROAD_RANK
+            ,GCIL.ROAD_NAME
+            ,GCIL.ROAD_TYPE
+        FROM MRT_SMC_TRF_PAT MSTP
+        INNER JOIN GY_COMM_INFO_LINK GCIL ON MSTP.LINK_ID = GCIL.LINK_ID  
+        WHERE 1=1
+        <!-- 연도별 검색 -->
+        <if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+        AND TO_CHAR(ANLS_DT, 'YYYY') = #{searchYear}
+        </if>
+        <!-- 기간 검색 -->
+        <if test="searchPeriod != null and searchPeriod != ''">
+        	<choose>
+        		<when test="searchPeriod == 'weekday' ">
+        			AND MSTP.DYWK_CD BETWEEN '2' AND '6'
+        		</when>
+        		<when test="searchPeriod == 'weekend' ">
+                    AND (MSTP.DYWK_CD = '1' OR MSTP.DYWK_CD = '7')
+        		</when>
+        		<otherwise>
+        			AND TO_CHAR(ANLS_DT, 'YYYY-MM-DD') BETWEEN #{startDate} AND #{endDate}
+        		</otherwise>
+        	</choose>
+        </if>
+        <!-- 시간 검색 -->
+        <if test="searchTime != null and searchTime != ''">
+        	<choose>
+        		<when test="searchTime == 'workingTime' ">
+        			AND TO_CHAR(ANLS_DT, 'HH24') BETWEEN '06' AND '10'	
+        		</when>
+        		<when test="searchPeriod == 'workingEndTime' ">
+        			AND TO_CHAR(ANLS_DT, 'HH24') BETWEEN '17' AND '20'
+        		</when>
+        		<otherwise>
+        			AND TO_CHAR(ANLS_DT, 'HH24') BETWEEN #{startTime} AND #{endTime}
+        		</otherwise>
+        	</choose>
+        </if>
+        <if test="searchRoadRank != null and searchRoadRank != ''">
+        AND GCIL.ROAD_RANK IN 
+        					<foreach item="roadRank" collection="searchRoadRank.split(',')" open="(" separator="," close=")">
+			        			#{roadRank}
+			  				</foreach>
+        </if>
+        <if test="searchLocation != null and searchLocation != ''">
+          /* TODO :: 지역별 쿼리 추가 */
+        </if>
+        <if test="searchCrossroadsLinkId != null and searchCrossroadsLinkId != '' ">
+        AND MSTP.LINK_ID IN 
+        					<foreach item="linkId" collection="searchCrossroadsLinkId.split(',')" open="(" separator="," close=")">
+			        			#{linkId}
+			  				</foreach>	
+        </if>
+        GROUP BY MSTP.LINK_ID, GEOJSON,GCIL.ROAD_RANK,GCIL.ROAD_NAME,GCIL.ROAD_TYPE
+    </select>
+    
+    <select id="findAllGroupByLinkIdForMap" parameterType="mapBigdataSearchDTO" resultType="mrtSmcTrfPat">
+   		SELECT
+            MSTP.LINK_ID
+            ,AVG(AVG_VHCL_SPEED) AS AVG_VHCL_SPEED_AVG
+            ,SUM(VHCL_TRFVLM) AS VHCL_TRFVLM_TOTAL
+            ,STRING_AGG(TO_CHAR(ANLS_DT, 'YYYY-MM-DD HH24:MI')||'|'|| AVG_VHCL_SPEED || '|' || VHCL_TRFVLM, '$$') AS TIME_GROUP_TXT
+            ,ST_ASGEOJSON(ST_LINEMERGE(GCIL.GEOM)) AS GEOJSON
+            ,GCIL.ROAD_RANK
+            ,GCIL.ROAD_NAME
+            ,GCIL.ROAD_TYPE
+        FROM MRT_SMC_TRF_PAT MSTP
+        INNER JOIN GY_COMM_INFO_LINK GCIL ON MSTP.LINK_ID = GCIL.LINK_ID
+        INNER JOIN ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO ASCARI ON GCIL.LINK_ID = ASCARI.LINK_ID
+        INNER JOIN ADSI_SMCRSRD_CRSRD_INFO ASCI ON ASCARI.CRSRD_ID = ASCI.CRSRD_ID  
+        WHERE 1=1
+        <!-- 연도별 검색 -->
+        <if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+        AND TO_CHAR(ANLS_DT, 'YYYY') = #{searchYear}
+        </if>
+        <!-- 기간 검색 -->
+        <if test="searchPeriod != null and searchPeriod != ''">
+        	<choose>
+        		<when test="searchPeriod == 'weekday' ">
+        			AND MSTP.DYWK_CD BETWEEN '2' AND '6'
+        		</when>
+        		<when test="searchPeriod == 'weekend' ">
+                    AND (MSTP.DYWK_CD = '1' OR MSTP.DYWK_CD = '7')
+        		</when>
+        		<otherwise>
+        			AND TO_CHAR(ANLS_DT, 'YYYY-MM-DD') BETWEEN #{startDate} AND #{endDate}
+        		</otherwise>
+        	</choose>
+        </if>
+        <!-- 시간 검색 -->
+        <if test="searchTime != null and searchTime != ''">
+        	<choose>
+        		<when test="searchTime == 'workingTime' ">
+        			AND TO_CHAR(ANLS_DT, 'HH24') BETWEEN '06' AND '10'	
+        		</when>
+        		<when test="searchPeriod == 'workingEndTime' ">
+        			AND TO_CHAR(ANLS_DT, 'HH24') BETWEEN '17' AND '20'
+        		</when>
+        		<otherwise>
+        			AND TO_CHAR(ANLS_DT, 'HH24') BETWEEN #{startTime} AND #{endTime}
+        		</otherwise>
+        	</choose>
+        </if>
+        <if test="searchRoadRank != null and searchRoadRank != ''">
+        AND GCIL.ROAD_RANK IN 
+        					<foreach item="roadRank" collection="searchRoadRank.split(',')" open="(" separator="," close=")">
+			        			#{roadRank}
+			  				</foreach>
+        </if>
+        <if test="searchCrossroadsNodeId != null and searchCrossroadsNodeId != '' ">
+        AND ASCI.LINK_ID IN
+        					<foreach item="linkId" collection="searchCrossroadsNodeId.split(',')" open="(" separator="," close=")">
+			        			#{linkId}
+			  				</foreach>	
+        </if>
+        GROUP BY MSTP.LINK_ID, GEOJSON,GCIL.ROAD_RANK,GCIL.ROAD_NAME,GCIL.ROAD_TYPE
+    </select>
+    
+    <select id="findAllDataYears" resultType="map">
+        SELECT
+				TO_CHAR(ANLS_DT,'YYYY') AS "year"
+		FROM
+				MRT_SMC_TRF_PAT MSTP
+		GROUP BY TO_CHAR(ANLS_DT,'YYYY')
+		ORDER BY TO_CHAR(ANLS_DT,'YYYY') DESC  
+    </select>
+</mapper>

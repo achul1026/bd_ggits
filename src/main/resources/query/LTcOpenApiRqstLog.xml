@@ -1,0 +1,105 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.LTcOpenApiRqstLogMapper'>
+	<sql id="dataUseStatsList-Where">
+		<if test="searchType != '' and searchType != null">
+			<if test="searchType == 'all'">
+				AND (ltoarl.API_RQST_LOG LIKE '%' || #{searchContent} || '%'
+					OR mop.OPRTR_NM LIKE '%' || #{searchContent} || '%')
+			</if>
+			<if test="searchType == 'apiRqstLog' and searchContent != '' and searchContent != null">
+				AND ltoarl.API_RQST_LOG LIKE '%' || #{searchContent} || '%'
+			</if>
+			<if test="searchType == 'creator' and searchContent != '' and searchContent != null">
+				AND mop.OPRTR_NM LIKE '%' || #{searchContent} || '%'
+			</if>
+		</if>
+	</sql>
+	<select id="countDataUseStatsList" parameterType="commonEntity" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM L_TC_OPEN_API_RQST_LOG ltoarl
+		LEFT JOIN M_OP_OPERATOR mop
+			ON ltoarl.oprtr_id = mop.oprtr_id
+		WHERE
+			1=1
+			<include refid="dataUseStatsList-Where"/>
+	</select>
+	
+	<select id="findAllDataUseStatsList" parameterType="commonEntity" resultType="lTcOpenApiRqstLog">
+		SELECT
+			ROW_NUMBER() OVER(ORDER BY ltoarl.CLCT_DT) AS rownum
+			, ltoarl.CLCT_DT
+			, ltoarl.OPRTR_ID
+			, ltoarl.API_RQST_LOG
+			, ltoarl.SRCH_CNT
+			, ltoarl.DWNLD_CNT
+			, mop.OPRTR_NM || '(' || mop.OPRTR_EMAIL || ')' as oprtrIdStr
+		FROM 
+			L_TC_OPEN_API_RQST_LOG ltoarl
+		LEFT JOIN M_OP_OPERATOR mop
+			ON ltoarl.oprtr_id = mop.oprtr_id
+		WHERE
+			1=1
+			<include refid="dataUseStatsList-Where"/>
+		ORDER BY ROWNUM DESC 
+		LIMIT 10 OFFSET (#{page} - 1) * 10
+	</select>
+	
+	<select id="countAllBySearchOption" parameterType="lTcOpenApiRqstLog" resultType="int">
+		SELECT COUNT(*)
+		FROM L_TC_OPEN_API_RQST_LOG ltoarl
+		WHERE 1=1
+		<if test="searchContent != null and searchContent != ''">
+			AND (ltoarl.API_RQST_LOG LIKE '%' || #{searchContent} || '%')
+		</if>
+		<if test="strDt != null and strDt != ''">
+			<![CDATA[
+			   AND ltoarl.CLCT_DT >= TO_TIMESTAMP(#{strDt},'YYYY-MM-DD HH24:mi:ss') 
+			]]>
+		</if>
+		<if test="endDt != null and endDt != ''">
+			<![CDATA[
+			   AND ltoarl.CLCT_DT <= TO_TIMESTAMP(#{endDt},'YYYY-MM-DD HH24:mi:ss')
+			]]>
+		</if>
+	</select>
+	
+	<select id="findAllLTcOpenApiRqstLogList" parameterType="lTcOpenApiRqstLog" resultType="lTcOpenApiRqstLog">
+		SELECT
+			ROW_NUMBER() OVER(ORDER BY ltoarl.CLCT_DT) AS rownum
+			, ltoarl.CLCT_DT
+			, ltoarl.API_ID
+			, ltoarl.FILEXT_ID
+			, ltoarl.TAG_ID
+			, ltoarl.AUTH_CD
+			, ltoarl.OPRTR_ID
+			, ltoarl.API_RQST_LOG
+			, ltoarl.SRCH_CNT
+			, ltoarl.DWNLD_CNT
+			, moo.OPRTR_NM
+			, moo.OPRTR_EMAIL
+		FROM 
+			L_TC_OPEN_API_RQST_LOG ltoarl
+		LEFT JOIN M_OP_OPERATOR moo
+		ON moo.OPRTR_ID = ltoarl.OPRTR_ID
+		WHERE
+			1=1
+		<if test="searchContent != null and searchContent != ''">
+			AND (ltoarl.API_RQST_LOG LIKE '%' || #{searchContent} || '%')
+		</if>
+		<if test="strDt != null and strDt != ''">
+			<![CDATA[
+			   AND ltoarl.CLCT_DT >= TO_TIMESTAMP(#{strDt},'YYYY-MM-DD HH24:mi:ss') 
+			]]>
+		</if>
+		<if test="endDt != null and endDt != ''">
+			<![CDATA[
+			   AND ltoarl.CLCT_DT <= TO_TIMESTAMP(#{endDt},'YYYY-MM-DD HH24:mi:ss')
+			]]>
+		</if>
+		ORDER BY ROWNUM DESC 
+		LIMIT 10 OFFSET (#{page} - 1) * 10
+	</select>
+</mapper>

@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MetaDbInfoMapper'>
+	<select id="findMetaDbInfoByrltinstId" parameterType="String" resultType="metaDbInfo">
+		SELECT 
+			MDI.DB_ID,
+			MDI.RLTINST_ID ,
+			MDI.LGCL_DB_NM,
+			MDI.PHSCL_DB_NM,
+			MDI.DB_DESCR,
+			MDI.APLCN_SYSTEM_NM,
+			MDI.DB_INFO,
+			MDI.OS_INFO,
+			MDI.INSTL_YMD,
+			MDI.TBL_CNT,
+			MDI.DATA_SIZE,
+			MDI.CLCT_EXCL_RSN
+		FROM META_DB_INFO MDI
+		WHERE RLTINST_ID = #{rltinstId}	
+	</select>
+</mapper>

@@ -1,0 +1,152 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MOpGrpInfoMapper'>
+	<select id="findAllGroupList" parameterType="mOpGrpInfo" resultType="mOpGrpInfo">
+		SELECT 
+				ROW_NUMBER() OVER(ORDER BY CAST(A.GRP_ID AS INTEGER) ASC) 		AS rownum,				
+				A.* 
+		FROM (
+				SELECT
+					MOGI.GRP_ID ,
+					MOGI.GRP_NM ,
+					MOGI.CRT_DT,
+					MOGI.UPDT_DT,
+					MOGI.BSC_GRP_YN,
+					MOGI.UPPER_OPRTR_AUTH_GRP_YN,
+					MOA.AUTH_NM ,
+					COUNT(MOO.OPRTR_ID)								AS userCnt
+				FROM
+					M_OP_GRP_INFO MOGI
+				INNER JOIN M_OP_AUTHORITY MOA ON MOGI.AUTH_ID = MOA.AUTH_ID 
+				LEFT JOIN M_OP_OPERATOR MOO ON MOGI.GRP_ID = MOO.GRP_ID 
+				WHERE 1=1
+				<if test="searchContent != null and searchContent != '' ">
+				AND MOGI.GRP_NM LIKE '%' || #{searchContent} || '%'	
+				</if>
+				<if test="strDt != null and strDt != '' and endDt != null and endDt != ''">
+				AND MOGI.CRT_DT
+		           	BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+		           	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+				</if>
+				GROUP BY MOGI.GRP_ID,MOGI.GRP_NM,MOA.AUTH_ID
+			
+			)A
+		ORDER BY rownum DESC
+		<if test="page != null and page != '' ">
+		LIMIT 10 OFFSET (#{page} - 1) * 10  	
+		</if>
+	</select>
+	
+	<select id="countAll" parameterType="mOpGrpInfo" resultType="int">
+		SELECT
+				COUNT(*)
+		FROM
+			M_OP_GRP_INFO MOGI
+		WHERE 1=1
+		<if test="searchContent != null and searchContent != '' ">
+		AND MOGI.GRP_NM LIKE '%' || #{searchContent} || '%'	
+		</if>
+		<if test="strDt != null and strDt != '' and endDt != null and endDt != ''">
+		AND MOGI.CRT_DT
+           	BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+           	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+	</select>
+	
+	<select id="findOneGroupDetailByGrpId" parameterType="mOpGrpInfo" resultType="mOpGrpInfo">
+		SELECT 
+				MOGI.GRP_ID,
+				MOGI.GRP_NM,
+				MOGI.GRP_DESCR,
+				MOGI.AUTH_ID,
+				MOGI.BSC_GRP_YN,
+				MOGI.UPPER_OPRTR_AUTH_GRP_YN
+		FROM 	M_OP_GRP_INFO	MOGI
+		WHERE	MOGI.GRP_ID = #{grpId}
+	</select>
+	
+	
+     <select id="findOneMOpGrpInfoForDefaultGrp" parameterType="mOpGrpInfo" resultType="mOpGrpInfo">
+     	SELECT 
+     				MOGI.GRP_ID,
+     				MOGI.GRP_NM,
+     				MOGI.GRP_DESCR,
+     				MOGI.AUTH_ID,
+     				MOGI.BSC_GRP_YN,
+					MOGI.UPPER_OPRTR_AUTH_GRP_YN
+     	FROM 		M_OP_GRP_INFO	MOGI
+     	WHERE		MOGI.BSC_GRP_YN = #{bscGrpYn}
+     	AND			MOGI.UPPER_OPRTR_AUTH_GRP_YN = #{upperOprtrAuthGrpYn}
+     </select>
+     
+     <update id="update" parameterType="mOpGrpInfo">
+     	UPDATE 	M_OP_GRP_INFO
+     	SET		GRP_NM 		= #{grpNm},
+     			GRP_DESCR 	= #{grpDescr},
+     			AUTH_ID		= #{authId},
+     			UPDT_DT		= NOW()
+     	WHERE 	GRP_ID 		= #{grpId}
+     </update>
+     
+     <insert id="save" parameterType="mOpGrpInfo">
+     	<selectKey keyProperty="grpId" resultType="String" order="BEFORE">
+        	SELECT CAST(COALESCE(MAX(CAST(GRP_ID AS NUMERIC))+1,1) AS VARCHAR) FROM M_OP_GRP_INFO
+    	</selectKey>
+     	INSERT INTO M_OP_GRP_INFO	(
+     									GRP_ID,
+     									GRP_NM,
+     									GRP_DESCR,
+     									AUTH_ID,
+     									CRT_DT,
+     									UPDT_DT,
+     									BSC_GRP_YN,
+     									UPPER_OPRTR_AUTH_GRP_YN
+     								)VALUES(
+										#{grpId},
+     									#{grpNm},
+     									#{grpDescr},
+     									#{authId},
+     									now(),
+     									now(),
+     									#{bscGrpYn},
+     									#{upperOprtrAuthGrpYn}
+     								)
+     </insert>
+     
+     <delete id="delete" parameterType="mOpGrpInfo">
+     	DELETE FROM M_OP_GRP_INFO WHERE GRP_ID = #{grpId}
+     </delete>
+     
+     <select id="findOneDefaultGrpCheck" resultType="map">
+     	SELECT
+			CASE WHEN SUM(A.UPPERCNT) 	= 0 THEN 'TRUE' ELSE 'FALSE' END AS "upperGrpChk" ,
+			CASE WHEN SUM(A.GENERALCNT) = 0 THEN 'TRUE' ELSE 'FALSE' END AS "generalGrpChk"
+		FROM
+			(
+			SELECT
+				CASE
+					WHEN (UPPER_OPRTR_AUTH_GRP_YN = 'Y' AND BSC_GRP_YN = 'Y' )THEN COUNT(*)
+					ELSE 0
+				END AS upperCnt,
+				CASE
+					WHEN (UPPER_OPRTR_AUTH_GRP_YN = 'N' AND BSC_GRP_YN = 'Y' ) THEN COUNT(*)
+					ELSE 0
+				END AS generalCnt
+			FROM
+				M_OP_GRP_INFO
+			WHERE
+				BSC_GRP_YN = 'Y'
+			GROUP BY
+				UPPER_OPRTR_AUTH_GRP_YN , BSC_GRP_YN
+			) A
+     </select>
+     
+     <select id="existsByAuthId" resultType="long" parameterType="long">
+     	SELECT
+     	 COUNT(*)
+     	FROM M_OP_GRP_INFO
+     	WHERE AUTH_ID = #{authId}
+     </select>
+     
+</mapper>

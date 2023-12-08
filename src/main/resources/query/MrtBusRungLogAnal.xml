@@ -1,0 +1,98 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MrtBusRungLogAnalMapper'>
+	<sql id="mrtBusRungLogAnal-Where">
+		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
+			AND mbrla.CLCT_YMD 
+			BETWEEN #{strDt} AND #{endDt}
+		</if>
+		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
+			<![CDATA[
+			AND #{strDt} <= mrsra.CLCT_YMD
+			]]>
+		</if>
+		<if test="(strDt == '' or strDt == null) and (endDt != '' and endDt != null)">
+			<![CDATA[
+			AND mbrla.CLCT_YMD <= #{endDt}
+			]]>
+		</if>
+		<if test="dayOfTheWeek != null">
+			 AND EXTRACT (ISODOW from TO_DATE(mbrla.CLCT_YMD, 'YYYYMMDD'))::varchar(1) IN 
+				<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+		</if>
+	</sql>
+	
+	<select id="countBusInfoLogList" parameterType="commonEntity" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM MRT_BUS_RUNG_LOG_ANAL mbrla
+		LEFT JOIN GGBIS_BUS_ROUTE gnr
+		  ON mbrla.BUS_ROUTE_ID = gnr.ROUTE_ID
+		WHERE
+			1=1
+			<include refid="mrtBusRungLogAnal-Where"/>
+	</select>
+	
+	<select id="findAllBusInfoLogList" parameterType="commonEntity" resultType="mrtBusRungLogAnal">
+		SELECT
+			gnr.ROUTE_NM
+			, gnr.ST_STA_NM 
+			, gnr.ED_STA_NM
+			, mbrla.CLCT_YMD
+			, mbrla.BUS_ROUTE_ID
+			, mbrla.BUS_USER_CNT
+			, mbrla.TRSFR_CNT
+		FROM MRT_BUS_RUNG_LOG_ANAL mbrla
+		LEFT JOIN GGBIS_BUS_ROUTE gnr
+		  ON mbrla.BUS_ROUTE_ID = gnr.ROUTE_ID
+		WHERE
+			1=1
+			<include refid="mrtBusRungLogAnal-Where"/>
+	</select>
+	
+	<select id="findAllDataYears" resultType="map">
+		SELECT
+			TO_CHAR(TO_DATE(CLCT_YMD, 'YYYYMMDD'),'YYYY') AS "year"
+		FROM
+			MRT_BUS_RUNG_LOG_ANAL
+		GROUP BY TO_CHAR(TO_DATE(CLCT_YMD, 'YYYYMMDD'),'YYYY')
+		ORDER BY TO_CHAR(TO_DATE(CLCT_YMD, 'YYYYMMDD'),'YYYY') DESC  
+	</select>
+	
+	<select id="countAllSttnPbTrfUseStatsAnal" parameterType="mapBigdataSearchDTO" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM MRT_BUS_RUNG_LOG_ANAL mbrla
+		LEFT JOIN GGBIS_BUS_ROUTE gnr
+		  ON mbrla.BUS_ROUTE_ID = gnr.ROUTE_ID 
+		WHERE
+			1=1
+		<if test="searchPeriod != '' and searchPeriod != null">
+			AND EXTRACT (ISODOW FROM TO_DATE(mbrla.CLCT_YMD, 'YYYYMMDD'))::varchar(1) IN 
+			<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+            	#{item}
+            </foreach>
+		</if>
+	</select>
+	<select id="findAllSttnPbTrfUseStatsAnsl" parameterType="mapBigdataSearchDTO" resultType="mrtBusRungLogAnal">
+		SELECT
+			gnr.ROUTE_NM
+		FROM MRT_BUS_RUNG_LOG_ANAL mbrla
+		LEFT JOIN GGBIS_BUS_ROUTE gnr
+		  ON mbrla.BUS_ROUTE_ID = gnr.ROUTE_ID
+		WHERE
+			1=1
+		<if test="searchPeriod != '' and searchPeriod != null">
+			AND EXTRACT (ISODOW FROM TO_DATE(mbrla.CLCT_YMD, 'YYYYMMDD'))::varchar(1) IN 
+			<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+            	#{item}
+            </foreach>
+		</if>
+		<if test="page != null and page != '' and page != 0 ">
+            LIMIT 5 OFFSET (#{page} - 1) * 5
+        </if>
+	</select>
+</mapper>

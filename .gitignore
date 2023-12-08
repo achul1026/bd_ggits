@@ -1,0 +1,6 @@
+target
+.idea
+.idea/*
+*.class
+src/main/webapp/WEB-INF/classes/*
+/.metadata/

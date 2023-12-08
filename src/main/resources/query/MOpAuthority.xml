@@ -1,0 +1,114 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MOpAuthorityMapper'>
+	
+     <select id="findAllAuthList" parameterType="mOpAuthority" resultType="mOpAuthority">
+		SELECT 
+				ROW_NUMBER() OVER(ORDER BY MOA.AUTH_ID) 		AS rownum,
+				MOA.AUTH_ID,
+				MOA.AUTH_NM,
+				MOA.DESCR,
+				MOA.CRT_DT,
+				MOA.UPDT_DT
+		FROM 	M_OP_AUTHORITY	MOA
+		ORDER BY rownum DESC
+	</select>
+	
+     <select id="findAuthListBySearchOption" parameterType="map" resultType="mOpAuthority">
+		SELECT A.*,
+			(
+			SELECT COUNT(*) AS GRP_CNT
+			FROM M_OP_GRP_INFO MOGI
+			WHERE MOGI.AUTH_ID = A.AUTH_ID
+			)
+		FROM (
+		SELECT
+			ROW_NUMBER() OVER( ORDER BY MOA.AUTH_ID) AS ROWNUM,
+				MOA.AUTH_ID AS AUTH_ID,
+				MOA.AUTH_NM AS AUTH_NM,
+				MOA.DESCR AS DESCR,
+				MOA.CRT_DT,
+				MOA.UPDT_DT
+			FROM
+				M_OP_AUTHORITY MOA
+			WHERE
+				1 = 1
+			<if	test="authNm != null">
+				AND AUTH_NM LIKE CONCAT('%',#{authNm},'%')
+			</if>
+			<if	test="descr != null">
+				AND DESCR LIKE CONCAT('%',#{descr},'%')
+			</if>
+			ORDER BY ROWNUM DESC
+			LIMIT 10 OFFSET (#{page} - 1) * 10) A 
+	</select>
+	
+	<select id="findOneByAuthId" parameterType="long" resultType="mOpAuthority">
+		SELECT 
+			MOA.AUTH_ID,
+			MOA.AUTH_NM,
+			MOA.AUTH_USE_YN,
+			MOA.DESCR,
+			MOA.CRT_DT,
+			MOA.UPDT_DT
+		FROM 	M_OP_AUTHORITY	MOA
+		WHERE AUTH_ID = #{authId}
+	</select>
+	
+	<select id="countAllBySearchOption" resultType="int" parameterType="mOpAuthority">
+		SELECT COUNT(*)
+		FROM M_OP_AUTHORITY
+		WHERE 1=1
+		<if	test="authNm != null">
+			AND AUTH_NM LIKE CONCAT('%',#{authNm},'%')
+		</if>
+		<if	test="descr != null">
+			AND DESCR LIKE CONCAT('%',#{descr},'%')
+		</if>
+		<if test="authUseYn != null">
+			AND AUTH_USE_YN = #{authUseYn}
+		</if>
+	</select>
+	
+
+	
+	<select id="findAuthIdNextVal" resultType="int">
+		SELECT
+		 COALESCE(MAX(AUTH_ID)+1,1) 
+		FROM M_OP_AUTHORITY
+	</select>
+	
+	<insert id="saveMOpAuthority" parameterType="mOpAuthority">
+		INSERT INTO M_OP_AUTHORITY (
+			AUTH_ID,
+			AUTH_NM,
+			DESCR,
+			AUTH_USE_YN,
+			CRT_DT,
+			UPDT_DT
+		) VALUES (
+			#{authId},
+			#{authNm},
+			#{descr},
+			#{authUseYn},
+			NOW(),
+			NOW()
+		)
+	</insert>
+	
+	<delete id="deleteByAuthId" parameterType="long">
+		DELETE FROM M_OP_AUTHORITY
+		WHERE AUTH_ID = #{authId};
+	</delete>
+	
+	<update id="updateMOpAuthority" parameterType="mOpAuthority">
+     	UPDATE M_OP_AUTHORITY 
+     	SET 
+     	AUTH_NM=#{authNm},
+     	DESCR = #{descr},
+     	AUTH_USE_YN=#{authUseYn},
+      	UPDT_DT = NOW()
+		WHERE AUTH_ID = #{authId};
+	</update>
+</mapper>

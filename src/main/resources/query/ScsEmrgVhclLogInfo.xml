@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.ScsEmrgVhclLogInfoMapper'>
+	<sql id="scsEmrgVhclLogInfo-Where">
+		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
+			AND sevli.DATE 
+			BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
+			<![CDATA[
+			AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS')  <= sevli.DATE
+			]]>
+		</if>
+		<if test="(strDt == '' or strDt == null) and (endDt != '' and endDt != null)">
+			<![CDATA[
+			AND sevli.DATE <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			]]>
+		</if>
+		<if test="dayOfTheWeek != null">
+			AND EXTRACT (ISODOW from sevli.DATE)::varchar(1) IN 
+				<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+		</if>
+	</sql>
+	
+	<select id="countEmrgVhclLogList" parameterType="commonEntity" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM SCS_EMRG_VHCL_LOG_INFO sevli
+		INNER JOIN SCS_EMRG_VHCL_PATH_INFO sevpi
+			ON sevli.SERVICEID = sevpi.SERVICEID
+		WHERE
+			1=1
+			<include refid="scsEmrgVhclLogInfo-Where"/>
+	</select>
+	
+	<select id="findAllEmrgVhclLogList" parameterType="commonEntity" resultType="scsEmrgVhclLogInfo">
+		SELECT
+			sevli.EVNO
+			, sevli.SPEED
+			, sevpi.ARRIVALTIME
+		FROM SCS_EMRG_VHCL_LOG_INFO sevli
+		INNER JOIN SCS_EMRG_VHCL_PATH_INFO sevpi
+			ON sevli.SERVICEID = sevpi.SERVICEID
+		WHERE
+			1=1
+			<include refid="scsEmrgVhclLogInfo-Where"/>
+		ORDER BY sevli.DATE DESC
+	</select>
+</mapper>

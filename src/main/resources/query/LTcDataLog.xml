@@ -1,0 +1,251 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.LTcDataLogMapper'>
+	<sql id="dataUseStatsList-Where">
+		<if test="searchType != '' and searchType != null">
+			<if test="searchType == 'all'">
+				AND (ltdl.JOB_NM LIKE '%' || #{searchContent} || '%' OR ltdl.ETL_CLSF LIKE '%' || #{searchContent} || '%')
+			</if>
+			<if test="searchType == 'apiRqstLog' and searchContent != '' and searchContent != null">
+				AND (ltdl.JOB_NM LIKE '%' || #{searchContent} || '%')
+			</if>
+			<if test="searchType == 'etlClsf' and searchContent != '' and searchContent != null">
+				AND (ltdl.ETL_CLSF LIKE '%' || #{searchContent} || '%')
+			</if>
+		</if>
+	</sql>
+	<select id="findAllLTcDataLogTodayListForAlarm" resultType="lTcDataLog">
+		SELECT
+		LTDL.DSET_ID,
+		LTDL.JOB_ID,
+		LTDL.ETL_DT,
+		LTDL.JOB_NM,
+		LTDL.RLTINST_ID,
+		LTDL.ETL_CLSF,
+		LTDL.CLCT_START_DT,
+		LTDL.CLCT_END_DT,
+		LTDL.CLCT_TBL,
+		LTDL.TRGT_TBL,
+		LTDL.CLCT_DATA_CNT,
+		LTDL.PRGRS_STTS,
+		LTDL.FAIL_RSN,
+		MOC.CD_NM
+		FROM    L_TC_DATA_LOG LTDL
+		INNER 	JOIN M_OP_CODE MOC ON LTDL.RLTINST_ID = MOC.CD_ID
+		<![CDATA[
+		where
+		LTDL.clct_start_dt  >= #{todayStDt}::timestamp
+		and
+		LTDL.clct_start_dt  <= #{todayEndDt}::timestamp
+		]]>
+	</select>
+	<select id="findAllLTcDataLogList" parameterType="lTcDataLog" resultType="lTcDataLog">
+		SELECT 
+				ROW_NUMBER() OVER(ORDER BY LTDL.CLCT_START_DT) 		AS rownum,
+				LTDL.DSET_ID, 
+				LTDL.JOB_ID, 
+				LTDL.ETL_DT, 
+				LTDL.JOB_NM, 
+				LTDL.RLTINST_ID, 
+				LTDL.ETL_CLSF,
+				LTDL.CLCT_START_DT, 
+				LTDL.CLCT_END_DT, 
+				LTDL.CLCT_TBL, 
+				LTDL.TRGT_TBL, 
+				LTDL.CLCT_DATA_CNT,
+				LTDL.PRGRS_STTS, 
+				LTDL.FAIL_RSN,
+				MOC.CD_NM ,
+				DI.DATA_CLCT_TYPE
+		FROM    L_TC_DATA_LOG LTDL
+		INNER 	JOIN M_OP_CODE MOC ON LTDL.RLTINST_ID = MOC.CD_ID
+		LEFT JOIN DSET_INFO DI ON DI.DSET_ID = LTDL.DSET_ID
+		WHERE 1=1
+			<if test="strDt != null and strDt != ''">
+			<![CDATA[
+			   AND LTDL.CLCT_START_DT >= TO_TIMESTAMP(#{strDt},'YYYY-MM-DD HH24:mi:ss') 
+			]]>
+			</if>
+			<if test="endDt != null and endDt != ''">
+			<![CDATA[
+			   AND LTDL.CLCT_START_DT <= TO_TIMESTAMP(#{endDt},'YYYY-MM-DD HH24:mi:ss')
+			]]>
+			</if>
+			<if test="searchContent != null and searchContent != ''">
+	   			AND MOC.CD_NM LIKE CONCAT('%', #{searchContent}, '%')
+			</if>
+			<choose>
+				<when test="colArr != null">
+					AND DI.DATA_CLCT_TYPE IN
+					<foreach collection="colArr" item="dataClctType" open="(" close=")" separator=",">
+						#{dataClctType}
+					</foreach>
+				</when>
+				<otherwise>
+					<if test="colTyCd != null and colTyCd != ''">
+						AND DI.DATA_CLCT_TYPE = #{colTyCd}
+					</if>
+				</otherwise>
+			</choose>
+			<if test="linkedList != null">
+				AND LTDL.TRGT_TBL IN
+				<foreach collection="linkedList" item="linked" open="(" close=")" separator=",">
+					#{linked}
+				</foreach>
+			</if>
+<!-- 		AND 	LTDLT.ETL_CLSF = #{etlClsf} --> <!-- TODO::데이터 확인 후 주석 해제 필요 -->
+		ORDER BY ROWNUM DESC 
+		LIMIT 10 OFFSET (#{page} - 1) * 10
+	</select>
+	
+	<select id="findTop5ByClctStartDtAndEtlClsfAndLinkedList" parameterType="lTcDataLog" resultType="map">
+		SELECT 
+				ROW_NUMBER() OVER(ORDER BY LTDL.CLCT_START_DT) 	AS rownum,
+				LTDL.DSET_ID AS "dsetId", 
+				LTDL.JOB_ID AS "jobId", 
+				LTDL.ETL_DT AS "etlDt", 
+				LTDL.JOB_NM AS "jobNm", 
+				LTDL.RLTINST_ID AS "rltinstId", 
+				LTDL.ETL_CLSF AS "etlClsf",
+				TO_CHAR(LTDL.CLCT_START_DT,'HH24:mi') AS "clctStartDt",
+				LTDL.CLCT_END_DT AS "clctEndDt", 
+				LTDL.CLCT_TBL AS "clctTbl", 
+				LTDL.TRGT_TBL AS "trgtTbl", 
+				LTDL.CLCT_DATA_CNT AS "clctDataCnt",
+				LTDL.PRGRS_STTS AS "prgrsStts", 
+				LTDL.FAIL_RSN AS "failRsn",
+				MOC.CD_NM AS "cdNm",
+				DI.DATA_CLCT_TYPE AS "dataClctType"
+		FROM    L_TC_DATA_LOG LTDL
+		INNER 	JOIN M_OP_CODE MOC ON LTDL.RLTINST_ID = MOC.CD_ID
+		LEFT JOIN DSET_INFO DI ON DI.DSET_ID = LTDL.DSET_ID
+		WHERE 1=1
+			<if test="strDt != null and strDt != ''">
+			<![CDATA[
+			   AND LTDL.CLCT_START_DT >= TO_TIMESTAMP(#{strDt},'YYYY-MM-DD HH24:mi:ss') 
+			]]>
+			</if>
+			<if test="endDt != null and endDt != ''">
+			<![CDATA[
+			   AND LTDL.CLCT_START_DT <= TO_TIMESTAMP(#{endDt},'YYYY-MM-DD HH24:mi:ss')
+			]]>
+			</if>
+			<if test="linkedList != null">
+				AND LTDL.TRGT_TBL IN
+				<foreach collection="linkedList" item="linked" open="(" close=")" separator=",">
+					#{linked}
+				</foreach>
+			</if>
+		AND 	LTDL.PRGRS_STTS = #{prgrsStts} 
+		ORDER BY CLCT_START_DT DESC 
+		LIMIT 5
+	</select>
+	
+	<select id="countAll" parameterType="lTcDataLog" resultType="int">
+		SELECT
+				COUNT(*) 
+		FROM    L_TC_DATA_LOG LTDL
+		INNER 	JOIN M_OP_CODE MOC ON LTDL.RLTINST_ID = MOC.CD_ID
+		LEFT JOIN DSET_INFO DI ON DI.DSET_ID = LTDL.DSET_ID
+		WHERE 1=1
+			<if test="strDt != null and strDt != ''">
+			<![CDATA[
+			   AND LTDL.CLCT_START_DT >= TO_TIMESTAMP(#{strDt},'YYYY-MM-DD HH24:mi:ss') 
+			]]>
+			</if>
+			<if test="endDt != null and endDt != ''">
+			<![CDATA[
+			   AND LTDL.clct_start_dt <= TO_TIMESTAMP(#{endDt},'YYYY-MM-DD HH24:mi:ss')
+			]]>
+			</if>	
+			<if test="searchContent != null and searchContent != ''">
+	   			AND MOC.CD_NM LIKE CONCAT('%', #{searchContent}, '%')
+			</if>
+			<choose>
+				<when test="colArr != null">
+					AND DI.DATA_CLCT_TYPE IN
+					<foreach collection="colArr" item="dataClctType" open="(" close=")" separator=",">
+						#{dataClctType}
+					</foreach>
+				</when>
+				<otherwise>
+					<if test="colTyCd != null and colTyCd != ''">
+						AND DI.DATA_CLCT_TYPE = #{colTyCd}
+					</if>
+				</otherwise>
+			</choose>
+			<if test="linkedList != null">
+				AND LTDL.TRGT_TBL IN
+				<foreach collection="linkedList" item="linked" open="(" close=")" separator=",">
+					#{linked}
+				</foreach>
+			</if>
+		<!-- 		AND 	LTDL.ETL_CLSF = #{etlClsf} --> <!-- TODO::데이터 확인 후 주석 해제 필요 -->
+	</select>
+	
+	<select id="countDataUseStatsList" parameterType="commonEntity" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM L_TC_DATA_LOG ltdl
+		WHERE
+			1=1
+		<include refid="dataUseStatsList-Where"/>
+	</select>
+	
+	<select id="findAllDataUseStatsList" parameterType="commonEntity" resultType="lTcDataLog">
+		SELECT
+			ROW_NUMBER() OVER(ORDER BY ltdl.CLCT_START_DT) AS rownum
+			, ltdl.DSET_ID
+			, ltdl.CLCT_DATA_CNT
+			, ltdl.JOB_ID
+			, ltdl.JOB_NM
+			, ltdl.CLCT_START_DT
+			, ltdl.ETL_CLSF
+			, ltdl.PRGRS_STTS
+			, ltdl.ETL_DT
+		FROM
+			L_TC_DATA_LOG ltdl
+		WHERE
+			1=1
+			<include refid="dataUseStatsList-Where"/>
+		ORDER BY ROWNUM DESC 
+		LIMIT 10 OFFSET (#{page} - 1) * 10
+	</select>
+	
+	<select id="findOneLtcDataLogFailInfo" parameterType="lTcDataLog" resultType="lTcDataLog">
+		SELECT
+			JOB_NM
+			, FAIL_RSN
+			, JOB_ID
+		FROM
+			L_TC_DATA_LOG
+		WHERE
+			JOB_ID = #{jobId}
+			AND DSET_ID = #{dsetId}
+			AND ETL_DT = #{etlDt}
+	</select>
+	
+	<select id="countSmcrdDataLogList" parameterType="commonEntity" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM
+			L_TC_DATA_LOG
+		WHERE
+			ETL_CLSF = 'KAFKA'
+	</select>
+
+	<select id="findAllSmcrdDataLogList" parameterType="commonEntity" resultType="lTcDataLog">
+		SELECT
+			ROW_NUMBER() OVER(ORDER BY CLCT_START_DT) AS rownum
+			, JOB_NM
+			, CLCT_START_DT
+			, DSET_ID
+		FROM
+			L_TC_DATA_LOG
+		WHERE
+			ETL_CLSF = 'KAFKA'
+		ORDER BY ROWNUM DESC 
+		LIMIT 10 OFFSET (#{page} - 1) * 10
+	</select>
+</mapper>

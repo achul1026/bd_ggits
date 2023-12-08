@@ -1,0 +1,168 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MrtSmcSpotAbnMapper'>
+	<sql id="mrtSmcSpotAbn-Where">
+		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
+			AND mssa.ANLS_DT 
+			BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
+			<![CDATA[
+			AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS')  <= mssa.ANLS_DT
+			]]>
+		</if>
+		<if test="(strDt == '' or strDt == null) and (endDt != '' and endDt != null)">
+			<![CDATA[
+			AND mssa.ANLS_DT <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			]]>
+		</if>
+		<if test="dayOfTheWeek != null">
+			AND EXTRACT (ISODOW from mssa.ANLS_DT)::varchar(1) IN 
+				<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+		</if>
+	</sql>
+	
+	<select id="countSmcSpotAbnList" parameterType="commonEntity" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM MRT_SMC_SPOT_ABN mssa
+		LEFT JOIN 
+			ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO ASCARI
+			ON MSSA.ACS_ROAD_ID = ASCARI.ACS_ROAD_ID 
+			AND MSSA.MNG_INST_CD = ASCARI.MNG_INST_CD 
+			AND MSSA.CRSRD_ID = ASCARI.CRSRD_ID
+		WHERE
+			1=1
+			<include refid="mrtSmcSpotAbn-Where"/>
+	</select>
+	
+	<select id="findAllSmcSpotAbnList" parameterType="commonEntity" resultType="mrtSmcSpotAbn">
+		SELECT
+			mssa.VHCL_TRFVLM
+			, mssa.AVG_VHCL_SPEED
+			, mssa.LANE_NO
+			, ascari.ACS_ROAD_NM
+		FROM MRT_SMC_SPOT_ABN mssa
+		LEFT JOIN 
+			ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO ASCARI
+			ON MSSA.ACS_ROAD_ID = ASCARI.ACS_ROAD_ID 
+			AND MSSA.MNG_INST_CD = ASCARI.MNG_INST_CD 
+			AND MSSA.CRSRD_ID = ASCARI.CRSRD_ID
+		WHERE
+			1=1
+			<include refid="mrtSmcSpotAbn-Where"/>
+	</select>
+	
+	<select id="findOneSpotAbnAvgSpd" parameterType="commonEntity" resultType="int">
+		SELECT
+			ROUND(AVG(AVG_VHCL_SPEED),2) as avgSpd 
+		FROM MRT_SMC_SPOT_ABN
+	</select>
+
+	<select id="findOneSumVhclTrfvlmByAnlsDt" parameterType="mrtSmcSpotAbn" resultType="int">
+		SELECT
+			COALESCE(SUM(VHCL_TRFVLM),0) AS "CNT" 
+		FROM MRT_SMC_SPOT_ABN
+		WHERE 1=1
+		AND ANLS_DT BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+		AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+	</select>
+	
+	<select id="findOneVclSpeedAvgByAnlsDt" parameterType="mrtSmcSpotAbn" resultType="int">
+		SELECT
+			COALESCE(AVG(AVG_VHCL_SPEED),0) AS "SPEED"
+		FROM MRT_SMC_SPOT_ABN
+		WHERE 1=1
+		AND ANLS_DT BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+		AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+	</select>
+	
+	<select id="findTop5ByAnlsDtOrderByVhclTrfVlm" parameterType="mrtSmcSpotAbn" resultType="map">
+		SELECT
+			ROW_NUMBER() OVER(ORDER BY mssa.ANLS_DT) AS "rownum"
+			, mssa.VHCL_TRFVLM AS "vhclTrfVlm"
+			, mssa.LANE_NO AS "laneNo"
+			, ascari.ACS_ROAD_NM AS "acsRoadNm"
+		FROM MRT_SMC_SPOT_ABN mssa
+		LEFT JOIN 
+			ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO ASCARI
+			ON mssa.ACS_ROAD_ID = ASCARI.ACS_ROAD_ID 
+			AND mssa.MNG_INST_CD = ASCARI.MNG_INST_CD 
+			AND mssa.CRSRD_ID = ASCARI.CRSRD_ID
+		WHERE 1=1
+		AND ANLS_DT BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+		AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+		ORDER BY VHCL_TRFVLM DESC
+		LIMIT 5
+	</select>
+
+	<select id="findTop5ByAvgVhclSpeedOrderByAvgVhclSpeed" parameterType="mrtSmcSpotAbn" resultType="map">
+		SELECT
+			ROW_NUMBER() OVER(ORDER BY mssa.ANLS_DT) AS "rownum"
+			, mssa.AVG_VHCL_SPEED AS "avgVhclSpeed"
+			, mssa.LANE_NO AS "laneNo"
+			, ascari.ACS_ROAD_NM "acsRoadNm"
+		FROM MRT_SMC_SPOT_ABN mssa
+		LEFT JOIN 
+			ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO ASCARI
+			ON mssa.ACS_ROAD_ID = ASCARI.ACS_ROAD_ID 
+			AND mssa.MNG_INST_CD = ASCARI.MNG_INST_CD 
+			AND mssa.CRSRD_ID = ASCARI.CRSRD_ID
+		WHERE 1=1
+		AND ANLS_DT BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+		AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+		ORDER BY AVG_VHCL_SPEED DESC
+		LIMIT 5
+	</select>
+	
+	<select id="findVhclFrfvlTodaysStatistics" parameterType="mrtSmcSpotAbn" resultType="map">
+	    SELECT 
+    		TO_CHAR(mssa.ANLS_DT, 'HH24') AS hours,
+    		SUM(mssa.VHCL_TRFVLM) AS cnt
+		FROM MRT_SMC_SPOT_ABN mssa
+		WHERE 1=1
+		AND ANLS_DT BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+		AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+		GROUP BY hours
+		ORDER BY hours ASC
+	</select>
+	
+	<select id="findSpeedAvgTodaysStatistics" parameterType="mrtSmcSpotAbn" resultType="map">
+	    SELECT 
+    		TO_CHAR(mssa.ANLS_DT, 'HH24') AS hours,
+    		ROUND(AVG(mssa.AVG_VHCL_SPEED)) AS cnt 
+		FROM MRT_SMC_SPOT_ABN mssa
+		WHERE 1=1
+		AND ANLS_DT BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+		AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+		GROUP BY hours
+		ORDER BY hours ASC
+	</select>
+	
+	<select id="findTop5CrossRoadsInfo" parameterType="mrtSmcSpotAbn" resultType="map">
+		SELECT 
+			MSSA.CRSRD_ID AS "crsrdId",
+			MSSA.ANLS_DT AS "anlsDt" ,
+			ASCI.CRSRD_NM AS "crsRdNm" ,
+			SUM(MSSA.VHCL_TRFVLM) AS "vhclTrfVlm",
+			ROUND(AVG(MSSA.AVG_VHCL_SPEED)) AS "avgVhclSpeed"
+		FROM MRT_SMC_SPOT_ABN MSSA
+		LEFT JOIN ADSI_SMCRSRD_CRSRD_INFO ASCI
+		ON MSSA.CRSRD_ID  = ASCI.CRSRD_ID 
+	   	WHERE 1=1
+		AND MSSA.ANLS_DT BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+		AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+		GROUP BY MSSA.CRSRD_ID , MSSA.ANLS_DT , ASCI.CRSRD_NM
+		<if test="orderByOption == 'trfvlm'">
+		ORDER BY SUM(MSSA.VHCL_TRFVLM) DESC 
+		</if>
+		<if test="orderByOption == 'speed'">
+		ORDER BY ROUND(AVG(MSSA.AVG_VHCL_SPEED)) DESC 
+		</if>
+		LIMIT 5
+	</select>
+</mapper>

@@ -1,0 +1,59 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.GgdtdrBusSttnInfoMapper'>
+	<select id="countAllBusSttnBusAndFclt" parameterType="mapBigdataSearchDTO" resultType="int">
+	SELECT 
+		COUNT(*)
+	FROM GGDTDR_BUS_STTN_INFO gbsi
+	LEFT JOIN MRT_BUS_STTN_ANAL mbsa
+		ON gbsi.BSTP_ID = mbsa.BSTP_ID 
+	LEFT JOIN GGBIS_BUS_ROUTE gbr	
+		ON mbsa.BUS_ROUTE_ID  = gbr.ROUTE_ID 
+	WHERE 1=1
+		<if test="searchPeriod != '' and searchPeriod != null">
+			AND EXTRACT (ISODOW from mbsa.ANLS_DT)::varchar(1) IN 
+			<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+            	#{item}
+            </foreach>
+		</if>
+		<if test="(startDate != null and startDate != '') and (endDate != null and endDate != '')">
+			AND mbsa.ANLS_DT
+		    	BETWEEN TO_TIMESTAMP(#{startDate}, 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDate}, 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<if test="searchContent != null and searchContent != ''">
+			AND (mbsa.BSTP_NM LIKE '%' || #{searchContent} || '%' 
+				OR mbsa.BSTP_ID LIKE '%' || #{searchContent} || '%')
+		</if>
+	</select>
+	
+	<select id="findAllBusSttnBusAndFclt" parameterType="mapBigdataSearchDTO" resultType="ggdtdrBusSttnInfo">
+	SELECT 
+		gbr.ROUTE_NM 
+		, gbr.ST_STA_NM 
+		, gbr.ED_STA_NM 
+		, gbr.ROUTE_INTERVAL 
+	FROM GGDTDR_BUS_STTN_INFO gbsi
+	LEFT JOIN MRT_BUS_STTN_ANAL mbsa
+		ON gbsi.BSTP_ID = mbsa.BSTP_ID 
+	LEFT JOIN GGBIS_BUS_ROUTE gbr	
+		ON mbsa.BUS_ROUTE_ID  = gbr.ROUTE_ID 
+	WHERE	1=1
+		<if test="searchPeriod != '' and searchPeriod != null">
+			AND EXTRACT (ISODOW from mbsa.ANLS_DT)::varchar(1) IN 
+			<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+            	#{item}
+            </foreach>
+		</if>
+		<if test="(startDate != null and startDate != '') and (endDate != null and endDate != '')">
+			AND mbsa.ANLS_DT
+		    	BETWEEN TO_TIMESTAMP(#{startDate}, 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDate}, 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<if test="searchContent != null and searchContent != ''">
+			AND (gbsi.BSTP_NM LIKE '%' || #{searchContent} || '%' 
+				OR gbsi.BSTP_ID LIKE '%' || #{searchContent} || '%')
+		</if>
+	</select>
+</mapper>

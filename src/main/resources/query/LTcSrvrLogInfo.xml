@@ -1,0 +1,100 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.LTcSrvrLogInfoMapper'>
+	
+	<sql id="lTcSrvrLogInfo-Where">
+		 <if test="searchType == 'all'">
+		 	AND (ltsli.LOG_ID LIKE '%' ||  #{searchContent} || '%' 
+		 		OR ltsli.SESN_ID LIKE '%' ||  #{searchContent} || '%' 
+		 		OR ltsli.LGN_IP LIKE '%' ||  #{searchContent} || '%')
+		 	<if test="strDt != null and strDt != '' and endDt != null and endDt != ''" >
+	            	AND ltsli.OCCUR_DT
+	            	BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+	            	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+	        </if>
+	        <if test="strDt != null and strDt != '' and (endDt == null or endDt == '')">
+				<![CDATA[
+					AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS')  <= ltsli.OCCUR_DT
+				]]>
+			</if>
+			<if test="(strDt == null or strDt == '') and endDt != null and endDt != ''">
+				<![CDATA[
+					AND ltsli.OCCUR_DT <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+				]]>
+			</if>
+		 </if>
+		 <if test="searchType == 'logId' and searchContent != '' and searchContent != null">
+		 	AND (ltsli.LOG_ID LIKE '%' ||  #{searchContent} || '%')
+		 </if>
+		 <if test="searchType == 'sesnId' and searchContent != '' and searchContent != null">
+		 	AND (ltsli.SESN_ID LIKE '%' ||  #{searchContent} || '%')
+		 </if>	 
+		 <if test="searchType == 'lgnIp' and searchContent != '' and searchContent != null">
+		 	AND (ltsli.LGN_IP LIKE '%' ||  #{searchContent} || '%')
+		 </if>
+		 <if test="searchType == 'occurDt'">
+	        <if test="strDt != null and strDt != '' and endDt != null and endDt != ''" >
+	            <![CDATA[
+	            	AND ltsli.OCCUR_DT
+	            	BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+	            	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+	            ]]>
+	        </if>
+	        <if test="strDt != null and strDt != '' and (endDt == null or endDt == '')">
+				<![CDATA[
+					AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS')  <= ltsli.OCCUR_DT
+				]]>
+			</if>
+			<if test="(strDt == null or strDt == '') and endDt != null and endDt != ''">
+				<![CDATA[
+					AND ltsli.OCCUR_DT <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+				]]>
+			</if>	 	 
+		 </if>
+	</sql>
+	
+	<select id="countSrvrLogBySearchInfo" parameterType="lTcSrvrLogInfo" resultType="int">
+     	SELECT
+     		COUNT(*)
+     	FROM L_TC_SRVR_LOG_INFO ltsli
+     	WHERE 1=1
+		<include refid="lTcSrvrLogInfo-Where"/>
+     </select>
+     
+     <select id="findOneLTcSrvrLogInfoByLogId" parameterType="String" resultType="lTcSrvrLogInfo">
+     	SELECT
+     		ltsli.LOG_ID
+     		, TO_CHAR(ltsli.OCCUR_DT,'YYYY-MM-DD') AS OCCUR_DT_STR
+     		, ltsli.LOG_TYPE
+     		, ltsli.SESN_ID
+     		, ltsli.LGN_IP
+     		, moc.CD_NM
+     	FROM L_TC_SRVR_LOG_INFO ltsli
+     	LEFT JOIN M_OP_CODE moc ON ltsli.LOG_TYPE = moc.CD_ID
+     	WHERE LOG_ID = #{logId}
+     </select>
+     
+     <select id="findAllSrvrLogList" parameterType="lTcSrvrLogInfo" resultType="lTcSrvrLogInfo">
+		SELECT
+			ROW_NUMBER() OVER(ORDER BY ltsli.OCCUR_DT) AS rownum,
+			ltsli.LOG_ID,
+			ltsli.OPRTR_ID,
+			ltsli.SRVR_ID,
+			ltsli.SESN_ID,
+			ltsli.LGN_IP,
+			TO_CHAR(ltsli.OCCUR_DT,'YYYY-MM-DD') AS OCCUR_DT_STR,
+			ltsli.LOG_TYPE,
+			moc.CD_NM
+		FROM L_TC_SRVR_LOG_INFO ltsli
+		LEFT JOIN M_OP_CODE moc ON ltsli.LOG_TYPE = moc.CD_ID
+		WHERE 1=1
+		<include refid="lTcSrvrLogInfo-Where"/>
+		ORDER BY ROWNUM DESC 
+		limit 10 offset (#{page} - 1) * 10
+     </select>
+     
+     <delete id="deleteByOprtrId" parameterType="long">
+     	DELETE FROM L_TC_SRVR_LOG_INFO WHERE OPRTR_ID = #{oprtrId}
+     </delete>
+</mapper>

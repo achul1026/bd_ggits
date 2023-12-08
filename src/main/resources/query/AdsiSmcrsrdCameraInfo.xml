@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.AdsiSmcrsrdCameraInfoMapper'>
+
+    <select id="findAll" resultType="adsiSmcrsrdCameraInfo">
+        SELECT
+            camera.mng_inst_cd
+             ,camera.crsrd_id
+             ,camera.camera_nm
+             ,camera.lon_crdn
+             ,camera.lat_crdn
+             ,camera.angl
+             ,asci.max_trfvlm
+             ,asci.max_pdst_cnt
+             ,asci.crsrd_nm
+             ,asci.max_trfvlm
+             ,asci.mng_inst_cd
+             ,gcin.node_type
+             ,gcin.node_name
+             ,gcin.node_id
+        FROM
+            adsi_smcrsrd_camera_info camera
+                inner join adsi_smcrsrd_crsrd_info asci on camera.crsrd_id  = asci.crsrd_id
+                inner join gy_comm_info_node gcin on asci.node_id = gcin.node_id
+    </select>
+</mapper>

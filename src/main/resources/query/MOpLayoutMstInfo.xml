@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MOpLayoutMstInfoMapper'>
+	<select id="findAllByOprtrIdAndMenuIdList" parameterType="mOpLayoutMstInfo" resultType="mOpLayoutMstInfo">
+		SELECT 
+			MOLMI.LAYOUT_ID,
+			MOLMI.OPRTR_ID,
+			MOLMI.MENU_ID,
+			MOLMI.LAYOUT_MENU_NM,
+			MOLMI.LAYOUT_STTS_CD,
+			MOLMI.LAYOUT_1_USE_YN,
+			MOLMI.LAYOUT_2_USE_YN,
+			MOLMI.LAYOUT_3_USE_YN,
+			MOLMI.FNCT_TYPE,
+			MOLMI.DATA_TYPE_CD,
+			MOM.MENU_NM,
+			MOM.MENU_PTTRN_TYPE
+		FROM M_OP_LAYOUT_MST_INFO MOLMI
+		LEFT JOIN M_OP_MENU MOM
+		ON MOM.MENU_ID = MOLMI.MENU_ID
+		WHERE 1=1
+		<if test="oprtrId != null">
+			AND MOLMI.OPRTR_ID = #{oprtrId}
+		</if>
+		<if test="menuIdList != null">
+			AND MOLMI.MENU_ID IN
+			<foreach collection="menuIdList" item="menuId" open="(" close=")" separator=",">
+				#{menuId}
+			</foreach>
+		</if>
+		<if test="dataTypeCd != null and dataTypeCd != ''">
+			AND MOLMI.DATA_TYPE_CD = #{dataTypeCd}
+		</if>
+		ORDER BY MOLMI.DATA_TYPE_CD,MOLMI.MENU_ID ,MOLMI.LAYOUT_MENU_NM ASC
+	</select>
+	
+	<select id="findOneByLayoutId" parameterType="String" resultType="mOpLayoutMstInfo">
+		SELECT 
+			MOLMI.LAYOUT_ID,
+			MOLMI.OPRTR_ID,
+			MOLMI.MENU_ID,
+			MOLMI.LAYOUT_MENU_NM,
+			MOLMI.LAYOUT_STTS_CD,
+			MOLMI.LAYOUT_1_USE_YN,
+			MOLMI.LAYOUT_2_USE_YN,
+			MOLMI.LAYOUT_3_USE_YN,
+			MOLMI.FNCT_TYPE,
+			MOLMI.DATA_TYPE_CD
+		FROM M_OP_LAYOUT_MST_INFO MOLMI
+		WHERE MOLMI.LAYOUT_ID = #{layoutId}
+	</select>
+	
+	<update id="updateMOpLayoutMstInfo" parameterType="mOpLayoutMstInfo">
+		UPDATE M_OP_LAYOUT_MST_INFO SET
+			LAYOUT_MENU_NM = #{layoutMenuNm},
+			LAYOUT_STTS_CD = #{layoutSttsCd},
+			LAYOUT_1_USE_YN = #{layout1UseYn},
+			LAYOUT_2_USE_YN = #{layout2UseYn},
+			LAYOUT_3_USE_YN = #{layout3UseYn},
+			FNCT_TYPE = #{fnctType},
+			DATA_TYPE_CD = #{dataTypeCd}
+		WHERE 1=1
+			<if test="layoutId != null and layoutId != ''">
+			AND	LAYOUT_ID = #{layoutId}
+			</if>
+			<if test="oprtrId != null">
+			AND OPRTR_ID = #{oprtrId}
+			</if>
+	</update>
+</mapper>

@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MrtBusRoutePasngAnalMapper'>
+	<sql id="mrtBusRoutePasngAnal-Where">
+		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
+			AND mbrpa.ANLS_DT 
+			BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
+			<![CDATA[
+			AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS')  <= mbrpa.ANLS_DT
+			]]>
+		</if>
+		<if test="(strDt == '' or strDt == null) and (endDt != '' and endDt != null)">
+			<![CDATA[
+			AND mbrpa.ANLS_DT <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			]]>
+		</if>
+		<if test="searchContent != null and searchContent != ''">
+			AND  (gbr.ROUTE_NM LIKE '%' || #{searchContent} || '%' or mbrpa.BUS_ROUTE_ID LIKE '%' || #{searchContent} || '%')
+		</if>
+		<if test="dayOfTheWeek != null">
+			AND EXTRACT (ISODOW from mbrpa.ANLS_DT)::varchar(1) IN 
+				<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+		</if>
+	</sql>
+	
+	<select id="countBusRoutePasngList" parameterType="commonEntity" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM MRT_BUS_ROUTE_PASNG_ANAL mbrpa
+		LEFT JOIN GGBIS_BUS_ROUTE gbr
+			ON mbrpa.BUS_ROUTE_ID = gbr.ROUTE_ID
+		WHERE
+			1=1
+			<include refid="mrtBusRoutePasngAnal-Where"/>
+	</select>
+	
+	<select id="findAllBusRoutePasngMapper" parameterType="commonEntity" resultType="mrtBusRoutePasngAnal">
+		SELECT
+			gbr.ROUTE_NM
+			, mbrpa.BUS_ROUTE_ID
+		FROM MRT_BUS_ROUTE_PASNG_ANAL mbrpa
+		LEFT JOIN GGBIS_BUS_ROUTE gbr
+			ON mbrpa.BUS_ROUTE_ID = gbr.ROUTE_ID
+		WHERE
+			1=1
+			<include refid="mrtBusRoutePasngAnal-Where"/>
+	</select>
+</mapper>

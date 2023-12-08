@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MrtBusRouteDetAnalMapper'>
+	<select id="countAllPubTrfRouteReciveCurveList" parameterType="mapBigdataSearchDTO" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM MRT_BUS_ROUTE_DET_ANAL
+		WHERE 1=1
+		<if test="searchPeriod != '' and searchPeriod != null">
+			AND EXTRACT (ISODOW from ANLS_DT)::varchar(1) IN 
+			<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+            	#{item}
+            </foreach>
+		</if>
+		<if test="(startDate != null and startDate != '') and (endDate != null and endDate != '')">
+			AND ANLS_DT
+		    	BETWEEN TO_TIMESTAMP(#{startDate}, 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDate}, 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<if test="(peekAndOffPeek != null and peekAndOffPeek != '') and peekAndOffPeek == 'peek'">
+			AND EXTRACT('HOUR' from ANLS_DT::timestamp)
+				BETWEEN '06'
+				AND '10'
+		</if>
+		<if test="(peekAndOffPeek != null and peekAndOffPeek != '') and peekAndOffPeek == 'offPeek'">
+			AND EXTRACT('HOUR' from ANLS_DT::timestamp)
+				BETWEEN '17'
+				AND '20'
+		</if>
+	</select>
+	
+	<select id="findAllPubTrfRouteReciveCurveList" parameterType="mapBigdataSearchDTO" resultType="mrtBusRouteDetAnal">
+		SELECT
+			brda.ROUTE_NM
+			, brda.ROUTE_LEN
+			, brda.TOT_USER_CNT
+			, brda.TOT_BSTP_CNT
+			, brda.CURVT
+		FROM MRT_BUS_ROUTE_DET_ANAL brda
+		LEFT JOIN GGBIS_BUS_ROUTE gbr
+			ON brda.BUS_ROUTE_ID = gbr.ROUTE_ID
+		WHERE 1=1
+		<if test="searchPeriod != '' and searchPeriod != null">
+			AND EXTRACT (ISODOW from brda.ANLS_DT)::varchar(1) IN 
+			<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+            	#{item}
+            </foreach>
+		</if>
+		<if test="(startDate != null and startDate != '') and (endDate != null and endDate != '')">
+			AND brda.ANLS_DT
+		    	BETWEEN TO_TIMESTAMP(#{startDate}, 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDate}, 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<if test="(peekAndOffPeek != null and peekAndOffPeek != '') and peekAndOffPeek == 'peek'">
+			AND EXTRACT('HOUR' from brda.ANLS_DT::timestamp)
+				BETWEEN '06'
+				AND '10'
+		</if>
+		<if test="(peekAndOffPeek != null and peekAndOffPeek != '') and peekAndOffPeek == 'offPeek'">
+			AND EXTRACT('HOUR' from brda.ANLS_DT::timestamp)
+				BETWEEN '17'
+				AND '20'
+		</if>
+		<if test="page != null and page != '' and page != 0 ">
+            LIMIT 5 OFFSET (#{page} - 1) * 5
+        </if>
+	</select>
+	
+	<select id="findAllDataYears" resultType="map">
+		SELECT
+			TO_CHAR(ANLS_DT,'YYYY') AS "year"
+		FROM
+			MRT_BUS_ROUTE_DET_ANAL
+		GROUP BY TO_CHAR(ANLS_DT,'YYYY')
+		ORDER BY TO_CHAR(ANLS_DT,'YYYY') DESC  
+	</select>
+</mapper>

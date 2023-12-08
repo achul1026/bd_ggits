@@ -1,0 +1,121 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MOpCodeGrpMapper'>
+	
+	<sql id="mOpCdGrp-Where">
+		 <if test="searchType == 'all' and searchContent != '' and searchContent != null">
+		 	AND (mocg.USE_YN LIKE '%' ||  #{searchContent} || '%' 
+		 		OR mocg.GRP_CD_ID LIKE '%' ||  #{searchContent} || '%' 
+		 		OR mocg.GRP_CD_NM LIKE '%' ||  #{searchContent} || '%')
+		 </if>
+		 <if test="searchType == 'grpCdId' and searchContent != '' and searchContent != null">
+		 	AND (mocg.GRP_CD_ID LIKE '%' ||  #{searchContent} || '%')
+		 </if>
+		 <if test="searchType == 'grpCdNm' and searchContent != '' and searchContent != null">
+		 	AND (mocg.GRP_CD_NM LIKE '%' ||  #{searchContent} || '%')
+		 </if>
+		 <if test="useYn != null and useYn != ''">
+		 	AND (mocg.USE_YN = #{useYn})
+		 </if>
+	</sql>
+	
+	<select id="findAllCodeGrpList" parameterType="mOpCodeGrp" resultType="mOpCodeGrp">
+     	SELECT 
+     		ROW_NUMBER() OVER(ORDER BY mocg.CRT_DT) AS rownum
+     		, mocg.GRP_CD_ID
+     		, mocg.GRP_CD_NM
+     		, mocg.USE_YN
+     		, mocg.CRTUSR_ID
+     		, mocg.CRT_DT
+     		, mocg.UPDT_DT
+     		, mocg.UPTUSR_ID
+     	FROM M_OP_CODE_GRP mocg
+     	WHERE 1=1
+		<include refid="mOpCdGrp-Where"/>
+     	ORDER BY ROWNUM DESC 
+		limit 10 offset (#{page} - 1) * 10
+     </select>
+     
+     <select id="countCodeGrpList" parameterType="mOpCodeGrp" resultType="int">
+     	SELECT
+     		COUNT(*)
+     	FROM M_OP_CODE_GRP mocg
+     	WHERE 1=1
+		<include refid="mOpCdGrp-Where"/>
+     </select>
+     
+     <select id="findOneCodeGrp" parameterType="String" resultType="mOpCodeGrp">
+     	SELECT 
+     		GRP_CD_ID
+     		, GRP_CD_NM
+     		, DESCR
+     		, USE_YN
+     	FROM M_OP_CODE_GRP
+     	WHERE GRP_CD_ID = #{grpCdId}
+     </select>
+     
+     <select id="countCodeGrpByCdId" parameterType="String" resultType="int">
+     	SELECT 
+				COUNT(*) 
+		FROM 	M_OP_CODE_GRP 
+		WHERE
+			GRP_CD_ID = #{grpCdId} 	
+     </select>
+     
+     <select id="findOneCodeGrpId" parameterType="String" resultType="String">
+     	SELECT
+     		MOCG.GRP_CD_ID
+     	FROM M_OP_CODE MOC
+     	LEFT JOIN M_OP_CODE_GRP MOCG
+			ON MOC.GRP_CD_ID = MOCG.GRP_CD_ID
+		WHERE MOC.CD_ID = #{LOGTYPE}
+     </select>
+     
+     <select id="findOneCodeGrpInfo" parameterType="String" resultType="mOpCodeGrp">
+     	SELECT
+     		GRP_CD_ID,
+     		GRP_CD_NM
+     	FROM M_OP_CODE_GRP
+     	WHERE GRP_CD_ID = #{grpCdId}
+     </select>
+     
+     <insert id="save" parameterType="mOpCodeGrp">
+     	INSERT INTO M_OP_CODE_GRP (
+     		GRP_CD_ID,
+     		GRP_CD_NM,
+     		DESCR,
+     		USE_YN,
+     		CRTUSR_ID,
+     		CRT_DT,
+     		UPDT_DT,
+     		UPTUSR_ID
+     	)VALUES(
+     		#{grpCdId},
+     		#{grpCdNm},
+     		#{descr},
+     		#{useYn},
+     		#{crtusrId},
+     		NOW(),
+     		NOW(),
+     		#{uptusrId}
+     	)
+     </insert>
+     
+     <update id="updateCodeGrp" parameterType="mOpCodeGrp">
+     	UPDATE M_OP_CODE_GRP
+     	SET
+     		GRP_CD_NM = #{grpCdNm}
+     		, DESCR = #{descr}
+     		, USE_YN = #{useYn}
+     		, UPTUSR_ID = #{uptusrId}
+     		, UPDT_DT = NOW()
+     	WHERE GRP_CD_ID = #{grpCdId}
+     </update>
+     
+     <delete id="deleteCodeGrpByGrpCdId" parameterType="String">
+     	DELETE 
+     	FROM M_OP_CODE_GRP
+     	WHERE GRP_CD_ID = #{grpCdId}
+     </delete>
+</mapper>

@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MOpOpenApiInfoMapper'>
+	<select id="findAllMOpOpenApiInfo" parameterType="mOpOpenApiInfo" resultType="mOpOpenApiInfo">
+		SELECT
+			ROW_NUMBER() OVER(ORDER BY MOOAI.API_ID) AS ROWNUM,
+			MOOAI.API_ID,
+			MOOAI.FILEXT_ID,
+			MOOAI.TAG_ID,
+			MOOAI.AUTH_CD,
+			MOOAI.API_NM,
+			MOOAI.API_CALL_URL,
+			MOOAI.API_CALL_LIMIT_CNT,
+			MOOAI.CLSF_DIV_CD,
+			MOOAI.MNG_INST_CD,
+			MOOAI.DATA_REGIST_YMD,
+			MOOAI.DATA_UPDT_YMD,
+			MOOAI.UPDT_CYCL,
+			MOOAI.CONTENTS,
+			MOOAI.INFO_EXPLAIN,
+			MOOAI.OPEN_API_INFO
+		FROM
+			M_OP_OPEN_API_INFO MOOAI
+		WHERE 1=1
+		ORDER BY ROWNUM DESC
+	</select>
+
+	<select id="findOneByApiId" parameterType="String" resultType="mOpOpenApiInfo">
+		SELECT
+			MOOAI.API_ID,
+			MOOAI.FILEXT_ID,
+			MOOAI.TAG_ID,
+			MOOAI.AUTH_CD,
+			MOOAI.API_NM,
+			MOOAI.API_CALL_URL,
+			MOOAI.API_CALL_LIMIT_CNT,
+			MOOAI.CLSF_DIV_CD,
+			MOOAI.MNG_INST_CD,
+			MOOAI.DATA_REGIST_YMD,
+			MOOAI.DATA_UPDT_YMD,
+			MOOAI.UPDT_CYCL,
+			MOOAI.CONTENTS,
+			MOOAI.INFO_EXPLAIN,
+			MOOAI.OPEN_API_INFO
+		FROM
+			M_OP_OPEN_API_INFO MOOAI
+		WHERE MOOAI.API_ID = #{apiId}
+	</select>
+	
+	
+
+</mapper>

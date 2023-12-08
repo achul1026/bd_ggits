@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.GgbisBusStationMapper'>
+
+    <select id="findAll" resultType="ggbisBusStation">
+        SELECT
+        STATION_ID
+        ,STATION_NM
+        ,STATION_ENG_NM
+        ,ROAD_NM
+        ,STATION_TP
+        ,CENTER_YN
+        ,GPS_X
+        ,GPS_Y
+        ,MAP_X
+        ,MAP_Y
+        ,LINK_ID
+        ,USE_YN
+        ,SIDO_CD
+        ,KEY_STATION_ID
+        ,ADMIN_NM
+        ,MOBILE_NO
+        ,USER_CODE
+        ,REMARK
+        ,AREA_CD
+        ,LINK_X
+        ,LINK_Y
+        ,ST_LINK_X
+        ,ST_LINK_Y
+        ,BIT_YN
+        ,BIT_COUNT
+        ,BIT_TP
+        ,WBIS_YN
+        ,MOBILE_NO_SI
+        ,DONG_CD
+        FROM
+        GGBIS_BUS_STATION
+    </select>
+</mapper>

@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.AdsiDsrcColctInfoMapper'>
+    <select id="findRecentListByRseId" resultType="adsiDsrcColctInfo">
+        SELECT
+            ADCI.MNG_INST_CD
+             ,ADCI.CLCT_DT
+             ,ADCI.DSRC_SCTN_ID
+             ,ADCI.OBU_ID
+             ,ADCI.SPEED
+             ,ADCI.ETL_DT
+             ,ADSI.DSRC_SCTN_NM
+             ,ADSI.DSRC_SCTN_LEN
+             ,ADSI.ROAD_GRD
+             ,ADSI.MIN_LIMIT_SPEED
+             ,ADSI.MAX_LIMIT_SPEED
+             ,ADSI.START_RSE_ID
+             ,ADSI.END_RSE_ID
+        FROM ADSI_DSRC_COLCT_INFO ADCI
+                 INNER JOIN (
+            SELECT
+                MAX(ADCI.CLCT_DT) AS RCT_CLCT_DT
+                 ,ADCI.DSRC_SCTN_ID
+            FROM ADSI_DSRC_COLCT_INFO ADCI
+            GROUP BY ADCI.DSRC_SCTN_ID
+        ) RCT ON RCT.DSRC_SCTN_ID = ADCI.DSRC_SCTN_ID AND RCT.RCT_CLCT_DT = ADCI.CLCT_DT
+                 INNER JOIN ADSI_DSRC_SCTN_INFO ADSI ON ADCI.DSRC_SCTN_ID = ADSI.DSRC_SCTN_ID
+        WHERE
+            ADSI.START_RSE_ID = #{rseId}
+           OR ADSI.END_RSE_ID = #{rseId}
+    </select>
+</mapper>

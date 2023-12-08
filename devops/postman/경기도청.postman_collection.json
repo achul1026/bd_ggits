@@ -1,0 +1,770 @@
+{
+	"info": {
+		"_postman_id": "5c7be299-f511-46c7-8a47-73b448164334",
+		"name": "경기도청",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "29263311"
+	},
+	"item": [
+		{
+			"name": "맵박스 API",
+			"item": [
+				{
+					"name": "Feature 자동등록",
+					"item": [
+						{
+							"name": "Feature 등록",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"var reBody = pm.iterationData.toObject();\r",
+											"reBody.id = reBody.properties.LINK_ID ? reBody.properties.LINK_ID : reBody.properties.NODE_ID;\r",
+											"pm.collectionVariables.set(\"feature_id\", reBody.id);\r",
+											"pm.request.body.raw = JSON.stringify(reBody);\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\"asdfasf\":\"asdf\",\"asfd\":\"asdfadf\"}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://api.mapbox.com/datasets/v1/{{username}}/{{dataset_id}}/features/{{feature_id}}?access_token={{access_token}}",
+									"protocol": "https",
+									"host": [
+										"api",
+										"mapbox",
+										"com"
+									],
+									"path": [
+										"datasets",
+										"v1",
+										"{{username}}",
+										"{{dataset_id}}",
+										"features",
+										"{{feature_id}}"
+									],
+									"query": [
+										{
+											"key": "access_token",
+											"value": "{{access_token}}"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "DataSet 등록",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"dataset id check\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.collectionVariables.set(\"dataset_id\", jsonData.id);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"ggits_node_link\",\r\n  \"description\": \"경기도청 nodelink\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://api.mapbox.com/datasets/v1/{{username}}?access_token={{access_token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"mapbox",
+								"com"
+							],
+							"path": [
+								"datasets",
+								"v1",
+								"{{username}}"
+							],
+							"query": [
+								{
+									"key": "access_token",
+									"value": "{{access_token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DataSet 조회",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://api.mapbox.com/datasets/v1/{{username}}?access_token={{access_token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"mapbox",
+								"com"
+							],
+							"path": [
+								"datasets",
+								"v1",
+								"{{username}}"
+							],
+							"query": [
+								{
+									"key": "access_token",
+									"value": "{{access_token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DataSet 삭제",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "https://api.mapbox.com/datasets/v1/{{username}}/{{dataset_id}}?access_token={{access_token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"mapbox",
+								"com"
+							],
+							"path": [
+								"datasets",
+								"v1",
+								"{{username}}",
+								"{{dataset_id}}"
+							],
+							"query": [
+								{
+									"key": "access_token",
+									"value": "{{access_token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Feature 등록 or 업데이트",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://api.mapbox.com/datasets/v1/{{username}}/{{dataset_id}}/features/3370085700?access_token={{access_token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"mapbox",
+								"com"
+							],
+							"path": [
+								"datasets",
+								"v1",
+								"{{username}}",
+								"{{dataset_id}}",
+								"features",
+								"3370085700"
+							],
+							"query": [
+								{
+									"key": "access_token",
+									"value": "{{access_token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Feature 삭제",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "https://api.mapbox.com/datasets/v1/{{username}}/{{dataset_id}}/features/{{feature_id}}?access_token={{access_token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"mapbox",
+								"com"
+							],
+							"path": [
+								"datasets",
+								"v1",
+								"{{username}}",
+								"{{dataset_id}}",
+								"features",
+								"{{feature_id}}"
+							],
+							"query": [
+								{
+									"key": "access_token",
+									"value": "{{access_token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "업로드키 받기",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"get aws key\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.collectionVariables.set(\"aws_key\", jsonData.key);\r",
+									"    pm.collectionVariables.set(\"bucket\", jsonData.bucket);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "https://api.mapbox.com/uploads/v1/{{username}}/credentials?access_token={{access_token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"mapbox",
+								"com"
+							],
+							"path": [
+								"uploads",
+								"v1",
+								"{{username}}",
+								"credentials"
+							],
+							"query": [
+								{
+									"key": "access_token",
+									"value": "{{access_token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "업로드",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "url",
+									"value": "https://{{bucket}}.s3.amazonaws.com/{{aws_key}}",
+									"type": "text"
+								},
+								{
+									"key": "tileset",
+									"value": "{{username}}.ggits-{{$guid}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://api.mapbox.com/uploads/v1/{{username}}?access_token={{access_token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"mapbox",
+								"com"
+							],
+							"path": [
+								"uploads",
+								"v1",
+								"{{username}}"
+							],
+							"query": [
+								{
+									"key": "access_token",
+									"value": "{{access_token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "타일셋 소스 업로드",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"tileset source id set\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.collectionVariables.set(\"tilesetSource\", jsonData.id);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/C:/Users/Charles Kim/Desktop/mtsds/ggd_link_wgs84.jsonl"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://api.mapbox.com/tilesets/v1/sources/{{username}}/ggits_node?access_token={{access_token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"mapbox",
+								"com"
+							],
+							"path": [
+								"tilesets",
+								"v1",
+								"sources",
+								"{{username}}",
+								"ggits_node"
+							],
+							"query": [
+								{
+									"key": "access_token",
+									"value": "{{access_token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "타일셋 소스로 타일셋 생성",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"recipe\": {\r\n    \"version\": 1,\r\n    \"layers\": {\r\n      \"ggits_linkss\": {\r\n        \"source\": \"{{tilesetSource}}\",\r\n        \"minzoom\": 11,\r\n        \"maxzoom\": 16\r\n      }\r\n    }\r\n  },\r\n  \"name\": \"ggits link tileset\",\r\n  \"description\": \"GGITS Data\",\r\n  \"attribution\": [\r\n    { \"text\": \"© GGITS\", \"link\": \"\" }\r\n  ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://api.mapbox.com/tilesets/v1/desimin.ggits_link?access_token={{access_token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"mapbox",
+								"com"
+							],
+							"path": [
+								"tilesets",
+								"v1",
+								"desimin.ggits_link"
+							],
+							"query": [
+								{
+									"key": "access_token",
+									"value": "{{access_token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "타일셋 배포",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"job  id set\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.collectionVariables.set(\"jobid\", jsonData.jobId);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://api.mapbox.com/tilesets/v1/desimin.ggits_link/publish?access_token={{access_token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"mapbox",
+								"com"
+							],
+							"path": [
+								"tilesets",
+								"v1",
+								"desimin.ggits_link",
+								"publish"
+							],
+							"query": [
+								{
+									"key": "access_token",
+									"value": "{{access_token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "타일셋 레시피 업데이트",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n        \"version\": 1,\r\n        \"layers\": {\r\n            \"ggits_node\": {\r\n                \"minzoom\": 11,\r\n                \"maxzoom\": 16\r\n            }\r\n        }\r\n    }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://api.mapbox.com/tilesets/v1/desimin.ggits_node/recipe?access_token={{access_token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"mapbox",
+								"com"
+							],
+							"path": [
+								"tilesets",
+								"v1",
+								"desimin.ggits_node",
+								"recipe"
+							],
+							"query": [
+								{
+									"key": "access_token",
+									"value": "{{access_token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "타일셋 레시피 조회",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://api.mapbox.com/tilesets/v1/desimin.clllyrgwf02rg2oprgc0p9wgf-5249e/recipe?access_token={{access_token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"mapbox",
+								"com"
+							],
+							"path": [
+								"tilesets",
+								"v1",
+								"desimin.clllyrgwf02rg2oprgc0p9wgf-5249e",
+								"recipe"
+							],
+							"query": [
+								{
+									"key": "access_token",
+									"value": "{{access_token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "타일셋 수정",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"recipe\": {\r\n    \"version\": 1,\r\n    \"layers\": {\r\n      \"ggits_linkss\": {\r\n        \"source\": \"{{tilesetSource}}\",\r\n        \"minzoom\": 3,\r\n        \"maxzoom\": 16\r\n      }\r\n    }\r\n  },\r\n  \"name\": \"ggits link tileset\",\r\n  \"description\": \"GGITS Data\",\r\n  \"attribution\": [\r\n    { \"text\": \"© GGITS\", \"link\": \"\" }\r\n  ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://api.mapbox.com/tilesets/v1/desimin.ggits_link/recipe?access_token={{access_token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"mapbox",
+								"com"
+							],
+							"path": [
+								"tilesets",
+								"v1",
+								"desimin.ggits_link",
+								"recipe"
+							],
+							"query": [
+								{
+									"key": "access_token",
+									"value": "{{access_token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "타일셋 검사",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://api.mapbox.com/tilesets/v1/desimin.ggits4link/jobs/{{jobid}}?access_token={{access_token}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"mapbox",
+								"com"
+							],
+							"path": [
+								"tilesets",
+								"v1",
+								"desimin.ggits4link",
+								"jobs",
+								"{{jobid}}"
+							],
+							"query": [
+								{
+									"key": "access_token",
+									"value": "{{access_token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "공공데이터 포털",
+			"item": [
+				{
+					"name": "New Request",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "New Request",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://api.mapbox.com/datasets/v1/desimin?access_token={{access_token}}",
+					"protocol": "https",
+					"host": [
+						"api",
+						"mapbox",
+						"com"
+					],
+					"path": [
+						"datasets",
+						"v1",
+						"desimin"
+					],
+					"query": [
+						{
+							"key": "access_token",
+							"value": "{{access_token}}"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "access_token",
+			"value": "sk.eyJ1IjoiZGVzaW1pbiIsImEiOiJjbGxsdG8ybWQyODdrM2RxajgxdHRyN2d6In0.Vu056gWPxw3WxtJMjk6zOQ",
+			"type": "string"
+		},
+		{
+			"key": "public_token",
+			"value": "pk.eyJ1IjoiZGVzaW1pbiIsImEiOiJjbGxsdGt2N2oxaXJ3M3BxdXI0eGg2NTZhIn0.XXk19wwTN3uAycRqs-G7FA",
+			"type": "string"
+		},
+		{
+			"key": "dataset_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "username",
+			"value": "desimin",
+			"type": "string"
+		},
+		{
+			"key": "feature_id",
+			"value": " "
+		},
+		{
+			"key": "aws_key",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "bucket",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "jsonFile",
+			"value": "[\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.38897031727215,36.40010071263187],[127.3887615755928,36.39996973896024],[127.38828663374085,36.399750536751185],[127.38822032530716,36.39973790706818],[127.38807532262395,36.39975277716559],[127.38780564862508,36.39981814965837]]},\"properties\":{\"LINK_ID\":\"1860607000\",\"F_NODE\":\"1865936100\",\"T_NODE\":\"1865936400\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"유성대로1628번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":50,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":117.24419663756,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40689520734286,36.39014661771965],[127.40591941639754,36.39012159246199],[127.40499132400456,36.390078035310175]]},\"properties\":{\"LINK_ID\":\"1860608300\",\"F_NODE\":\"1865936800\",\"T_NODE\":\"1860043800\",\"LANES\":2,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문지로\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":40,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":170.998687006978,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40499907449838,36.38997007791775],[127.4059254130325,36.390013552659674],[127.4068994480119,36.39003853248796]]},\"properties\":{\"LINK_ID\":\"1860608400\",\"F_NODE\":\"1860043800\",\"T_NODE\":\"1865936800\",\"LANES\":2,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문지로\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":40,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":170.683678664417,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40688479657751,36.39362124915606],[127.40652232875149,36.39362124697976]]},\"properties\":{\"LINK_ID\":\"1860612400\",\"F_NODE\":\"1865937700\",\"T_NODE\":\"1865938600\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문지로299번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":32.518789431734,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40660170371847,36.392909749144245],[127.4065891991768,36.393568007278525]]},\"properties\":{\"LINK_ID\":\"1860612500\",\"F_NODE\":\"1865938700\",\"T_NODE\":\"1865938600\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문지로299번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":73.054285351678,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40645545812701,36.39356634653039],[127.40646796379635,36.39290808840284]]},\"properties\":{\"LINK_ID\":\"1860612600\",\"F_NODE\":\"1865938600\",\"T_NODE\":\"1865938700\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문지로299번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":73.054285353558,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40527477478368,36.39230204512796],[127.40530614113207,36.39224977008913],[127.4053645763,36.3922108152599],[127.40544919226133,36.39218825209189],[127.40644387308973,36.39218825808662],[127.40650876952182,36.3922026794119],[127.40657080835109,36.39225782428969],[127.40658908000671,36.392318727898044],[127.40660170232215,36.39290798286027]]},\"properties\":{\"LINK_ID\":\"1860612700\",\"F_NODE\":\"1865938800\",\"T_NODE\":\"1865938700\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문지로299번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":197.138237556556,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40646796630428,36.39290985468305],[127.40645560129393,36.392332576249686],[127.40644887480123,36.39231015555505],[127.40643592078835,36.39229864035581],[127.40642582503497,36.39229639745788],[127.40547067883277,36.392296391389486],[127.40543030480104,36.392307157714825],[127.40541374740668,36.39231819554669],[127.40539511703683,36.392349244535836]]},\"properties\":{\"LINK_ID\":\"1860612800\",\"F_NODE\":\"1865938700\",\"T_NODE\":\"1865938800\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문지로299번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":164.557153611783,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40528057100471,36.39292648698733],[127.40526807823228,36.3923265552835]]},\"properties\":{\"LINK_ID\":\"1860612900\",\"F_NODE\":\"1865938900\",\"T_NODE\":\"1865938800\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문지로299번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":66.582716562352,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40540181355013,36.39232473437351],[127.40541430734967,36.392924666057084]]},\"properties\":{\"LINK_ID\":\"1860613000\",\"F_NODE\":\"1865938800\",\"T_NODE\":\"1865938900\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문지로299번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":66.582716562352,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.4053462790445,36.3928715153689],[127.40653367335648,36.392854857184346]]},\"properties\":{\"LINK_ID\":\"1860613100\",\"F_NODE\":\"1865938900\",\"T_NODE\":\"1865938700\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문지로299번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":106.544107667039,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40653599415926,36.39296298039969],[127.40534859931374,36.39297963771241]]},\"properties\":{\"LINK_ID\":\"1860613200\",\"F_NODE\":\"1865938700\",\"T_NODE\":\"1865938900\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문지로299번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":106.544006360301,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40525558910262,36.393582174864086],[127.40528059333106,36.39292391678113]]},\"properties\":{\"LINK_ID\":\"1860613300\",\"F_NODE\":\"1865939000\",\"T_NODE\":\"1865938900\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문지로299번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":73.080095424634,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40541428614235,36.392927236259496],[127.40538928192602,36.393585494366796]]},\"properties\":{\"LINK_ID\":\"1860613400\",\"F_NODE\":\"1865938900\",\"T_NODE\":\"1865939000\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문지로299번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":73.080098913745,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40532128764353,36.393529773426216],[127.40652118050637,36.39351311527937]]},\"properties\":{\"LINK_ID\":\"1860613500\",\"F_NODE\":\"1865939000\",\"T_NODE\":\"1865938600\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문지로299번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":107.664350804879,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40652347791296,36.39362123856271],[127.40532358338925,36.39363789674276]]},\"properties\":{\"LINK_ID\":\"1860613600\",\"F_NODE\":\"1865938600\",\"T_NODE\":\"1865939000\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문지로299번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":107.664350803948,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.4052680762407,36.39396024801442],[127.40525558187116,36.393585291126406]]},\"properties\":{\"LINK_ID\":\"1860613700\",\"F_NODE\":\"1865939100\",\"T_NODE\":\"1865939000\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문지로299번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":41.623358374148,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40538928915217,36.39358237810453],[127.40540178528248,36.3939573358721]]},\"properties\":{\"LINK_ID\":\"1860613800\",\"F_NODE\":\"1865939000\",\"T_NODE\":\"1865939100\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문지로299번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":41.623460623609,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40533493148772,36.39390472280443],[127.40652232574682,36.393904729982275]]},\"properties\":{\"LINK_ID\":\"1860613900\",\"F_NODE\":\"1865939100\",\"T_NODE\":\"1865938500\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문지로299번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":106.526644565922,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40974303691969,36.3946729028637],[127.40939309477372,36.39206486411395]]},\"properties\":{\"LINK_ID\":\"1860614100\",\"F_NODE\":\"1865939200\",\"T_NODE\":\"1865937600\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"아리랑로21번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":291.107141457469,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40952606900402,36.39205320224664],[127.4098760155324,36.39466124058404]]},\"properties\":{\"LINK_ID\":\"1860614200\",\"F_NODE\":\"1865937600\",\"T_NODE\":\"1865939200\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"아리랑로21번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":291.107141457565,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40996776977444,36.39722894925411],[127.40974281576572,36.394670905734365]]},\"properties\":{\"LINK_ID\":\"1860614300\",\"F_NODE\":\"1865939300\",\"T_NODE\":\"1865939200\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"아리랑로21번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":284.577982703956,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40987623779968,36.39466323680813],[127.41010119615365,36.39722128005224]]},\"properties\":{\"LINK_ID\":\"1860614400\",\"F_NODE\":\"1865939200\",\"T_NODE\":\"1865939300\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"아리랑로21번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":284.577982704018,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.41029695911745,36.39727918626641],[127.41003448218079,36.39727918469133]]},\"properties\":{\"LINK_ID\":\"1860614500\",\"F_NODE\":\"1865939400\",\"T_NODE\":\"1865939300\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"엑스포로446번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":50,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":23.547013192933,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.4100344837593,36.3971710455529],[127.41029696033235,36.397171047130286]]},\"properties\":{\"LINK_ID\":\"1860614600\",\"F_NODE\":\"1865939300\",\"T_NODE\":\"1865939400\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"엑스포로446번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":50,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":23.547013192002,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.4068723103907,36.39619500867994],[127.40562242272954,36.3960033561176]]},\"properties\":{\"LINK_ID\":\"1860614700\",\"F_NODE\":\"1865939600\",\"T_NODE\":\"1865939500\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"엑스포로446번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":114.129101202681,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40564734900062,36.395897111252694],[127.40689723501681,36.3960887635679]]},\"properties\":{\"LINK_ID\":\"1860614800\",\"F_NODE\":\"1865939500\",\"T_NODE\":\"1865939600\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"엑스포로446번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":114.129101202681,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40846610600062,36.3965521424524],[127.40718044840489,36.39625257140466],[127.40686972648517,36.39619456960206]]},\"properties\":{\"LINK_ID\":\"1860614900\",\"F_NODE\":\"1865939700\",\"T_NODE\":\"1865939600\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"엑스포로446번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":148.642590053654,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40689982003366,36.39608920264142],[127.4072140417354,36.396147857497084],[127.40850314968392,36.39644823375068]]},\"properties\":{\"LINK_ID\":\"1860615000\",\"F_NODE\":\"1865939600\",\"T_NODE\":\"1865939700\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"엑스포로446번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":149.287178434061,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40570176871091,36.39572525944914],[127.40570176638133,36.39595023407244]]},\"properties\":{\"LINK_ID\":\"1860615100\",\"F_NODE\":\"1865939800\",\"T_NODE\":\"1865939500\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문지로315번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":24.965021230906,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40556800536505,36.39595023326207],[127.40556800808012,36.395725258636354]]},\"properties\":{\"LINK_ID\":\"1860615200\",\"F_NODE\":\"1865939500\",\"T_NODE\":\"1865939800\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문지로315번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":24.965021230906,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40563488889858,36.39567118947065],[127.40688477670287,36.39567119699142]]},\"properties\":{\"LINK_ID\":\"1860615300\",\"F_NODE\":\"1865939800\",\"T_NODE\":\"1865938100\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문지로315번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":112.130695943307,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40688477742897,36.39577933616171],[127.40563488677854,36.3957793286556]]},\"properties\":{\"LINK_ID\":\"1860615400\",\"F_NODE\":\"1865938100\",\"T_NODE\":\"1865939800\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문지로315번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":112.130795942249,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40556801169599,36.39535863400592],[127.40556801513426,36.39495034748174]]},\"properties\":{\"LINK_ID\":\"1860615800\",\"F_NODE\":\"1865939900\",\"T_NODE\":\"1865940000\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문지로315번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":45.306800916048,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40556805862352,36.394948419736906],[127.40558056029398,36.39466511872349]]},\"properties\":{\"LINK_ID\":\"1860615900\",\"F_NODE\":\"1865940000\",\"T_NODE\":\"1865938200\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문지로315번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":31.457388365771,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40571423324704,36.39466897411859],[127.40570173206132,36.39495227514278]]},\"properties\":{\"LINK_ID\":\"1860616000\",\"F_NODE\":\"1865938200\",\"T_NODE\":\"1865940000\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문지로315번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":31.457388365808,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40856398728332,36.39611832374446],[127.4085514856283,36.39650161306711]]},\"properties\":{\"LINK_ID\":\"1860616100\",\"F_NODE\":\"1865940100\",\"T_NODE\":\"1865939700\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문지로316번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":42.547710573357,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40841777008265,36.39649876310169],[127.40843027238934,36.39611547288756]]},\"properties\":{\"LINK_ID\":\"1860616200\",\"F_NODE\":\"1865939700\",\"T_NODE\":\"1865940100\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문지로316번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":42.547810526391,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40856401437304,36.39570861249098],[127.40856401103734,36.3961168989179]]},\"properties\":{\"LINK_ID\":\"1860616300\",\"F_NODE\":\"1865940200\",\"T_NODE\":\"1865940100\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문지로316번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":45.306806827299,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40843024974755,36.396116897710286],[127.40843025378285,36.39570861127894]]},\"properties\":{\"LINK_ID\":\"1860616400\",\"F_NODE\":\"1865940100\",\"T_NODE\":\"1865940200\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문지로316번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":45.306806827303,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40856401715506,36.39533365480907],[127.40856401437304,36.39570861249098]]},\"properties\":{\"LINK_ID\":\"1860616500\",\"F_NODE\":\"1865940300\",\"T_NODE\":\"1865940200\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문지로316번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":41.608373505441,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40843025378285,36.39570861127894],[127.40843025720733,36.39533365359298]]},\"properties\":{\"LINK_ID\":\"1860616600\",\"F_NODE\":\"1865940200\",\"T_NODE\":\"1865940300\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문지로316번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":41.608373505437,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40856402009386,36.394967030197584],[127.40856401715506,36.39533365480907]]},\"properties\":{\"LINK_ID\":\"1860616700\",\"F_NODE\":\"1865940400\",\"T_NODE\":\"1865940300\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문지로316번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":40.683665280112,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40843025720733,36.39533365359298],[127.40843026077435,36.39496702897751]]},\"properties\":{\"LINK_ID\":\"1860616800\",\"F_NODE\":\"1865940300\",\"T_NODE\":\"1865940400\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문지로316번길\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":40.683665280115,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40443250116357,36.42574730975213],[127.4034795480347,36.42478612273033]]},\"properties\":{\"LINK_ID\":\"1860606300\",\"F_NODE\":\"1865935900\",\"T_NODE\":\"1860052201\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"테크노2로\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":40,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":136.674919027234,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.40358397479795,36.424718506998296],[127.40453692837178,36.42567969319464]]},\"properties\":{\"LINK_ID\":\"1860606400\",\"F_NODE\":\"1860052201\",\"T_NODE\":\"1865935900\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"테크노2로\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":40,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":136.674919027813,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}},\n{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.14260752707604,37.5019773040295],[127.14244603737272,37.501631830958154]]},\"properties\":{\"LINK_ID\":\"1230015502\",\"F_NODE\":\"1230005100\",\"T_NODE\":\"1230028400\",\"LANES\":1,\"ROAD_RANK\":\"104\",\"ROAD_TYPE\":\"000\",\"ROAD_NO\":\"-\",\"ROAD_NAME\":\"문정로\",\"ROAD_USE\":\"0\",\"MULTI_LINK\":\"0\",\"CONNECT\":\"0\",\"MAX_SPD\":30,\"REST_VEH\":\"0\",\"REST_W\":0,\"REST_H\":0,\"C-ITS\":\"0\",\"LENGTH\":40.915747874268,\"UPDATEDATE\":\"20230519\",\"REMARK\":\"\",\"HIST_TYPE\":\"\",\"HISTREMARK\":\"\"}}\n]",
+			"type": "string"
+		},
+		{
+			"key": "jobid",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "tilesetSource",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "sourcetype",
+			"value": "link",
+			"type": "string"
+		}
+	]
+}

@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.KtWeekDaysMapper'>
+    <select id="findAllByRecent" resultType="com.neighbor21.ggits.common.entity.KtTimeZn">
+        SELECT
+            ETL_YM
+            ,CELL_ID
+            ,X_AXIS
+            ,Y_AXIS
+            ,SUNDAY
+            ,MONDAY
+            ,TUESDAY
+            ,WEDNESDAY
+            ,THURSDAY
+            ,FRIDAY
+            ,SATURDAY
+        FROM
+            KT_WEEKDAYS,
+            (SELECT MAX(ETL_YM) RECENT_YM
+             FROM KT_WEEKDAYS
+             GROUP BY ETL_YM
+             ORDER BY ETL_YM DESC LIMIT 1) RCT
+        WHERE
+            ETL_YM = RCT.RECENT_YM
+    </select>
+</mapper>

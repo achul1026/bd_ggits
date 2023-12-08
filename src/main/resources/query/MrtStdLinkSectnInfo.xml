@@ -1,0 +1,114 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MrtStdLinkSectnInfoMapper'>
+	<sql id="mrtStdLinkSectnInfo-where">
+		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
+			AND mslsi.ANLS_DT 
+			BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
+			<![CDATA[
+			AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS')  <= mslsi.ANLS_DT
+			]]>
+		</if>
+		<if test="(strDt == '' or strDt == null) and (endDt != '' and endDt != null)">
+			<![CDATA[
+			AND mslsi.ANLS_DT <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			]]>
+		</if>
+		<if test="searchContent != '' and searchContent != null">
+			AND gcil.ROAD_NAME LIKE '%' || #{searchContent} || '%'
+		</if>
+		<if test="dayOfTheWeek != null">
+			AND EXTRACT (ISODOW from mslsi.ANLS_DT)::varchar(1) IN 
+				<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+		</if>
+	</sql>
+	
+	<select id="countTrafficInfoLogList" parameterType="commonEntity" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM MRT_STD_LINK_SECTN_INFO mslsi
+		LEFT JOIN GY_COMM_INFO_LINK	gcil
+			ON mslsi.LINK_ID = gcil.LINK_ID
+		LEFT JOIN MRT_TRF_ACDNT_DNGR_PRDCTN mtadp
+			ON mslsi.LINK_ID = mtadp.LINK_ID
+		WHERE
+			1=1
+			<include refid="mrtStdLinkSectnInfo-where"></include>
+	</select>
+	
+	<select id="findAllTrafficInfoLogList" parameterType="commonEntity" resultType="mrtStdLinkSectnInfo">
+		SELECT
+			mslsi.ANLS_DT
+			, mslsi.SPEED
+			, mslsi.TRFVLM
+			, mslsi.ETL_DT
+			, gcil.ROAD_NAME
+			, mtadp.SAFE_GRD
+			, mslsi.ANLS_DT
+		FROM MRT_STD_LINK_SECTN_INFO mslsi
+		LEFT JOIN GY_COMM_INFO_LINK	gcil
+			ON mslsi.LINK_ID = gcil.LINK_ID
+		LEFT JOIN MRT_TRF_ACDNT_DNGR_PRDCTN mtadp
+			ON mslsi.LINK_ID = mtadp.LINK_ID
+		WHERE
+			1=1
+			<include refid="mrtStdLinkSectnInfo-where"></include>
+		ORDER BY mslsi.ANLS_DT DESC
+	</select>
+	
+	<select id="findTop5ByAnlsDt" parameterType="mrtStdLinkSectnInfo" resultType="map">
+		SELECT 
+			DISTINCT MSLSI.ANLS_DT AS "anlsDt",
+			MSLSI.LINK_ID AS "linkId",
+			MSLSI.SPEED AS "speed",
+			MSLSI.TRFVLM AS "trfvlm",
+			MSLSI.ETL_DT AS "etlDt",
+			GCIL.ROAD_NAME AS "roadName",
+			GCIL.ROAD_RANK AS "roadRank"
+		FROM MRT_STD_LINK_SECTN_INFO MSLSI 
+		INNER JOIN GY_COMM_INFO_LINK GCIL ON MSLSI.LINK_ID = GCIL.LINK_ID
+		WHERE 1=1
+		<if test="strDt != null and endDt != null">
+			AND MSLSI.ANLS_DT BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+			AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		ORDER BY MSLSI.TRFVLM DESC
+		LIMIT 5
+	</select>
+
+	<select id="findTop5DelayInfoByAnlsDt" parameterType="mrtStdLinkSectnInfo" resultType="map">
+		SELECT 
+			DISTINCT MSLSI.ANLS_DT AS "anlsDt",
+			MSLSI.LINK_ID AS "linkId",
+			MSLSI.SPEED AS "speed",
+			MSLSI.TRFVLM AS "trfvlm",
+			MSLSI.ETL_DT AS "etlDt",
+			GCIL.ROAD_NAME AS "roadName",
+			GCIL.ROAD_RANK AS "roadRank",
+			<![CDATA[
+			CASE WHEN (GCIL.ROAD_RANK = '101' AND  0 <= MSLSI.SPEED AND MSLSI.SPEED < 30) 
+			 OR (GCIL.ROAD_RANK = '102' AND  0 <= MSLSI.SPEED AND MSLSI.SPEED < 30)
+			 OR ((GCIL.ROAD_RANK != '101'AND GCIL.ROAD_RANK != '102') AND  0 <= MSLSI.SPEED AND MSLSI.SPEED < 20) THEN '3'
+			 WHEN (GCIL.ROAD_RANK = '101' AND  30 <= MSLSI.SPEED AND MSLSI.SPEED < 70) 
+			 OR (GCIL.ROAD_RANK = '102' AND  30 <= MSLSI.SPEED AND MSLSI.SPEED < 50)
+			 OR ((GCIL.ROAD_RANK != '101'AND GCIL.ROAD_RANK != '102') AND  20 <= MSLSI.SPEED AND MSLSI.SPEED < 40) THEN '2'
+			 ELSE '1'
+			 ]]>
+			END AS "delayStts" 
+		FROM MRT_STD_LINK_SECTN_INFO MSLSI 
+		INNER JOIN GY_COMM_INFO_LINK GCIL ON MSLSI.LINK_ID = GCIL.LINK_ID
+		WHERE 1=1
+		<if test="strDt != null and endDt != null">
+			AND MSLSI.ANLS_DT BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+			AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		ORDER BY "delayStts" DESC , MSLSI.TRFVLM DESC
+		LIMIT 5
+	</select>
+</mapper>

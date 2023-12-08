@@ -1,0 +1,79 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.TaasDthTrfAcdntInfoMapper'>
+    <select id="findAll" resultType="taasDthTrfAcdntInfo">
+        SELECT
+            ACDNT_YY
+             ,OCCUR_YY_MM_DD_TIME
+             ,OCCUR_ADDO_CD
+             ,OCCUR_ADSI_CD
+             ,WEKDYNT_DIV_CD
+             ,DYWK_CD
+             ,DCSD_CNT
+             ,INJPSN_CNT
+             ,SWPSN_CNT
+             ,SINJPSN_CNT
+             ,INJ_DCLR_CNT
+             ,ACDNT_TYPE_LCLSF_CD
+             ,ACDNT_TYPE_MCLSF_CD
+             ,ACDNT_TYPE_CD
+             ,WRNGDOR_LAW_VLTN_CD
+             ,ROAD_TYPE_LCLSF_CD
+             ,ROAD_TYPE_CD
+             ,WRNGDO_ISRTY_VHCCLS_LCLSF_CD
+             ,DMGE_ISRTY_VHCCLS_LCLSF_CD
+             ,XCORD
+             ,YCORD
+             ,LON_CRDN
+             ,LAT_CRDN
+        FROM TAAS_DTH_TRF_ACDNT_INFO;
+    </select>
+
+    <select id="findAllByAcdntGroupBySGG" parameterType="mapBigdataSearchDTO" resultType="taasDthTrfAcdntInfo">
+        select
+        tdtai.OCCUR_ADDO_CD
+        ,tdtai.OCCUR_ADSI_CD
+        ,SUM(tdtai.DCSD_CNT) as dcsd_cnt
+        ,SUM(tdtai.INJPSN_CNT) as INJPSN_CNT
+        ,SUM(tdtai.SWPSN_CNT) as SWPSN_CNT
+        ,SUM(tdtai.SINJPSN_CNT) as SINJPSN_CNT
+        ,SUM(tdtai.INJ_DCLR_CNT) as INJ_DCLR_CNT
+        ,tdtai.WRNGDOR_LAW_VLTN_CD
+        FROM TAAS_DTH_TRF_ACDNT_INFO tdtai
+        where
+        1=1
+        <!-- 기간 검색 -->
+        <if test="searchPeriod != null and searchPeriod != ''">
+            <choose>
+                <when test="searchPeriod == 'weekday' ">
+                    AND TO_CHAR(to_date(tdtai.occur_yy_mm_dd_time, 'YYYYMMDDHH24'),'D') BETWEEN '2' AND '6'
+                </when>
+                <when test="searchPeriod == 'weekend' ">
+                    AND (TO_CHAR(to_date(tdtai.occur_yy_mm_dd_time, 'YYYYMMDDHH24'),'D') = '1' OR TO_CHAR(to_date(tdtai.occur_yy_mm_dd_time, 'YYYYMMDDHH24'),'D') = '7')
+                </when>
+                <otherwise>
+                    AND TO_CHAR(to_date(tdtai.occur_yy_mm_dd_time, 'YYYYMMDDHH24'),'YYYY-MM-DD') BETWEEN #{startDate} AND #{endDate}
+                </otherwise>
+            </choose>
+        </if>
+        <!-- 시간 검색 -->
+        <if test="searchTime != null and searchTime != ''">
+            <choose>
+                <when test="searchTime == 'workingTime' ">
+                    AND TO_CHAR(to_timestamp(tdtai.occur_yy_mm_dd_time, 'YYYYMMDDHH24'),'HH24') BETWEEN '06' AND '10'
+                </when>
+                <when test="searchPeriod == 'workingEndTime' ">
+                    AND TO_CHAR(to_timestamp(tdtai.occur_yy_mm_dd_time, 'YYYYMMDDHH24'),'HH24') BETWEEN '17' AND '20'
+                </when>
+                <otherwise>
+                    AND TO_CHAR(to_timestamp(tdtai.occur_yy_mm_dd_time, 'YYYYMMDDHH24'),'HH24') BETWEEN #{startTime} AND #{endTime}
+                </otherwise>
+            </choose>
+        </if>
+        <if test="searchLocation != null and searchLocation != ''">
+            AND tdtai.OCCUR_ADSI_CD = #{searchLocation}
+        </if>
+        group by OCCUR_ADDO_CD, OCCUR_ADSI_CD, WRNGDOR_LAW_VLTN_CD
+    </select>
+</mapper>

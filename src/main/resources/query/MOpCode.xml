@@ -1,0 +1,146 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MOpCodeMapper'>
+	<sql id="mOpCode-Where">
+		 <if test="searchType == 'all'">
+		 	AND (USE_YN LIKE '%' ||  #{searchContent} || '%' 
+		 		OR CD_ID LIKE '%' ||  #{searchContent} || '%' 
+		 		OR CD_NM LIKE '%' ||  #{searchContent} || '%')
+		 </if>
+		 <if test="searchType == 'cdId' and searchContent != '' and searchContent != null">
+		 	AND (CD_ID LIKE '%' ||  #{searchContent} || '%')
+		 </if>
+		 <if test="searchType == 'cdNm' and searchContent != '' and searchContent != null">
+		 	AND (CD_NM LIKE '%' ||  #{searchContent} || '%')
+		 </if>
+		 <if test="useYn != null and useYn != ''">
+		 	AND (USE_YN = #{useYn})
+		 </if>
+	</sql>
+	
+	<select id="findAllCodeList" parameterType="mOpCode" resultType="mOpCode">
+     	SELECT 
+     		ROW_NUMBER() OVER(ORDER BY CRT_DT) AS rownum,
+     		CD_ID
+     		, CD_NM
+     	    , CRTUSR_ID
+     	    , USE_YN
+     	    , CRT_DT
+     		, UPTUSR_ID
+     		, UPDT_DT
+     	FROM M_OP_CODE
+     	WHERE GRP_CD_ID = #{grpCdId}
+     	<include refid="mOpCode-Where"/>
+     	ORDER BY ROWNUM DESC 
+		LIMIT 10 OFFSET (#{page} - 1) * 10
+    </select>
+
+	<select id="findAllCodeListByGrpCdId" parameterType="String" resultType="mOpCode">
+     	SELECT 
+     		CD_ID
+     		, CD_NM
+     		, USE_YN
+     	    , CRTUSR_ID
+     	    , CRT_DT
+     		, UPTUSR_ID
+     		, UPDT_DT
+     	FROM M_OP_CODE
+     	WHERE GRP_CD_ID = #{grpCdId}
+     	ORDER BY CD_ID
+    </select>
+     
+	<select id="countCodeBygrpCdIdAndCdId" parameterType="mOpCode" resultType="int">
+     	SELECT 
+			COUNT(*) 
+		FROM M_OP_CODE 
+		WHERE
+			GRP_CD_ID = #{grpCdId}
+			AND CD_ID = #{cdId}
+		<include refid="mOpCode-Where"/>
+     </select>
+     
+     <select id="countCodeByGrpCdId" parameterType="mOpCode"  resultType="int">
+     	SELECT
+     		COUNT(*)
+     	FROM M_OP_CODE
+     	WHERE
+     		GRP_CD_ID = #{grpCdId}
+     </select>
+     
+     <select id="countCodeListByGrpCdIdAndSearchOption" parameterType="mOpCode"  resultType="int">
+     	SELECT
+     		COUNT(*)
+     	FROM M_OP_CODE
+     	WHERE
+     		GRP_CD_ID = #{grpCdId}
+     	<include refid="mOpCode-Where"/>
+     </select>
+     
+     <select id="countMOpCodeByCdId" parameterType="String" resultType="int">
+     	SELECT
+     		COUNT(*)
+     	FROM M_OP_CODE
+     	WHERE CD_ID = #{cdId}
+     </select>
+     
+     <select id="findOneMOpCodeByCdId" parameterType="mOpCode" resultType="mOpCode">
+     	SELECT
+     		GRP_CD_ID
+     		, CD_ID
+     		, CD_NM
+     		, DESCR
+     		, USE_YN
+     		, SORT_NO
+     	FROM M_OP_CODE
+     	WHERE CD_ID = #{cdId}
+     	<if test="grpCdId != null and grpCdId != ''">
+     		AND GRP_CD_ID = #{grpCdId}
+     	</if>
+     </select>
+
+     <insert id="saveCode" parameterType="mOpCode">
+     	INSERT INTO M_OP_CODE (
+     		GRP_CD_ID,
+     		CD_ID,
+     		CD_NM,
+     		DESCR,
+     		USE_YN,
+     		SORT_NO,
+     		CRTUSR_ID,
+     		CRT_DT,
+     		UPTUSR_ID,
+     		UPDT_DT
+     	)VALUES(
+     		#{grpCdId},
+     		#{cdId},
+     		#{cdNm},
+     		#{descr},
+     		#{useYn},
+     		#{sortNo},
+     		#{crtusrId},
+     		NOW(),  
+     		#{uptusrId},  		
+			NOW()
+     	)
+     </insert>
+     
+     <update id="updateCode" parameterType="mOpCode">
+     	UPDATE M_OP_CODE
+     	SET
+     		CD_NM = #{cdNm}
+     		, DESCR = #{descr}
+     		, SORT_NO = #{sortNo}
+     		, UPTUSR_ID = #{uptusrId}
+			, UPDT_DT = NOW()
+			, USE_YN = #{useYn}
+     	WHERE GRP_CD_ID = #{grpCdId}
+     	AND CD_ID = #{cdId}
+     </update>
+     
+	<delete id="deleteCodeByCdId" parameterType="String">
+     	DELETE 
+     	FROM M_OP_CODE
+     	WHERE CD_ID = #{cdId}
+     </delete>
+</mapper>

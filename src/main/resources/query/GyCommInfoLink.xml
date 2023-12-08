@@ -1,0 +1,82 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.GyCommInfoLinkMapper'>
+
+	<select id="findAllGyCommInfoLink" resultType="gyCommInfoLink">
+		SELECT
+			ROW_NUMBER() OVER(ORDER BY GID) AS ROWNUM,
+			GID,
+			LINK_ID,
+			F_NODE,
+			T_NODE,
+			LANES,
+			ROAD_RANK,
+			ROAD_TYPE,
+			ROAD_NO,
+			ROAD_NAME,
+			ROAD_USE,
+			MULTI_LINK,
+			CONNECT,
+			MAX_SPD,
+			REST_VEH,
+			REST_W,
+			REST_H,
+			LENGTH,
+			REMARK,
+			GEOM,
+			ST_X(ST_ASTEXT(ST_CENTROID(GEOM))) AS "X",
+			ST_Y(ST_ASTEXT(ST_CENTROID(GEOM))) AS "Y"
+		FROM
+			GY_COMM_INFO_LINK GCIL
+		ORDER BY ROWNUM DESC
+		LIMIT 5
+		</select>
+		
+	<select id="countAll" resultType="int">
+		SELECT COUNT(GCIL.*)
+		FROM GY_COMM_INFO_LINK GCIL
+	</select>
+	
+	<select id="countByLinkId" resultType="int" parameterType="gyCommInfoLink">
+		SELECT COUNT(GCIL.*)
+		FROM GY_COMM_INFO_LINK GCIL
+		WHERE 1=1
+		<if test="linkId != null and linkId != ''">
+			AND LINK_ID LIKE CONCAT('%',#{linkId},'%')
+		</if>
+	</select>
+	<select id="findLinkListByLinkId" parameterType="gyCommInfoLink" resultType="gyCommInfoLink">
+		SELECT
+			ROW_NUMBER() OVER(ORDER BY GID) AS ROWNUM,
+			GID,
+			LINK_ID,
+			F_NODE,
+			T_NODE,
+			LANES,
+			ROAD_RANK,
+			ROAD_TYPE,
+			ROAD_NO,
+			ROAD_NAME,
+			ROAD_USE,
+			MULTI_LINK,
+			CONNECT,
+			MAX_SPD,
+			REST_VEH,
+			REST_W,
+			REST_H,
+			LENGTH,
+			REMARK,
+			GEOM,
+			ST_X(ST_ASTEXT(ST_CENTROID(GEOM))) AS "X",
+			ST_Y(ST_ASTEXT(ST_CENTROID(GEOM))) AS "Y"
+		FROM
+			GY_COMM_INFO_LINK GCIL
+		WHERE 1=1
+		<if test="linkId != null and linkId != ''">
+			AND LINK_ID LIKE CONCAT('%',#{linkId},'%')
+		</if>
+		ORDER BY ROWNUM DESC
+		LIMIT 5 OFFSET (#{page} - 1) * 5
+	</select>
+</mapper>

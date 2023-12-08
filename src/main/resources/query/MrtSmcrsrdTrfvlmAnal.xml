@@ -1,0 +1,61 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MrtSmcrsrdTrfvlmAnalMapper'>
+
+    <select id="findBySearchOption" parameterType="mapBigdataSearchDTO" resultType="mrtSmcrsrdTrfvlmAnal">
+        SELECT
+        MSTA.CRSRD_ID
+        ,MSTA.CAMERA_ID
+        ,SUM(MSTA.STRGHT_TRFVLM) AS STRGHT_TRFVLM
+        ,SUM(MSTA.TRNGHT_TRFVLM) AS TRNGHT_TRFVLM
+        ,SUM(MSTA.TRNLFT_TRFVLM) AS TRNLFT_TRFVLM
+        ,SUM(MSTA.STRGHT_TRFVLM) + SUM(MSTA.TRNGHT_TRFVLM) + SUM(MSTA.TRNLFT_TRFVLM) AS TRFVLM_TOTAL
+        ,SUM(MSTA.WTLN_LEN) AS WTLN_LEN
+        ,STRING_AGG(TO_CHAR(MSTA.PRDCTN_DT , 'YYYY-MM-DD HH24:MI')||'|'|| STRGHT_TRFVLM ||'|'|| TRNGHT_TRFVLM ||'|'|| TRNLFT_TRFVLM, '$$'  ORDER BY MSTA.PRDCTN_DT ASC) AS TIME_GROUP_TXT
+        ,MSTA.ETL_DT
+        ,ASCI.NODE_ID
+        ,ASCI.CRSRD_NM
+        ,ASCI.LON_CRDN
+        ,ASCI.LAT_CRDN
+        ,ASCI.MNG_INST_CD
+        FROM
+            MRT_SMCRSRD_TRFVLM_ANAL MSTA
+                INNER JOIN ADSI_SMCRSRD_CRSRD_INFO ASCI ON MSTA.CRSRD_ID = ASCI.CRSRD_ID
+       WHERE
+       1=1
+        <!-- 연도별 검색 -->
+        <if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+            AND TO_CHAR(MSTA.ANLS_DT, 'YYYY') = #{searchYear}
+        </if>
+        <!-- 기간 검색 -->
+        <if test="searchPeriod != null and searchPeriod != ''">
+            <choose>
+                <when test="searchPeriod == 'weekday' ">
+                    AND TO_CHAR(MSTA.ANLS_DT::DATE, 'D') BETWEEN '2' AND '6'
+                </when>
+                <when test="searchPeriod == 'weekend' ">
+                    AND TO_CHAR(MSTA.ANLS_DT::DATE, 'D') = '1' OR TO_CHAR(MSCL.ANLS_DT::DATE, 'D') = '7'
+                </when>
+                <otherwise>
+                    AND TO_CHAR(MSTA.ANLS_DT, 'YYYY-MM-DD') BETWEEN #{startDate} AND #{endDate}
+                </otherwise>
+            </choose>
+        </if>
+        <!-- 시간 검색 -->
+        <if test="searchTime != null and searchTime != ''">
+            <choose>
+                <when test="searchTime == 'workingTime' ">
+                    AND TO_CHAR(MSTA.ANLS_DT, 'HH24') BETWEEN '06' AND '10'
+                </when>
+                <when test="searchPeriod == 'workingEndTime' ">
+                    AND TO_CHAR(MSTA.ANLS_DT, 'HH24') BETWEEN '17' AND '20'
+                </when>
+                <otherwise>
+                    AND TO_CHAR(MSTA.ANLS_DT, 'HH24') BETWEEN #{startTime} AND #{endTime}
+                </otherwise>
+            </choose>
+        </if>
+        GROUP by MSTA.CRSRD_ID, MSTA.CAMERA_ID, MSTA.ETL_DT, ASCI.NODE_ID, ASCI.CRSRD_NM, ASCI.LON_CRDN, ASCI.LAT_CRDN, ASCI.MNG_INST_CD
+    </select>
+</mapper>

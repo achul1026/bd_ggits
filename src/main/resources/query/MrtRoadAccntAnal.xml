@@ -1,0 +1,85 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MrtRoadAccntAnalMapper'>
+	<sql id="mrtRoadAccntAnal-where">
+		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
+			AND mraa.INFO_OCCUR_DT 
+			BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
+			<![CDATA[
+			AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS')  <= mraa.INFO_OCCUR_DT
+			]]>
+		</if>
+		<if test="(strDt == '' or strDt == null) and (endDt != '' and endDt != null)">
+			<![CDATA[
+			AND mraa.INFO_OCCUR_DT <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			]]>
+		</if>
+		<if test="searchContent != '' and searchContent != null">
+			AND gcil.ROAD_NAME LIKE '%' || #{searchContent} || '%'
+		</if>
+		<if test="dayOfTheWeek != null">
+			AND EXTRACT (ISODOW from mraa.INFO_OCCUR_DT)::varchar(1) IN 
+				<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+		</if>
+	</sql>
+	
+	<select id="countAcdntCatgLogColt" parameterType="commonEntity" resultType="int">
+	WITH MRT_ROAD_ACCNT_ANAL_CNT AS (
+		SELECT
+			COUNT(*)
+		FROM MRT_ROAD_ACCNT_ANAL mraa
+		LEFT JOIN GY_COMM_INFO_LINK gcil
+			ON mraa.ACDNT_DSTRCT_IDENTIFIER = gcil.LINK_ID 
+		WHERE
+			1=1
+			<include refid="mrtRoadAccntAnal-where"/>
+		GROUP BY gcil.ROAD_NAME,  mraa.TOT_CASLT_CNT, mraa.DCSD_CNT, mraa.ACDNT_OCCUR_CNT, mraa.DCSD_CNT , mraa.TOT_CASLT_CNT, mraa.INFO_OCCUR_DT
+	)
+	SELECT 
+		COUNT(*)
+	FROM MRT_ROAD_ACCNT_ANAL_CNT
+	</select>
+	
+	<select id="findAllAcdntCatgLogColt" parameterType="commonEntity" resultType="mrtRoadAccntAnal">
+	SELECT 
+		moc.cd_nm as cdNm
+		, mraa.ACDNT_OCCUR_CNT as acdntOccurCnt
+		, mraa.DCSD_CNT as dcsdCnt
+		, mraa.tot_caslt_cnt as totCasltCnt
+		, gcil.ROAD_NAME as roadName
+		, ROUND((mraa.DCSD_CNT / mraa.TOT_CASLT_CNT * 100)::Decimal,2) as ftltyRate
+	FROM MRT_ROAD_ACCNT_ANAL mraa
+	INNER JOIN M_OP_CODE moc 
+		ON mraa.ACDNT_TYPE_CD = moc.CD_ID 
+	INNER JOIN GY_COMM_INFO_LINK gcil
+		ON mraa.ACDNT_DSTRCT_IDENTIFIER = gcil.LINK_ID 
+	WHERE
+		1=1
+		<include refid="mrtRoadAccntAnal-where"/>
+	GROUP BY gcil.ROAD_NAME, moc.CD_NM,  mraa.TOT_CASLT_CNT, mraa.DCSD_CNT, mraa.ACDNT_OCCUR_CNT, mraa.DCSD_CNT , mraa.TOT_CASLT_CNT, mraa.INFO_OCCUR_DT
+	ORDER by mraa.INFO_OCCUR_DT DESC
+	</select>
+
+	<select id="findAllRiskZnPrdtList" parameterType="commonEntity" resultType="mrtRoadAccntAnal">
+	SELECT 
+		gcin1.NODE_NAME  as strRoadName
+		, gcin2.NODE_NAME  as endRoadName
+		, mraa.ACDNT_OCCUR_CNT as acdntOccurCnt
+	FROM MRT_ROAD_ACCNT_ANAL mraa
+	LEFT JOIN GY_COMM_INFO_LINK gcil
+		ON mraa.ACDNT_DSTRCT_IDENTIFIER = gcil.LINK_ID
+	LEFT JOIN GY_COMM_INFO_NODE gcin1
+		ON gcil.F_NODE = gcin1.NODE_ID 
+	LEFT JOIN GY_COMM_INFO_NODE gcin2
+		ON gcil.T_NODE = gcin2.NODE_ID 
+	WHERE
+		1=1
+		<include refid="mrtRoadAccntAnal-where"/>
+	</select>
+</mapper>

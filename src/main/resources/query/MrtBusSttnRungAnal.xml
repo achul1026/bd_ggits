@@ -1,0 +1,55 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MrtBusSttnRungAnalMapper'>
+	<sql id="mrtBusSttnRungAnal-Where">
+		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
+			AND mrsra.RIDE_YMD 
+			BETWEEN #{strDt} AND #{endDt}
+		</if>
+		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
+			<![CDATA[
+			AND #{strDt} <= mrsra.RIDE_YMD
+			]]>
+		</if>
+		<if test="(strDt == '' or strDt == null) and (endDt != '' and endDt != null)">
+			<![CDATA[
+			AND mrsra.RIDE_YMD <= #{endDt}
+			]]>
+		</if>
+		<if test="dayOfTheWeek != null">
+			 AND EXTRACT (ISODOW from TO_DATE(mrsra.RIDE_YMD, 'YYYYMMDD'))::varchar(1) IN 
+				<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+		</if>
+	</sql>
+	
+	<select id="countBusSttnRungAnal" parameterType="commonEntity" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM MRT_BUS_STTN_RUNG_ANAL mrsra
+		LEFT JOIN GGDTDR_BUS_STTN_INFO gbsi
+			ON mrsra.BSTP_ID = gbsi.BSTP_ID
+		WHERE	
+			1=1
+			<include refid="mrtBusSttnRungAnal-Where"/>
+	</select>
+
+	<select id="findAllBusSttnRungAnal" parameterType="commonEntity" resultType="mrtBusSttnRungAnal">
+		SELECT
+			gbsi.BSTP_NM
+			, mrsra.BUS_ROUTE_RUNG_CNT
+			, mrsra.RIDE_USER_CNT
+			, mrsra.LNDI_USER_CNT
+			, mrsra.TRNSIT_USER_CNT
+			, mrsra.RIDE_YMD
+		FROM MRT_BUS_STTN_RUNG_ANAL mrsra
+		LEFT JOIN GGDTDR_BUS_STTN_INFO gbsi
+			ON mrsra.BSTP_ID = gbsi.BSTP_ID
+		WHERE	
+			1=1
+			<include refid="mrtBusSttnRungAnal-Where"/>
+		LIMIT 10 OFFSET (#{page} - 1) * 10 
+	</select>
+</mapper>

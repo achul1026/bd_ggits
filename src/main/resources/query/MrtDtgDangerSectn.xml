@@ -1,0 +1,163 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MrtDtgDangerSectnMapper'>
+	<sql id="mrtDtgDangerSectn-Where">
+		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
+			AND mdds.ANLS_DT 
+			BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
+			<![CDATA[
+			AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS')  <= mdds.ANLS_DT
+			]]>
+		</if>
+		<if test="(strDt == '' or strDt == null) and (endDt != '' and endDt != null)">
+			<![CDATA[
+			AND mdds.ANLS_DT <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			]]>
+		</if>
+		<if test="dayOfTheWeek != null">
+			AND EXTRACT (ISODOW from mdds.ANLS_DT)::varchar(1) IN 
+				<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+		</if>
+	</sql>
+	
+	<select id="countBusDtgInfo" parameterType="commonEntity" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM MRT_DTG_DANGER_SECTN mdds
+		WHERE
+			1=1
+			<include refid="mrtDtgDangerSectn-Where"/>
+	</select>
+	
+	<select id="findAllBusDtgInfoList" parameterType="commonEntity" resultType="mrtDtgDangerSectn">
+		SELECT
+			mdds.VHCL_NO
+			, gbr.ST_STA_NM
+			, gbr.ED_STA_NM
+			, gbr.ROUTE_INTERVAL
+			, gbr.ROUTE_LENGTH
+			, mdds.BUS_ROUTE_NO
+			, SUM(mdds.SPDNG_RUNG_CNT) + SUM(mdds.SDACEL_RUNG_CNT) + SUM(mdds.RPDDCL_RUNG_CNT) + SUM(mdds.SDSTOP_RUNG_CNT) + SUM(mdds.SDSTRT_RUNG_CNT) + SUM(mdds.LNGTRMACL_RUNG_CNT) as riskJugCnt
+		FROM MRT_DTG_DANGER_SECTN mdds	
+		LEFT JOIN GGBIS_BUS_ROUTE gbr 
+			ON mdds.BUS_ROUTE_NO = gbr.ROUTE_ID 
+		WHERE
+			1=1
+			<include refid="mrtDtgDangerSectn-Where"/>
+		GROUP BY mdds.VHCL_NO, mdds.ANLS_DT, mdds.BUS_ROUTE_NO, gbr.ST_STA_NM, gbr.ED_STA_NM, gbr.ROUTE_INTERVAL, gbr.ROUTE_LENGTH
+		ORDER BY mdds.ANLS_DT DESC
+	</select>
+
+	<select id="findAllBySearchOption" parameterType="mapBigdataSearchDTO" resultType="mrtDtgDangerSectn">
+		SELECT
+		VHCL_NO
+		,LINK_ID
+		,BUS_ROUTE_NO
+		,CO_ID
+		,SUM(SPDNG_RUNG_CNT) AS SPDNG_RUNG_CNT
+		,SUM(SDACEL_RUNG_CNT) AS SDACEL_RUNG_CNT
+		,SUM(RPDDCL_RUNG_CNT) AS RPDDCL_RUNG_CNT
+		,SUM(SDSTOP_RUNG_CNT) AS SDSTOP_RUNG_CNT
+		,SUM(SDSTRT_RUNG_CNT) AS SDSTRT_RUNG_CNT
+		,SUM(LNGTRMACL_RUNG_CNT) AS LNGTRMACL_RUNG_CNT
+		,SUM(SPDNG_RUNG_CNT) + SUM(SDACEL_RUNG_CNT) + SUM(RPDDCL_RUNG_CNT) + SUM(SDSTOP_RUNG_CNT) + SUM(SDSTRT_RUNG_CNT) + SUM(LNGTRMACL_RUNG_CNT) as riskJugCnt
+		FROM MRT_DTG_DANGER_SECTN
+		where
+	    1=1
+	    <if test="searchYear != null and searchYear != ''">
+		<![CDATA[
+		AND ANLS_DT >= to_date(#{searchYear}||'0101','YYYYMMDD')  and ANLS_DT <= to_date(#{searchYear}||'1231','YYYYMMDD')
+		 ]]>
+		</if>
+		group by VHCL_NO, BUS_ROUTE_NO, CO_ID, LINK_ID
+	</select>
+	
+	<select id="countAllPubTrfSafeDrvAnal" parameterType="mapBigdataSearchDTO" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM MRT_DTG_DANGER_SECTN mdds
+		LEFT JOIN GGBIS_BUS_ROUTE gbr
+			ON mdds.BUS_ROUTE_NO = gbr.ROUTE_ID
+		WHERE
+			1=1
+		<if test="routeNm != '' and routeNm != null">
+			AND gbr.ROUTE_NM LIKE '%' || #{routeNm} || '%'
+		</if>
+		<if test="searchPeriod != '' and searchPeriod != null">
+			AND EXTRACT (ISODOW from mdds.ANLS_DT)::varchar(1) IN 
+			<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+                   #{item}
+               </foreach>
+		</if>
+		<if test="(startDate != null and startDate != '') and (endDate != null and endDate != '')">
+			AND mdds.ANLS_DT
+		    	BETWEEN TO_TIMESTAMP(#{startDate}, 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDate}, 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<if test="(peekAndOffPeek != null and peekAndOffPeek != '') and peekAndOffPeek == 'peek'">
+			AND EXTRACT('HOUR' from mdds.ANLS_DT::timestamp)
+				BETWEEN '06'
+				AND '10'
+		</if>
+		<if test="(peekAndOffPeek != null and peekAndOffPeek != '') and peekAndOffPeek == 'offPeek'">
+			AND EXTRACT('HOUR' from mdds.ANLS_DT::timestamp)
+				BETWEEN '17'
+				AND '20'
+		</if>
+	</select>
+	
+	<select id="findAllPubTrfSafeDrvAnal" parameterType="MapBigdataSearchDTO" resultType="mrtDtgDangerSectn">
+		SELECT
+			gbr.ROUTE_NM
+			, gbr.ST_STA_NM
+			, gbr.ED_STA_NM
+		FROM MRT_DTG_DANGER_SECTN mdds
+		LEFT JOIN GGBIS_BUS_ROUTE gbr
+			ON mdds.BUS_ROUTE_NO = gbr.ROUTE_ID
+		WHERE
+			1=1
+		<if test="routeNm != '' and routeNm != null">
+			AND gbr.ROUTE_NM LIKE '%' || #{routeNm} || '%'
+		</if>
+		<if test="searchPeriod != '' and searchPeriod != null">
+			AND EXTRACT (ISODOW from mdds.ANLS_DT)::varchar(1) IN 
+			<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+                   #{item}
+               </foreach>
+		</if>
+		<if test="(startDate != null and startDate != '') and (endDate != null and endDate != '')">
+			AND mdds.ANLS_DT
+		    	BETWEEN TO_TIMESTAMP(#{startDate}, 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDate}, 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<if test="(peekAndOffPeek != null and peekAndOffPeek != '') and peekAndOffPeek == 'peek'">
+			AND EXTRACT('HOUR' from mdds.ANLS_DT::timestamp)
+				BETWEEN '06'
+				AND '10'
+		</if>
+		<if test="(peekAndOffPeek != null and peekAndOffPeek != '') and peekAndOffPeek == 'offPeek'">
+			AND EXTRACT('HOUR' from mdds.ANLS_DT::timestamp)
+				BETWEEN '17'
+				AND '20'
+		</if>
+		<if test="page != null and page != '' and page != 0 ">
+            LIMIT 5 OFFSET (#{page} - 1) * 5
+        </if>
+	</select>
+	
+	
+	<select id="findAllDataYears" resultType="map">
+		SELECT
+				TO_CHAR(ANLS_DT,'YYYY') AS "year"
+		FROM
+				MRT_DTG_DANGER_SECTN
+		GROUP BY TO_CHAR(ANLS_DT,'YYYY')
+		ORDER BY TO_CHAR(ANLS_DT,'YYYY') DESC  
+	</select>
+</mapper>

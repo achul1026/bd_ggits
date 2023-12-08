@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MOpAthrMenuMapper'>
+	<insert id="saveMOpAthrMenu" parameterType="MOpAthrMenu">
+		INSERT INTO M_OP_ATHR_MENU ( 
+			AUTH_ID,
+			MENU_ID,
+			BTTN_CD
+			) VALUES (
+			#{authId},
+			#{menuId},
+			#{bttnCd}
+			)
+	</insert>
+	
+ 	<select id="findMenuAuthByAuthId" parameterType="long" resultType="MOpAthrMenu">
+		SELECT 
+			moa.AUTH_ID,
+			moa.MENU_ID,
+			moa.BTTN_CD
+		FROM M_OP_ATHR_MENU moa
+		WHERE AUTH_ID = #{authId}
+		ORDER BY MENU_ID
+	</select>
+	
+	<delete id="deleteAllByAuthId" parameterType="long">
+		DELETE FROM M_OP_ATHR_MENU
+		WHERE AUTH_ID = #{authId}
+	</delete>
+
+	<delete id="deleteByAuthIdAndMenuId" parameterType="MOpAthrMenu">
+		DELETE FROM M_OP_ATHR_MENU
+		WHERE AUTH_ID = #{authId}
+		AND MENU_ID = #{menuId}
+	</delete>
+</mapper>

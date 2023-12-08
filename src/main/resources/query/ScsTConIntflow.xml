@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.ScsTConIntflowMapper'>
+
+	
+	<select id="findAllSignalForFacility" parameterType="mapFacilityMenuDTO" resultType="mapFacilityMenuDTO">
+		SELECT
+				STCIC.INT_LCNO 							AS "id",
+				STCIC.INT_NAME							AS "name",
+				ST_X(ST_ASTEXT(ST_CENTROID(GCIN.GEOM))) AS "lon",
+				ST_Y(ST_ASTEXT(ST_CENTROID(GCIN.GEOM))) AS "lat"
+		FROM
+				SCS_T_CON_INTLC STCIC
+		LEFT JOIN GY_COMM_INFO_NODE GCIN ON STCIC.INT_NODE_ID = GCIN.NODE_ID
+		WHERE 
+				1=1
+			<if test="nodeName != null and nodeName != ''">
+				AND GCIN.NODE_NAME LIKE '%' 		|| #{nodeName} || '%'
+			</if>
+			<if test="id != null and id != ''">
+				AND STCIC.INT_LCNO = CAST(#{id} AS INTEGER)
+			</if>    
+		ORDER BY STCIC.UPDATE_DATE DESC 
+		<if test="page != null and page != '' and page != 0 ">
+		LIMIT 5 OFFSET (#{page} - 1) * 5  	
+		</if> 				
+	</select>
+	
+	<select id="countSignalForFacility" parameterType="mapFacilityMenuDTO" resultType="int">
+		SELECT
+				COUNT(*)
+		FROM
+				SCS_T_CON_INTLC STCIC
+		LEFT JOIN GY_COMM_INFO_NODE GCIN ON STCIC.INT_NODE_ID = GCIN.NODE_ID
+		WHERE 
+				1=1
+			<if test="nodeName != null and nodeName != ''">
+				AND GCIN.NODE_NAME LIKE '%' 		|| #{nodeName} || '%'
+			</if>
+			<if test="id != null and id != ''">
+				AND STCIC.INT_LCNO = CAST(#{id} AS INTEGER)
+			</if>    
+	</select>
+	
+	<select id="findAllSignalNodeList" parameterType="gyCommInfoNode" resultType="map">
+		SELECT
+				ST_X(ST_ASTEXT(ST_CENTROID(GCIN.GEOM))) AS "lon",
+				ST_Y(ST_ASTEXT(ST_CENTROID(GCIN.GEOM))) AS "lat",
+				GCIN.NODE_ID 							AS "nodeId",
+				GCIN.NODE_NAME							AS "label", 
+				GCIN.NODE_NAME 							AS "value"
+		FROM
+				SCS_T_CON_INTFLOW STCI
+		LEFT JOIN SCS_T_CON_INTLC STCIC ON STCI.INT_LCNO = STCIC.INT_LCNO
+		LEFT JOIN GY_COMM_INFO_NODE GCIN ON STCIC.INT_NODE_ID = GCIN.NODE_ID
+		GROUP BY GCIN.GEOM,GCIN.NODE_NAME ,GCIN.NODE_ID
+	</select>
+	
+</mapper>

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.neighbor21.ggits.common.mapper.MrtBusSttnPasngAnalMapper">
+	<sql id="mrtBusSttnPasngAnal-Where">
+		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
+			AND mbspa.ANLS_DT 
+			BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
+			<![CDATA[
+			AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS')  <= mbspa.ANLS_DT
+			]]>
+		</if>
+		<if test="(strDt == '' or strDt == null) and (endDt != '' and endDt != null)">
+			<![CDATA[
+			AND mbspa.ANLS_DT <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			]]>
+		</if>
+		<if test="searchContent != null and searchContent != ''">
+			AND gbsi.BSTP_NM LIKE '%' || #{searchContent} || '%' 
+		</if>
+		<if test="dayOfTheWeek != null">
+			AND EXTRACT (ISODOW from mbspa.ANLS_DT)::varchar(1) IN 
+				<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+		</if>
+	</sql>
+	
+	<select id="countBusSttnPasngList" parameterType="commonEntity" resultType="int">
+		SELECT	
+			COUNT(*)
+		FROM
+			MRT_BUS_STTN_PASNG_ANAL mbspa
+		LEFT JOIN 
+			GGDTDR_BUS_STTN_INFO gbsi
+			ON mbspa.BSTP_ID = gbsi.BSTP_ID
+		WHERE
+			1=1
+			<include refid="mrtBusSttnPasngAnal-Where"/>
+	</select>
+	<select id="findAllBusSttnPasngList" parameterType="commonEntity" resultType="mrtBusSttnPasngAnal">
+		SELECT	
+			gbsi.BSTP_NM
+			, mbspa.RIDE_USER_CNT
+			, mbspa.LNDI_USER_CNT
+			, mbspa.TRNSIT_USER_CNT
+			, (mbspa.RIDE_USER_CNT - mbspa.LNDI_USER_CNT + mbspa.TRNSIT_USER_CNT) as sumPasng
+		FROM
+			MRT_BUS_STTN_PASNG_ANAL mbspa
+		LEFT JOIN 
+			GGDTDR_BUS_STTN_INFO gbsi
+			ON mbspa.BSTP_ID = gbsi.BSTP_ID
+		WHERE
+			1=1
+			<include refid="mrtBusSttnPasngAnal-Where"/>
+	</select>
+	
+	<select id="countAllRegionTransStats" parameterType="mapBigdataSearchDTO" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM MRT_BUS_STTN_PASNG_ANAL bspa
+		LEFT JOIN MRT_BUS_STTN_ANAL mbsa
+			ON bspa.BSTP_ID = mbsa.BSTP_ID
+		LEFT JOIN GGBIS_BUS_ROUTE gbr
+			ON mbsa.BUS_ROUTE_ID = gbr.ROUTE_ID
+		WHERE 1=1
+		<if test="searchPeriod != '' and searchPeriod != null">
+			AND EXTRACT (ISODOW from TO_DATE(bspa.RIDE_YMD, 'YYYYMMDD'))::varchar(1) IN 
+			<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+            	#{item}
+            </foreach>
+		</if>
+		<if test="(startDate != null and startDate != '') and (endDate != null and endDate != '')">
+			AND bspa.RIDE_YMD 
+			BETWEEN #{startDate} AND #{endDate}
+		</if>
+		<if test="searchContent != null and searchContent != ''">
+			AND gbr.ROUTE_NM LIKE '%' || #{searchContent} || '%' 
+		</if>
+	</select>
+	
+	<select id="findAllRegionTransStats" parameterType="mapBigdataSearchDTO" resultType="mrtBusSttnPasngAnal">
+		SELECT
+			gbr.ROUTE_NM
+			, gbr.ST_STA_NM
+			, gbr.ED_STA_NM
+		FROM MRT_BUS_STTN_PASNG_ANAL bspa
+		LEFT JOIN MRT_BUS_STTN_ANAL mbsa
+			ON bspa.BSTP_ID = mbsa.BSTP_ID
+		LEFT JOIN GGBIS_BUS_ROUTE gbr
+			ON mbsa.BUS_ROUTE_ID = gbr.ROUTE_ID
+		WHERE 1=1
+		<if test="searchPeriod != '' and searchPeriod != null">
+			AND EXTRACT (ISODOW from TO_DATE(bspa.RIDE_YMD, 'YYYYMMDD'))::varchar(1) IN 
+			<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+            	#{item}
+            </foreach>
+		</if>
+		<if test="(startDate != null and startDate != '') and (endDate != null and endDate != '')">
+			AND bspa.RIDE_YMD 
+			BETWEEN #{startDate} AND #{endDate}
+		</if>
+		<if test="searchContent != null and searchContent != ''">
+			AND gbr.ROUTE_NM LIKE '%' || #{searchContent} || '%' 
+		</if>
+		<if test="page != null and page != '' and page != 0 ">
+            LIMIT 5 OFFSET (#{page} - 1) * 5
+        </if>
+	</select>
+	
+	<select id="findAllDataYears" resultType="map">
+		SELECT
+			TO_CHAR(TO_DATE(RIDE_YMD, 'YYYYMMDD'),'YYYY') AS "year"
+		FROM
+			MRT_BUS_STTN_PASNG_ANAL
+		GROUP BY TO_CHAR(TO_DATE(RIDE_YMD, 'YYYYMMDD'),'YYYY')
+		ORDER BY TO_CHAR(TO_DATE(RIDE_YMD, 'YYYYMMDD'),'YYYY') DESC  
+	</select>
+</mapper>

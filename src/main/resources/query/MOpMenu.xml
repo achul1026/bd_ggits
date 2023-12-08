@@ -1,0 +1,292 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MOpMenuMapper'>
+	
+	<select id="countByUpperMenuIdIsNullAndUseYn" parameterType="map" resultType="long">
+     	SELECT 
+     	 	COUNT(*)
+     	FROM M_OP_MENU
+     	WHERE UPPER_MENU_ID IS NULL
+     	<if test="useYn != null and useYn != ''">
+	     	AND USE_YN = #{useYn}
+     	</if>
+     </select>
+     
+     <select id="countByUpperMenuId" parameterType="String" resultType="long">
+     	SELECT 
+     	 	COUNT(*)
+     	FROM M_OP_MENU
+     	WHERE UPPER_MENU_ID = #{upperMenuId}
+     </select>
+     
+     <select id="countBySortNoMaxCount" resultType="long">
+    	SELECT 
+     	 	MAX(SORT_NO)
+     	FROM M_OP_MENU
+     </select>
+     
+     <select id="findAllMenuIdAndUpperMenuIdIsNullAndSortNoIsNotNullByMenuLvlAndUseYn" parameterType="map" resultType="mOpMenu">
+     	SELECT 
+     	 	mom.MENU_ID
+     	 	, mom.MENU_NM
+     	 	, mom.MENU_LVL
+     	 	, mom.UPPER_MENU_ID
+     	 	, mom.USE_YN
+     	 	, mom.ASCTN_INFO
+     	 	, mom.DESCR
+     	 	, mom.SORT_NO
+     	 	, mom.URL_PTTRN
+     	 	, mom.URL_ADDR
+     	 	, mom.SBMNU_SORT_NO
+     	 	, mom.CATEG_CD
+     	 	, mom.MENU_PTTRN_TYPE
+     	 	, mom.CD_DIV_CD
+     	FROM M_OP_MENU mom
+     	WHERE mom.SORT_NO IS NOT NULL
+     		AND mom.UPPER_MENU_ID IS NULL
+     	<if test="menuId != null and menuId != ''">
+     		AND MENU_ID = #{menuId}
+     	</if>
+     	<if test="menuLvl != null and menuLvl != ''">
+     		AND menuLvl = #{menuLvl}
+     	</if>
+     	<if test="useYn != null and useYn != ''">
+	     	AND USE_YN = #{useYn}
+     	</if>
+     	ORDER BY mom.SORT_NO ASC
+     </select>
+
+     <select id="findAllByAuthId" parameterType="mOpOperator" resultType="mOpMenu">
+     	SELECT 
+     	 	MOM.MENU_ID
+     	 	, MOM.MENU_NM
+     	 	, MOM.MENU_LVL
+     	 	, MOM.UPPER_MENU_ID
+     	 	, MOM.USE_YN
+     	 	, MOM.ASCTN_INFO
+     	 	, MOM.DESCR
+     	 	, MOM.SORT_NO
+     	 	, MOM.URL_PTTRN
+     	 	, MOM.URL_ADDR
+     	 	, MOM.SBMNU_SORT_NO
+     	 	, MOM.CATEG_CD
+     	 	, MOM.MENU_PTTRN_TYPE
+     	 	, MOM.CD_DIV_CD
+     	 	, MOAM.AUTH_ID 
+     	 	, MOAM.BTTN_CD
+     	FROM M_OP_MENU MOM
+     	LEFT JOIN M_OP_ATHR_MENU MOAM 
+     	ON MOM.MENU_ID = MOAM.MENU_ID 
+     	WHERE MOM.SORT_NO IS NOT NULL
+     		AND MOM.USE_YN = 'Y'
+     		AND MOM.UPPER_MENU_ID IS NULL
+     		AND MOAM.AUTH_ID = #{authId}
+     	ORDER BY SORT_NO ASC
+     </select>
+     
+     <select id="findAllBySortNoIsNotNullAndUpprMenuId" parameterType="map" resultType="mOpMenu">
+     	SELECT 
+     	 	mom.MENU_ID
+     	 	, mom.MENU_NM
+     	 	, mom.MENU_LVL
+     	 	, mom.UPPER_MENU_ID
+     	 	, mom.USE_YN
+     	 	, mom.ASCTN_INFO
+     	 	, mom.DESCR
+     	 	, mom.SORT_NO
+     	 	, mom.URL_PTTRN
+     	 	, mom.URL_ADDR
+     	 	, mom.SBMNU_SORT_NO
+     	 	, mom.CATEG_CD
+     	 	, mom.MENU_PTTRN_TYPE
+     	 	, mom.CD_DIV_CD
+     	FROM M_OP_MENU mom
+     	WHERE mom.SBMNU_SORT_NO IS NOT NULL
+     		AND mom.UPPER_MENU_ID = #{upperMenuId}
+     	ORDER BY mom.SBMNU_SORT_NO ASC
+     </select>
+     
+     <select id="findAllByUpperMenuIdAndAuthId" parameterType="mOpMenu" resultType="mOpMenu">
+     	SELECT 
+     	 	mom.MENU_ID
+     	 	, mom.MENU_NM
+     	 	, mom.MENU_LVL
+     	 	, mom.UPPER_MENU_ID
+     	 	, mom.USE_YN
+     	 	, mom.ASCTN_INFO
+     	 	, mom.DESCR
+     	 	, mom.SORT_NO
+     	 	, mom.URL_PTTRN
+     	 	, mom.URL_ADDR
+     	 	, mom.SBMNU_SORT_NO
+     	 	, mom.CATEG_CD
+     	 	, mom.MENU_PTTRN_TYPE
+     	 	, mom.CD_DIV_CD
+     	 	, MOAM.AUTH_ID
+     	 	, MOAM.BTTN_CD
+     	FROM M_OP_MENU MOM
+     	LEFT JOIN M_OP_ATHR_MENU MOAM 
+     	ON MOM.MENU_ID = MOAM.MENU_ID 
+     	WHERE mom.SBMNU_SORT_NO IS NOT NULL
+     		AND mom.USE_YN = 'Y'
+     		AND mom.UPPER_MENU_ID = #{upperMenuId}
+     		AND MOAM.AUTH_ID = #{authId}
+     	ORDER BY mom.SBMNU_SORT_NO ASC
+     </select>
+     
+     <select id="existsMenuByAuthId" parameterType="mOpMenu" resultType="boolean">
+		SELECT EXISTS(
+			SELECT 1
+			FROM 
+			M_OP_MENU MOM
+			LEFT JOIN M_OP_ATHR_MENU MOAM
+			ON MOM.MENU_ID = MOAM.MENU_ID
+			WHERE 
+				MOM.URL_ADDR = LOWER(#{urlAddr})
+			AND MOAM.AUTH_ID  = #{authId}
+		)
+     </select>
+     
+     <select id="countByMenuIdNextVal" resultType="int">
+     	SELECT MAX(CAST(MENU_ID AS INT))
+     	FROM M_OP_MENU
+     </select>
+     
+     <select id="findOneByMenuId" parameterType="String" resultType="mOpMenu">
+     	SELECT 
+     	 	mom.MENU_ID
+     	 	, mom.MENU_NM
+     	 	, mom.MENU_LVL
+     	 	, mom.UPPER_MENU_ID
+     	 	, mom.USE_YN
+     	 	, mom.ASCTN_INFO
+     	 	, mom.DESCR
+     	 	, mom.SORT_NO
+     	 	, mom.URL_PTTRN
+     	 	, mom.URL_ADDR
+     	 	, mom.SBMNU_SORT_NO
+     	 	, mom.CATEG_CD
+     	 	, mom.MENU_PTTRN_TYPE
+     	 	, mom.CD_DIV_CD
+     	FROM M_OP_MENU mom
+     	WHERE MENU_ID = #{menuId}
+  	</select>
+  	
+  	<insert id="save" parameterType="mOpMenu">
+		INSERT INTO M_OP_MENU (
+			MENU_ID,
+			MENU_NM,
+			MENU_LVL,
+			UPPER_MENU_ID,
+			USE_YN,
+			ASCTN_INFO,
+			DESCR,
+			SORT_NO,
+			URL_PTTRN,
+			URL_ADDR, 
+			SBMNU_SORT_NO,
+			CATEG_CD,
+			MENU_PTTRN_TYPE,
+     	 	CD_DIV_CD
+			)
+		VALUES (
+			#{menuId},
+			#{menuNm},
+			#{menuLvl},
+			#{upperMenuId},
+			#{useYn},
+			#{asctnInfo},
+			#{descr},
+			#{sortNo},
+			#{urlPttrn},
+			#{urlAddr},
+			#{sbmnuSortNo},
+			#{categCd},
+			#{menuPttrnType},
+			#{cdDivCd}
+		)
+    </insert>
+    
+    <delete id="deleteMOpMenuByMenuId" parameterType="String">
+     	DELETE 
+     	FROM M_OP_MENU
+		WHERE MENU_ID=#{menuId};
+    </delete>
+    
+    <update id="update" parameterType="mOpMenu">
+		UPDATE M_OP_MENU
+		SET 
+			MENU_NM = #{menuNm},
+			MENU_LVL = #{menuLvl},
+			UPPER_MENU_ID = #{upperMenuId},
+			USE_YN = #{useYn},
+			ASCTN_INFO = #{asctnInfo},
+			DESCR = #{descr},
+			SORT_NO = #{sortNo},
+			URL_PTTRN = #{urlPttrn},
+			URL_ADDR = #{urlAddr},
+			SBMNU_SORT_NO = #{sbmnuSortNo},
+			CATEG_CD = #{categCd},
+			MENU_PTTRN_TYPE = #{menuPttrnType},
+			CD_DIV_CD = #{cdDivCd}
+		WHERE MENU_ID = #{menuId};
+     </update>
+     
+     <select id="findFirstByMenuAddr" parameterType="mOpMenu" resultType="mOpMenu">
+     	SELECT 
+     	 	mom.MENU_ID
+     	 	, mom.MENU_NM
+     	 	, mom.MENU_LVL
+     	 	, mom.UPPER_MENU_ID
+     	 	, mom.USE_YN
+     	 	, mom.ASCTN_INFO
+     	 	, mom.DESCR
+     	 	, mom.SORT_NO
+     	 	, mom.URL_PTTRN
+     	 	, mom.URL_ADDR
+     	 	, mom.SBMNU_SORT_NO
+     	 	, mom.CATEG_CD
+     	 	, mom.MENU_PTTRN_TYPE
+     	 	, mom.CD_DIV_CD
+     	FROM M_OP_MENU mom
+		WHERE mom.URL_ADDR = #{urlAddr}
+		AND mom.UPPER_MENU_ID IS NOT NULL
+		LIMIT 1
+     </select>
+     
+     <select id="findAllByUrlPttrn" parameterType="String" resultType="mOpMenu">
+     	SELECT 
+     	 	mom.MENU_ID
+     	 	, mom.MENU_NM
+     	 	, mom.MENU_LVL
+     	 	, mom.UPPER_MENU_ID
+     	 	, mom.USE_YN
+     	 	, mom.ASCTN_INFO
+     	 	, mom.DESCR
+     	 	, mom.SORT_NO
+     	 	, mom.URL_PTTRN
+     	 	, mom.URL_ADDR
+     	 	, mom.SBMNU_SORT_NO
+     	 	, mom.CATEG_CD
+     	 	, mom.MENU_PTTRN_TYPE
+     	 	, mom.CD_DIV_CD
+     	FROM M_OP_MENU mom
+		WHERE mom.URL_PTTRN = #{urlPttrn}
+		AND mom.UPPER_MENU_ID IS NOT NULL
+		ORDER BY SBMNU_SORT_NO
+     </select>
+     
+     <select id="findMenuIdByMenuPttrnType" parameterType="mOpMenu" resultType="String">
+     	SELECT 
+     		mom.MENU_ID
+     	FROM M_OP_MENU mom
+     	WHERE 1=1
+     	<if test="menuPttrnTypeArr != null">
+	     	AND mom.MENU_PTTRN_TYPE IN
+	     	<foreach collection="menuPttrnTypeArr" item="menuPttrnType" open="(" close=")" separator=",">
+	 			#{menuPttrnType}
+			</foreach>
+     	</if> 
+     </select>
+</mapper>

@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.neighbor21.ggits.common.mapper.MOpOperatorMapper">
+
+	<insert id="save" parameterType="mOpOperator">
+     	INSERT INTO M_OP_OPERATOR (
+							     	OPRTR_ID,
+							     	GRP_ID,
+									SYSTEM_CD,
+									OPRTR_PSWD,
+									OPRTR_NM,
+									OPRTR_JBTTL,
+									OPRTR_DEPT,
+									UPDT_DT,
+									NOTE,
+									OPRTR_GRD,
+									USE_YN,
+									OPRTR_EMAIL,
+									OPRTR_TEL,
+									ADDNG_CD,
+									USE_STPLAT_AGRE,
+									PRVC_MNG_POLCY_AGRE,
+									OPRTR_STTS_CD ,
+									OPRTR_REGIST_DD,
+									LAYOUT_NO
+     							  ) VALUES (
+     							  	(SELECT COALESCE(MAX(OPRTR_ID)+1,1) FROM M_OP_OPERATOR),
+     							  	#{grpId},
+     							  	#{systemCd},
+     							  	#{oprtrPswd},
+     							  	#{oprtrNm},
+     							  	#{oprtrJbttl},
+     							  	#{oprtrDept},
+     							  	NOW(),
+     							  	#{note},
+     							  	#{oprtrGrd},
+     							  	#{useYn},
+     							  	#{oprtrEmail},
+     							  	#{oprtrTel},
+     							  	#{addngCd},
+     							  	#{useStplatAgre},
+     							  	#{prvcMngPolcyAgre},
+     							  	#{oprtrSttsCd},
+     							  	TO_CHAR(NOW(),'YYYYMMDD'),
+     							  	1
+     							  )
+     </insert>
+     
+     <select id="countMOpOperatorByOprtrEmail" parameterType="mOpOperator" resultType="int">
+		SELECT 
+				COUNT(*) 
+		FROM 	M_OP_OPERATOR 
+		WHERE OPRTR_EMAIL = #{oprtrEmail} 
+     </select>
+     
+     <select id="findOneMOpOperatorByEmailAndName" parameterType="mOpOperator" resultType="mOpOperator">
+		SELECT 
+	     	OPRTR_ID,
+			SYSTEM_CD,
+			OPRTR_PSWD,
+			OPRTR_NM,
+			OPRTR_JBTTL,
+			OPRTR_DEPT,
+			UPDT_DT,
+			NOTE,
+			OPRTR_GRD,
+			USE_YN		
+		FROM M_OP_OPERATOR
+		WHERE 
+			 OPRTR_EMAIL = #{oprtrEmail}
+     	AND OPRTR_NM = #{oprtrNm}
+     </select>
+     
+     <select id="findAllMOpOperatorByNmAndTel" parameterType="mOpOperator" resultType="mOpOperator">
+		SELECT 
+	     	OPRTR_ID,
+			SYSTEM_CD,
+			OPRTR_PSWD,
+			OPRTR_NM,
+			OPRTR_JBTTL,
+			OPRTR_DEPT,
+			UPDT_DT,
+			NOTE,
+			OPRTR_GRD,
+			USE_YN,
+			OPRTR_EMAIL,
+			OPRTR_TEL,
+			GRP_ID,
+			OPRTR_STTS_CD,
+			ADDNG_CD,
+			OPRTR_STTS_CD
+		FROM M_OP_OPERATOR
+		WHERE 
+		 	OPRTR_NM = #{oprtrNm}
+		AND OPRTR_TEL = #{oprtrTel} 
+     </select>
+     
+     <select id="findOneMOpOperatorByNmAndTelAndId" parameterType="mOpOperator" resultType="mOpOperator">
+		SELECT 
+	     	OPRTR_ID,
+			SYSTEM_CD,
+			OPRTR_PSWD,
+			OPRTR_NM,
+			OPRTR_JBTTL,
+			OPRTR_DEPT,
+			UPDT_DT,
+			NOTE,
+			OPRTR_GRD,
+			USE_YN,
+			OPRTR_EMAIL,
+			OPRTR_TEL,
+			GRP_ID,
+			OPRTR_STTS_CD,
+			ADDNG_CD,
+			OPRTR_STTS_CD
+		FROM M_OP_OPERATOR
+		WHERE 
+		 	OPRTR_NM = #{oprtrNm}
+		AND OPRTR_TEL = #{oprtrTel} 
+		AND OPRTR_ID = #{oprtrId}
+     </select>
+     
+     <select id="findOneMOpoperatorByOprtrId" parameterType="Long" resultType="String">
+     	SELECT 
+     		OPRTR_NM || '(' || OPRTR_EMAIL || ')'
+     	FROM M_OP_OPERATOR
+     	WHERE OPRTR_ID  = #{oprtrId}
+     </select>
+     
+     <update id="update" parameterType="mOpOperator">
+     		UPDATE M_OP_OPERATOR
+			SET 
+				OPRTR_PSWD = #{oprtrPswd},
+				OPRTR_NM = #{oprtrNm},
+				OPRTR_JBTTL = #{oprtrJbttl},
+				OPRTR_DEPT = #{oprtrDept},
+				UPDT_DT = NOW(),
+				GRP_ID = #{grpId},
+				ADDNG_CD = #{addngCd},
+				OPRTR_TEL = #{oprtrTel},
+				OPRTR_STTS_CD = #{oprtrSttsCd},
+				LAYOUT_NO = #{layoutNo}
+			WHERE OPRTR_ID = #{oprtrId}
+     </update>
+     
+     <select id="findOneMOpOperatorByEmail" parameterType="mOpOperator" resultType="mOpOperator">
+		SELECT 
+	     	OPRTR_ID,
+	     	GRP_ID,
+			SYSTEM_CD,
+			OPRTR_PSWD,
+			OPRTR_NM,
+			OPRTR_JBTTL,
+			OPRTR_DEPT,
+			UPDT_DT,
+			NOTE,
+			OPRTR_GRD,
+			USE_YN,		
+			OPRTR_EMAIL,
+			OPRTR_TEL,
+			GRP_ID,
+			OPRTR_STTS_CD,
+			ADDNG_CD,
+			OPRTR_STTS_CD
+		FROM M_OP_OPERATOR
+		WHERE 
+			 OPRTR_EMAIL = #{oprtrEmail}
+     </select>
+     
+     <select id="findOneUserDetailByOprtrId" parameterType="mOpOperator" resultType="mOpOperator">
+		SELECT
+			MOO.OPRTR_ID,
+			MOO.OPRTR_EMAIL,
+			MOO.OPRTR_TEL,
+			MOO.OPRTR_STTS_CD,
+			MOO.ADDNG_CD,
+			MOO.OPRTR_NM,
+			MOO.USE_YN,	
+			MOO.SYSTEM_CD,	
+			MOO.OPRTR_PSWD,	
+			MOO.OPRTR_JBTTL,	
+			MOO.OPRTR_DEPT,	
+			MOO.OPRTR_GRD,	
+			TO_CHAR(TO_DATE(MOO.OPRTR_REGIST_DD,'YYYYMMDD'),'YYYY-MM-DD') AS OPRTR_REGIST_DD,
+			MOO.GRP_ID,
+			MOO.LAYOUT_NO,
+			MOGI.GRP_NM
+		FROM
+			M_OP_OPERATOR MOO
+		INNER JOIN M_OP_GRP_INFO MOGI ON MOO.GRP_ID = MOGI.GRP_ID
+		WHERE MOO.OPRTR_ID = #{oprtrId}
+	</select>
+	
+	<select id="findAllUserList" parameterType="mOpOperator" resultType="mOpOperator">
+		SELECT
+			ROW_NUMBER() OVER(ORDER BY OPRTR_ID) 		AS rownum,
+			MOO.OPRTR_ID,
+			MOO.OPRTR_EMAIL,
+			MOO.OPRTR_TEL,
+			MOO.OPRTR_STTS_CD,
+			MOO.ADDNG_CD,
+			MOO.OPRTR_NM,
+			TO_CHAR(TO_DATE(MOO.OPRTR_REGIST_DD,'YYYYMMDD'),'YYYY-MM-DD') AS OPRTR_REGIST_DD,
+			MOGI.GRP_NM
+		FROM
+			M_OP_OPERATOR MOO
+		INNER JOIN M_OP_GRP_INFO MOGI ON MOO.GRP_ID = MOGI.GRP_ID
+		WHERE 1=1
+		<if test="grpId != null and grpId != '' ">
+		AND	  MOO.GRP_ID = #{grpId}
+		</if>
+		<if test="searchType != null and searchType != '' and searchContent != null and searchContent != '' ">
+		AND 
+			<choose>
+				<when test="searchType == 'schOprtrEmail' ">
+				MOO.OPRTR_EMAIL LIKE '%' || #{searchContent} || '%'
+				</when>
+				<when test="searchType == 'schOprtrNm' ">
+				MOO.OPRTR_NM LIKE '%' || #{searchContent} || '%'
+				</when>
+				<when test="searchType == 'schOprtrGrpNm' ">
+				MOGI.GRP_NM LIKE '%' || #{searchContent} || '%'
+				</when>
+				<otherwise>
+				(	MOO.OPRTR_EMAIL LIKE '%' 	|| #{searchContent} || '%' OR 
+					MOO.OPRTR_NM LIKE '%' 		|| #{searchContent} || '%' OR
+					MOGI.GRP_NM LIKE '%' 		|| #{searchContent} || '%'
+				)
+				</otherwise>
+			</choose>
+		</if>
+		<if test="strDt != null and strDt != '' and (endDt == null or endDt == '')">
+			<![CDATA[
+			AND TO_DATE(#{strDt}, 'YYYYMMDD') <= TO_DATE(MOO.oprtr_regist_dd, 'YYYYMMDD')
+			]]>
+		</if>
+		<if test="(strDt == null or strDt == '') and endDt != null and endDt != ''">
+			<![CDATA[
+			AND TO_DATE(MOO.oprtr_regist_dd, 'YYYYMMDD') <= TO_DATE(#{endDt}, 'YYYYMMDD')
+			]]>
+		</if>
+		<if test="strDt != null and strDt != '' and endDt != null and endDt != ''">
+            	AND TO_DATE(MOO.oprtr_regist_dd, 'YYYYMMDD')
+           		BETWEEN TO_DATE(#{strDt}, 'YYYYMMDD')
+           		AND TO_DATE(#{endDt}, 'YYYYMMDD')
+		</if>
+		<if test="oprtrSttsCd != null and oprtrSttsCd != '' and oprtrSttsCd != 'all'">          
+            	AND MOO.OPRTR_STTS_CD LIKE #{oprtrSttsCd} 
+		</if>
+		ORDER BY ROWNUM DESC 	
+		<if test="page != null and page != '' and page != 0 ">
+		LIMIT 10 OFFSET (#{page} - 1) * 10  	
+		</if>
+	</select>
+	
+    <select id="findAllUserListByGrpId" parameterType="mOpOperator" resultType="mOpOperator">
+		SELECT
+			MOO.OPRTR_ID,
+			MOO.OPRTR_EMAIL,
+			MOO.OPRTR_TEL,
+			MOO.OPRTR_STTS_CD,
+			MOO.ADDNG_CD,
+			MOO.OPRTR_NM,
+			MOO.USE_YN,	
+			MOO.SYSTEM_CD,	
+			MOO.OPRTR_PSWD,	
+			MOO.OPRTR_JBTTL,	
+			MOO.OPRTR_DEPT,	
+			MOO.OPRTR_GRD,	
+			TO_CHAR(TO_DATE(MOO.OPRTR_REGIST_DD,'YYYYMMDD'),'YYYY-MM-DD') AS OPRTR_REGIST_DD,
+			MOO.GRP_ID
+		FROM
+			M_OP_OPERATOR MOO
+		WHERE MOO.GRP_ID = #{grpId}
+	</select>
+	
+	
+	<update id="updateForGrpInfo" parameterType="map">
+		UPDATE 	M_OP_OPERATOR 
+		SET		UPDT_DT = NOW(),
+				GRP_ID  = #{grpId}
+		WHERE	OPRTR_ID IN
+				<foreach item="oprtrId" collection="updateOprtrIdList" open="(" separator="," close=")">
+			        #{oprtrId}
+			  	</foreach>
+						
+	</update>
+	
+	
+	<select id="countAll" parameterType="mOpOperator" resultType="int">
+		SELECT 
+				COUNT(MOO.*)
+		FROM
+				M_OP_OPERATOR MOO
+		INNER 	JOIN M_OP_GRP_INFO MOGI ON MOO.GRP_ID = MOGI.GRP_ID
+		WHERE 1=1
+		<if test="grpId != null and grpId != '' ">
+		AND	  MOO.GRP_ID = #{grpId}
+		</if>
+		<if test="searchType != null and searchType != '' and searchContent != null and searchContent != '' ">
+		AND 
+			<choose>
+				<when test="searchType == 'schOprtrEmail' ">
+				MOO.OPRTR_EMAIL LIKE '%' || #{searchContent} || '%'
+				</when>
+				<when test="searchType == 'schOprtrNm' ">
+				MOO.OPRTR_NM LIKE '%' || #{searchContent} || '%'
+				</when>
+				<when test="searchType == 'schOprtrGrpNm' ">
+				MOGI.GRP_NM LIKE '%' || #{searchContent} || '%'
+				</when>
+				<otherwise>
+				(	MOO.OPRTR_EMAIL LIKE '%' 	|| #{searchContent} || '%' OR 
+					MOO.OPRTR_NM LIKE '%' 		|| #{searchContent} || '%' OR
+					MOGI.GRP_NM LIKE '%' 		|| #{searchContent} || '%'
+				)
+				</otherwise>
+			</choose>
+		</if>
+		<if test="oprtrSttsCd != null and oprtrSttsCd != '' and oprtrSttsCd != 'all'">          
+            	AND MOO.OPRTR_STTS_CD LIKE #{oprtrSttsCd} 
+		</if>
+		<if test="strDt != null and strDt != '' and (endDt == null or endDt == '')">
+			<![CDATA[
+			AND TO_DATE(#{strDt}, 'YYYYMMDD') <= TO_DATE(MOO.oprtr_regist_dd, 'YYYYMMDD')
+			]]>
+		</if>
+		<if test="(strDt == null or strDt == '') and endDt != null and endDt != ''">
+			<![CDATA[
+			AND TO_DATE(MOO.oprtr_regist_dd, 'YYYYMMDD') <= TO_DATE(#{endDt}, 'YYYYMMDD')
+			]]>
+		</if>
+		<if test="strDt != null and strDt != '' and endDt != null and endDt != ''">
+            	AND TO_DATE(MOO.oprtr_regist_dd, 'YYYYMMDD')
+           		BETWEEN TO_DATE(#{strDt}, 'YYYYMMDD')
+           		AND TO_DATE(#{endDt}, 'YYYYMMDD')
+		</if>
+	</select>
+	
+	<delete id="deleteByOprtrId" parameterType="long">
+		DELETE FROM M_OP_OPERATOR WHERE OPRTR_ID = #{oprtrId} 
+	</delete>
+	
+	<select id="findLayoutNoByOprtrId" parameterType="long" resultType="long">
+		SELECT LAYOUT_NO
+		FROM M_OP_OPERATOR
+		WHERE OPRTR_ID = #{oprtrId}
+	</select>
+</mapper>

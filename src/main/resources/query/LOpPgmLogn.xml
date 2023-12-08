@@ -1,0 +1,187 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.LOpPgmLognMapper'>
+	<sql id="lOpPgmLogn-Where">
+		 <if test="searchType == 'all'">
+		 	AND (lopl.LOG_ID LIKE '%' ||  #{searchContent} || '%' 
+		 		OR lopl.PRGRM_SESN_ID LIKE '%' ||  #{searchContent} || '%' 
+		 		OR lopl.RQSTR_NM LIKE '%' ||  #{searchContent} || '%'
+		 		OR lopl.LGN_IP LIKE '%' ||  #{searchContent} || '%')
+		 	<if test="strDt != null and strDt != '' and endDt != null and endDt != ''" >
+	            	AND lopl.OCCUR_DT
+	            	BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+	            	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+	        </if>
+	        <if test="strDt != null and strDt != '' and (endDt == null or endDt == '')">
+				<![CDATA[
+					AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS')  <= lopl.OCCUR_DT
+				]]>
+			</if>
+			<if test="(strDt == null or strDt == '') and endDt != null and endDt != ''">
+				<![CDATA[
+					AND lopl.OCCUR_DT <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+				]]>
+			</if>
+		 </if>
+		 <if test="searchType == 'logId' and searchContent != '' and searchContent != null">
+		 	AND (lopl.LOG_ID LIKE '%' ||  #{searchContent} || '%')
+		 </if>
+		 <if test="searchType == 'sesnId' and searchContent != '' and searchContent != null">
+		 	AND (lopl.PRGRM_SESN_ID LIKE '%' ||  #{searchContent} || '%')
+		 </if>
+		 <if test="searchType == 'rqstrNm' and searchContent != '' and searchContent != null">
+		 	AND (lopl.RQSTR_NM LIKE '%' ||  #{searchContent} || '%')
+		 </if>		 
+		 <if test="searchType == 'lgnIp' and searchContent != '' and searchContent != null">
+		 	AND (lopl.LGN_IP LIKE '%' ||  #{searchContent} || '%')
+		 </if>
+		 <if test="searchType == 'occurDt'">
+	        <if test="strDt != null and strDt != '' and endDt != null and endDt != ''" >
+	            <![CDATA[
+	            	AND lopl.OCCUR_DT
+	            	BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+	            	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+	            ]]>
+	        </if>
+	        <if test="strDt != null and strDt != '' and (endDt == null or endDt == '')">
+				<![CDATA[
+					AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS')  <= lopl.OCCUR_DT
+				]]>
+			</if>
+			<if test="(strDt == null or strDt == '') and endDt != null and endDt != ''">
+				<![CDATA[
+					AND lopl.OCCUR_DT <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+				]]>
+			</if>		 	 
+		 </if>
+	</sql>
+	
+	
+	<select id="findAllLOpList" parameterType="lOpPgmLogn" resultType="lOpPgmLogn">
+		SELECT
+			ROW_NUMBER() OVER(ORDER BY lopl.OCCUR_DT) AS rownum,
+			lopl.LOG_ID,
+			TO_CHAR(lopl.OCCUR_DT,'YYYY-MM-DD') AS OCCUR_DT_STR,
+			lopl.OPRTR_ID,
+			lopl.GRP_ID,
+			lopl.LGN_IP,
+			lopl.ETC,
+			lopl.PRGRM_SESN_ID,
+			lopl.RQSTR_NM,
+			lopl.LOGOUT_DT,
+			lopl.LOG_TYPE,
+			moc.CD_NM
+		FROM L_OP_PGM_LOGN lopl
+		LEFT JOIN M_OP_CODE moc ON lopl.LOG_TYPE = moc.CD_ID
+		WHERE 1=1
+		<include refid="lOpPgmLogn-Where"/>
+		ORDER BY ROWNUM DESC 
+		limit 10 offset (#{page} - 1) * 10
+     </select>
+     
+     <select id="countAll" resultType="int">
+     	SELECT
+     		 COUNT(*)
+     	FROM L_OP_PGM_LOGN
+     </select>
+     
+     <select id="countAllByLogType" parameterType="lOpPgmLogn" resultType="int">
+     	SELECT
+     		 COUNT(*)
+     	FROM L_OP_PGM_LOGN
+     	WHERE 1=1
+   		<if test="logType != null and logType != ''">
+   			AND LOG_TYPE = #{logType}
+   		</if>
+     </select>
+
+     <select id="countUserLogBySearchInfo" parameterType="lOpPgmLogn" resultType="int">
+     	SELECT
+     		COUNT(*)
+     	FROM L_OP_PGM_LOGN lopl
+     	WHERE 1=1
+		<include refid="lOpPgmLogn-Where"/>
+     </select>
+     
+     <select id="findOneLOpPgmLognByLogId" parameterType="String" resultType="lOpPgmLogn">
+     	SELECT
+     		lopl.LOG_ID
+     		, TO_CHAR(lopl.OCCUR_DT,'YYYY-MM-DD') AS OCCUR_DT_STR
+     		, lopl.LOG_TYPE
+     		, lopl.PRGRM_SESN_ID
+     		, lopl.RQSTR_NM
+     		, lopl.LGN_IP
+     		, moc.CD_NM
+     	FROM L_OP_PGM_LOGN lopl
+     	LEFT JOIN M_OP_CODE moc ON lopl.LOG_TYPE = moc.CD_ID
+     	WHERE LOG_ID = #{logId}
+     </select>
+     
+     <insert id="saveLOpPgmLogn" parameterType="lOpPgmLogn">
+     	INSERT INTO L_OP_PGM_LOGN(
+     		LOG_ID,
+			OCCUR_DT,
+			OPRTR_ID,
+			GRP_ID,
+			PRGRM_SESN_ID,
+			LGN_IP,
+			ETC,
+			LOGOUT_DT,
+			RQSTR_NM,
+			LOG_TYPE
+		)VALUES(
+			#{logId},
+			NOW(),
+			#{oprtrId},
+			#{grpId},
+			#{prgrmSesnId},
+			#{lgnIp},
+			#{etc},
+			#{logoutDt},
+			#{rqstrNm},
+			#{logType});
+     </insert>
+     
+     <delete id="deleteByOprtrId" parameterType="long">
+     	DELETE FROM L_OP_PGM_LOGN WHERE OPRTR_ID = #{oprtrId}
+     </delete>
+     
+     <select id="countByLoginCnt" parameterType="lOpPgmLogn" resultType="java.util.HashMap">
+     	SELECT
+	     	COUNT(*) AS CNT,
+			TO_CHAR(LOPL.OCCUR_DT, 'HH24') AS HOURS,
+			MOC.CD_NM
+		FROM L_OP_PGM_LOGN LOPL
+			LEFT JOIN M_OP_OPERATOR MOO
+			ON LOPL.OPRTR_ID = MOO.OPRTR_ID 
+			LEFT JOIN M_OP_CODE MOC
+			ON MOO.ADDNG_CD = MOC.CD_ID
+		WHERE 
+			LOPL.OCCUR_DT BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+	       	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+	       	AND MOC.CD_ID = #{cdId}
+	       	AND LOG_TYPE = #{logType}
+		GROUP BY MOC.CD_NM, TO_CHAR(LOPL.OCCUR_DT, 'HH24')
+		ORDER BY MOC.CD_NM DESC
+     </select>
+
+     <select id="countByLoginCntDays" parameterType="lOpPgmLogn" resultType="java.util.HashMap">
+     	SELECT
+	     	COUNT(*) AS CNT,
+			TO_CHAR(LOPL.OCCUR_DT, 'yyyy-MM-dd') AS DAYS,
+			MOC.CD_NM
+		FROM L_OP_PGM_LOGN LOPL
+			LEFT JOIN M_OP_OPERATOR MOO
+			ON LOPL.OPRTR_ID = MOO.OPRTR_ID 
+			LEFT JOIN M_OP_CODE MOC
+			ON MOO.ADDNG_CD = MOC.CD_ID
+		WHERE 
+			LOPL.OCCUR_DT BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+	       	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+	       	AND MOC.CD_ID = #{cdId}
+	       	AND LOG_TYPE = #{logType}
+		GROUP BY MOC.CD_NM, TO_CHAR(LOPL.OCCUR_DT, 'yyyy-MM-dd')
+		ORDER BY TO_CHAR(LOPL.OCCUR_DT, 'yyyy-MM-dd') ASC
+     </select>
+</mapper>

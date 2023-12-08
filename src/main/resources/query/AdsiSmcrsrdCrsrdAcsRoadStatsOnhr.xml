@@ -1,0 +1,94 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.AdsiSmcrsrdCrsrdAcsRoadStatsOnhrMapper'>
+	<sql id="comunicationList-Where">
+		<if test="(searchType != null and searchType != '') 
+					and (strDt != null and strDt != '') and (endDt != null and endDt != '')">
+			AND ASCARSO.CLCT_DT
+		    	BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<if test="(searchType != null and searchType != '') 
+				and (strDt == null or strDt == '') and (endDt != null and endDt != '')">
+			<![CDATA[
+				AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS')  <= ASCARSO.CLCT_DT
+			]]>
+		</if>
+		<if test="(searchType != null and searchType != '') 
+				and (strDt != null and strDt != '') and (endDt == null or endDt == '')">
+			<![CDATA[
+			AND ASCARSO.CLCT_DT <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			]]>
+		</if>
+		<if test="searchContent != null and searchContent != ''">
+			AND ascari.ACS_ROAD_NM LIKE '%' ||  #{searchContent} || '%'
+		</if>
+		<if test="dayOfTheWeek != null">
+			AND EXTRACT (ISODOW from ASCARSO.CLCT_DT)::varchar(1) IN 
+				<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+		</if>
+	</sql>
+	<select id="countcomunicationList" parameterType="adsiSmcrsrdCrsrdAcsRoadStatsOnhr" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM
+			ADSI_SMCRSRD_CRSRD_ACS_ROAD_STATS_ONHR ascarso
+		LEFT JOIN ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO ascari
+			ON ascari.MNG_INST_CD = ascarso.MNG_INST_CD
+				AND ascari.CRSRD_ID = ascarso.CRSRD_ID
+				AND ascari.ACS_ROAD_ID = ascarso.ACS_ROAD_ID
+		WHERE 
+			1=1
+		<include refid="comunicationList-Where"/>
+     </select>
+     
+     <select id="findAllComunicationList" parameterType="adsiSmcrsrdCrsrdAcsRoadStatsOnhr" resultType="adsiSmcrsrdCrsrdAcsRoadStatsOnhr">
+		SELECT
+			ROW_NUMBER() OVER(ORDER BY ascarso.CLCT_DT) AS rownum
+			, ascarso.MNG_INST_CD
+			, ascarso.CLCT_DT
+			, ascarso.CRSRD_ID
+			, ascarso.ACS_ROAD_ID
+			, ascarso.VHCL_TRFVLM
+			, ascarso.AVG_VHCL_SPEED
+			, ascarso.CTRL_DELAY_TIME
+			, ascari.ACS_ROAD_NM
+		FROM
+			ADSI_SMCRSRD_CRSRD_ACS_ROAD_STATS_ONHR ascarso
+		LEFT JOIN ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO ascari
+			ON ascari.MNG_INST_CD = ascarso.MNG_INST_CD
+				AND ascari.CRSRD_ID = ascarso.CRSRD_ID
+				AND ascari.ACS_ROAD_ID = ascarso.ACS_ROAD_ID
+		WHERE
+			1=1
+			<include refid="comunicationList-Where"/>
+     	ORDER BY ROWNUM DESC 
+		LIMIT 10 OFFSET (#{page} - 1) * 10
+    </select>
+    
+    <select id="findAllComunicationListWithoutPaging" parameterType="adsiSmcrsrdCrsrdAcsRoadStatsOnhr" resultType="adsiSmcrsrdCrsrdAcsRoadStatsOnhr">
+		SELECT
+			ROW_NUMBER() OVER(ORDER BY ascarso.CLCT_DT) AS rownum
+			, ascarso.MNG_INST_CD
+			, ascarso.CLCT_DT
+			, ascarso.CRSRD_ID
+			, ascarso.ACS_ROAD_ID
+			, ascarso.VHCL_TRFVLM
+			, ascarso.AVG_VHCL_SPEED
+			, ascarso.CTRL_DELAY_TIME
+			, ascari.ACS_ROAD_NM
+		FROM
+			ADSI_SMCRSRD_CRSRD_ACS_ROAD_STATS_ONHR ascarso
+		LEFT JOIN ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO ascari
+			ON ascari.MNG_INST_CD = ascarso.MNG_INST_CD
+				AND ascari.CRSRD_ID = ascarso.CRSRD_ID
+				AND ascari.ACS_ROAD_ID = ascarso.ACS_ROAD_ID
+		WHERE
+			1=1
+			<include refid="comunicationList-Where"/>
+     	ORDER BY ROWNUM DESC 
+    </select>
+</mapper>

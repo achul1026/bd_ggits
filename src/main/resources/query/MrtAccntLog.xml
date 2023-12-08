@@ -1,0 +1,64 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MrtAccntLogMapper'>
+	<sql id="mrtAccntLog-where">
+		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
+			AND mal.ANLS_DT 
+			BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
+			<![CDATA[
+			AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS')  <= mal.ANLS_DT
+			]]>
+		</if>
+		<if test="(strDt == '' or strDt == null) and (endDt != '' and endDt != null)">
+			<![CDATA[
+			AND mal.ANLS_DT <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			]]>
+		</if>
+		<if test="searchContent != '' and searchContent != null">
+			AND gcil.ROAD_NAME LIKE '%' || #{searchContent} || '%'
+		</if>
+		<if test="dayOfTheWeek != null">
+			AND EXTRACT (ISODOW from mal.ANLS_DT)::varchar(1) IN 
+				<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+		</if>
+	</sql>
+	
+	<select id="countAcdntGenLogInfo" parameterType="commonEntity" resultType="int">
+	WITH MRT_ACCNT_LOG_CNT AS (
+		SELECT
+			COUNT(*)
+		FROM MRT_ACCNT_LOG mal
+		LEFT JOIN GY_COMM_INFO_LINK gcil
+			ON mal.ACDNT_DSTRCT_IDENTIFIER = gcil.LINK_ID 
+		WHERE
+			1=1
+			<include refid="mrtAccntLog-where"/>
+		GROUP by gcil.ROAD_NAME
+	)
+	SELECT 
+		count(*)
+	FROM MRT_ACCNT_LOG_CNT
+	</select>
+	
+	<select id="findAllAcdntGenLogInfo" parameterType="commonEntity" resultType="mrtAccntLog">
+		SELECT
+			gcil.ROAD_NAME as roadName
+			, SUM(mal.ACDNT_CNT) as acdntCnt
+			, SUM(mal.DCSD_CNT) + SUM(mal.INJPSN_CNT) as dcsdCnt
+			, SUM(mal.POPLTN_100K_ACDNT_CNT) as popltn100kAcdntCnt
+			, SUM(mal.VHCL_10K_ACDNT_CNT) as vhcl10kAcdntCnt
+		FROM MRT_ACCNT_LOG mal
+		LEFT JOIN GY_COMM_INFO_LINK gcil
+			ON mal.ACDNT_DSTRCT_IDENTIFIER = gcil.LINK_ID 
+		WHERE 
+			1=1
+			<include refid="mrtAccntLog-where"/>
+		GROUP BY mal.ACDNT_DSTRCT_IDENTIFIER, gcil.ROAD_NAME
+	</select>
+</mapper>

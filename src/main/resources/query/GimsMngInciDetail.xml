@@ -1,0 +1,330 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.GimsMngInciDetailMapper'>
+
+	<select id="findAllWarningList" parameterType="map" resultType="gimsMngInciDetail">
+		SELECT 	
+				gmid.MNG_ID,
+				gmid.DETAIL_SEQ,
+				gmid.UPDATE_CATE,
+				gmid.INCI_CATE,
+				gmid.BEGIN_DATE,
+				gmid.END_DATE,
+				gmid.OCCURRED_LANE,
+				gmid.CLOSED_LANE,
+				gmid.SEVERITY_LVL,
+				gmid.GPS_X,
+				gmid.GPS_Y,
+				gmid.DESCRIPTION,
+				gmid.OPER_ID,
+				gmid.LOG_DATE,
+				gmid.IS_AUTO_TERM,
+				gmid.ROADWAY_NM,
+				gmid.SUBWAY_CALL_NUM,
+				TO_CHAR(TO_TIMESTAMP(gmid.BEGIN_DATE,'YYYYMMDDHH24miss'),'HH24'||'시 '||'mi'||'분') AS TIME_DATA,
+				gmim.INFO_SRC_ORG
+		FROM	GIMS_MNG_INCI_DETAIL gmid
+		LEFT JOIN GIMS_MNG_INCI_MASTER gmim
+			ON gmid.MNG_ID = gmim.MNG_ID
+		<if test="(startToday != null and startToday != '') and (endToday != null and endToday != '')">
+		WHERE	<![CDATA[	
+    			TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss')  >= TO_TIMESTAMP(#{startToday},'YYYY-MM-DD HH24:mi:ss') 
+		AND 	TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss') <= TO_TIMESTAMP(#{endToday},'YYYY-MM-DD HH24:mi:ss')
+				]]>
+		</if>
+		<if test="(startToday != '' and startToday != null) and (endToday == '' or endToday == null)">
+			<![CDATA[
+			AND TO_TIMESTAMP(#{startToday}, 'YYYY-MM-DD HH24:MI:SS')  <= TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss')
+			]]>
+		</if>
+		<if test="(startToday == '' or startToday == null) and (endToday != '' and endToday != null)">
+			<![CDATA[
+			AND TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss') <= TO_TIMESTAMP(#{endToday}, 'YYYY-MM-DD HH24:MI:SS')
+			]]>
+		</if>
+		<if test="dayOfTheWeek != null">
+			AND EXTRACT (ISODOW from BEGIN_DATE)::varchar(1) IN 
+				<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+		</if>
+    	ORDER BY TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss') DESC 
+    	<if test="page != null and page != ''">
+    		LIMIT 10 OFFSET (#{page} - 1) * 10
+    	</if>
+    			
+		
+	</select>
+
+	<!-- 돌발상황 마커 그리기를 위한 데이터 -->
+	<select id="findAllWarningListForMapMarker"  resultType="gimsMngInciDetail">
+		select
+			GMID.mng_id
+			 ,GMID.detail_seq
+			 ,GMID.update_cate
+			 ,GMID.inci_cate
+			 ,GMID.begin_date
+			 ,GMID.end_date
+			 ,GMID.occurred_lane
+			 ,GMID.closed_lane
+			 ,GMID.severity_lvl
+			 ,GMID.gps_x
+			 ,GMID.gps_y
+			 ,GMID.description
+			 ,GMID.oper_id
+			 ,GMID.log_date
+			 ,GMID.is_auto_term
+			 ,GMID.roadway_nm
+			 ,GMID.subway_call_num
+		from
+			gims_mng_inci_detail GMID,
+			(SELECT MAX(GMID.DETAIL_SEQ) as RECENT_DETAIL_SEQ
+				  , GMID.mng_id
+			 FROM gims_mng_inci_detail GMID
+			 GROUP BY MNG_ID) RCT
+		where
+			GMID.mng_id  = RCT.MNG_ID
+		  and GMID.detail_seq  = RCT.RECENT_detail_seq
+		  and GMID.update_cate  != 'TERM'
+	</select>
+	
+	<select id="findTop3GimsMngInciDetailByBeginDateAndEndDate" resultType="map" parameterType="gimsMngInciDetail">
+	  SELECT
+	  		TO_CHAR(TO_TIMESTAMP(GMID.BEGIN_DATE,'YYYYMMDDHH24miss'),'HH24:mi') AS "beginDate",
+	  		TO_CHAR(TO_TIMESTAMP(GMID.END_DATE,'YYYYMMDDHH24miss'),'HH24:mi') AS "endDate",
+	  		GMID.INCI_CATE AS "inciCate", 
+	  		GMID.DESCRIPTION AS "discription",
+	  		GMID.ROADWAY_NM AS "roadwayNm"
+	  FROM	GIMS_MNG_INCI_DETAIL GMID
+	  WHERE 1=1
+	  	<![CDATA[
+			AND TO_TIMESTAMP(#{beginDate}, 'YYYY-MM-DD HH24:MI:SS')  <= TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss')
+			AND TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss') <= TO_TIMESTAMP(#{endDate}, 'YYYY-MM-DD HH24:MI:SS')
+		]]>
+	  ORDER BY GMID.BEGIN_DATE DESC
+	  LIMIT 3 
+	</select>
+
+	<select id="findAllDailyWarningAlarmList" resultType="gimsMngInciDetail">
+		SELECT
+			GMID.MNG_ID ,
+			GMID.DETAIL_SEQ,
+			GMID.UPDATE_CATE,
+			GMID.INCI_CATE ,
+			GMID.CLOSED_LANE ,
+			GMID.SEVERITY_LVL ,
+			GMID.SUBWAY_CALL_NUM ,
+			GMID.OPER_ID ,
+			GMIL.LINK_ID ,
+			GMID.GPS_X ,
+			GMID.GPS_Y ,
+			GMID.DESCRIPTION,
+			TO_CHAR(TO_TIMESTAMP(GMID.BEGIN_DATE,'YYYYMMDDHH24miss'),'yyyy-MM-dd HH:mm:ss') AS "beginDate",
+			GMID.OCCURRED_LANE ,
+			GMID.ROADWAY_NM
+		FROM	GIMS_MNG_INCI_DETAIL GMID
+					INNER JOIN GIMS_MNG_INCI_LINKS GMIL ON GMID.MNG_ID = GMIL.MNG_ID AND GMID.DETAIL_SEQ = GMIL.DETAIL_SEQ
+		WHERE GMID.LOG_DATE::date >= now()::date
+	</select>
+
+	<select id="findAllDailyWarningList" parameterType="map" resultType="gimsMngInciDetail">
+		SELECT
+				GMID.MNG_ID ,
+				GMID.DETAIL_SEQ,
+				GMID.UPDATE_CATE,
+				GMID.INCI_CATE ,
+				GMID.CLOSED_LANE ,
+				GMID.SEVERITY_LVL ,
+				GMID.SUBWAY_CALL_NUM ,
+				GMID.OPER_ID ,
+				GMIL.LINK_ID ,
+				GMID.GPS_X ,
+				GMID.GPS_Y ,
+				GMID.DESCRIPTION,
+				TO_CHAR(TO_TIMESTAMP(GMID.BEGIN_DATE,'YYYYMMDDHH24miss'),'yyyy-MM-dd HH:mm:ss') AS "beginDate",
+				GMID.OCCURRED_LANE ,
+				GMID.ROADWAY_NM
+		FROM	GIMS_MNG_INCI_DETAIL GMID
+		INNER JOIN GIMS_MNG_INCI_LINKS GMIL ON GMID.MNG_ID = GMIL.MNG_ID AND GMID.DETAIL_SEQ = GMIL.DETAIL_SEQ 
+		<if test="(startToday != null and startToday != '') and (endToday != null and endToday != '')">
+		WHERE	<![CDATA[	
+    			TO_TIMESTAMP(GMID.BEGIN_DATE,'YYYYMMDDHH24miss')  >= TO_TIMESTAMP(#{startToday},'YYYY-MM-DD HH24:mi:ss') 
+		AND 	TO_TIMESTAMP(GMID.BEGIN_DATE,'YYYYMMDDHH24miss') <= TO_TIMESTAMP(#{endToday},'YYYY-MM-DD HH24:mi:ss')
+				]]>
+		</if>
+		
+	</select>
+
+	
+	<select id="countGimsMngInciDetailList" parameterType="map" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM GIMS_MNG_INCI_DETAIL gmid
+		LEFT JOIN GIMS_MNG_INCI_MASTER gmim
+			ON gmid.MNG_ID = gmim.MNG_ID
+		WHERE 1=1
+		<if test="(startToday != null and startToday != '') and (endToday != null and endToday != '')">
+		AND	<![CDATA[	
+				TO_TIMESTAMP(gmid.BEGIN_DATE,'YYYYMMDDHH24miss')  >= TO_TIMESTAMP(#{startToday},'YYYY-MM-DD HH24:mi:ss') 
+		AND 	TO_TIMESTAMP(gmid.BEGIN_DATE,'YYYYMMDDHH24miss') <= TO_TIMESTAMP(#{endToday},'YYYY-MM-DD HH24:mi:ss')
+				]]>
+		</if>
+		<if test="(startToday != '' and startToday != null) and (endToday == '' or endToday == null)">
+			<![CDATA[
+			AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS')  <= gmid.BEGIN_DATE
+			]]>
+		</if>
+		<if test="(startToday == '' or startToday == null) and (endToday != '' and endToday != null)">
+			<![CDATA[
+			AND gmid.BEGIN_DATE <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			]]>
+		</if>
+		<if test="dayOfTheWeek != null">
+			AND EXTRACT (ISODOW from gmid.BEGIN_DATE)::varchar(1) IN 
+				<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+		</if>
+	</select>
+	
+	<select id="countByBeginDateAndEndDate" parameterType="gimsMngInciDetail" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM GIMS_MNG_INCI_DETAIL
+		WHERE 1=1
+		<![CDATA[
+			AND TO_TIMESTAMP(#{beginDate}, 'YYYY-MM-DD HH24:MI:SS')  <= TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss')
+			AND TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss') <= TO_TIMESTAMP(#{endDate}, 'YYYY-MM-DD HH24:MI:SS')
+		]]>
+	</select>
+	
+	<select id="countByBeginDateAndEndDateAndInUpdateCate" parameterType="gimsMngInciDetail" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM GIMS_MNG_INCI_DETAIL
+		WHERE 1=1
+		<![CDATA[
+			AND TO_TIMESTAMP(#{beginDate}, 'YYYY-MM-DD HH24:MI:SS')  <= TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss')
+			AND TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss') <= TO_TIMESTAMP(#{endDate}, 'YYYY-MM-DD HH24:MI:SS')
+		]]>
+		AND UPPER(UPDATE_CATE) IN (UPPER(#{updateCate}))
+	</select>
+	
+	<select id="countByBeginDateAndEndDateAndNotInUpdateCate" parameterType="gimsMngInciDetail" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM GIMS_MNG_INCI_DETAIL
+		WHERE 1=1
+		<![CDATA[
+			AND TO_TIMESTAMP(#{beginDate}, 'YYYY-MM-DD HH24:MI:SS')  <= TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss')
+			AND TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss') <= TO_TIMESTAMP(#{endDate}, 'YYYY-MM-DD HH24:MI:SS')
+		]]>
+		AND UPPER(UPDATE_CATE) NOT IN (UPPER(#{updateCate}))
+	</select>
+	
+	<select id="findOneGimsStatsRateInfo" parameterType="map" resultType="map">
+   WITH GIMS_MNG_INCI_DETAIL_ARRAY_LIST AS (
+   		SELECT  
+        	ROUND(100.0*COUNT(A.INCI_CATE) / (SELECT COUNT(INCI_CATE) FROM GIMS_MNG_INCI_DETAIL 
+        		<if test="(startToday != null and startToday != '') and (endToday != null and endToday != '')">
+        		WHERE 
+            	TO_CHAR(TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss'),'YYYYMMDD HH24') between #{startToday} and #{endToday}
+        		</if>
+            	 )::numeric,2) as RATEVALUE,
+        	A.INCI_CATE
+     	FROM (
+        		SELECT
+        		CASE WHEN INCI_CATE ='66' THEN '공사'
+				WHEN INCI_CATE ='77' THEN '행사'
+				WHEN INCI_CATE ='88' THEN '통제'
+				WHEN INCI_CATE ='99' THEN '사고'
+				END AS INCI_CATE
+            FROM
+               GIMS_MNG_INCI_DETAIL
+            <if test="(startToday != null and startToday != '') and (endToday != null and endToday != '')">
+            WHERE 
+               TO_CHAR(TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss'),'YYYYMMDD HH24') between #{startToday} and #{endToday}
+            </if>
+         	)A
+   		GROUP BY A.INCI_CATE
+	) 
+	SELECT
+		ARRAY_TO_STRING(ARRAY_AGG(RATEVALUE),',') AS "uneptSitnRateDataArray", 
+		ARRAY_TO_STRING(ARRAY_AGG(INCI_CATE),',') AS "uneptSitnRateLabelArray" 
+	FROM 
+		GIMS_MNG_INCI_DETAIL_ARRAY_LIST
+	</select>
+	
+	<select id="findOneGimsCountInfo" parameterType="map" resultType="map">
+	   WITH GIMS_MNG_INCI_DETAIL_ARRAY_LIST AS (
+	   		SELECT  
+	        	COUNT(A.INCI_CATE) as RATEVALUE,
+	        	A.INCI_CATE
+	     	FROM (
+	        		SELECT
+	        		CASE WHEN INCI_CATE ='66' THEN '공사'
+					WHEN INCI_CATE ='77' THEN '행사'
+					WHEN INCI_CATE ='88' THEN '통제'
+					WHEN INCI_CATE ='99' THEN '사고'
+					END AS INCI_CATE
+	            FROM
+	               GIMS_MNG_INCI_DETAIL
+	            <if test="(startToday != null and startToday != '') and (endToday != null and endToday != '')">
+	            WHERE 
+	               TO_CHAR(TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss'),'YYYYMMDDHH24miss') between #{startToday} and #{endToday}
+	            </if>
+	         	)A
+	   		GROUP BY A.INCI_CATE
+		) 
+		SELECT
+			ARRAY_TO_STRING(ARRAY_AGG(RATEVALUE),',') AS "uneptSitnRateDataArray", 
+			ARRAY_TO_STRING(ARRAY_AGG(INCI_CATE),',') AS "uneptSitnRateLabelArray" 
+		FROM 
+			GIMS_MNG_INCI_DETAIL_ARRAY_LIST
+	</select>
+	
+	<select id="findOneGimsStatsCntInfo" parameterType="map" resultType="map">
+	WITH GIMS_MNG_INCI_DETAIL_ARRAY_LIST AS (
+			SELECT
+				TIME_DATA.GRAPH_TIME
+				,COALESCE(GRAPH_DATA.SEQ_CNT,0)
+			FROM(
+				SELECT
+					TO_CHAR(GENERATE_SERIES(TO_TIMESTAMP(#{todayStartDt},'YYYY-MM-DD HH24'),TO_TIMESTAMP(#{todayEndDt},'YYYY-MM-DD HH24'),'1 hours'),'HH24') as GRAPH_TIME         
+			) TIME_DATA
+		LEFT JOIN (
+			SELECT
+			COUNT(DETAIL_SEQ) as SEQ_CNT
+		, TO_CHAR(TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss'),'HH24') as TIME_DATA
+		FROM
+			GIMS_MNG_INCI_DETAIL
+		WHERE 1=1
+		<if test="(startToday != null and startToday != '') and (endToday != null and endToday != '')">
+			AND TO_CHAR(TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss'),'YYYYMMDDHH24') between #{startToday} and #{endToday}
+		</if>
+		<if test="inciCate != null and inciCate != ''">
+				AND INCI_CATE = #{inciCate}
+		</if>
+		GROUP BY
+			TO_CHAR(TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss'),'HH24')         
+  	) GRAPH_DATA on TIME_DATA.GRAPH_TIME = GRAPH_DATA.TIME_DATA
+		ORDER BY
+		TIME_DATA.GRAPH_TIME ASC
+		) 
+		SELECT 	
+			 
+			 ARRAY_TO_STRING(ARRAY_AGG(coalesce),',') AS "gimsDataArray",
+			 ARRAY_TO_STRING(ARRAY_AGG(GRAPH_TIME order by GRAPH_TIME),',') AS "timeDataArray"
+		FROM 
+			GIMS_MNG_INCI_DETAIL_ARRAY_LIST
+	</select>
+	
+	<select id="findOneInciCateList" resultType="String">
+		SELECT 
+			INCI_CATE 
+		FROM GIMS_MNG_INCI_DETAIL
+		GROUP BY INCI_CATE 
+	</select>
+
+</mapper>

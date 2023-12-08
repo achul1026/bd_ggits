@@ -1,0 +1,45 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.KtTimeZnMapper'>
+
+    <select id="findAllByRecent" resultType="com.neighbor21.ggits.common.entity.KtTimeZn">
+        SELECT
+            ETL_YM
+            ,CELL_ID
+            ,X_AXIS
+            ,Y_AXIS
+            ,TZ_0
+            ,TZ_1
+            ,TZ_2
+            ,TZ_3
+            ,TZ_4
+            ,TZ_5
+            ,TZ_6
+            ,TZ_7
+            ,TZ_8
+            ,TZ_9
+            ,TZ_10
+            ,TZ_11
+            ,TZ_12
+            ,TZ_13
+            ,TZ_14
+            ,TZ_15
+            ,TZ_16
+            ,TZ_17
+            ,TZ_18
+            ,TZ_19
+            ,TZ_20
+            ,TZ_21
+            ,TZ_22
+            ,TZ_23
+        FROM
+            KT_TIMEZN,
+            (SELECT MAX(ETL_YM) RECENT_YM
+             FROM KT_TIMEZN
+             GROUP BY ETL_YM
+             ORDER BY ETL_YM DESC LIMIT 1) RCT
+        WHERE
+        ETL_YM = RCT.RECENT_YM
+    </select>
+</mapper>

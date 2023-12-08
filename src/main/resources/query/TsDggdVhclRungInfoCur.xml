@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.TsDggdVhclRungInfoCurMapper'>
+
+    <select id="findAll" resultType="tsDggdVhclRungInfoCur">
+        SELECT
+            VHCL_LC_LON
+             ,VHCL_LC_LAT
+             ,VHCL_REGIST_NO
+             ,OCCUR_DT
+             ,SPEED
+             ,STRTG_CD
+             ,RUNG_PLAN_YN
+             ,DGGD_CD
+             ,DGGD_NM
+        FROM
+            TS_DGGD_VHCL_RUNG_INFO_CUR
+    </select>
+
+    <select id="findAllByRungPlanYnIsY" resultType="tsDggdVhclRungInfoCur">
+        SELECT
+            VHCL_LC_LON
+            ,VHCL_LC_LAT
+            ,VHCL_REGIST_NO
+            ,OCCUR_DT
+            ,SPEED
+            ,STRTG_CD
+            ,RUNG_PLAN_YN
+            ,DGGD_CD
+            ,DGGD_NM
+            FROM
+             TS_DGGD_VHCL_RUNG_INFO_CUR
+            WHERE
+            RUNG_PLAN_YN = 'Y'
+    </select>
+</mapper>

@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.LOpUseMenuMapper'>
+
+
+	<delete id="deleteByOprtrId" parameterType="long">
+     	DELETE FROM L_OP_USE_MENU WHERE OPRTR_ID = #{oprtrId}
+     </delete>
+     
+     <insert id="saveLOpUseMenu" parameterType="lOpUseMenu">
+     INSERT INTO L_OP_USE_MENU (
+     	OCCUR_DT,
+     	OPRTR_ID,
+     	GRP_ID,
+     	MENU_ID,
+     	BTTN_CD,
+     	LGN_IP,
+     	COND
+     ) VALUES (
+    	NOW(),
+    	#{oprtrId},
+    	#{grpId},
+    	#{menuId},
+    	#{bttnCd},
+    	#{lgnIp},
+    	#{cond}
+	 )
+     </insert>
+     
+     <select id="countByMenuIdAndOccurDt" parameterType="lOpUseMenu" resultType="int">
+     	SELECT COUNT(*)
+ 		FROM L_OP_USE_MENU LOUM
+ 		WHERE 1=1
+ 		<if test="menuId != null and menuId != ''">
+ 			AND MENU_ID = #{menuId}
+ 		</if>
+ 		<if test="strDt != null and strDt != ''">
+			<![CDATA[
+			   AND LOUM.OCCUR_DT >= TO_TIMESTAMP(#{strDt},'YYYY-MM-DD HH24:mi:ss') 
+			]]>
+		</if>
+		<if test="endDt != null and endDt != ''">
+			<![CDATA[
+			   AND LOUM.OCCUR_DT <= TO_TIMESTAMP(#{endDt},'YYYY-MM-DD HH24:mi:ss')
+			]]>
+		</if>
+     </select>
+     
+     <select id="findUseCaseChartInfo" parameterType="lOpUseMenu" resultType="java.util.HashMap">
+    	SELECT 
+    		TO_CHAR(LOUM.OCCUR_DT, 'HH24') AS hours,
+    		COUNT(*) AS cnt
+		FROM L_OP_USE_MENU LOUM
+		WHERE
+		 MENU_ID = #{menuId}
+		 AND LOUM.OCCUR_DT BETWEEN TO_TIMESTAMP(#{strDt},'YYYY-MM-DD HH24:mi:ss')  AND TO_TIMESTAMP(#{endDt},'YYYY-MM-DD HH24:mi:ss')
+		GROUP BY hours
+		ORDER BY hours ASC
+     </select>
+     
+</mapper>

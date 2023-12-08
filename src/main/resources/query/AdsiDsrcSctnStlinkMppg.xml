@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.AdsiDsrcSctnStlinkMppgMapper'>
+
+    <select id="findAllDSRCSectionLinkInfo" resultType="adsiDsrcSctnStlinkMppg">
+        SELECT
+            ADSI.DSRC_SCTN_ID,
+            ADSI.DSRC_SCTN_NM,
+            ADSSM.SQNO ,
+            GCIL.LINK_ID,
+            GCIL.ROAD_NAME ,
+            GCIL.ROAD_RANK ,
+            GCIL.ROAD_TYPE ,
+            GCIL.ROAD_USE ,
+            GCIL.LANES ,
+            ADCI.SPEED,
+            ST_ASGEOJSON(ST_LINEMERGE(GCIL.GEOM)) AS GEOJSON
+        FROM ADSI_DSRC_SCTN_STLINK_MPPG ADSSM
+                 INNER JOIN ADSI_DSRC_SCTN_INFO ADSI ON ADSSM.DSRC_SCTN_ID = ADSI.DSRC_SCTN_ID
+                 INNER JOIN GY_COMM_INFO_LINK GCIL ON ADSSM.STD_LINK_ID = GCIL.LINK_ID
+                 INNER JOIN ADSI_DSRC_COLCT_INFO ADCI ON ADSI.DSRC_SCTN_ID = ADCI.DSRC_SCTN_ID
+                 INNER JOIN (
+            SELECT
+                MAX(ADCI.CLCT_DT) AS RCT_CLCT_DT
+                 ,ADCI.DSRC_SCTN_ID
+            FROM ADSI_DSRC_COLCT_INFO ADCI
+            GROUP BY ADCI.DSRC_SCTN_ID
+        ) RCT ON RCT.DSRC_SCTN_ID = ADCI.DSRC_SCTN_ID AND RCT.RCT_CLCT_DT = ADCI.CLCT_DT
+        GROUP BY ADSI.DSRC_SCTN_ID,ADSI.DSRC_SCTN_NM,ADSSM.SQNO,GCIL.LINK_ID , GCIL.ROAD_NAME ,GCIL.ROAD_RANK ,GCIL.ROAD_TYPE ,GCIL.ROAD_USE,GCIL.LANES,ADCI.SPEED,GEOJSON
+        ORDER BY ADSI.DSRC_SCTN_ID , ADSSM.SQNO ASC
+    </select>
+</mapper>
