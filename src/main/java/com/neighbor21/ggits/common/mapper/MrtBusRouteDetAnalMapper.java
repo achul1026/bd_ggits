@@ -19,7 +19,7 @@ public interface MrtBusRouteDetAnalMapper {
      * @param : mapBigdataSearchDTO
      * @return
      */
-	int countAllPubTrfRouteReciveCurveList(MapBigdataSearchDTO mapBigdataSearchDTO);
+	Integer countAllPubTrfRouteReciveCurveList(MapBigdataSearchDTO mapBigdataSearchDTO);
 
 	/**
      * @Method Name : findAllDataYears
@@ -40,4 +40,26 @@ public interface MrtBusRouteDetAnalMapper {
      * @return
      */
 	List<Map<String, Object>> findAllDataYears();
+
+	/**
+     * @Method Name : findAllDataYears
+     * @작성일 : 2023. 10. 25.
+     * @작성자 : KC.KIM
+     * @Method 설명 : 빅데이터 분석 > 대중교통 노선별 분석 > 노선구간별 수용성 및 굴곡도 분석
+     * @param : 
+     * @return
+     */
+	Map<String, Object> findAllBusReciveCurveRankList();
+
+
+    MrtBusRouteDetAnal findOneByRouteId(MapBigdataSearchDTO mapBigdataSearchDTO);
+
+	/*일반*/
+	List<MrtBusRouteDetAnal> findAllTop10ByCurvtAndType1();
+	/*직좌*/
+	List<MrtBusRouteDetAnal> findAllTop10ByCurvtAndType2();
+	/*마을*/
+	List<MrtBusRouteDetAnal> findAllTop10ByCurvtAndType3();
+	/*시외/공항*/
+	List<MrtBusRouteDetAnal> findAllTop10ByCurvtAndType4();
 }

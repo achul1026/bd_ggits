@@ -7,6 +7,9 @@ public class MetaFileInfo {
     private String    saveLc;        //저장 위치
     private long    saveSize;        //저장 크기
     private String    dsetId;        //데이터셋 아이디
+    
+    //#MetaTabInfo
+    private String tblId;			//테이블 아이디
 
 
   public String getFileId() {
@@ -69,6 +72,14 @@ public class MetaFileInfo {
 
   public void setDsetId(String dsetId) {
     this.dsetId = dsetId;
+  }
+
+  public String getTblId() {
+	return tblId;
+  }
+	
+  public void setTblId(String tblId) {
+	this.tblId = tblId;
   }
 
 }

@@ -15,7 +15,7 @@ public class TrfConGradeByRoadRankUtil {
      * @param roadRank
      * @param speed
      * @return
-     * 1 : 원할
+     * 1 : 원활
      * 2 : 서행(지체)
      * 3 : 정체 
      */

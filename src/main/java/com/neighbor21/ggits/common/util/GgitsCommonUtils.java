@@ -6,10 +6,18 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.postgresql.jdbc.PgArray;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.neighbor21.ggits.support.exception.CommonException;
+import com.neighbor21.ggits.support.exception.ErrorCode;
 
 public class GgitsCommonUtils {
 
@@ -21,11 +29,24 @@ public class GgitsCommonUtils {
 	  * @작성일 : 2023. 9. 11.
 	  * @작성자 : KY.LEE
 	  * @Method 설명 : UUID 생성
-	  * @param paramVal
 	  * @return String
 	  */
 	public static String getUuid() {
 		String uuid = UUID.randomUUID().toString().replaceAll("-", "");
+		return uuid;
+	}
+	
+	/**
+	 * @Method Name : getUuid
+	 * @작성일 : 2023. 11. 02.
+	 * @작성자 : KY.LEE
+	 * @Method 설명 : UUID 생성 글자수 제한
+	 * @param int maxLength
+	 * @return String
+	 */
+	public static String getUuid(int maxLength) {
+		String uuid = UUID.randomUUID().toString().replaceAll("-", "");
+		uuid = uuid.substring(0, maxLength);
 		return uuid;
 	}
 	
@@ -143,8 +164,9 @@ public class GgitsCommonUtils {
 		try {
 			deserializedArray = arrayData.getArray();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			throw new CommonException(ErrorCode.DATA_PARSE_ERROR);
 		}
+		
 		return Arrays.asList((Object[]) deserializedArray);
 	}
 	
@@ -226,5 +248,154 @@ public class GgitsCommonUtils {
 		return (idx < 0)? -1 : idx;
 	}
 	
+	/**
+	  * @Method Name : isDouble
+	  * @작성일 : 2023.11. 16.
+	  * @작성자 : KC.KIM
+	  * @Method 설명 : 문자열이 double인지 체크
+	  * @param String 
+	  * @return
+	  */
+	public static boolean isDouble(String strValue) {
+	    try {
+	      Double.parseDouble(strValue);
+	      return true;
+	    } catch (NumberFormatException ex) {
+	      return false;
+	    }
+	  }
 	
+	/**
+	  * @Method Name : isLong
+	  * @작성일 : 2023.11. 17.
+	  * @작성자 : KC.KIM
+	  * @Method 설명 : 문자열이 long인지 체크
+	  * @param String 
+	  * @return
+	  */
+	public static boolean isLong(String strValue) {
+	    try {
+	      Long.parseLong(strValue);
+	      return true;
+	    } catch (NumberFormatException ex) {
+	      return false;
+	    }
+	}
+	
+	/**
+	  * @Method Name : extractDate
+	  * @작성일 : 2023.11. 17.
+	  * @작성자 : KC.KIM
+	  * @Method 설명 : 문자열에서 날짜 정보만 추출(2023년 11월 17일 > 20231117) / 날짜가 2개 이상일 경우 콤마(,) 포함
+	  * @param dateStr
+	  * @return
+	  */
+	public static String extractDateWithComma(String dateStr) {
+		//dateStr = "0000년 00월 00일 (0요일) ";
+		String result = "";
+		// 2021년 04월 09일(금), 2021년 08월 13일 (금요일) 
+		if(!GgitsCommonUtils.isNull(dateStr)) {
+			result = dateStr.replaceAll("년", "").replaceAll("월", "").replaceAll("요일", "")
+					.replaceAll("\\(", "").replaceAll("일", "").replaceAll("\\)", "").replaceAll(" ", "");					
+		}
+		return result;
+	}
+	
+	public static boolean chkContainString(String value) {
+		if(value.matches(".*[ㄱ-ㅎㅏ-ㅣ가-힣]+.*")) {
+			return true;
+		}else {
+			return false;
+		}
+	}
+	
+	/**
+	  * @Method Name : isDateChk
+	  * @작성일 : 2023.12. 08.
+	  * @작성자 : KY.LEE
+	  * @Method 설명 : 유효 날짜 체크
+	  * @param 
+	  * @return
+	  */
+	public static boolean isDateChk(String date, String pattern) {
+		boolean isDateChk = true;
+		if(date != null && !"".equals(date)) {
+			try {
+				SimpleDateFormat  dateFormat = new  SimpleDateFormat(pattern);
+				dateFormat.setLenient(false);
+				dateFormat.parse(date);
+			} catch(ParseException e) {
+				isDateChk = false;
+			}
+		} 
+		return isDateChk;
+	}
+	
+	/**
+	  * @Method Name : isTimeChk
+	  * @작성일 : 2023.12. 08.
+	  * @작성자 : KY.LEE
+	  * @Method 설명 : 유효 시간 체크
+	  * @param 
+	  * @return
+	  */
+	public static boolean isTimeChk(String strTime) {
+		boolean isDateChk = true;
+		
+		int time = Integer.parseInt(strTime);
+		if(0 > time) {
+			isDateChk = false;
+		} else if(time > 24) {
+			isDateChk = false;
+		}
+		
+		return isDateChk;
+	}
+	
+	/**
+	  * @Method Name : 날짜 변환 String -> String yyyy-MM-dd
+	  * @작성일 : 2023.12. 08.
+	  * @작성자 : KY.LEE
+	  * @Method 설명 : 데이트 포맷 변경
+	  * @param String dateStr,String beforePattern, String afterPattern
+	  * @return String
+	  * @throws ParseException
+	  */
+	public static String formatDate(String dateStr,String beforePattern, String afterPattern) throws ParseException {
+		
+		if(GgitsCommonUtils.isNull(dateStr) || GgitsCommonUtils.isNull(beforePattern) || GgitsCommonUtils.isNull(afterPattern)) {
+			return null;
+		}
+		
+		SimpleDateFormat sdf = new SimpleDateFormat(beforePattern);
+		SimpleDateFormat sdf2 = new SimpleDateFormat(afterPattern);
+		
+		Date formatDate = sdf.parse(dateStr);
+		String newDateStr = sdf2.format(formatDate);
+		
+		return newDateStr;
+	}
+	/**
+	  * @Method Name : jsonObjectToMap
+	  * @작성일 : 2023.12. 08.
+	  * @작성자 : NK.KIM
+	  * @Method 설명 : json object To Map
+	  * @param 
+	  * @return
+	  */
+	public static Map<String,Object> jsonObjectToMap(String contents){
+		Map<String,Object> contentsMap = new HashMap<String, Object>();
+		
+		try {
+			Gson gson = new Gson();
+			JsonParser parser = new JsonParser();
+			JsonObject jo = (JsonObject)parser.parse(contents);
+			contentsMap = (HashMap)gson.fromJson(jo.toString(), contentsMap.getClass());
+		}catch (Exception e) {
+			contentsMap = new HashMap<String, Object>();
+		}
+		
+		return contentsMap;
+		
+	}
 }

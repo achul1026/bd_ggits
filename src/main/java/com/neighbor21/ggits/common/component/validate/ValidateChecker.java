@@ -27,7 +27,6 @@ public class ValidateChecker {
 
     public ValidateChecker(ValidateRules rule){
         this.rule = rule;
-        this.failMessage = failMessage;
     }
 
     public ValidateChecker(ValidateRules rule, String failMessage){
@@ -48,7 +47,7 @@ public class ValidateChecker {
 
     public ValidateChecker setRequired(String failMessage){
         checker.add(new ValidateChecker(ValidateRules.REQUIRED, failMessage));
-        return this;
+        return this; 
     }
     
     public ValidateChecker setMaxLength(int maxlength) {
@@ -111,55 +110,60 @@ public class ValidateChecker {
     public ValidateResult isValid(Object value){
         ValidateResult validateResult = new ValidateResult();
         boolean result = true;
-        for(ValidateChecker check : checker){
-            String message =  BDStringUtil.isNull(check.getFailMessage()) ? check.getDefaultFailMessage() : check.getFailMessage();
-            Pattern pattern;
-            Matcher matcher;
-            
-            switch (check.getRule()) {
-                case REQUIRED:
-                    result = BDStringUtil.isNotEmpty(String.valueOf(value));
-                    break;
-                case MAXLENGTH:
-                	result = String.valueOf(value).length() < check.maxLength;
-                    break;
-                case MINLENGTH:
-                	break;
-                case EMAIL:
-                    pattern = Pattern.compile(ValidatePattern.EMAIL);
-                    matcher = pattern.matcher(String.valueOf(value));
-                    result = matcher.find();
-                    break;
-                case PHONE:
-                	pattern = Pattern.compile(ValidatePattern.PHONE);
-                    matcher = pattern.matcher(String.valueOf(value));
-                    result = matcher.find();
-                    break;
-                case ONLY_NUMBER:
-                	pattern = Pattern.compile(ValidatePattern.ONLY_NUM);
-                    matcher = pattern.matcher(String.valueOf(value));
-                    result = matcher.find();
-                    break;
-                case PASSWORD:
-                	pattern = Pattern.compile(ValidatePattern.PASSWORD);
-                    matcher = pattern.matcher(String.valueOf(value));
-                    result = matcher.find();
-                	break;
-                case ONLY_ENG:
-                	pattern = Pattern.compile(ValidatePattern.ONLY_ENG);
-                    matcher = pattern.matcher(String.valueOf(value));
-                    result = matcher.find();
-                    break;
-                case ONLY_KOR:
-                	pattern = Pattern.compile(ValidatePattern.ONLY_KOR);
-                	matcher = pattern.matcher(String.valueOf(value));
-                	result = matcher.find();
-                	break;
-            }
-            if(!result) {
-                validateResult = new ValidateResult(false, message);
-                break;
-            }
+        
+        if(value != null) {
+        	for(ValidateChecker check : checker){
+        		String message =  BDStringUtil.isNull(check.getFailMessage()) ? check.getDefaultFailMessage() : check.getFailMessage();
+        		Pattern pattern;
+        		Matcher matcher;
+        		
+        		switch (check.getRule()) {
+        		case REQUIRED:
+        			result = BDStringUtil.isNotEmpty(String.valueOf(value));
+        			break;
+        		case MAXLENGTH:
+        			result = String.valueOf(value).length() < check.maxLength;
+        			break;
+        		case MINLENGTH:
+        			break;
+        		case EMAIL:
+        			pattern = Pattern.compile(ValidatePattern.EMAIL);
+        			matcher = pattern.matcher(String.valueOf(value));
+        			result = matcher.find();
+        			break;
+        		case PHONE:
+        			pattern = Pattern.compile(ValidatePattern.PHONE);
+        			matcher = pattern.matcher(String.valueOf(value));
+        			result = matcher.find();
+        			break;
+        		case ONLY_NUMBER:
+        			pattern = Pattern.compile(ValidatePattern.ONLY_NUM);
+        			matcher = pattern.matcher(String.valueOf(value));
+        			result = matcher.find();
+        			break;
+        		case PASSWORD:
+        			pattern = Pattern.compile(ValidatePattern.PASSWORD);
+        			matcher = pattern.matcher(String.valueOf(value));
+        			result = matcher.find();
+        			break;
+        		case ONLY_ENG:
+        			pattern = Pattern.compile(ValidatePattern.ONLY_ENG);
+        			matcher = pattern.matcher(String.valueOf(value));
+        			result = matcher.find();
+        			break;
+        		case ONLY_KOR:
+        			pattern = Pattern.compile(ValidatePattern.ONLY_KOR);
+        			matcher = pattern.matcher(String.valueOf(value));
+        			result = matcher.find();
+        			break;
+        		}
+        		if(!result) {
+        			validateResult = new ValidateResult(false, message);
+        			break;
+        		}
+        	}
+        } else {
+        	validateResult = new ValidateResult(false, "파라미터가 null 입니다.");
         }
         return validateResult;
     }

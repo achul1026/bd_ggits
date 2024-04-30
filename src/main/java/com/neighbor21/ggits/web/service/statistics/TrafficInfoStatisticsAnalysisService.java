@@ -34,7 +34,7 @@ public class TrafficInfoStatisticsAnalysisService {
 				adsiSmcrsrdCrsrdAcsRoadStatsOnhr.setStrDt(adsiSmcrsrdCrsrdAcsRoadStatsOnhr.getStrDt() + "-01 00:00:01");
 			}
 			if(!GgitsCommonUtils.isNull(adsiSmcrsrdCrsrdAcsRoadStatsOnhr.getEndDt())) {
-				if(Integer.parseInt(adsiSmcrsrdCrsrdAcsRoadStatsOnhr.getEndDt().substring(5, 6)) / 2 != 0 || adsiSmcrsrdCrsrdAcsRoadStatsOnhr.getEndDt() == "8") {
+				if(Integer.parseInt(adsiSmcrsrdCrsrdAcsRoadStatsOnhr.getEndDt().substring(5, 6)) / 2 != 0 || adsiSmcrsrdCrsrdAcsRoadStatsOnhr.getEndDt().equals("8")) {
 					adsiSmcrsrdCrsrdAcsRoadStatsOnhr.setEndDt(adsiSmcrsrdCrsrdAcsRoadStatsOnhr.getEndDt() + "-31 23:59:59");
 					
 				}else {

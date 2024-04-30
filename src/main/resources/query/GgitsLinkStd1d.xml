@@ -1,0 +1,190 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.GgitsLinkStd1dMapper'>
+	<sql id="ggitsLinkStd1d-Where">
+		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
+			AND ggs1.PROC_DATE 
+			BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
+			<![CDATA[
+			AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS')  <= ggs1.PROC_DATE
+			]]>
+		</if>
+		<if test="(strDt == '' or strDt == null) and (endDt != '' and endDt != null)">
+			<![CDATA[
+			AND ggs1.PROC_DATE <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			]]>
+		</if>
+		<if test="(chartYn != null and chartYn != '' ) and chartYn == 'Y'.toString()">
+			<if test="(chartStrDt != '' and chartStrDt != '') and (chartEndDt != '' and chartEndDt != null)">
+				AND ggs1.PROC_DATE 
+				BETWEEN TO_TIMESTAMP(#{chartStrDt}, 'YYYY-MM-DD HH24:MI:SS') 
+			    	AND TO_TIMESTAMP(#{chartEndDt}, 'YYYY-MM-DD HH24:MI:SS')
+			</if>
+			<if test="(chartStrDt != '' and chartStrDt != null) and (chartEndDt == '' or chartEndDt == null)">
+				<![CDATA[
+				AND TO_TIMESTAMP(#{chartStrDt}, 'YYYY-MM-DD HH24:MI:SS')  <= ggs1.PROC_DATE
+				]]>
+			</if>
+			<if test="(chartStrDt == '' or chartStrDt == null) and (chartEndDt != '' and chartEndDt != null)">
+				<![CDATA[
+				AND ggs1.PROC_DATE <= TO_TIMESTAMP(#{chartEndDt}, 'YYYY-MM-DD HH24:MI:SS')
+				]]>
+			</if>
+		</if>
+		<if test="(sigunCdId != null and sigunCdId != '') and sigunCdId != 'searchAllLocation'">
+			AND cgslam.ADSTDG_CD LIKE #{sigunCdId} || '%'
+		</if>
+		<if test="searchContent != null and searchContent != ''">
+			AND cgslam.ROAD_NAME LIKE '%' || #{searchContent} || '%'
+		</if>
+		<if test="dayOfTheWeek != null">
+			 AND EXTRACT (ISODOW from TO_DATE(ggs1.PROC_DATE, 'YYYYMMDD'))::varchar(1) IN 
+				<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+		</if>
+	</sql>
+	
+	<select id="findAllLinkStdList" parameterType="ggitsLinkStd1d" resultType="ggitsLinkStd1d">
+		SELECT 
+		 	ggs1.LINK_ID 
+			, gcil.ROAD_NAME 
+			, SUM(ggs1.VOL) as sumVol
+			, cgslam.ADSI_NM
+			, ROUND(SUM(ggs1.VOL) / count(ggs1.LINK_ID),2) as avgVol
+			, ROUND(SUM(ggs1.SPD) / count(ggs1.LINK_ID),2) as avgSpd
+		FROM bigdata.ext_GGITS_LINK_STD_1D ggs1
+		INNER JOIN C_GM_STD_LINK GCIL
+			ON ggs1.LINK_ID = GCIL.LINK_ID
+		INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam
+			ON GCIL.LINK_ID  = cgslam.LINK_ID 
+		WHERE 1=1
+		<include refid="ggitsLinkStd1d-Where"/>
+		GROUP BY ggs1.LINK_ID, gcil.ROAD_NAME, cgslam.ADSI_NM
+		ORDER BY gcil.ROAD_NAME
+		LIMIT 10 OFFSET (#{page} - 1) * 10;
+	</select>
+	
+	<select id="countLinkStd" parameterType="ggitsLinkStd1d" resultType="int">
+		SELECT
+			COUNT(A.LINK_ID)
+		FROM (
+				SELECT 
+				 	ggs1.LINK_ID 
+				FROM bigdata.ext_GGITS_LINK_STD_1D ggs1
+				INNER JOIN C_GM_STD_LINK GCIL
+					ON ggs1.LINK_ID = GCIL.LINK_ID
+				INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam
+					ON GCIL.LINK_ID  = cgslam.LINK_ID 
+				WHERE 1=1
+				<include refid="ggitsLinkStd1d-Where"/>
+				GROUP BY ggs1.LINK_ID, gcil.ROAD_NAME, cgslam.ADSI_NM
+				ORDER BY gcil.ROAD_NAME
+		)A
+	</select>
+	
+	<select id="trfVolRankMap" parameterType="ggitsLinkStd1d" resultType="map">
+		WITH TRF_VOL_RANK_LIST AS (
+					SELECT
+						A.CD_NM
+						, A.SORT_NO
+						, COALESCE(GRAPH_DATA.VOL,0) as VOL
+					FROM(
+						SELECT CD_NM, SORT_NO FROM M_OP_CODE MOC WHERE (MOC.GRP_CD_ID = 'SGG_CD') ORDER BY SORT_NO 
+					) A
+				LEFT JOIN (
+					SELECT
+						moc.CD_NM 
+						, ROUND(SUM(ggs1.VOL) / COUNT(moc.CD_NM) ,2) as VOL
+					FROM
+						bigdata.ext_GGITS_LINK_STD_1D ggs1
+					INNER JOIN C_GM_STD_LINK GCIL
+						ON ggs1.LINK_ID = GCIL.LINK_ID
+					INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam 
+						ON GCIL.LINK_ID = cgslam.LINK_ID
+					INNER JOIN M_OP_CODE moc
+						ON (moc.GRP_CD_ID = 'SGG_CD'and cgslam.ADSTDG_CD like moc.CD_ID || '%')
+					WHERE 1=1
+					<include refid="ggitsLinkStd1d-Where"/>
+					GROUP BY moc.CD_NM 
+					ORDER BY VOL DESC 	       
+		) GRAPH_DATA on A.CD_NM = GRAPH_DATA.CD_NM
+			ORDER BY A.SORT_NO ASC
+			) 
+			SELECT 
+					ARRAY_TO_STRING(ARRAY_AGG(CD_NM ORDER BY SORT_NO),',') as "sigunNmArr" 
+					,ARRAY_TO_STRING(ARRAY_AGG(VOL ORDER BY SORT_NO),',') as "volDataArr" 
+				FROM TRF_VOL_RANK_LIST
+	</select>
+	
+	<select id="trfSpdRankMap" parameterType="ggitsLinkStd1d" resultType="map">
+		WITH TRF_SPD_RANK_LIST AS (
+			SELECT
+				A.CD_NM
+				, A.SORT_NO
+				, COALESCE(GRAPH_DATA.SPD,'0') as spd
+			FROM(
+				SELECT CD_NM, SORT_NO FROM M_OP_CODE MOC WHERE (MOC.GRP_CD_ID = 'SGG_CD') ORDER BY SORT_NO 
+			) A
+			LEFT JOIN (
+				SELECT
+					moc.CD_NM 
+					, ROUND(SUM(ggs1.SPD) / COUNT(moc.CD_NM) ,2) SPD
+				FROM
+					bigdata.ext_GGITS_LINK_STD_1D ggs1
+				INNER JOIN C_GM_STD_LINK GCIL
+					ON ggs1.LINK_ID = GCIL.LINK_ID
+				INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam 
+					ON GCIL.LINK_ID = cgslam.LINK_ID
+				INNER JOIN M_OP_CODE moc
+					ON (moc.GRP_CD_ID = 'SGG_CD'and cgslam.ADSTDG_CD like moc.CD_ID || '%')
+				WHERE 1=1
+				<include refid="ggitsLinkStd1d-Where"/>
+				GROUP BY moc.CD_NM 
+				ORDER BY SPD DESC 
+		) GRAPH_DATA on A.CD_NM = GRAPH_DATA.CD_NM
+		ORDER BY A.SORT_NO ASC
+		) 
+		SELECT 
+			ARRAY_TO_STRING(ARRAY_AGG(CD_NM ORDER BY SORT_NO),',') as "sigunNmArr" 
+			,ARRAY_TO_STRING(ARRAY_AGG(SPD ORDER BY SORT_NO),',') as "spdDataArr" 
+		FROM TRF_SPD_RANK_LIST
+	</select>
+	
+	<select id="trfCongGradeRankMap" parameterType="ggitsLinkStd1d" resultType="map">
+		WITH TRF_VOL_RANK_LIST AS (
+			SELECT
+				A.CD_NM
+				, A.SORT_NO
+				, COALESCE(GRAPH_DATA.CONG_GRADE,'0') as cong_grade
+			FROM(
+				SELECT CD_NM, SORT_NO FROM M_OP_CODE MOC WHERE (MOC.GRP_CD_ID = 'SGG_CD') ORDER BY SORT_NO 
+			) A
+			LEFT JOIN (
+				SELECT
+					moc.CD_NM 
+					, MAX(ggs1.CONG_GRADE) CONG_GRADE
+				FROM
+					bigdata.ext_GGITS_LINK_STD_1D ggs1
+				INNER JOIN C_GM_STD_LINK GCIL
+					ON ggs1.LINK_ID = GCIL.LINK_ID
+				INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam 
+					ON GCIL.LINK_ID = cgslam.LINK_ID
+				INNER JOIN M_OP_CODE moc
+					ON (moc.GRP_CD_ID = 'SGG_CD'and cgslam.ADSTDG_CD like moc.CD_ID || '%')
+				WHERE 1=1
+				<include refid="ggitsLinkStd1d-Where"/>
+				GROUP BY moc.CD_NM
+		) GRAPH_DATA on A.CD_NM = GRAPH_DATA.CD_NM
+		ORDER BY A.SORT_NO ASC
+		) 
+		SELECT 
+			ARRAY_TO_STRING(ARRAY_AGG(CD_NM ORDER BY SORT_NO),',') as "congGradeSigunNmArr" 
+			,ARRAY_TO_STRING(ARRAY_AGG(CONG_GRADE ORDER BY SORT_NO),',') as "congGradeDataArr" 
+		FROM TRF_VOL_RANK_LIST
+	</select>
+</mapper>

@@ -1,0 +1,1057 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MonitoringTrafficCurMapper'>
+    <cache flushInterval="30000"/>
+    <sql id="timezone-fivemin">
+         <![CDATA[
+        case
+   		WHEN COLLECTOR.CLCT_DT > TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:00')::TIMESTAMP 
+		AND COLLECTOR.CLCT_DT <= TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:05')::TIMESTAMP 
+		THEN TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:05')
+		WHEN COLLECTOR.CLCT_DT > TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:05')::TIMESTAMP 
+		AND  COLLECTOR.CLCT_DT <= TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:10')::TIMESTAMP THEN TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:10')
+		WHEN COLLECTOR.CLCT_DT > TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:10')::TIMESTAMP 
+		AND  COLLECTOR.CLCT_DT <= TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:15')::TIMESTAMP THEN TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:15')
+		WHEN COLLECTOR.CLCT_DT > TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:15')::TIMESTAMP 
+		AND COLLECTOR.CLCT_DT <= TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:20')::TIMESTAMP THEN TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:20')
+		WHEN COLLECTOR.CLCT_DT > TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:20')::TIMESTAMP 
+		AND COLLECTOR.CLCT_DT <= TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:25')::TIMESTAMP THEN TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:25')
+		WHEN COLLECTOR.CLCT_DT > TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:25')::TIMESTAMP 
+		AND COLLECTOR.CLCT_DT <= TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:30')::TIMESTAMP THEN TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:30')
+		WHEN COLLECTOR.CLCT_DT > TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:30')::TIMESTAMP 
+		AND COLLECTOR.CLCT_DT <= TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:35')::TIMESTAMP THEN TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:35')
+		WHEN COLLECTOR.CLCT_DT > TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:35')::TIMESTAMP 
+		AND COLLECTOR.CLCT_DT <= TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:40')::TIMESTAMP THEN TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:40')
+		WHEN COLLECTOR.CLCT_DT > TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:40')::TIMESTAMP 
+		AND COLLECTOR.CLCT_DT <= TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:45')::TIMESTAMP THEN TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:45')
+		WHEN COLLECTOR.CLCT_DT > TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:45')::TIMESTAMP 
+		AND COLLECTOR.CLCT_DT <= TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:50')::TIMESTAMP THEN TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:50')
+		WHEN COLLECTOR.CLCT_DT > TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:50')::TIMESTAMP 
+		AND COLLECTOR.CLCT_DT <= TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:55')::TIMESTAMP THEN TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:55')
+		ELSE TO_CHAR(COLLECTOR.CLCT_DT,
+		'YYYY-MM-DD HH24:00')
+        end as time
+        ]]>
+    </sql>
+
+    <sql id="timezone-fifteenmin">
+        <![CDATA[
+         case
+               	WHEN COLLECTOR.CLCT_DT > TO_CHAR(COLLECTOR.CLCT_DT,
+				'YYYY-MM-DD HH24:00')::TIMESTAMP 
+				AND COLLECTOR.CLCT_DT <= TO_CHAR(COLLECTOR.CLCT_DT,
+				'YYYY-MM-DD HH24:15')::TIMESTAMP 
+				THEN TO_CHAR(COLLECTOR.CLCT_DT,
+				'YYYY-MM-DD HH24:15')
+               	WHEN COLLECTOR.CLCT_DT > TO_CHAR(COLLECTOR.CLCT_DT,
+				'YYYY-MM-DD HH24:15')::TIMESTAMP 
+				AND COLLECTOR.CLCT_DT <= TO_CHAR(COLLECTOR.CLCT_DT,
+				'YYYY-MM-DD HH24:30')::TIMESTAMP 
+				THEN TO_CHAR(COLLECTOR.CLCT_DT,
+				'YYYY-MM-DD HH24:30')
+               	WHEN COLLECTOR.CLCT_DT > TO_CHAR(COLLECTOR.CLCT_DT,
+				'YYYY-MM-DD HH24:30')::TIMESTAMP 
+				AND COLLECTOR.CLCT_DT <= TO_CHAR(COLLECTOR.CLCT_DT,
+				'YYYY-MM-DD HH24:45')::TIMESTAMP 
+				THEN TO_CHAR(COLLECTOR.CLCT_DT,
+				'YYYY-MM-DD HH24:45')
+                ELSE TO_CHAR(COLLECTOR.CLCT_DT, 'YYYY-MM-DD HH24:00')
+        end as time
+        ]]>
+    </sql>
+
+    <sql id="timezone-onehour">
+        to_char(collector.clct_dt, 'YYYY-MM-DD HH24:00') as time
+    </sql>
+
+    <sql id="where-fivemin">
+        and collector.clct_dt >= to_timestamp(to_char(now(), 'YYYY-MM-DD 00:00:00'), 'YYYY-MM-DD HH24:MI:SS')
+    </sql>
+
+    <sql id="where-fifteenmin">
+        and collector.clct_dt >= to_timestamp(to_char(now(), 'YYYY-MM-DD 00:00:00'), 'YYYY-MM-DD HH24:MI:SS')
+    </sql>
+
+    <sql id="where-onehour">
+        and collector.clct_dt >= to_timestamp(to_char(now(), 'YYYY-MM-DD 00:00:00'), 'YYYY-MM-DD HH24:MI:SS')
+    </sql>
+
+    <select id="findAllTrafficVolumeByVDSForChart" resultType="monitoringTrafficCurDto">
+        select
+        <choose>
+            <when test="timeType == 'fivemin'">
+                <include refid="timezone-fivemin"/>
+            </when>
+            <when test="timeType == 'fifteenmin'">
+                <include refid="timezone-fifteenmin"/>
+            </when>
+            <when test="timeType == 'onehour'">
+                <include refid="timezone-onehour"/>
+            </when>
+        </choose>,
+        collector.mng_inst_cd,
+        sum(collector.trfvlm) as trfVol
+        from bigdata.ext_adsi_vds_sctn_stlink_mppg avssm
+        inner join bigdata.ext_adsi_vds_sctn_info avsi on avssm.vds_sctn_id = avsi.vds_sctn_id
+        inner join adsi_vds_colct_info_cur collector on avsi.vds_id  = collector.vds_id
+        <where>
+            <choose>
+                <when test="timeType == 'fivemin'">
+                    <include refid="where-fivemin"/>
+                </when>
+                <when test="timeType == 'fifteenmin'">
+                    <include refid="where-fifteenmin"/>
+                </when>
+                <when test="timeType == 'onehour'">
+                    <include refid="where-onehour"/>
+                </when>
+            </choose>
+            and to_char(collector.clct_dt, 'YYYY-MM-DD') = TO_CHAR(now()::date, 'YYYY-MM-DD')
+        </where>
+        group by 1,2  order by 1
+    </select>
+
+    <select id="findAllTrafficVolumeByDSRCForChart" resultType="monitoringTrafficCurDto">
+        select
+        <choose>
+            <when test="timeType == 'fivemin'">
+                <include refid="timezone-fivemin"/>
+            </when>
+            <when test="timeType == 'fifteenmin'">
+                <include refid="timezone-fifteenmin"/>
+            </when>
+            <when test="timeType == 'onehour'">
+                <include refid="timezone-onehour"/>
+            </when>
+        </choose>,
+        collector.mng_inst_cd,
+        count(*) as trfVol
+        from adsi_dsrc_colct_info_cur collector
+        <where>
+            <choose>
+                <when test="timeType == 'fivemin'">
+                    <include refid="where-fivemin"/>
+                </when>
+                <when test="timeType == 'fifteenmin'">
+                    <include refid="where-fifteenmin"/>
+                </when>
+                <when test="timeType == 'onehour'">
+                    <include refid="where-onehour"/>
+                </when>
+            </choose>
+            and to_char(collector.clct_dt, 'YYYY-MM-DD') = TO_CHAR(now()::date, 'YYYY-MM-DD')
+        </where>
+        group by 1,2  order by 1
+    </select>
+
+    <select id="findAllTrafficVolumeBySmartForChart" resultType="monitoringTrafficCurDto">
+        select
+            <choose>
+                <when test="timeType == 'fivemin'">
+                    <include refid="timezone-fivemin"/>
+                </when>
+                <when test="timeType == 'fifteenmin'">
+                    <include refid="timezone-fifteenmin"/>
+                </when>
+                <when test="timeType == 'onehour'">
+                    <include refid="timezone-onehour"/>
+                </when>
+            </choose>,
+        collector.mng_inst_cd ,
+        /*round(avg(collector.avg_vhcl_speed), 0) as SPEED*/
+        sum(collector.vhcl_trfvlm) as trfVol
+        from adsi_smcrsrd_crsrd_acs_road_stats_fivmin_cur collector
+        <where>
+            <choose>
+                <when test="timeType == 'fivemin'">
+                    <include refid="where-fivemin"/>
+                </when>
+                <when test="timeType == 'fifteenmin'">
+                    <include refid="where-fifteenmin"/>
+                </when>
+                <when test="timeType == 'onehour'">
+                    <include refid="where-onehour"/>
+                </when>
+            </choose>
+            and to_char(collector.clct_dt, 'YYYY-MM-DD') = TO_CHAR(now()::date, 'YYYY-MM-DD')
+        </where>
+        group by 1,2  order by 1
+    </select>
+
+    <select id="findAllTrafficVolumeBySmartDrctGroupByMngInstCdForChart" resultType="monitoringTrafficCurDto">
+        select
+        <choose>
+            <when test="timeType == 'fivemin'">
+                <include refid="timezone-fivemin"/>
+            </when>
+            <when test="timeType == 'fifteenmin'">
+                <include refid="timezone-fifteenmin"/>
+            </when>
+            <when test="timeType == 'onehour'">
+                <include refid="timezone-onehour"/>
+            </when>
+        </choose>,
+        collector.mng_inst_cd ,
+<!--         collector.vhcl_div , 박원배님요청 주석 -->
+        sum(collector.vhcl_trfvlm) as trfVol
+        from adsi_smcrsrd_crsrd_drct_stats_fivmin_cur collector
+        <where>
+            <choose>
+                <when test="timeType == 'fivemin'">
+                    <include refid="where-fivemin"/>
+                </when>
+                <when test="timeType == 'fifteenmin'">
+                    <include refid="where-fifteenmin"/>
+                </when>
+                <when test="timeType == 'onehour'">
+                    <include refid="where-onehour"/>
+                </when>
+            </choose>
+            and to_char(collector.clct_dt, 'YYYY-MM-DD') = TO_CHAR(now()::date, 'YYYY-MM-DD')
+        </where>
+        group by 1,2  order by 1
+    </select>
+
+    <select id="findAllTrafficVolumeBySmartDrctGroupByVhclDivForChart" resultType="monitoringTrafficCurDto">
+        select
+        <choose>
+            <when test="timeType == 'fivemin'">
+                <include refid="timezone-fivemin"/>
+            </when>
+            <when test="timeType == 'fifteenmin'">
+                <include refid="timezone-fifteenmin"/>
+            </when>
+            <when test="timeType == 'onehour'">
+                <include refid="timezone-onehour"/>
+            </when>
+        </choose>,
+        collector.vhclDiv ,
+        sum(collector.vhcl_trfvlm) as trfVol
+        from adsi_smcrsrd_crsrd_drct_stats_fivmin_cur collector
+        <where>
+            <choose>
+                <when test="timeType == 'fivemin'">
+                    <include refid="where-fivemin"/>
+                </when>
+                <when test="timeType == 'fifteenmin'">
+                    <include refid="where-fifteenmin"/>
+                </when>
+                <when test="timeType == 'onehour'">
+                    <include refid="where-onehour"/>
+                </when>
+            </choose>
+            and to_char(collector.clct_dt, 'YYYY-MM-DD') = TO_CHAR(now()::date, 'YYYY-MM-DD')
+        </where>
+        group by 1,2  order by 1
+    </select>
+
+    <!-- 평균속도 -->
+    <select id="findAllAvgSpeedByVDSForChart" resultType="monitoringTrafficCurDto">
+        select
+            <choose>
+                <when test="timeType == 'fivemin'">
+                    <include refid="timezone-fivemin"/>
+                </when>
+                <when test="timeType == 'fifteenmin'">
+                    <include refid="timezone-fifteenmin"/>
+                </when>
+                <when test="timeType == 'onehour'">
+                    <include refid="timezone-onehour"/>
+                </when>
+            </choose>,
+        collector.mng_inst_cd,
+        round(avg(collector.avg_speed),0) as avgSpeed
+        from bigdata.ext_adsi_vds_sctn_stlink_mppg avssm
+        inner join bigdata.ext_adsi_vds_sctn_info avsi on avssm.vds_sctn_id = avsi.vds_sctn_id
+        inner join adsi_vds_colct_info_cur collector on avsi.vds_id  = collector.vds_id
+        <where>
+            <choose>
+                <when test="timeType == 'fivemin'">
+                    <include refid="where-fivemin"/>
+                </when>
+                <when test="timeType == 'fifteenmin'">
+                    <include refid="where-fifteenmin"/>
+                </when>
+                <when test="timeType == 'onehour'">
+                    <include refid="where-onehour"/>
+                </when>
+            </choose>
+            and to_char(collector.clct_dt, 'YYYY-MM-DD') = TO_CHAR(now()::date, 'YYYY-MM-DD')
+            <![CDATA[
+            and collector.trfvlm > 0
+			and collector.avg_speed > 0
+			and collector.occp_rt > 0
+            ]]>
+        </where>
+        group by 1,2  order by 1
+    </select>
+
+    <select id="findAllAvgSpeedBySmartForChart" resultType="monitoringTrafficCurDto">
+        select
+            <choose>
+                <when test="timeType == 'fivemin'">
+                    <include refid="timezone-fivemin"/>
+                </when>
+                <when test="timeType == 'fifteenmin'">
+                    <include refid="timezone-fifteenmin"/>
+                </when>
+                <when test="timeType == 'onehour'">
+                    <include refid="timezone-onehour"/>
+                </when>
+            </choose>,
+        collector.mng_inst_cd ,
+        round(avg(collector.avg_vhcl_speed), 0) as avgSpeed
+        from adsi_smcrsrd_crsrd_acs_road_stats_fivmin_cur collector
+        <where>
+            <choose>
+                <when test="timeType == 'fivemin'">
+                    <include refid="where-fivemin"/>
+                </when>
+                <when test="timeType == 'fifteenmin'">
+                    <include refid="where-fifteenmin"/>
+                </when>
+                <when test="timeType == 'onehour'">
+                    <include refid="where-onehour"/>
+                </when>
+            </choose>
+            and to_char(collector.clct_dt, 'YYYY-MM-DD') = TO_CHAR(now()::date, 'YYYY-MM-DD')
+            <![CDATA[
+            and collector.vhcl_trfvlm <> 0
+            and collector.avg_vhcl_speed <> 0
+            ]]>
+        </where>
+        group by 1,2  order by 1
+    </select>
+
+    <select id="findAllAvgSpeedBySmartDrctGroupByMngInstCdForChart" resultType="monitoringTrafficCurDto">
+        select
+        <choose>
+            <when test="timeType == 'fivemin'">
+                <include refid="timezone-fivemin"/>
+            </when>
+            <when test="timeType == 'fifteenmin'">
+                <include refid="timezone-fifteenmin"/>
+            </when>
+            <when test="timeType == 'onehour'">
+                <include refid="timezone-onehour"/>
+            </when>
+        </choose>,
+        collector.mng_inst_cd ,
+        round(avg(collector.avg_vhcl_speed), 0) as avgSpeed
+        from adsi_smcrsrd_crsrd_drct_stats_fivmin_cur collector
+        <where>
+            <choose>
+                <when test="timeType == 'fivemin'">
+                    <include refid="where-fivemin"/>
+                </when>
+                <when test="timeType == 'fifteenmin'">
+                    <include refid="where-fifteenmin"/>
+                </when>
+                <when test="timeType == 'onehour'">
+                    <include refid="where-onehour"/>
+                </when>
+            </choose>
+            and to_char(collector.clct_dt, 'YYYY-MM-DD') = TO_CHAR(now()::date, 'YYYY-MM-DD')
+            <![CDATA[
+            and collector.vhcl_trfvlm <> 0
+            and collector.avg_vhcl_speed <> 0
+            ]]>
+        </where>
+        group by 1,2  order by 1
+    </select>
+
+    <select id="findAllAvgSpeedBySmartDrctGroupByVhclDivForChart" resultType="monitoringTrafficCurDto">
+        select
+        <choose>
+            <when test="timeType == 'fivemin'">
+                <include refid="timezone-fivemin"/>
+            </when>
+            <when test="timeType == 'fifteenmin'">
+                <include refid="timezone-fifteenmin"/>
+            </when>
+            <when test="timeType == 'onehour'">
+                <include refid="timezone-onehour"/>
+            </when>
+        </choose>,
+        collector.vhclDiv ,
+        round(avg(collector.avg_vhcl_speed), 0) as avgSpeed
+        from adsi_smcrsrd_crsrd_drct_stats_fivmin_cur collector
+        <where>
+            <choose>
+                <when test="timeType == 'fivemin'">
+                    <include refid="where-fivemin"/>
+                </when>
+                <when test="timeType == 'fifteenmin'">
+                    <include refid="where-fifteenmin"/>
+                </when>
+                <when test="timeType == 'onehour'">
+                    <include refid="where-onehour"/>
+                </when>
+            </choose>
+            and to_char(collector.clct_dt, 'YYYY-MM-DD') = TO_CHAR(now()::date, 'YYYY-MM-DD')
+        </where>
+        group by 1,2  order by 1
+    </select>
+
+    <select id="findAllAvgSpeedByDSRCForChart" resultType="monitoringTrafficCurDto">
+        select
+            <choose>
+                <when test="timeType == 'fivemin'">
+                    <include refid="timezone-fivemin"/>
+                </when>
+                <when test="timeType == 'fifteenmin'">
+                    <include refid="timezone-fifteenmin"/>
+                </when>
+                <when test="timeType == 'onehour'">
+                    <include refid="timezone-onehour"/>
+                </when>
+            </choose>,
+        collector.mng_inst_cd,
+        round(avg(collector.speed), 0) as avgSpeed
+        from adsi_dsrc_colct_info_cur collector
+        <where>
+            <choose>
+                <when test="timeType == 'fivemin'">
+                    <include refid="where-fivemin"/>
+                </when>
+                <when test="timeType == 'fifteenmin'">
+                    <include refid="where-fifteenmin"/>
+                </when>
+                <when test="timeType == 'onehour'">
+                    <include refid="where-onehour"/>
+                </when>
+            </choose>
+            and to_char(collector.clct_dt, 'YYYY-MM-DD') = TO_CHAR(now()::date, 'YYYY-MM-DD')
+        </where>
+        group by 1,2  order by 1
+
+    </select>
+
+
+
+    <!--도로/시간대별-->
+    <sql id="query-avgSpeedVDS">
+        select
+        cgsl.road_name,
+        cgslam.adsi_nm ,
+        cgslam.adstdg_nm ,
+        round(sum(collector.avg_speed * collector.trfvlm) / sum(collector.trfvlm),0) as avgSpeed
+        from bigdata.ext_adsi_vds_sctn_stlink_mppg avssm
+        inner join bigdata.ext_adsi_vds_sctn_info avsi on avssm.vds_sctn_id = avsi.vds_sctn_id
+        inner join adsi_vds_colct_info_cur collector on avsi.vds_id = collector.vds_id
+        inner join c_gm_std_link cgsl on avssm.std_link_id = cgsl.link_id
+        inner join c_gm_std_link_adstdg_mppg cgslam on cgsl.link_id = cgslam.link_id
+        <where>
+            <if test="schTime != null and schTime != ''">
+                AND TO_CHAR(collector.clct_dt, 'HH24') = #{schTime}
+            </if>
+            <if test="mngInstCd != null and mngInstCd != ''">
+                AND SUBSTRING(CGSLAM.ADSTDG_CD,0,5) = SUBSTRING(#{mngInstCd},0,5)
+            </if>
+            <if test="dongNm != null and dongNm != ''">
+                AND CGSLAM.adstdg_nm = #{dongNm}
+            </if>
+            <if test="schRoadName != null and schRoadName != ''">
+                AND CGSL.ROAD_NAME LIKE '%' || #{schRoadName} || '%'
+            </if>
+            and to_char(collector.clct_dt, 'YYYY-MM-DD') = TO_CHAR(now()::date, 'YYYY-MM-DD')
+            <![CDATA[
+            and collector.trfvlm <> 0
+            ]]>
+        </where>
+        group by 1,2,3 order by 2 desc
+    </sql>
+    <sql id="query-trafficVolVDS">
+        select
+        cgsl.road_name,
+        cgslam.adsi_nm ,
+        cgslam.adstdg_nm ,
+        sum(collector.trfvlm) as trfVol
+        from bigdata.ext_adsi_vds_sctn_stlink_mppg avssm
+        inner join bigdata.ext_adsi_vds_sctn_info avsi on avssm.vds_sctn_id = avsi.vds_sctn_id and avssm.mng_inst_cd = avsi.mng_inst_cd
+        inner join adsi_vds_colct_info_cur collector on avsi.vds_id = collector.vds_id and avsi.mng_inst_cd = collector.mng_inst_cd
+        inner join c_gm_std_link cgsl on avssm.std_link_id = cgsl.link_id
+        inner join c_gm_std_link_adstdg_mppg cgslam on cgsl.link_id = cgslam.link_id
+        <where>
+            <if test="schTime != null and schTime != ''">
+                AND TO_CHAR(collector.clct_dt, 'HH24') = #{schTime}
+            </if>
+            <if test="mngInstCd != null and mngInstCd != ''">
+                AND SUBSTRING(CGSLAM.ADSTDG_CD,0,5) = SUBSTRING(#{mngInstCd},0,5)
+            </if>
+            <if test="dongNm != null and dongNm != ''">
+                AND CGSLAM.adstdg_nm = #{dongNm}
+            </if>
+            <if test="schRoadName != null and schRoadName != ''">
+                AND CGSL.ROAD_NAME LIKE '%' || #{schRoadName} || '%'
+            </if>
+            and to_char(collector.clct_dt, 'YYYY-MM-DD') = TO_CHAR(now()::date, 'YYYY-MM-DD')
+        </where>
+        group by 1,2,3 order by 2 desc
+    </sql>
+
+    <select id="findAllAvgSpeedVDSBySearchOptionPaging" parameterType="mapMonitoringMenuDTO" resultType="monitoringTrafficCurDto">
+        select
+        *
+        from
+        (
+        select
+        row_number() OVER(ORDER BY avgSpeed desc) AS rnk,
+        adsi_nm,
+        adstdg_nm,
+        avgSpeed,
+        road_name
+        from
+        (
+            <include refid="query-avgSpeedVDS"/>
+        ) ranking
+        ) paging
+        <if test="page != null and page != '' and page != 0 ">
+            LIMIT 5 OFFSET (#{page} - 1) * 5
+        </if>
+    </select>
+
+    <select id="countAvgSpeedVDSBySearchOption" parameterType="mapMonitoringMenuDTO" resultType="int">
+        select
+        count(*)
+        from
+        (
+        <include refid="query-avgSpeedVDS"/>
+        ) c
+    </select>
+
+    <select id="findAllTrafficVolumeVDSBySearchOptionPaging" parameterType="mapMonitoringMenuDTO" resultType="monitoringTrafficCurDto">
+        select
+        *
+        from
+        (
+        select
+        row_number() OVER(ORDER BY trfVol desc) AS rnk,
+        adsi_nm,
+        adstdg_nm,
+        trfVol,
+        road_name
+        from
+        (
+        <include refid="query-trafficVolVDS"/>
+        ) ranking
+        ) paging
+        <if test="page != null and page != '' and page != 0 ">
+            LIMIT 5 OFFSET (#{page} - 1) * 5
+        </if>
+    </select>
+
+    <select id="countTrafficVolumeVDSBySearchOption" parameterType="mapMonitoringMenuDTO" resultType="int">
+        select
+        count(*)
+        from
+        (
+        <include refid="query-trafficVolVDS"/>
+        ) c
+    </select>
+
+    <sql id="query-avgSpeedDSRC">
+        select
+        cgsl.road_name,
+        cgslam.adsi_nm ,
+        cgslam.adstdg_nm ,
+        round(avg(collector.speed), 0) as avgSpeed
+        from bigdata.ext_adsi_dsrc_sctn_stlink_mppg adssm
+        inner join adsi_dsrc_colct_info_cur collector on adssm.dsrc_sctn_id = collector.dsrc_sctn_id
+        inner join c_gm_std_link  cgsl on adssm.std_link_id = cgsl.link_id
+        inner join c_gm_std_link_adstdg_mppg cgslam on cgsl.link_id = cgslam.link_id
+        <where>
+            <if test="schTime != null and schTime != ''">
+                AND TO_CHAR(collector.clct_dt, 'HH24') = #{schTime}
+            </if>
+            <if test="mngInstCd != null and mngInstCd != ''">
+                AND SUBSTRING(CGSLAM.ADSTDG_CD,0,5) = SUBSTRING(#{mngInstCd},0,5)
+            </if>
+            <if test="dongNm != null and dongNm != ''">
+                AND CGSLAM.adstdg_nm = #{dongNm}
+            </if>
+            <if test="schRoadName != null and schRoadName != ''">
+                AND CGSL.ROAD_NAME LIKE '%' || #{schRoadName} || '%'
+            </if>
+            and to_char(collector.clct_dt, 'YYYY-MM-DD') = TO_CHAR(now()::date, 'YYYY-MM-DD')
+        </where>
+        group by 1,2,3 order by 2 desc
+    </sql>
+
+    <sql id="query-trafficVolDSRC">
+        select
+        collector.mng_inst_cd ,
+        moc.cd_nm as adsi_nm,
+        collector.dsrc_sctn_id ,
+        st_eamfd.rse_nm || '->' ||  ed_eamfd.rse_nm as road_name,
+        count(1) as trfVol
+        from
+        adsi_dsrc_colct_info_cur collector
+        inner join bigdata.ext_adsi_dsrc_sctn_info eadsi  on collector.dsrc_sctn_id  = eadsi.dsrc_sctn_id  and collector.mng_inst_cd = eadsi.mng_inst_cd
+        inner join m_op_code moc on moc.grp_cd_id = 'MNG_INST_CD' and collector.mng_inst_cd = moc.cd_id
+        left outer join bigdata.ext_adsi_m_fa_dsrc st_eamfd on st_eamfd.rse_id = eadsi.start_rse_id and st_eamfd.mng_inst_cd = eadsi.mng_inst_cd
+        left outer join bigdata.ext_adsi_m_fa_dsrc ed_eamfd on ed_eamfd.rse_id = eadsi.end_rse_id and ed_eamfd.mng_inst_cd = eadsi.mng_inst_cd
+        <where>
+            <if test="schTime != null and schTime != ''">
+                AND TO_CHAR(collector.clct_dt, 'HH24') = #{schTime}
+            </if>
+            <if test="mngInstCd != null and mngInstCd != ''">
+                AND SUBSTRING(CGSLAM.ADSTDG_CD,0,5) = SUBSTRING(#{mngInstCd},0,5)
+            </if>
+            <if test="schRoadName != null and schRoadName != ''">
+                AND (
+                    st_eamfd.rse_nm  LIKE '%' || #{schRoadName} || '%'
+                    or
+                    ed_eamfd.rse_nm  LIKE '%' || #{schRoadName} || '%'
+                )
+            </if>
+            and to_char(collector.clct_dt, 'YYYY-MM-DD') = TO_CHAR(now()::date, 'YYYY-MM-DD')
+        </where>
+        group by 1,2,3,4
+    </sql>
+
+    <select id="findAllAvgSpeedDSRCBySearchOptionPaging" parameterType="mapMonitoringMenuDTO" resultType="monitoringTrafficCurDto">
+        select
+        *
+        from
+        (
+        select
+        row_number() OVER(ORDER BY avgSpeed desc) AS rnk,
+        adsi_nm,
+        adstdg_nm,
+        avgSpeed,
+        road_name
+        from
+        (
+        <include refid="query-avgSpeedDSRC"/>
+        ) ranking
+        ) paging
+        <if test="page != null and page != '' and page != 0 ">
+            LIMIT 5 OFFSET (#{page} - 1) * 5
+        </if>
+    </select>
+
+    <select id="countAvgSpeedDSRCBySearchOption" parameterType="mapMonitoringMenuDTO"  resultType="int">
+        select
+        count(*)
+        from
+        (
+        <include refid="query-avgSpeedDSRC"/>
+        ) c
+    </select>
+
+    <select id="findAllTrafficVolumeDSRCBySearchOptionPaging" parameterType="mapMonitoringMenuDTO" resultType="monitoringTrafficCurDto">
+        select
+        *
+        from
+        (
+        select
+        row_number() OVER(ORDER BY trfVol desc) AS rnk,
+        adsi_nm,
+        trfVol,
+        road_name
+        from
+        (
+        <include refid="query-trafficVolDSRC"/>
+        ) ranking
+        ) paging
+        <if test="page != null and page != '' and page != 0 ">
+            LIMIT 5 OFFSET (#{page} - 1) * 5
+        </if>
+    </select>
+
+    <select id="countTrafficVolumeDSRCBySearchOption" parameterType="mapMonitoringMenuDTO"  resultType="int">
+        select
+        count(*)
+        from
+        (
+        <include refid="query-trafficVolDSRC"/>
+        ) c
+    </select>
+
+    <sql id="query-avgSpeedSmart">
+        select
+        cgsl.road_name,
+        cgslam.adsi_nm ,
+        cgslam.adstdg_nm ,
+        round(avg(collector.avg_vhcl_speed), 0) as avgSpeed
+        from bigdata.ext_adsi_smcrsrd_crsrd_acs_road_info ascari
+        inner join adsi_smcrsrd_crsrd_acs_road_stats_fivmin_cur collector on ascari.acs_road_id = collector.acs_road_id and ascari.crsrd_id = collector.crsrd_id and ascari.mng_inst_cd = collector.mng_inst_cd
+        inner join c_gm_std_link  cgsl on ascari.link_id = cgsl.link_id
+        inner join c_gm_std_link_adstdg_mppg cgslam on cgsl.link_id = cgslam.link_id
+        <where>
+            <if test="schTime != null and schTime != ''">
+                AND TO_CHAR(collector.clct_dt, 'HH24') = #{schTime}
+            </if>
+            <if test="mngInstCd != null and mngInstCd != ''">
+                AND SUBSTRING(CGSLAM.ADSTDG_CD,0,5) = SUBSTRING(#{mngInstCd},0,5)
+            </if>
+            <if test="dongNm != null and dongNm != ''">
+                AND CGSLAM.adstdg_nm = #{dongNm}
+            </if>
+            <if test="schRoadName != null and schRoadName != ''">
+                AND CGSL.ROAD_NAME LIKE '%' || #{schRoadName} || '%'
+            </if>
+            and collector.clct_dt >= current_date
+        </where>
+        group by 1,2,3 order by 2 desc
+    </sql>
+
+    <sql id="query-trafficVolSmart">
+        select
+        cgsl.road_name,
+        cgslam.adsi_nm ,
+        cgslam.adstdg_nm ,
+        sum(collector.vhcl_trfvlm) as trfVol
+        from bigdata.ext_adsi_smcrsrd_crsrd_acs_road_info ascari
+        inner join adsi_smcrsrd_crsrd_acs_road_stats_fivmin_cur collector on
+            ascari.acs_road_id = collector.acs_road_id and ascari.crsrd_id = collector.crsrd_id and ascari.mng_inst_cd = collector.mng_inst_cd
+        inner join c_gm_std_link  cgsl on ascari.link_id = cgsl.link_id
+        inner join c_gm_std_link_adstdg_mppg cgslam on cgsl.link_id = cgslam.link_id
+        <where>
+            <if test="schTime != null and schTime != ''">
+                AND TO_CHAR(collector.clct_dt, 'HH24') = #{schTime}
+            </if>
+            <if test="mngInstCd != null and mngInstCd != ''">
+                AND SUBSTRING(CGSLAM.ADSTDG_CD,0,5) = SUBSTRING(#{mngInstCd},0,5)
+            </if>
+            <if test="dongNm != null and dongNm != ''">
+                AND CGSLAM.adstdg_nm = #{dongNm}
+            </if>
+            <if test="schRoadName != null and schRoadName != ''">
+                AND CGSL.ROAD_NAME LIKE '%' || #{schRoadName} || '%'
+            </if>
+            and collector.clct_dt >= current_date
+        </where>
+        group by 1,2,3 order by 2 desc
+    </sql>
+
+    <select id="findAllAvgSpeedSmartBySearchOptionPaging" parameterType="mapMonitoringMenuDTO" resultType="monitoringTrafficCurDto">
+        select
+        *
+        from
+        (
+        select
+        row_number() OVER(ORDER BY avgSpeed desc) AS rnk,
+        avgSpeed,
+        adsi_nm,
+        adstdg_nm,
+        road_name
+        from
+        (
+        <include refid="query-avgSpeedSmart"/>
+        ) ranking
+        ) paging
+        <if test="page != null and page != '' and page != 0 ">
+            LIMIT 5 OFFSET (#{page} - 1) * 5
+        </if>
+    </select>
+
+    <select id="countAvgSpeedSmartBySearchOption" parameterType="mapMonitoringMenuDTO" resultType="int">
+        select
+        count(*)
+        from
+        (
+        <include refid="query-avgSpeedSmart"/>
+        ) c
+    </select>
+
+    <select id="findAllTrafficVolumeSmartBySearchOptionPaging" parameterType="mapMonitoringMenuDTO" resultType="monitoringTrafficCurDto">
+        select
+        *
+        from
+        (
+        select
+        row_number() OVER(ORDER BY trfVol desc) AS rnk,
+        adsi_nm,
+        adstdg_nm,
+        trfVol,
+        road_name
+        from
+        (
+        <include refid="query-trafficVolSmart"/>
+        ) ranking
+        ) paging
+        <if test="page != null and page != '' and page != 0 ">
+            LIMIT 5 OFFSET (#{page} - 1) * 5
+        </if>
+    </select>
+
+    <select id="countTrafficVolumeSmartBySearchOption" parameterType="mapMonitoringMenuDTO" resultType="int">
+        select
+        count(*)
+        from
+        (
+        <include refid="query-trafficVolSmart"/>
+        ) c
+    </select>
+
+    <select id="getVolumeSmartDcrtForGIS" resultType="monitoringTrafficCurDto">
+        select ggits.ST_Azimuth(ggits.ST_PointN(ggits.st_linemerge(cgsl.geometry), ggits.ST_NPoints(ggits.st_linemerge(cgsl.geometry))-1)
+                   , ggits.ST_PointN(ggits.st_linemerge(cgsl.geometry), ggits.ST_NPoints(ggits.st_linemerge(cgsl.geometry)))
+                   )/(2 * pi())* 360 as angle
+             , ggits.st_asgeojson(ggits.ST_Project(ggits.ST_PointN(ggits.st_linemerge(cgsl.geometry), ggits.ST_NPoints(ggits.st_linemerge(cgsl.geometry)))
+            , 25
+            , ggits.ST_Azimuth(ggits.ST_PointN(ggits.st_linemerge(cgsl.geometry)
+                                   , ggits.ST_NPoints(ggits.st_linemerge(cgsl.geometry)))
+                                                       , ggits.ST_PointN(ggits.st_linemerge(cgsl.geometry)
+                                   , ggits.ST_NPoints(ggits.st_linemerge(cgsl.geometry))-1)
+                                                       ))) as st
+             , ggits.st_asgeojson(ggits.ST_PointN(ggits.st_linemerge(cgsl.geometry)
+            , ggits.ST_NPoints(ggits.st_linemerge(cgsl.geometry))-1)) as ed
+             , eascari.CRSRD_ID
+             , eascari.acs_road_id
+             , crsrd.crsrd_nm
+             , eascari.acs_road_nm
+             , eascari.mng_inst_cd
+             , case when ascdsfc.TRFVLM_TOTAL is not null then coalesce(ascdsfc.STRGHT_TRFVLM, 0)
+                    when ascdsfc15.TRFVLM_TOTAL is not null then coalesce(ascdsfc15.STRGHT_TRFVLM, 0)
+                    when ascdsfc1h.TRFVLM_TOTAL is not null then coalesce(ascdsfc1h.STRGHT_TRFVLM, 0)
+                    else 0
+            end as STRGHT_TRFVLM
+             --, ascdsfc.STRGHT_TRFVLM as STRGHT_TRFVLM5
+             --, ascdsfc15.STRGHT_TRFVLM as STRGHT_TRFVLM15
+             --, ascdsfc1h.STRGHT_TRFVLM as STRGHT_TRFVLM1h
+             , case when ascdsfc.TRFVLM_TOTAL is not null then coalesce(ascdsfc.TRNGHT_TRFVLM, 0)
+                    when ascdsfc15.TRFVLM_TOTAL is not null then coalesce(ascdsfc15.TRNGHT_TRFVLM, 0)
+                    when ascdsfc1h.TRFVLM_TOTAL is not null then coalesce(ascdsfc1h.TRNGHT_TRFVLM, 0)
+                    else 0
+            end as TRNGHT_TRFVLM
+             --, ascdsfc.TRNGHT_TRFVLM as TRNGHT_TRFVLM5
+             --, ascdsfc15.TRNGHT_TRFVLM as TRNGHT_TRFVLM15
+             --, ascdsfc1h.TRNGHT_TRFVLM as TRNGHT_TRFVLM1h
+             , case when ascdsfc.TRFVLM_TOTAL is not null then coalesce(ascdsfc.TRNLFT_TRFVLM, 0)
+                    when ascdsfc15.TRFVLM_TOTAL is not null then coalesce(ascdsfc15.TRNLFT_TRFVLM, 0)
+                    when ascdsfc1h.TRFVLM_TOTAL is not null then coalesce(ascdsfc1h.TRNLFT_TRFVLM, 0)
+                    else 0
+            end as TRNLFT_TRFVLM
+             --, ascdsfc.TRNLFT_TRFVLM as TRNLFT_TRFVLM5
+             --, ascdsfc15.TRNLFT_TRFVLM as TRNLFT_TRFVLM15
+             --, ascdsfc1h.TRNLFT_TRFVLM as TRNLFT_TRFVLM1h
+             , case when ascdsfc.TRFVLM_TOTAL is not null then coalesce(ascdsfc.TRNUTRN_TRFVLM, 0)
+                    when ascdsfc15.TRFVLM_TOTAL is not null then coalesce(ascdsfc15.TRNUTRN_TRFVLM, 0)
+                    when ascdsfc1h.TRFVLM_TOTAL is not null then coalesce(ascdsfc1h.TRNUTRN_TRFVLM, 0)
+                    else 0
+            end as TRNUTRN_TRFVLM
+             --, ascdsfc.TRNUTRN_TRFVLM as TRNUTRN_TRFVLM5
+             --, ascdsfc15.TRNUTRN_TRFVLM as TRNUTRN_TRFVLM15
+             --, ascdsfc1h.TRNUTRN_TRFVLM as TRNUTRN_TRFVLM1h
+             , case when ascdsfc.TRFVLM_TOTAL is not null then coalesce(ascdsfc.TRFVLM_TOTAL, 0)
+                    when ascdsfc15.TRFVLM_TOTAL is not null then coalesce(ascdsfc15.TRFVLM_TOTAL, 0)
+                    when ascdsfc1h.TRFVLM_TOTAL is not null then coalesce(ascdsfc1h.TRFVLM_TOTAL, 0)
+                    else 0
+            end as TRFVLM_TOTAL
+             --, ascdsfc.TRFVLM_TOTAL as TRFVLM_TOTAL5
+             --, ascdsfc15.TRFVLM_TOTAL as TRFVLM_TOTAL15
+             --, ascdsfc1h.TRFVLM_TOTAL as TRFVLM_TOTAL1h
+        from BIGDATA.ext_adsi_smcrsrd_crsrd_acs_road_info eascari
+                 inner join bigdata.ext_adsi_smcrsrd_crsrd_info crsrd
+                            on eascari.mng_inst_cd = crsrd.mng_inst_cd
+                                and eascari.crsrd_id = crsrd.crsrd_id
+                 inner join (
+            select MAX(ASCARI.ETL_DT) as RCT_ETL_DT
+                 , ASCARI.CRSRD_ID
+                 , ASCARI.ACS_ROAD_ID
+                 , ASCARI.MNG_INST_CD
+            from BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO ASCARI
+            group by ASCARI.CRSRD_ID, ASCARI.ACS_ROAD_ID, ASCARI.MNG_INST_CD
+        ) RCT_ASCARI
+                            on RCT_ASCARI.MNG_INST_CD = eascari.MNG_INST_CD
+                                and RCT_ASCARI.RCT_ETL_DT = eascari.ETL_DT
+                                and RCT_ASCARI.CRSRD_ID = eascari.CRSRD_ID
+                                and RCT_ASCARI.ACS_ROAD_ID = eascari.ACS_ROAD_ID
+                 inner join ggits.c_gm_std_link cgsl
+                            on cgsl.link_id = eascari.link_id
+                 inner join ggits.c_gm_std_link_adstdg_mppg cgslam
+                            on cgslam.link_id = cgsl.link_id
+                 left join (
+            select mng_inst_cd
+                 , crsrd_id
+                 , acs_road_id
+                 , sum(vhcl_trfvlm) filter (where drct_cd = '1') as TRNLFT_TRFVLM
+       , sum(vhcl_trfvlm) filter (where drct_cd = '2') as STRGHT_TRFVLM
+       , sum(vhcl_trfvlm) filter (where drct_cd = '3') as TRNGHT_TRFVLM
+       , sum(vhcl_trfvlm) filter (where drct_cd = '4') as TRNUTRN_TRFVLM
+       , sum(vhcl_trfvlm) as TRFVLM_TOTAL
+            from ggits.adsi_smcrsrd_crsrd_drct_stats_fivmin_cur
+            where clct_dt >= current_date
+              and drct_cd in ('1', '2', '3', '4')
+            group by mng_inst_cd, crsrd_id, acs_road_id
+        ) ascdsfc
+                           on eascari.mng_inst_cd = ascdsfc.mng_inst_cd
+                               and ascdsfc.crsrd_id = eascari.crsrd_id
+                               and ascdsfc.acs_road_id = eascari.acs_road_id
+                 left join (
+            select mng_inst_cd
+                 , crsrd_id
+                 , acs_road_id
+                 , sum(vhcl_trfvlm) filter (where drct_cd = '1') as TRNLFT_TRFVLM
+       , sum(vhcl_trfvlm) filter (where drct_cd = '2') as STRGHT_TRFVLM
+       , sum(vhcl_trfvlm) filter (where drct_cd = '3') as TRNGHT_TRFVLM
+       , sum(vhcl_trfvlm) filter (where drct_cd = '4') as TRNUTRN_TRFVLM
+       , sum(vhcl_trfvlm) as TRFVLM_TOTAL
+            from ggits.adsi_smcrsrd_crsrd_drct_stats_ftnmin_cur
+            where clct_dt >= current_date
+              and drct_cd in ('1', '2', '3', '4')
+            group by mng_inst_cd, crsrd_id, acs_road_id
+        ) ascdsfc15
+                           on eascari.mng_inst_cd = ascdsfc15.mng_inst_cd
+                               and ascdsfc15.crsrd_id = eascari.crsrd_id
+                               and ascdsfc15.acs_road_id = eascari.acs_road_id
+                 left join (
+            select mng_inst_cd
+                 , crsrd_id
+                 , acs_road_id
+                 , sum(vhcl_trfvlm) filter (where drct_cd = '1') as TRNLFT_TRFVLM
+       , sum(vhcl_trfvlm) filter (where drct_cd = '2') as STRGHT_TRFVLM
+       , sum(vhcl_trfvlm) filter (where drct_cd = '3') as TRNGHT_TRFVLM
+       , sum(vhcl_trfvlm) filter (where drct_cd = '4') as TRNUTRN_TRFVLM
+       , sum(vhcl_trfvlm) as TRFVLM_TOTAL
+            from ggits.adsi_smcrsrd_crsrd_drct_stats_onhr_cur
+            where clct_dt >= current_date
+              and drct_cd in ('1', '2', '3', '4')
+            group by mng_inst_cd, crsrd_id, acs_road_id
+        ) ascdsfc1h
+                           on eascari.mng_inst_cd = ascdsfc1h.mng_inst_cd
+                               and ascdsfc1h.crsrd_id = eascari.crsrd_id
+                               and ascdsfc1h.acs_road_id = eascari.acs_road_id
+    </select>
+
+    <select id="getVolumeSmartForGIS" resultType="monitoringTrafficCurDto">
+        select ascari.crsrd_id
+             , ascari.mng_inst_cd
+             , easci.lon_crdn
+             , easci.lat_crdn
+             , easci.crsrd_nm
+             , sum(coalesce(collector.trfVol, coalesce(collector15.trfVol, coalesce(collector1h.trfVol, 0)))) as trfVol
+             --, collector.trfVol as trfVol5
+             --, collector15.trfVol as trfVol15
+             --, collector1h.trfVol as trfVol1h
+        from bigdata.ext_adsi_smcrsrd_crsrd_acs_road_info ascari
+                 inner join bigdata.ext_adsi_smcrsrd_crsrd_info easci
+                            on ascari.crsrd_id = easci.crsrd_id
+                                and ascari.mng_inst_cd = easci.mng_inst_cd
+                 left join (
+            select mng_inst_cd
+                 , crsrd_id
+                 , acs_road_id
+                 , sum(vhcl_trfvlm) as trfVol
+            from ggits.adsi_smcrsrd_crsrd_drct_stats_fivmin_cur
+            where clct_dt >= current_date
+              and drct_cd in ('1', '2', '3', '4')
+            group by 1, 2, 3
+        ) collector
+                           on ascari.acs_road_id = collector.acs_road_id
+                               and ascari.crsrd_id = collector.crsrd_id
+                               and ascari.mng_inst_cd = collector.mng_inst_cd
+                 left join (
+            select mng_inst_cd
+                 , crsrd_id
+                 , acs_road_id
+                 , sum(vhcl_trfvlm) as trfVol
+            from ggits.adsi_smcrsrd_crsrd_drct_stats_ftnmin_cur
+            where clct_dt >= current_date
+              and drct_cd in ('1', '2', '3', '4')
+            group by 1, 2, 3
+        ) collector15
+                           on ascari.acs_road_id = collector15.acs_road_id
+                               and ascari.crsrd_id = collector15.crsrd_id
+                               and ascari.mng_inst_cd = collector15.mng_inst_cd
+                 left join (
+            select mng_inst_cd
+                 , crsrd_id
+                 , acs_road_id
+                 , sum(vhcl_trfvlm) as trfVol
+            from ggits.adsi_smcrsrd_crsrd_drct_stats_onhr_cur
+            where clct_dt >= current_date
+              and drct_cd in ('1', '2', '3', '4')
+            group by 1, 2, 3
+        ) collector1h
+                           on ascari.acs_road_id = collector1h.acs_road_id
+                               and ascari.crsrd_id = collector1h.crsrd_id
+                               and ascari.mng_inst_cd = collector1h.mng_inst_cd
+        where easci.lon_crdn != 0
+        and easci.lat_crdn != 0
+        group by 1,2,3,4,5
+        order by 6 desc
+    </select>
+
+    <select id="getVolumeVDSForGIS" resultType="monitoringTrafficCurDto">
+        select
+            eamfv.vds_id ,
+            eamfv.mng_inst_cd ,
+            eamfv.vds_nm ,
+            eamfv.lon as lon_crdn,
+            eamfv.lat as lat_crdn ,
+            sum(collector.trfvlm) as trfVol
+        from bigdata.ext_adsi_m_fa_vds eamfv
+                 inner join adsi_vds_colct_info_cur collector on eamfv.vds_id = collector.vds_id and eamfv.mng_inst_cd = collector.mng_inst_cd
+        where
+            collector.clct_dt >= current_date
+          and eamfv.lon != 0
+         and eamfv.lat != 0
+        group by 1,2,3,4,5 order by 6 desc
+    </select>
+    
+    <select id="findOneCumulativeTrafficVolumeByVhclDiv" resultType="map">
+		SELECT
+			COLLECTOR.MNG_INST_CD AS mngInstCd,
+			CASE WHEN COLLECTOR.VHCL_DIV = '0' THEN '확인불가'
+				WHEN COLLECTOR.VHCL_DIV = '1' OR COLLECTOR.VHCL_DIV = '01' THEN '소형' 
+				WHEN COLLECTOR.VHCL_DIV = '2' OR COLLECTOR.VHCL_DIV = '02' THEN '버스' 
+				WHEN COLLECTOR.VHCL_DIV = '3' OR COLLECTOR.VHCL_DIV = '03' THEN '화물'
+				ELSE '확인 불가' END AS vhclDiv,
+			SUM(COLLECTOR.VHCL_TRFVLM) AS trfvol
+		FROM
+			ADSI_SMCRSRD_CRSRD_DRCT_STATS_FIVMIN_CUR COLLECTOR
+		WHERE
+		<![CDATA[
+			COLLECTOR.CLCT_DT >= TO_TIMESTAMP(TO_CHAR(NOW(),
+			'YYYY-MM-DD 00:00:00'),
+			'YYYY-MM-DD HH24:MI:SS')
+			AND TO_CHAR(COLLECTOR.CLCT_DT,
+			'YYYY-MM-DD') = TO_CHAR(NOW()::DATE,
+			'YYYY-MM-DD')
+			AND COLLECTOR.AVG_VHCL_SPEED <> 0
+		]]>
+		GROUP BY
+			1,
+			2
+		ORDER BY
+			1 , 2
+    </select>
+</mapper>

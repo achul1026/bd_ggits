@@ -2,4 +2,65 @@
 <!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.GgbisBusrouteStationMapper'>
+
+    <!-- 출발지, 도착지 정류장으로 링크정보 조회 -->
+    <select id="findAllBusRouteLinkByStartStationIdAndEndStationIdOrRouteId" resultType="ggbisBusrouteStation">
+        SELECT
+        EGBS.ROUTE_ID
+        ,EGBS.STATION_ID
+        ,EGBS.STA_ORDER
+        ,EGBS.USE_YN
+        ,EGBS.NEAR_STA_CNT
+        ,EGBS.MAIN_STA_YN
+        ,EGBS.COORD_X
+        ,EGBS.COORD_Y
+        ,EGBS.BUS_DIRECTION
+        ,EGBS.BUS_DISTANCE
+        ,EGBS.GIS_LENGTH
+        ,EGBS.SUM_LENGTH
+        ,EGBS.LINK_ORDER
+        ,EGBS.GOWAY_TP
+        ,EGBS.SERVICE_CNT
+        ,EGBS.DIRECTION_DESC
+        ,EGBS.STATION_NM
+        ,EGBS.ROUTE_NM
+        ,EGBS.ST_LINK_ID
+        ,EGBS.LINK_ID
+        ,EGBS.DRVEND_YN
+        ,EGBS.DRVEND_TIME
+        ,EGBS.DRVEND_VEH_ID
+        ,EGBS.DRVEND_PLATE_NO
+        ,EGBS.DRVEND_COMPANY_NM
+        ,EGBS.DELAY_YN
+        FROM
+        BIGDATA.EXT_GGBIS_BUSROUTE_STATION EGBS
+        INNER JOIN (
+        SELECT
+        EGBS.ROUTE_ID,
+        EGBS.STATION_ID AS END_STATION_ID,
+        MAX(EGBS.STA_ORDER) AS END_STA_ORDER,
+        ST_STATION.START_STATION_ID,
+        ST_STATION.START_STA_ORDER
+        FROM
+        BIGDATA.EXT_GGBIS_BUSROUTE_STATION EGBS
+        INNER JOIN (
+        SELECT
+        ROUTE_ID ,
+        STATION_ID AS START_STATION_ID,
+        STA_ORDER AS START_STA_ORDER
+        FROM
+        BIGDATA.EXT_GGBIS_BUSROUTE_STATION EGBS
+        WHERE
+        EGBS.STATION_ID = #{startStationId} -- 출발지 정류장
+        GROUP BY ROUTE_ID , STATION_ID, START_STA_ORDER)
+        ST_STATION ON EGBS.ROUTE_ID = ST_STATION.ROUTE_ID AND EGBS.STA_ORDER > ST_STATION.START_STA_ORDER
+        WHERE EGBS.STATION_ID = #{endStationId} -- 도착지 정류장
+        GROUP BY EGBS.ROUTE_ID, EGBS.STATION_ID, ST_STATION.START_STATION_ID, ST_STATION.START_STA_ORDER)
+        <![CDATA[
+        BUS_ROUTE ON BUS_ROUTE.ROUTE_ID = EGBS.ROUTE_ID AND (BUS_ROUTE.START_STA_ORDER <= EGBS.STA_ORDER AND BUS_ROUTE.END_STA_ORDER >= EGBS.STA_ORDER)
+         ]]>
+        <if test="routeId != null and routeId != ''">
+        WHERE EGBS.ROUTE_ID = #{routeId}
+        </if>
+    </select>
 </mapper>

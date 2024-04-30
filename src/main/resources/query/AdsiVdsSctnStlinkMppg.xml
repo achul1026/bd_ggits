@@ -9,10 +9,10 @@
              ,avssm.vds_sctn_id
              ,avssm.sqno
              ,avssm.std_link_id
-             ,ST_ASGEOJSON(ST_LINEMERGE(GCIL.GEOM)) AS GEOJSON
+             ,ST_ASGEOJSON(ST_LINEMERGE(GCIL.GEOMETRY)) AS GEOJSON
              ,GCIL.ROAD_NAME
-        from adsi_vds_sctn_stlink_mppg avssm
-         inner join gy_comm_info_link gcil on avssm.std_link_id = gcil.link_id
+        from BIGDATA.EXT_adsi_vds_sctn_stlink_mppg avssm
+         inner join C_GM_STD_LINK gcil on avssm.std_link_id = gcil.link_id
         WHERE
         avssm.vds_sctn_id = #{vdsSctnId}
     </select>

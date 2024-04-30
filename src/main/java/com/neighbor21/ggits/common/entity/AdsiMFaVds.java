@@ -17,33 +17,34 @@ public class AdsiMFaVds extends AdsiVdsSttsInfo {
 
     private String vdsSctnId; //vds 구간 아이디
     private String vdsSctnNm; //vds 구간 명
-    private long vdsSctnLen; //vds 구간 길이
+    private Long vdsSctnLen; //vds 구간 길이
     private String roadGrd; //도로 등급
-    private long minLimitSpeed; //최소 제한 속도
-    private long maxLimitSpeed; //최대 제한 속도
+    private Long minLimitSpeed; //최소 제한 속도
+    private Long maxLimitSpeed; //최대 제한 속도
 
-    private List<AdsiVdsColctInfo> colctInfo;
+    private String colctInfo;
 
     private List<AdsiVdsSctnStlinkMppg> sectionLinkList;
 
-
+    @Override
     public String getMngInstCd() {
         return mngInstCd;
     }
 
+    @Override
     public void setMngInstCd(String mngInstCd) {
         this.mngInstCd = mngInstCd;
     }
 
-
+    @Override
     public String getVdsId() {
         return vdsId;
     }
 
+    @Override
     public void setVdsId(String vdsId) {
         this.vdsId = vdsId;
     }
-
 
     public String getVdsNm() {
         return vdsNm;
@@ -53,7 +54,6 @@ public class AdsiMFaVds extends AdsiVdsSttsInfo {
         this.vdsNm = vdsNm;
     }
 
-
     public String getVdsType() {
         return vdsType;
     }
@@ -62,7 +62,6 @@ public class AdsiMFaVds extends AdsiVdsSttsInfo {
         this.vdsType = vdsType;
     }
 
-
     public Long getLaneCnt() {
         return laneCnt;
     }
@@ -70,7 +69,6 @@ public class AdsiMFaVds extends AdsiVdsSttsInfo {
     public void setLaneCnt(Long laneCnt) {
         this.laneCnt = laneCnt;
     }
-
 
     public Double getLon() {
         return lon;
@@ -96,14 +94,6 @@ public class AdsiMFaVds extends AdsiVdsSttsInfo {
         this.descr = descr;
     }
 
-    public List<AdsiVdsColctInfo> getColctInfo() {
-        return colctInfo;
-    }
-
-    public void setColctInfo(List<AdsiVdsColctInfo> colctInfo) {
-        this.colctInfo = colctInfo;
-    }
-
     public String getVdsSctnId() {
         return vdsSctnId;
     }
@@ -120,11 +110,11 @@ public class AdsiMFaVds extends AdsiVdsSttsInfo {
         this.vdsSctnNm = vdsSctnNm;
     }
 
-    public long getVdsSctnLen() {
+    public Long getVdsSctnLen() {
         return vdsSctnLen;
     }
 
-    public void setVdsSctnLen(long vdsSctnLen) {
+    public void setVdsSctnLen(Long vdsSctnLen) {
         this.vdsSctnLen = vdsSctnLen;
     }
 
@@ -136,20 +126,28 @@ public class AdsiMFaVds extends AdsiVdsSttsInfo {
         this.roadGrd = roadGrd;
     }
 
-    public long getMinLimitSpeed() {
+    public Long getMinLimitSpeed() {
         return minLimitSpeed;
     }
 
-    public void setMinLimitSpeed(long minLimitSpeed) {
+    public void setMinLimitSpeed(Long minLimitSpeed) {
         this.minLimitSpeed = minLimitSpeed;
     }
 
-    public long getMaxLimitSpeed() {
+    public Long getMaxLimitSpeed() {
         return maxLimitSpeed;
     }
 
-    public void setMaxLimitSpeed(long maxLimitSpeed) {
+    public void setMaxLimitSpeed(Long maxLimitSpeed) {
         this.maxLimitSpeed = maxLimitSpeed;
+    }
+
+    public String getColctInfo() {
+        return colctInfo;
+    }
+
+    public void setColctInfo(String colctInfo) {
+        this.colctInfo = colctInfo;
     }
 
     public List<AdsiVdsSctnStlinkMppg> getSectionLinkList() {

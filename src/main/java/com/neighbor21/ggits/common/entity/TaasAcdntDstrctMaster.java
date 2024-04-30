@@ -9,20 +9,22 @@ public class TaasAcdntDstrctMaster {
   private String acdntDstrctIdentifier; //사고 구역 식별자
   private String acdntDstrctId; //사고 구역 아이디
   private String adstdgCd; //법정동 코드
+  private String adstdgNm; //법정동 이름
   private String pointCd; //지점 코드
   private String adsiNm; //행정시 명
   private String pointNm; //지점 명
-  private long acdntCnt; //사고 수
-  private long casltCnt; //사상자 수
-  private long dcsdCnt; //사망자 수
-  private long swpsnCnt; //중상자 수
-  private long sinjpsnCnt; //경상자 수
-  private long injDclrCnt; //부상 신고 수
-  private float lonCrdn; //경도 좌표
-  private float latCrdn; //위도 좌표
+  private Long acdntCnt; //사고 수
+  private Long casltCnt; //사상자 수
+  private Long dcsdCnt; //사망자 수
+  private Long swpsnCnt; //중상자 수
+  private Long sinjpsnCnt; //경상자 수
+  private Long injDclrCnt; //부상 신고 수
+  private Double lonCrdn; //경도 좌표
+  private Double latCrdn; //위도 좌표
   private String acdntDstrctPyn; //사고 구역 폴리곤
   private String type; // 타입
 
+  private String sggCd;
 
   public Timestamp getClctDt() {
     return clctDt;
@@ -32,7 +34,6 @@ public class TaasAcdntDstrctMaster {
     this.clctDt = clctDt;
   }
 
-
   public String getAcdntDstrctIdentifier() {
     return acdntDstrctIdentifier;
   }
@@ -40,7 +41,6 @@ public class TaasAcdntDstrctMaster {
   public void setAcdntDstrctIdentifier(String acdntDstrctIdentifier) {
     this.acdntDstrctIdentifier = acdntDstrctIdentifier;
   }
-
 
   public String getAcdntDstrctId() {
     return acdntDstrctId;
@@ -50,7 +50,6 @@ public class TaasAcdntDstrctMaster {
     this.acdntDstrctId = acdntDstrctId;
   }
 
-
   public String getAdstdgCd() {
     return adstdgCd;
   }
@@ -59,6 +58,13 @@ public class TaasAcdntDstrctMaster {
     this.adstdgCd = adstdgCd;
   }
 
+  public String getAdstdgNm() {
+    return adstdgNm;
+  }
+
+  public void setAdstdgNm(String adstdgNm) {
+    this.adstdgNm = adstdgNm;
+  }
 
   public String getPointCd() {
     return pointCd;
@@ -68,7 +74,6 @@ public class TaasAcdntDstrctMaster {
     this.pointCd = pointCd;
   }
 
-
   public String getAdsiNm() {
     return adsiNm;
   }
@@ -76,7 +81,6 @@ public class TaasAcdntDstrctMaster {
   public void setAdsiNm(String adsiNm) {
     this.adsiNm = adsiNm;
   }
-
 
   public String getPointNm() {
     return pointNm;
@@ -86,78 +90,69 @@ public class TaasAcdntDstrctMaster {
     this.pointNm = pointNm;
   }
 
-
-  public long getAcdntCnt() {
+  public Long getAcdntCnt() {
     return acdntCnt;
   }
 
-  public void setAcdntCnt(long acdntCnt) {
+  public void setAcdntCnt(Long acdntCnt) {
     this.acdntCnt = acdntCnt;
   }
 
-
-  public long getCasltCnt() {
+  public Long getCasltCnt() {
     return casltCnt;
   }
 
-  public void setCasltCnt(long casltCnt) {
+  public void setCasltCnt(Long casltCnt) {
     this.casltCnt = casltCnt;
   }
 
-
-  public long getDcsdCnt() {
+  public Long getDcsdCnt() {
     return dcsdCnt;
   }
 
-  public void setDcsdCnt(long dcsdCnt) {
+  public void setDcsdCnt(Long dcsdCnt) {
     this.dcsdCnt = dcsdCnt;
   }
 
-
-  public long getSwpsnCnt() {
+  public Long getSwpsnCnt() {
     return swpsnCnt;
   }
 
-  public void setSwpsnCnt(long swpsnCnt) {
+  public void setSwpsnCnt(Long swpsnCnt) {
     this.swpsnCnt = swpsnCnt;
   }
 
-
-  public long getSinjpsnCnt() {
+  public Long getSinjpsnCnt() {
     return sinjpsnCnt;
   }
 
-  public void setSinjpsnCnt(long sinjpsnCnt) {
+  public void setSinjpsnCnt(Long sinjpsnCnt) {
     this.sinjpsnCnt = sinjpsnCnt;
   }
 
-
-  public long getInjDclrCnt() {
+  public Long getInjDclrCnt() {
     return injDclrCnt;
   }
 
-  public void setInjDclrCnt(long injDclrCnt) {
+  public void setInjDclrCnt(Long injDclrCnt) {
     this.injDclrCnt = injDclrCnt;
   }
 
-
-  public float getLonCrdn() {
+  public Double getLonCrdn() {
     return lonCrdn;
   }
 
-  public void setLonCrdn(float lonCrdn) {
+  public void setLonCrdn(Double lonCrdn) {
     this.lonCrdn = lonCrdn;
   }
 
-
-  public float getLatCrdn() {
+  public Double getLatCrdn() {
     return latCrdn;
   }
 
-  public void setLatCrdn(float latCrdn) {
+  public void setLatCrdn(Double latCrdn) {
     this.latCrdn = latCrdn;
   }
-
 
   public String getAcdntDstrctPyn() {
     return acdntDstrctPyn;
@@ -173,5 +168,23 @@ public class TaasAcdntDstrctMaster {
 
   public void setType(String type) {
     this.type = type;
+  }
+
+  public String getSggCd() {
+    return sggCd;
+  }
+
+  public void setSggCd(String sggCd) {
+    this.sggCd = sggCd;
+  }
+
+  public static TaasAcdntDstrctMaster merge(TaasAcdntDstrctMaster current, TaasAcdntDstrctMaster next) {
+    current.setSwpsnCnt(current.getSwpsnCnt()+next.getSwpsnCnt());
+    current.setSinjpsnCnt(current.getSinjpsnCnt()+next.getSinjpsnCnt());
+    current.setInjDclrCnt(current.getInjDclrCnt()+next.getInjDclrCnt());
+    current.setCasltCnt(current.getCasltCnt()+next.getCasltCnt());
+    current.setDcsdCnt(current.getDcsdCnt()+next.getDcsdCnt());
+    current.setAcdntCnt(current.getAcdntCnt()+next.getAcdntCnt());
+    return current;
   }
 }

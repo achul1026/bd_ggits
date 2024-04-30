@@ -1,54 +1,86 @@
 package com.neighbor21.ggits.common.entity;
+
 public class MrtCndcyPathRouteBstpInfo {
-    private long    excnRsltId;        //실행 결과 아이디
-    private long    cndcyPathId;        //후보 경로 아이디
-    private long    bstpSqno;        //버스정류장 순번
-    private String    bstpId;        //버스정류장 아이디
-    private String    bstpNm;        //버스정류장 명
+    private String baseym;
+    private String btcId;
+    private Long stationSeq;
+    private String candRouteId;
+    private String stationid;
+    private String stationNm;
+    private String etlDt;
 
+    private Double mapX;
+    private Double mapY;
 
-  public long getExcnRsltId() {
-    return excnRsltId;
-  }
+    public String getBaseym() {
+        return baseym;
+    }
 
-  public void setExcnRsltId(long excnRsltId) {
-    this.excnRsltId = excnRsltId;
-  }
+    public void setBaseym(String baseym) {
+        this.baseym = baseym;
+    }
 
+    public String getBtcId() {
+        return btcId;
+    }
 
-  public long getCndcyPathId() {
-    return cndcyPathId;
-  }
+    public void setBtcId(String btcId) {
+        this.btcId = btcId;
+    }
 
-  public void setCndcyPathId(long cndcyPathId) {
-    this.cndcyPathId = cndcyPathId;
-  }
+    public Long getStationSeq() {
+        return stationSeq;
+    }
 
+    public void setStationSeq(Long stationSeq) {
+        this.stationSeq = stationSeq;
+    }
 
-  public long getBstpSqno() {
-    return bstpSqno;
-  }
+    public String getCandRouteId() {
+        return candRouteId;
+    }
 
-  public void setBstpSqno(long bstpSqno) {
-    this.bstpSqno = bstpSqno;
-  }
+    public void setCandRouteId(String candRouteId) {
+        this.candRouteId = candRouteId;
+    }
 
+    public String getStationid() {
+        return stationid;
+    }
 
-  public String getBstpId() {
-    return bstpId;
-  }
+    public void setStationid(String stationid) {
+        this.stationid = stationid;
+    }
 
-  public void setBstpId(String bstpId) {
-    this.bstpId = bstpId;
-  }
+    public String getStationNm() {
+        return stationNm;
+    }
 
+    public void setStationNm(String stationNm) {
+        this.stationNm = stationNm;
+    }
 
-  public String getBstpNm() {
-    return bstpNm;
-  }
+    public String getEtlDt() {
+        return etlDt;
+    }
 
-  public void setBstpNm(String bstpNm) {
-    this.bstpNm = bstpNm;
-  }
+    public void setEtlDt(String etlDt) {
+        this.etlDt = etlDt;
+    }
 
+    public Double getMapX() {
+        return mapX;
+    }
+
+    public void setMapX(Double mapX) {
+        this.mapX = mapX;
+    }
+
+    public Double getMapY() {
+        return mapY;
+    }
+
+    public void setMapY(Double mapY) {
+        this.mapY = mapY;
+    }
 }

@@ -1,0 +1,91 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.ScsEmrgVhclPathLogMapper'>
+
+		<select id="findEmergByMnginstcd" resultType="scsEmrgVhclPathLog">
+			SELECT
+				SEVPL.COLLECTDT,
+				SEVPL.SERVICEID,
+				SEVPL.EVNO,
+				SEVPL.CURRENTLAT,
+				SEVPL.CURRENTLNG,
+				SEVPL.SERVICENAME,
+				SEVPL.ARRIVALLAT,
+				SEVPL.ARRIVALLNG
+			FROM
+				SCS_EMRG_VHCL_PATH_LOG SEVPL
+			WHERE
+				SEVPL.collectdt  > current_Date
+		</select>
+		
+		<select id="findEmergByMnginstcdList" resultType="map">
+		  SELECT 
+		  	COUNT(A.*) AS CNT,
+		  	A.CD_NM AS CD_NM
+		  FROM		  
+		  (
+  			SELECT
+				SEVPL.COLLECTDT,
+				SEVPL.SERVICEID,
+				SEVPL.EVNO,
+				SEVPL.CURRENTLAT,
+				SEVPL.CURRENTLNG,
+				SEVPL.SERVICENAME,
+				SEVPL.ARRIVALLAT,
+				SEVPL.ARRIVALLNG,
+				MOC.CD_NM 
+			FROM
+				SCS_EMRG_VHCL_PATH_LOG SEVPL
+			INNER JOIN SCS_EMRG_VHCL_MST_INFO SEVMI ON SEVMI.EVNO = SEVPL.EVNO
+			INNER JOIN M_OP_CODE MOC ON MOC.GRP_CD_ID = 'SGG_CD' AND MOC.CD_ID = SEVMI.REGIONNO::VARCHAR 
+			WHERE
+				SEVPL.COLLECTDT  > CURRENT_DATE 
+			) A
+			GROUP BY A.CD_NM
+			ORDER BY A.CD_NM
+		</select>
+		
+		<select id="findEmergByMnginstcdChartDataInfo" resultType="map">
+			WITH EMRG_ARRAY AS (
+				SELECT 
+						UNNEST(STRING_TO_ARRAY(A.CD_NM,',')) AS SGG_CD_NM_ARRAY ,
+						UNNEST(STRING_TO_ARRAY(A.CNT::VARCHAR  ,',')) AS COUNT_ARRAY
+				FROM 
+					(SELECT
+						MOC.CD_NM AS CD_NM,
+						MOC.SORT_NO as SORT_NO,
+						COUNT(A.*) AS CNT
+					FROM
+						M_OP_CODE MOC
+					LEFT JOIN (
+				  			SELECT
+								SEVPL.COLLECTDT,
+								SEVPL.SERVICEID,
+								SEVPL.EVNO,
+								SEVPL.CURRENTLAT,
+								SEVPL.CURRENTLNG,
+								SEVPL.SERVICENAME,
+								SEVPL.ARRIVALLAT,
+								SEVPL.ARRIVALLNG,
+								MOC.CD_NM
+							FROM
+								SCS_EMRG_VHCL_PATH_LOG SEVPL
+							INNER JOIN SCS_EMRG_VHCL_MST_INFO SEVMI ON SEVMI.EVNO = SEVPL.EVNO
+							INNER JOIN M_OP_CODE MOC ON MOC.GRP_CD_ID = 'SGG_CD' AND MOC.CD_ID = SEVMI.REGIONNO::VARCHAR 
+							WHERE
+								SEVPL.COLLECTDT  > CURRENT_DATE ) A	ON A.CD_NM = MOC.CD_NM 
+					WHERE
+						MOC.GRP_CD_ID = 'SGG_CD'
+					GROUP BY MOC.CD_NM , MOC.SORT_NO
+					ORDER BY MOC.SORT_NO
+					) A
+				WHERE A.CNT > 0
+			) 
+			SELECT 	
+				ARRAY_REMOVE(ARRAY_AGG(SGG_CD_NM_ARRAY), NULL) AS "labelArray", 
+				ARRAY_REMOVE(ARRAY_AGG(COUNT_ARRAY), NULL) AS "dataArray"
+			FROM 
+				EMRG_ARRAY
+		</select>
+</mapper>

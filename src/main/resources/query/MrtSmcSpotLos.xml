@@ -2,4 +2,28 @@
 <!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.MrtSmcSpotLosMapper'>
+	<select id="findTrafficSignalInfo" parameterType="trafficSignalInfoRequest" resultType="trafficSignalInfoResponse">
+		SELECT
+			MNG_INST_CD,
+			CRSRD_ID,
+			ACS_ROAD_ID,
+			DRCT_CD,
+			VHCL_TRFVLM,
+			AVG_VHCL_SPEED,
+			CNGRT_GRD
+		FROM
+			MRT_SMC_SPOT_LOS
+		<trim prefix="WHERE" prefixOverrides="AND">
+			<if test="mngInstCd != null and mngInstCd != ''">
+				AND MNG_INST_CD = #{mngInstCd}
+			</if>
+			<if test="crsrdId != null and crsrdId != ''">
+				AND CRSRD_ID = #{crsrdId}
+			</if>
+			<if test="date != null and date != ''">
+				AND ANLS_DT BETWEEN TO_TIMESTAMP(#{date}||' 00:00:00', 'YYYYMMDD HH24:MI:SS') 
+				AND TO_TIMESTAMP(#{date}||' 23:59:59', 'YYYYMMDD HH24:MI:SS')
+			</if>
+		</trim>
+	</select>
 </mapper>

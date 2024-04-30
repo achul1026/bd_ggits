@@ -3,69 +3,146 @@
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.MrtBusRouteDetAnalMapper'>
 	<select id="countAllPubTrfRouteReciveCurveList" parameterType="mapBigdataSearchDTO" resultType="int">
+		select
+		count(*)
+		from
+		(select
+			 MAX(mbrda.anls_dt ) as anls_dt
+			  ,mbrda.BUS_ROUTE_ID
+			  , egbr.ROUTE_NM
+			  , mbrda.ROUTE_LEN
+			  , mbrda.TOT_BSTP_CNT
+			  , coalesce(mbrda.TOT_USER_CNT, 0) as TOT_USER_CNT
+			  , mbrda.CURVT
+			  , egbr.st_sta_nm
+			  , egbr.ed_sta_nm
+		 FROM mrt_bus_route_det_anal mbrda
+				  inner join BIGDATA.ext_ggbis_bus_route egbr on mbrda.bus_route_id = egbr.route_id
+		 WHERE egbr.route_nm LIKE '%' || #{routeNm} || '%'
+		 group by
+			 mbrda.BUS_ROUTE_ID
+				, egbr.ROUTE_NM
+				, mbrda.ROUTE_LEN
+				, mbrda.TOT_BSTP_CNT
+				, mbrda.TOT_USER_CNT
+				, mbrda.CURVT
+				, egbr.st_sta_nm
+				, egbr.ed_sta_nm) cnt
+	</select>
+	<select id="findAllPubTrfRouteReciveCurveList" parameterType="mapBigdataSearchDTO" resultType="mrtBusRouteDetAnal">
+		select
+			MAX(mbrda.anls_dt ) as anls_dt
+			 ,mbrda.BUS_ROUTE_ID
+			 , egbr.ROUTE_NM
+			 , mbrda.ROUTE_LEN
+			 , mbrda.TOT_BSTP_CNT
+			 , coalesce(mbrda.TOT_USER_CNT, 0) as TOT_USER_CNT
+			 , mbrda.CURVT
+			 , egbr.st_sta_nm
+			 , egbr.ed_sta_nm
+			 ,
+			CASE
+				WHEN egbr.ROUTE_TP ='11' THEN '직행좌석형시내버스'
+				WHEN egbr.ROUTE_TP ='12' THEN '좌석형시내버스'
+				WHEN egbr.ROUTE_TP ='13' THEN '일반형시내버스'
+				WHEN egbr.ROUTE_TP ='21' THEN '직행좌석형농어촌버스'
+				WHEN egbr.ROUTE_TP ='22' THEN '좌석형농어촌버스'
+				WHEN egbr.ROUTE_TP ='23' THEN '일반형농어촌버스'
+				WHEN egbr.ROUTE_TP ='30' THEN '마을버스'
+				WHEN egbr.ROUTE_TP ='41' THEN '고속형시외버스'
+				WHEN egbr.ROUTE_TP ='42' THEN '좌석형시외버스'
+				WHEN egbr.ROUTE_TP ='43' THEN '일반형시외버스'
+				WHEN egbr.ROUTE_TP ='51' THEN '리무진형공항버스'
+				WHEN egbr.ROUTE_TP ='52' THEN '좌석형공항버스'
+				WHEN egbr.ROUTE_TP ='53' THEN '일반형공항버스'
+				END AS ROUTE_TP,
+		       egd.district_snm,
+		       egd.district_gnm
+		FROM mrt_bus_route_det_anal mbrda
+				 inner join BIGDATA.ext_ggbis_bus_route egbr on mbrda.bus_route_id = egbr.route_id
+				 inner join (
+			select area_cd ,district_snm , district_gnm  from bigdata.ext_ggbis_district
+			group by area_cd,district_snm , district_gnm
+		) egd on egbr.area_cd = egd.area_cd
+		WHERE egbr.route_NM LIKE '%' || #{routeNm} || '%'
+		group by
+			mbrda.BUS_ROUTE_ID
+			   , egbr.ROUTE_NM
+			   , mbrda.ROUTE_LEN
+			   , mbrda.TOT_BSTP_CNT
+			   , mbrda.TOT_USER_CNT
+			   , mbrda.CURVT
+			   , egbr.st_sta_nm
+			   , egbr.ed_sta_nm
+				,egbr.ROUTE_TP
+				,egd.district_snm
+		       	,egd.district_gnm
+		order by (case when  egbr.route_NM = #{routeNm} then 1 else 2 end,  egbr.route_NM)
+	</select>
+
+	<!--<select id="countAllPubTrfRouteReciveCurveList" parameterType="mapBigdataSearchDTO" resultType="int">
 		SELECT
-			COUNT(*)
-		FROM MRT_BUS_ROUTE_DET_ANAL
-		WHERE 1=1
-		<if test="searchPeriod != '' and searchPeriod != null">
-			AND EXTRACT (ISODOW from ANLS_DT)::varchar(1) IN 
-			<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
-            	#{item}
-            </foreach>
-		</if>
-		<if test="(startDate != null and startDate != '') and (endDate != null and endDate != '')">
-			AND ANLS_DT
-		    	BETWEEN TO_TIMESTAMP(#{startDate}, 'YYYY-MM-DD HH24:MI:SS') 
-		    	AND TO_TIMESTAMP(#{endDate}, 'YYYY-MM-DD HH24:MI:SS')
-		</if>
-		<if test="(peekAndOffPeek != null and peekAndOffPeek != '') and peekAndOffPeek == 'peek'">
-			AND EXTRACT('HOUR' from ANLS_DT::timestamp)
-				BETWEEN '06'
-				AND '10'
-		</if>
-		<if test="(peekAndOffPeek != null and peekAndOffPeek != '') and peekAndOffPeek == 'offPeek'">
-			AND EXTRACT('HOUR' from ANLS_DT::timestamp)
-				BETWEEN '17'
-				AND '20'
-		</if>
+			COUNT(mbrsa.*)
+		FROM MRT_BUS_ROUTE_SECTN_ANAL mbrsa
+		INNER JOIN (
+					SELECT
+						EGBS.ROUTE_ID,
+						EGBS.STATION_ID AS END_STATION_ID,
+						MAX(EGBS.STA_ORDER) AS END_STA_ORDER,
+						ST_STATION.START_STATION_ID,
+						ST_STATION.START_STA_ORDER
+					FROM BIGDATA.EXT_GGBIS_BUSROUTE_STATION EGBS
+					INNER JOIN (
+								SELECT
+									ROUTE_ID ,
+									STATION_ID AS START_STATION_ID,
+									STA_ORDER AS START_STA_ORDER
+								FROM BIGDATA.EXT_GGBIS_BUSROUTE_STATION EGBS
+								WHERE (EGBS.STATION_NM LIKE '%' || #{startStationNm} || '%' OR EGBS.STATION_ID LIKE '%' || #{startStationNm} || '%')
+								GROUP BY ROUTE_ID , STATION_ID, START_STA_ORDER
+								)
+					ST_STATION ON EGBS.ROUTE_ID = ST_STATION.ROUTE_ID AND EGBS.STA_ORDER > ST_STATION.START_STA_ORDER
+					WHERE (egbs.STATION_NM LIKE '%' || #{endStationNm} || '%' OR egbs.STATION_ID LIKE '%' || #{endStationNm} || '%')
+					GROUP BY EGBS.ROUTE_ID, EGBS.STATION_ID, ST_STATION.START_STATION_ID, ST_STATION.START_STA_ORDER)
+		BUS_ROUTE ON BUS_ROUTE.ROUTE_ID = mbrsa.BUS_ROUTE_ID
+		INNER JOIN MRT_BUS_ROUTE_DET_ANAL mbrda ON mbrsa.BUS_ROUTE_ID = mbrda.BUS_ROUTE_ID
 	</select>
 	
 	<select id="findAllPubTrfRouteReciveCurveList" parameterType="mapBigdataSearchDTO" resultType="mrtBusRouteDetAnal">
 		SELECT
-			brda.ROUTE_NM
-			, brda.ROUTE_LEN
-			, brda.TOT_USER_CNT
-			, brda.TOT_BSTP_CNT
-			, brda.CURVT
-		FROM MRT_BUS_ROUTE_DET_ANAL brda
-		LEFT JOIN GGBIS_BUS_ROUTE gbr
-			ON brda.BUS_ROUTE_ID = gbr.ROUTE_ID
-		WHERE 1=1
-		<if test="searchPeriod != '' and searchPeriod != null">
-			AND EXTRACT (ISODOW from brda.ANLS_DT)::varchar(1) IN 
-			<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
-            	#{item}
-            </foreach>
-		</if>
-		<if test="(startDate != null and startDate != '') and (endDate != null and endDate != '')">
-			AND brda.ANLS_DT
-		    	BETWEEN TO_TIMESTAMP(#{startDate}, 'YYYY-MM-DD HH24:MI:SS') 
-		    	AND TO_TIMESTAMP(#{endDate}, 'YYYY-MM-DD HH24:MI:SS')
-		</if>
-		<if test="(peekAndOffPeek != null and peekAndOffPeek != '') and peekAndOffPeek == 'peek'">
-			AND EXTRACT('HOUR' from brda.ANLS_DT::timestamp)
-				BETWEEN '06'
-				AND '10'
-		</if>
-		<if test="(peekAndOffPeek != null and peekAndOffPeek != '') and peekAndOffPeek == 'offPeek'">
-			AND EXTRACT('HOUR' from brda.ANLS_DT::timestamp)
-				BETWEEN '17'
-				AND '20'
-		</if>
-		<if test="page != null and page != '' and page != 0 ">
-            LIMIT 5 OFFSET (#{page} - 1) * 5
-        </if>
-	</select>
+			mbrsa.BUS_ROUTE_ID
+			, mbrda.ROUTE_NM  
+			, mbrda.ROUTE_LEN
+			, mbrda.TOT_BSTP_CNT
+			, mbrda.TOT_USER_CNT
+			, mbrda.CURVT
+			, BUS_ROUTE.START_STATION_ID
+			, BUS_ROUTE.END_STATION_ID
+		FROM MRT_BUS_ROUTE_SECTN_ANAL mbrsa
+		INNER JOIN (
+					SELECT
+						EGBS.ROUTE_ID,
+						EGBS.STATION_ID AS END_STATION_ID,
+						MAX(EGBS.STA_ORDER) AS END_STA_ORDER,
+						ST_STATION.START_STATION_ID,
+						ST_STATION.START_STA_ORDER
+					FROM BIGDATA.EXT_GGBIS_BUSROUTE_STATION EGBS
+					INNER JOIN (
+								SELECT
+									ROUTE_ID ,
+									STATION_ID AS START_STATION_ID,
+									STA_ORDER AS START_STA_ORDER
+								FROM BIGDATA.EXT_GGBIS_BUSROUTE_STATION EGBS
+								WHERE (EGBS.STATION_NM LIKE '%' || #{startStationNm} || '%' OR EGBS.STATION_ID LIKE '%' || #{startStationNm} || '%')
+								GROUP BY ROUTE_ID , STATION_ID, START_STA_ORDER
+								)
+					ST_STATION ON EGBS.ROUTE_ID = ST_STATION.ROUTE_ID AND EGBS.STA_ORDER > ST_STATION.START_STA_ORDER
+					WHERE (egbs.STATION_NM LIKE '%' || #{endStationNm} || '%' OR egbs.STATION_ID LIKE '%' || #{endStationNm} || '%')
+					GROUP BY EGBS.ROUTE_ID, EGBS.STATION_ID, ST_STATION.START_STATION_ID, ST_STATION.START_STA_ORDER)
+		BUS_ROUTE ON BUS_ROUTE.ROUTE_ID = mbrsa.BUS_ROUTE_ID
+		INNER JOIN MRT_BUS_ROUTE_DET_ANAL mbrda ON mbrsa.BUS_ROUTE_ID = mbrda.BUS_ROUTE_ID
+        LIMIT 5 OFFSET (#{page} - 1) * 5
+	</select>-->
 	
 	<select id="findAllDataYears" resultType="map">
 		SELECT
@@ -74,5 +151,191 @@
 			MRT_BUS_ROUTE_DET_ANAL
 		GROUP BY TO_CHAR(ANLS_DT,'YYYY')
 		ORDER BY TO_CHAR(ANLS_DT,'YYYY') DESC  
+	</select>
+	
+	<select id="findAllBusReciveCurveRankList" resultType="map">
+		WITH BUS_RECIVE_CURVE_RANK_LIST AS (
+			SELECT 
+				A.ROUTE_NM
+				, A.CURVT
+			FROM
+				(
+				SELECT
+					mbrda.ROUTE_NM
+					, mbrda.CURVT
+				FROM 
+					MRT_BUS_ROUTE_DET_ANAL mbrda
+				GROUP BY mbrda.ROUTE_NM, mbrda.curvt
+				ORDER BY mbrda.CURVT DESC
+				LIMIT 5
+				)A
+			GROUP BY A.ROUTE_NM, A.CURVT
+		) 
+		SELECT 	
+			ARRAY_TO_STRING(ARRAY_AGG(ROUTE_NM), ',') AS "busRouteIdArr"
+			, ARRAY_TO_STRING(ARRAY_AGG(CURVT), ',') AS "busCurveArr"
+		FROM 
+			BUS_RECIVE_CURVE_RANK_LIST
+	</select>
+
+	<select id="findOneByRouteId" parameterType="mapBigdataSearchDTO" resultType="mrtBusRouteDetAnal">
+		SELECT
+		egbr.ROUTE_ID as BUS_ROUTE_ID
+		,egbr.ROUTE_NM
+		,AVG(MBRDA.ROUTE_LEN) AS ROUTE_LEN
+		,AVG(MBRDA.RUNG_INTV) AS RUNG_INTV
+		,MAX(MBRDA.TOT_BSTP_CNT) AS TOT_BSTP_CNT
+		,SUM(MBRDA.TOT_USER_CNT) AS TOT_USER_CNT
+		,AVG(MBRDA.CURVT) AS CURVT
+		from
+		bigdata.ext_ggbis_bus_route egbr
+		left join MRT_BUS_ROUTE_DET_ANAL MBRDA on egbr.route_id = mbrda.bus_route_id
+		WHERE EGBR.ROUTE_ID  = #{routeId}
+		<!-- 연도별 검색 -->
+		<if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+			AND TO_CHAR(MBRDA.ANLS_DT, 'YYYY') = #{searchYear}
+		</if>
+		<!-- 기간 검색 -->
+		<if test="searchPeriod != null and searchPeriod != ''">
+			<choose>
+				<when test="searchPeriod == 'weekday' ">
+					AND TO_CHAR(MBRDA.ANLS_DT, 'D') BETWEEN '2' AND '6'
+				</when>
+				<when test="searchPeriod == 'weekend' ">
+					AND (TO_CHAR(MBRDA.ANLS_DT, 'D') = '1' OR TO_CHAR(MBRDA.ANLS_DT, 'D') = '7')
+				</when>
+				<otherwise>
+					AND TO_CHAR(MBRDA.ANLS_DT, 'YYYY-MM-DD') BETWEEN #{startDate} AND #{endDate}
+				</otherwise>
+			</choose>
+		</if>
+		<!-- 시간 검색 -->
+		<if test="searchTime != null and searchTime != ''">
+			<choose>
+				<when test="searchTime == 'workingTime' ">
+					AND TO_CHAR(MBRDA.ANLS_DT, 'HH24') BETWEEN '06' AND '10'
+				</when>
+				<when test="searchTime == 'workingEndTime' ">
+					AND TO_CHAR(MBRDA.ANLS_DT, 'HH24') BETWEEN '17' AND '20'
+				</when>
+				<otherwise>
+					AND TO_CHAR(MBRDA.ANLS_DT, 'HH24') BETWEEN #{startTime} AND #{endTime}
+				</otherwise>
+			</choose>
+		</if>
+		GROUP BY egbr.ROUTE_ID ,egbr.ROUTE_NM
+	</select>
+
+
+	<!--일반 -->
+	<select id="findAllTop10ByCurvtAndType1" resultType="mrtBusRouteDetAnal">
+		select
+			mbrda.anls_dt
+			,mbrda.bus_route_id
+			,mbrda.route_nm
+			,egd.district_snm
+			,egd.district_gnm
+            ,mbrda.rung_type
+            ,mbrda.route_len
+            ,mbrda.rung_intv
+            ,mbrda.addng_cd
+            ,mbrda.tot_bstp_cnt
+            ,mbrda.tot_user_cnt
+            ,mbrda.curvt
+			,mbrda.etl_dt
+		from
+			mrt_bus_route_det_anal mbrda
+			inner join bigdata.ext_ggbis_bus_route egbr on mbrda.bus_route_id = egbr.route_id
+			inner join (
+				select area_cd ,district_snm , district_gnm  from bigdata.ext_ggbis_district
+				group by area_cd,district_snm , district_gnm
+			) egd on egbr.area_cd = egd.area_cd
+		where rung_type like '1%'
+		order by curvt desc ,route_len desc
+			limit 20
+	</select>
+
+	<!--직좌 -->
+	<select id="findAllTop10ByCurvtAndType2" resultType="mrtBusRouteDetAnal">
+		select
+			mbrda.anls_dt
+			 ,mbrda.bus_route_id
+			 ,mbrda.route_nm
+			 ,egd.district_snm
+			 ,egd.district_gnm
+			 ,mbrda.rung_type
+			 ,mbrda.route_len
+			 ,mbrda.rung_intv
+			 ,mbrda.addng_cd
+			 ,mbrda.tot_bstp_cnt
+			 ,mbrda.tot_user_cnt
+			 ,mbrda.curvt
+			,mbrda.etl_dt
+		from
+			mrt_bus_route_det_anal mbrda
+				inner join bigdata.ext_ggbis_bus_route egbr on mbrda.bus_route_id = egbr.route_id
+				inner join (
+				select area_cd ,district_snm , district_gnm  from bigdata.ext_ggbis_district
+				group by area_cd,district_snm , district_gnm
+			) egd on egbr.area_cd = egd.area_cd
+		where rung_type like '2%'
+		order by curvt desc ,route_len desc
+			limit 20
+	</select>
+
+	<!--마을 -->
+	<select id="findAllTop10ByCurvtAndType3" resultType="mrtBusRouteDetAnal">
+		select
+			mbrda.anls_dt
+			 ,mbrda.bus_route_id
+			 ,mbrda.route_nm
+		     ,egd.district_snm
+		     ,egd.district_gnm
+			 ,mbrda.rung_type
+			 ,mbrda.route_len
+			 ,mbrda.rung_intv
+			 ,mbrda.addng_cd
+			 ,mbrda.tot_bstp_cnt
+			 ,mbrda.tot_user_cnt
+			 ,mbrda.curvt
+			,mbrda.etl_dt
+		from
+			mrt_bus_route_det_anal mbrda
+				inner join bigdata.ext_ggbis_bus_route egbr on mbrda.bus_route_id = egbr.route_id
+				inner join (
+				select area_cd ,district_snm , district_gnm  from bigdata.ext_ggbis_district
+				group by area_cd,district_snm , district_gnm
+			) egd on egbr.area_cd = egd.area_cd
+		where rung_type like '3%'
+		order by curvt desc ,route_len desc
+			limit 20
+	</select>
+
+	<!--시외/공항-->
+	<select id="findAllTop10ByCurvtAndType4" resultType="mrtBusRouteDetAnal">
+		select
+			mbrda.anls_dt
+			 ,mbrda.bus_route_id
+			 ,mbrda.route_nm
+			 ,egd.district_snm
+			 ,egd.district_gnm
+			 ,mbrda.rung_type
+			 ,mbrda.route_len
+			 ,mbrda.rung_intv
+			 ,mbrda.addng_cd
+			 ,mbrda.tot_bstp_cnt
+			 ,mbrda.tot_user_cnt
+			 ,mbrda.curvt
+			,mbrda.etl_dt
+		from
+			mrt_bus_route_det_anal mbrda
+				inner join bigdata.ext_ggbis_bus_route egbr on mbrda.bus_route_id = egbr.route_id
+				inner join (
+				select area_cd ,district_snm , district_gnm  from bigdata.ext_ggbis_district
+				group by area_cd,district_snm , district_gnm
+			) egd on egbr.area_cd = egd.area_cd
+		where rung_type like '4%'
+		order by curvt desc ,route_len desc
+		limit 20
 	</select>
 </mapper>

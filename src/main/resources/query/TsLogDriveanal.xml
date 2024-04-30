@@ -2,4 +2,141 @@
 <!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.TsLogDriveanalMapper'>
+    <select id="findAllBySearchOptionForGIS" parameterType="mapBigdataSearchDTO" resultType="tsLogDriveanal">
+        select
+        *
+        from
+        <choose>
+            <when test="collectType == 'quickAccel' ">
+                bigdata.ext_ts_log_driveanal_accel tld
+            </when>
+            <when test="collectType == 'quickDecel' ">
+                bigdata.ext_ts_log_driveanal_decel tld
+            </when>
+            <when test="collectType == 'quickStop' ">
+                bigdata.ext_ts_log_driveanal_stop tld
+            </when>
+            <when test="collectType == 'quickStart' ">
+                bigdata.ext_ts_log_driveanal_start tld
+            </when>
+            <when test="collectType == 'quickRouteChange' ">
+                bigdata.ext_ts_log_driveanal_rtchng tld
+            </when>
+            <when test="collectType == 'quickOvertake' ">
+                bigdata.ext_ts_log_driveanal_ovtake tld
+            </when>
+            <when test="collectType == 'quickLfrtTurn' ">
+                bigdata.ext_ts_log_driveanal_lrturn tld
+            </when>
+            <when test="collectType == 'quickUturn' ">
+                bigdata.ext_ts_log_driveanal_uturn tld
+            </when>
+        </choose>
+        <where>
+            tld.car_no = #{routeId}
+            <![CDATA[
+            and drive_dtm >= concat(#{startDate},'000000')
+            and drive_dtm <= concat(#{startDate},'235959')
+             ]]>
+        </where>
+    </select>
+
+    <select id="findAllGgbisCompany" resultType="map">
+        select
+               co_nm as company_nm
+             ,bizmn_regist_no as company_id
+        from ggits.ggbis_bus_comp_info
+        group by 1,2
+    </select>
+
+    <select id="findAllBusVehicleByPlateNo" parameterType="mapBigdataSearchDTO" resultType="ggbisVehicle">
+        select
+        *,
+        COUNT(1) OVER() AS paging_total_count
+        from
+        bigdata.ext_ggbis_vehicle egv
+        <where>
+            <if test="routeNm != null and routeNm != ''">
+                and egv.plate_no like '%'||#{routeNm}||'%'
+            </if>
+            <if test="companyNm != null and companyNm != ''">
+                and egv.company_nm = #{companyNm}
+            </if>
+        </where>
+        /*and egv.plate_no not like '%(임)%'*/
+        <choose>
+            <when test="routeNm != null and routeNm != ''">
+                order by (case when egv.plate_no = #{routeNm} then 1 else 2 end, egv.plate_no)
+            </when>
+            <otherwise>
+                order by egv.plate_no
+            </otherwise>
+        </choose>
+        LIMIT 10 OFFSET (#{page} - 1) * 10
+    </select>
+
+    <select id="findAllBySearchOption" parameterType="mapBigdataSearchDTO" resultType="tsLogDriveanal">
+        select
+        egv.route_id ,
+        CASE WHEN EGBR.ROUTE_TP ='12' OR EGBR.ROUTE_TP ='13' OR EGBR.ROUTE_TP ='23' THEN '일반버스'
+        WHEN EGBR.ROUTE_TP ='11' OR EGBR.ROUTE_TP ='14' OR EGBR.ROUTE_TP ='21' OR EGBR.ROUTE_TP ='22' THEN '광역버스'
+        WHEN EGBR.ROUTE_TP ='30' THEN '마을버스'
+        WHEN EGBR.ROUTE_TP ='41' OR EGBR.ROUTE_TP ='42' OR EGBR.ROUTE_TP ='43' THEN '시외버스'
+        WHEN EGBR.ROUTE_TP ='51' OR EGBR.ROUTE_TP ='52' OR EGBR.ROUTE_TP ='53' THEN '공항버스'
+        ELSE '일반버스'
+        END AS ROUTE_TP,
+        egbr.route_nm,
+        egd.district_snm ,
+        egd.district_gnm ,
+        SUM(CASE WHEN tld.quick_accel = '1' THEN 1 ELSE 0 END) AS quick_accel_cnt,
+        SUM(CASE WHEN tld.quick_decel = '1' THEN 1 ELSE 0 END) AS quick_decel_cnt,
+        SUM(CASE WHEN tld.quick_stop = '1' THEN 1 ELSE 0 END) AS quick_stop_cnt,
+        SUM(CASE WHEN tld.quick_start = '1' THEN 1 ELSE 0 END) AS quick_start_cnt,
+        SUM(CASE WHEN tld.quick_route_change = '1' THEN 1 ELSE 0 END) AS quick_route_change_cnt,
+        SUM(CASE WHEN tld.quick_overtake = '1' THEN 1 ELSE 0 END) AS quick_overtake_cnt,
+        SUM(CASE WHEN tld.quick_lfrt_turn = '1' THEN 1 ELSE 0 END) AS quick_lfrt_turn_cnt,
+        SUM(CASE WHEN tld.quick_uturn = '1' THEN 1 ELSE 0 END) AS quick_uturn_cnt,
+        COUNT(1) OVER() AS paging_total_count
+        from
+        bigdata.ext_ts_log_driveanal_anal tld
+        inner join
+        (
+        select
+        egv.veh_id,
+        egv.company_id,
+        egsi.route_id
+        from
+        bigdata.ext_ggbis_vehicle egv
+        inner join(
+        select
+        route_id,
+        veh_id
+        from bigdata.ext_ggbis_section_info
+        group by 1,2
+        ) egsi on egsi.veh_id = egv.veh_id) egv on egv.company_id = tld.car_no
+        inner join bigdata.ext_ggbis_bus_route egbr on
+        egbr.route_id = egv.route_id
+        inner join (
+        select area_cd ,district_snm , district_gnm from bigdata.ext_ggbis_district
+        group by area_cd,district_snm , district_gnm
+        ) egd on egbr.area_cd = egd.area_cd
+        where
+        egbr.route_nm like '%'||#{routeNm}||'%'
+        and work_dt = replace(#{startDate},'-','')
+        <if test="routeTpList != null">
+            AND EGBR.ROUTE_TP IN
+            <foreach collection="routeTpList" item="routeTp" open="(" close=")" separator=",">
+                #{routeTp}
+            </foreach>
+        </if>
+        <if test="districtGnm != null and districtGnm !=''">
+            AND EGD.DISTRICT_GNM = #{districtGnm}
+        </if>
+        group by 1,2,3,4,5
+        order by (case when egbr.route_NM = #{routeNm} then 1 else 2 end, egbr.route_NM)
+        <if test="page != null and page != '' and page != 0 ">
+            LIMIT 5 OFFSET (#{page} - 1) * 5
+        </if>
+    </select>
+
 </mapper>

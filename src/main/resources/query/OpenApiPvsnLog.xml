@@ -1,0 +1,177 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.OpenApiPvsnLogMapper'>
+
+
+
+	<insert id="saveOpenApiPvsnLog" parameterType="openApiPvsnLog">
+	INSERT INTO OPEN_API_PVSN_LOG (
+									CLCT_DT,
+									DSET_ID,
+									OPRTR_IP,
+									API_NM,
+									API_CALL_URL,
+									MNG_INST_CD,
+									CONTENTS,
+									OPRTR_ID,
+									API_DESCR
+								  ) VALUES (
+								  	NOW(),
+								  	#{dsetId},
+								  	#{oprtrIp},
+									#{apiNm},
+									#{apiCallUrl},
+									#{mngInstCd},
+									#{contents},
+									#{oprtrId},
+									#{apiDescr}
+								  	)
+	</insert>
+
+	<update id="updateOpenApiPvsnLog" parameterType="openApiPvsnLog">
+		UPDATE OPEN_API_PVSN_LOG_IMSI SET 
+			API_NM = #{apiNm},
+			API_CALL_URL = #{apiCallUrl},
+			MNG_INST_CD = #{mngInstCd},
+			CONTENTS = #{contents},
+			DATA_REGIST_YMD = #{dataRegistYmd},
+			DATA_UPDT_YMD = #{dataUpdtYmd},
+			DT = #{dt},
+			OPRTR_ID = #{oprtrId}
+		WHERE DT = #{dsetId}
+	</update>
+
+
+	<select id="countDataUseStatsList" parameterType="commonEntity" resultType="int">
+		SELECT
+			COUNT(oapl.*)
+		FROM OPEN_API_PVSN_LOG oapl
+		INNER JOIN M_OP_OPERATOR mop
+			ON oapl.oprtr_id = mop.oprtr_id
+		WHERE
+			1=1
+		<if test="searchType != '' and searchType != null">
+			<if test="searchType == 'all'">
+				AND (oapl.API_NM LIKE '%' || #{searchContent} || '%'
+					OR mop.OPRTR_NM LIKE '%' || #{searchContent} || '%')
+			</if>
+			<if test="searchType == 'apiNm' and searchContent != '' and searchContent != null">
+				AND oapl.API_NM LIKE '%' || #{searchContent} || '%'
+			</if>
+			<if test="searchType == 'creator' and searchContent != '' and searchContent != null">
+				AND mop.OPRTR_NM LIKE '%' || #{searchContent} || '%'
+			</if>
+		</if>
+	</select>
+
+	<select id="findAllDataUseStatsList" parameterType="commonEntity" resultType="openApiPvsnLog">
+		SELECT
+			ROW_NUMBER() OVER(ORDER BY oapl.CLCT_DT) AS rownum
+			,oapl.CLCT_DT
+			,oapl.DSET_ID
+			,oapl.OPRTR_IP
+			,oapl.API_NM
+			,oapl.API_CALL_URL
+			,oapl.MNG_INST_CD
+			,oapl.CONTENTS
+			,oapl.OPRTR_ID
+			,oapl.API_DESCR
+			, mop.OPRTR_NM || '(' || mop.OPRTR_EMAIL || ')' as oprtrIdStr
+		FROM
+			 OPEN_API_PVSN_LOG oapl
+		INNER JOIN M_OP_OPERATOR mop
+			ON oapl.oprtr_id = mop.oprtr_id
+		WHERE
+			1=1
+			<if test="searchType != '' and searchType != null">
+				<if test="searchType == 'all'">
+					AND (oapl.API_NM LIKE '%' || #{searchContent} || '%'
+						OR mop.OPRTR_NM LIKE '%' || #{searchContent} || '%')
+				</if>
+				<if test="searchType == 'apiNm' and searchContent != '' and searchContent != null">
+					AND oapl.API_NM LIKE '%' || #{searchContent} || '%'
+				</if>
+				<if test="searchType == 'creator' and searchContent != '' and searchContent != null">
+					AND mop.OPRTR_NM LIKE '%' || #{searchContent} || '%'
+				</if>
+			</if>
+		ORDER BY ROWNUM DESC
+		LIMIT 10 OFFSET (#{page} - 1) * 10
+	</select>
+
+	<select id="findAllOpenApiPvsnLogList" parameterType="openApiPvsnLog" resultType="openApiPvsnLog">
+		SELECT
+			ROW_NUMBER() OVER(ORDER BY oapl.CLCT_DT) AS rownum
+			,oapl.CLCT_DT
+			,oapl.DSET_ID
+			,oapl.OPRTR_IP
+			,oapl.API_NM
+			,oapl.API_CALL_URL
+			,oapl.MNG_INST_CD
+			,oapl.CONTENTS
+			,oapl.OPRTR_ID
+			,oapl.API_DESCR
+			, moo.OPRTR_NM
+			, moo.OPRTR_EMAIL
+		FROM
+			OPEN_API_PVSN_LOG oapl
+		LEFT JOIN M_OP_OPERATOR moo
+		ON moo.OPRTR_ID = oapl.OPRTR_ID
+		WHERE
+			1=1
+		<if test="searchContent != null and searchContent != ''">
+			AND (oapl.API_NM LIKE '%' || #{searchContent} || '%'
+				OR oapl.API_CALL_URL LIKE '%' || #{searchContent} || '%')
+		</if>
+		<if test="strDt != null and strDt != ''">
+			<![CDATA[
+			   AND oapl.CLCT_DT >= TO_TIMESTAMP(#{strDt}|| ' 00:00:00','YYYY-MM-DD HH24:mi:ss')
+			]]>
+		</if>
+		<if test="endDt != null and endDt != ''">
+			<![CDATA[
+			   AND oapl.CLCT_DT <= TO_TIMESTAMP(#{endDt}|| ' 23:59:59','YYYY-MM-DD HH24:mi:ss')
+			]]>
+		</if>
+		ORDER BY ROWNUM DESC
+		LIMIT 10 OFFSET (#{page} - 1) * 10
+	</select>
+
+	<select id="countAllOpenApiPvsnLogBySearchOption" parameterType="openApiPvsnLog" resultType="int">
+		SELECT COUNT(*)
+		FROM OPEN_API_PVSN_LOG oapl
+		WHERE 1=1
+		<if test="searchContent != null and searchContent != ''">
+			AND (oapl.API_NM LIKE '%' || #{searchContent} || '%'
+				OR oapl.API_CALL_URL LIKE '%' || #{searchContent} || '%')
+		</if>
+		<if test="strDt != null and strDt != ''">
+			<![CDATA[
+			   AND oapl.CLCT_DT >= TO_TIMESTAMP(#{strDt}|| ' 00:00:00','YYYY-MM-DD HH24:mi:ss')
+			]]>
+		</if>
+		<if test="endDt != null and endDt != ''">
+			<![CDATA[
+			   AND oapl.CLCT_DT <= TO_TIMESTAMP(#{endDt}|| ' 23:59:59','YYYY-MM-DD HH24:mi:ss')
+			]]>
+		</if>
+	</select>
+
+	<select id="findOneForOpenApiLogHistory" parameterType="openApiPvsnLog" resultType="openApiPvsnLog">
+		SELECT
+			oapl.CLCT_DT
+			,oapl.DSET_ID
+			,oapl.OPRTR_IP
+			,oapl.API_NM
+			,oapl.API_CALL_URL
+			,oapl.MNG_INST_CD
+			,oapl.CONTENTS
+			,oapl.OPRTR_ID
+			,oapl.API_DESCR
+		FROM OPEN_API_PVSN_LOG oapl
+		WHERE oapl.DSET_ID = #{dsetId}
+	</select>
+
+
+</mapper>

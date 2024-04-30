@@ -6,6 +6,7 @@ public class DsetInfo {
   private String dsetId; //데이터셋 아이디
   private String rltinstId; //유관기관 아이디
   private String keywordId; //키워드 아이디
+  private String clschmId; //분류체계 아이디
   private String srvcNm; //서비스 명
   private String clschmNm; //분류체계 명
   private String orgDataNm; //원본 데이터 명
@@ -20,7 +21,15 @@ public class DsetInfo {
   private String clctSchd; //수집 스케줄
   private String dsetDescr; //데이터셋 설명
   private String pvsnYn; //제공 여부
+  
+  
+  public String getClschmId() {
+	return clschmId;
+  }
 
+  public void setClschmId(String clschmId) {
+	this.clschmId = clschmId;
+	}
 
   public String getDsetId() {
     return dsetId;

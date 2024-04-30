@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.hivesql.mapper.TrfIpcssExmnBizInfoMapper'>
+	<select id="findAllTrafficImpactList" parameterType="trfIpcssExmnBizInfo" resultType="trfIpcssExmnBizInfo">
+		SELECT
+			A.IPCSS_MNG_NO
+			, A.EXMN_YY
+			, A.EVAL_CO_NM
+			, A.EVAL_PIC_NM
+			, A.BIZ_NM
+			, A.BIZ_USG
+			, A.EXMN_DD
+		FROM
+			(
+			SELECT
+				ROW_NUMBER() OVER (PARTITION BY IPCSS_MNG_NO ORDER BY DATE_FORMAT(ETL_DT, 'yyyy-MM-dd HH:mm:ss') DESC) as RNUM, *
+			FROM GGITS.TRF_IPCSS_EXMN_BIZ_INFO
+			) A
+		WHERE
+			<![CDATA[
+			A.RNUM >= (#{page} - 1) * 10 + 1
+			AND A.RNUM <= #{page} * 10
+			]]>
+		ORDER BY A.IPCSS_MNG_NO DESC
+	</select>
+	
+	<select id="countTrafficImpact" parameterType="trfIpcssExmnBizInfo" resultType="int">
+		SELECT
+			COUNT(A.RNUM)			
+		FROM
+			(
+			SELECT
+				ROW_NUMBER() OVER (PARTITION BY IPCSS_MNG_NO ORDER BY DATE_FORMAT(ETL_DT, 'yyyy-MM-dd HH:mm:ss') DESC) as RNUM, *
+			FROM GGITS.TRF_IPCSS_EXMN_BIZ_INFO
+			) A
+	</select>
+
+	<select id="findOneByMngNoNextVal" resultType="long">
+     	SELECT COALESCE(MAX(IPCSS_MNG_NO) + 1 , 1) FROM GGITS.TRF_IPCSS_EXMN_BIZ_INFO
+    </select>
+    
+    <select id="findOneExmnBizInfoByipcssMngNo" parameterType="String" resultType="trfIpcssExmnBizInfo">
+    	SELECT
+	    	EXMN_YY
+	    	, EVAL_CO_NM
+	    	, EVAL_PIC_NM
+	    	, BIZ_NM
+	    	, BIZ_USG
+	    	, EXMN_DD
+	    FROM GGITS.TRF_IPCSS_EXMN_BIZ_INFO
+	    WHERE IPCSS_MNG_NO = #{ipcssMngNo}
+    </select>
+
+	<insert id="saveExmnBizInfo" parameterType="trfIpcssExmnBizInfo">
+		INSERT INTO GGITS.TRF_IPCSS_EXMN_BIZ_INFO
+			VALUES(
+			#{ipcssMngNo}, 
+			#{exmnYy}, 
+			#{evalCoNm}, 
+			#{evalPicNm}, 
+			#{bizNm}, 
+			#{bizUsg}, 
+			#{exmnDd},
+			FROM_UNIXTIME(UNIX_TIMESTAMP(), 'yyyyMMddHHmmss'))
+	</insert>
+	
+	<delete id="deleteTrafficImpactReportByIpcssMngNo" parameterType="String">
+		DELETE 
+		FROM
+			GGITS.TRF_IPCSS_EXMN_BIZ_INFO
+		WHERE
+			IPCSS_MNG_NO = #{ipcssMngNo}
+	</delete>
+</mapper>

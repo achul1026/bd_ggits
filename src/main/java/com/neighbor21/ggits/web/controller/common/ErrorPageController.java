@@ -20,4 +20,13 @@ public class ErrorPageController {
        return "error/error";
    }
 
+    /**
+     * 메뉴 권한 에러페이지
+     * @return
+     */
+    @GetMapping("/errorMenuAuth.do")
+    public String viewAuthErrorPage(){
+
+        return "error/errorAuth";
+    }
 }

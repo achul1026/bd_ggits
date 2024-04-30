@@ -5,12 +5,13 @@
 	
      <select id="findAllAuthList" parameterType="mOpAuthority" resultType="mOpAuthority">
 		SELECT 
-				ROW_NUMBER() OVER(ORDER BY MOA.AUTH_ID) 		AS rownum,
+				ROW_NUMBER() OVER(ORDER BY MOA.CRT_DT) 		AS rownum,
 				MOA.AUTH_ID,
 				MOA.AUTH_NM,
 				MOA.DESCR,
 				MOA.CRT_DT,
-				MOA.UPDT_DT
+				MOA.UPDT_DT,
+				MOA.AUTH_CD
 		FROM 	M_OP_AUTHORITY	MOA
 		ORDER BY rownum DESC
 	</select>
@@ -24,12 +25,13 @@
 			)
 		FROM (
 		SELECT
-			ROW_NUMBER() OVER( ORDER BY MOA.AUTH_ID) AS ROWNUM,
+			ROW_NUMBER() OVER( ORDER BY MOA.CRT_DT) AS ROWNUM,
 				MOA.AUTH_ID AS AUTH_ID,
 				MOA.AUTH_NM AS AUTH_NM,
 				MOA.DESCR AS DESCR,
 				MOA.CRT_DT,
-				MOA.UPDT_DT
+				MOA.UPDT_DT,
+				MOA.AUTH_CD
 			FROM
 				M_OP_AUTHORITY MOA
 			WHERE
@@ -42,6 +44,7 @@
 			</if>
 			ORDER BY ROWNUM DESC
 			LIMIT 10 OFFSET (#{page} - 1) * 10) A 
+		ORDER BY A.ROWNUM DESC
 	</select>
 	
 	<select id="findOneByAuthId" parameterType="long" resultType="mOpAuthority">
@@ -51,9 +54,17 @@
 			MOA.AUTH_USE_YN,
 			MOA.DESCR,
 			MOA.CRT_DT,
-			MOA.UPDT_DT
+			MOA.UPDT_DT,
+			MOA.AUTH_CD
 		FROM 	M_OP_AUTHORITY	MOA
 		WHERE AUTH_ID = #{authId}
+	</select>
+	
+	<select id="countByAuthCd" parameterType="String" resultType="int">
+		SELECT 
+			COUNT(*)
+		FROM 	M_OP_AUTHORITY
+		WHERE AUTH_CD = #{authCd}
 	</select>
 	
 	<select id="countAllBySearchOption" resultType="int" parameterType="mOpAuthority">
@@ -86,14 +97,16 @@
 			DESCR,
 			AUTH_USE_YN,
 			CRT_DT,
-			UPDT_DT
+			UPDT_DT,
+			AUTH_CD
 		) VALUES (
 			#{authId},
 			#{authNm},
 			#{descr},
 			#{authUseYn},
 			NOW(),
-			NOW()
+			NOW(),
+			#{authCd}
 		)
 	</insert>
 	
@@ -108,7 +121,8 @@
      	AUTH_NM=#{authNm},
      	DESCR = #{descr},
      	AUTH_USE_YN=#{authUseYn},
-      	UPDT_DT = NOW()
+      	UPDT_DT = NOW(),
+      	AUTH_CD = #{authCd}
 		WHERE AUTH_ID = #{authId};
 	</update>
 </mapper>

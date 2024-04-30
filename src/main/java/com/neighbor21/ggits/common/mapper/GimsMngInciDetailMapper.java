@@ -6,7 +6,9 @@ import java.util.Map;
 
 import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
 
+import com.neighbor21.ggits.common.dto.MapMonitoringLinkDataDTO;
 import com.neighbor21.ggits.common.entity.GimsMngInciDetail;
+import org.postgresql.util.PSQLException;
 
 @Mapper
 public interface GimsMngInciDetailMapper {
@@ -20,28 +22,19 @@ public interface GimsMngInciDetailMapper {
 	  * @return
 	  */
 	public List<GimsMngInciDetail> findAllWarningList(Map<String,Object> paramMap);
-	
-	/**
-	 * @Method Name : findAllDailyWarningList
-	 * @작성일 : 2023. 9. 19.
-	 * @작성자 : NK.KIM
-	 * @Method 설명 : 일일 돌발 이력 목록 조회
-	 * @param paramMap
-	 * @return
-	 */
-	public List<GimsMngInciDetail> findAllDailyWarningList(Map<String,Object> paramMap);
 
-	public List<GimsMngInciDetail> findAllDailyWarningAlarmList();
+
+	public List<GimsMngInciDetail> findAllDailyWarningAlarmList() throws PSQLException;
 
 	/**
 	 * @Method Name : findTop3GimsMngInciDetailByBeginDateAndEndDate
 	 * @작성일 : 2023. 10. 24.
 	 * @작성자 : KY.LEE
-	 * @Method 설명 : 모니터링 대시보드 > 일일 돌발 발생 목록 상위3개
+	 * @Method 설명 : 모니터링 대시보드 > 일일 돌발 발생 목록
 	 * @param GimsMngInciDetail
 	 * @return
 	 */
-	public List<Map<String,Object>> findTop3GimsMngInciDetailByBeginDateAndEndDate(GimsMngInciDetail gimsMngInciDetail);
+	public List<Map<String,Object>> findWarningTabInfo(GimsMngInciDetail gimsMngInciDetail);
 
 	/**
      * @Method Name : countGimsMngInciDetailList
@@ -85,6 +78,17 @@ public interface GimsMngInciDetailMapper {
 	 * @return
 	 */
 	public Map<String, Object> findOneGimsCountInfo(Map<String, Object> paramMap);
+	
+	/**
+	 * @param paramMap 
+	 * @Method Name : findByMonitoringChartData
+	 * @작성일 : 2023. 11. 21.
+	 * @작성자 : KY.LEE
+	 * @Method 설명 : 모니터링 대시보드 > 돌발상황 차트
+	 * @param paramMap
+	 * @return
+	 */
+	public Map<String, Object> findByMonitoringChartData(GimsMngInciDetail gimsMngInciDetail);
 
 	public List<String> findOneInciCateList();
 
@@ -92,35 +96,46 @@ public interface GimsMngInciDetailMapper {
 	 * 맵에 돌발상황 마커를 그리기 위한 쿼리
 	 * @return
 	 */
-	public List<GimsMngInciDetail> findAllWarningListForMapMarker();
+	public List<GimsMngInciDetail> findAllWarningListForMapMarker() throws PSQLException;
+
+	public List<GimsMngInciDetail> findAllUTICWarningListForMapMarker() throws PSQLException;
 	
 	/**
-     * @param GimsMngInciDetail 
-	 * @Method Name : countByBeginDateAndEndDate
-     * @작성일 : 2023. 10. 23.
-     * @작성자 : KY.LEE
-     * @Method 설명 : 모니터링 대시보드 -> 일일 돌발 상황 건수 조회
-	 * @return int
-	 */
-	public int countByBeginDateAndEndDate(GimsMngInciDetail gimsMngInciDetail);
+	  * @Method Name : findAllWarningListForList
+	  * @작성일 : 2023. 11. 28.
+	  * @작성자 : NK.KIM
+	  * @Method 설명 : 돌발 현황 목록
+	  * @return
+	  */
+	public List<GimsMngInciDetail> findAllWarningListForList();
 	
 	/**
-     * @param GimsMngInciDetail 
-	 * @Method Name : countByBeginDateAndEndDateAndInUpdateCate
+     * @param countByMonitoringWaringInfo 
+	 * @Method Name : countByMonitoringWaringInfo
      * @작성일 : 2023. 10. 23.
      * @작성자 : KY.LEE
-     * @Method 설명 : 모니터링 대시보드 -> 일일 돌발 상황 건수 조회 조건(상태값 포함)
+     * @Method 설명 : 모니터링 대시보드 -> 돌발 건수 조회 진행중/완료됨
 	 * @return int
 	 */
-	public int countByBeginDateAndEndDateAndInUpdateCate(GimsMngInciDetail gimsMngInciDetail);
+	public Map<String,Object> countByMonitoringWaringInfo(GimsMngInciDetail gimsMngInciDetail);
+
 	
 	/**
-     * @param GimsMngInciDetail 
-	 * @Method Name : countByBeginDateAndEndDateAndNotInUpdateCate
-     * @작성일 : 2023. 10. 23.
-     * @작성자 : KY.LEE
-     * @Method 설명 : 모니터링 대시보드 -> 일일 돌발 상황 건수 조회 조건(상태값 미포함)
-	 * @return int
-	 */
-	public int countByBeginDateAndEndDateAndNotInUpdateCate(GimsMngInciDetail gimsMngInciDetail);
+	  * @Method Name : findOneDataCntForMonitoring
+	  * @작성일 : 2023. 11. 14.
+	  * @작성자 : NK.KIM
+	  * @Method 설명 : 일일 긴급차량 데이터 개수 조회 (연계대상 수집 이력)
+	  * @return
+	  */
+	public MapMonitoringLinkDataDTO findOneDataCntForMonitoring();
+
+   /**
+    * @Method Name : findWarningByMnginstcd
+    * @작성일 : 2023. 01. 04.
+    * @작성자 : KY.LEE
+    * @Method 설명 : 모니터링 대시보드 -> 돌발 수집원별 수
+    */
+	List<GimsMngInciDetail> findWarningByMnginstcd();
+
+	List<GimsMngInciDetail> findAllWarningInfoToday();
 }

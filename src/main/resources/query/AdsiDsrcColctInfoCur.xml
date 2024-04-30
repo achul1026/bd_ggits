@@ -1,0 +1,87 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.AdsiDsrcColctInfoCurMapper'>
+	<sql id="dsrcInfo-Where">
+		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
+			AND ADCIC.ANLS_DT 
+			BETWEEN TO_TIMESTAMP(#{strDt}|| ' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}|| ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
+			<![CDATA[
+			AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS')  <= ADCIC.ANLS_DT
+			]]>
+		</if>
+		<if test="(strDt == '' or strDt == null) and (endDt != '' and endDt != null)">
+			<![CDATA[
+			AND ADCIC.ANLS_DT <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			]]>
+		</if>
+		<if test="searchContent != null and searchContent != ''">
+			AND (AMFD1.RSE_NM LIKE '%' ||  #{searchContent} || '%') 
+				OR (AMFD2.RSE_NM LIKE '%' ||  #{searchContent} || '%') 
+				OR (CGSLAM.ROAD_NAME LIKE '%' || #{searchContent} || '%')
+		</if>
+		<if test="(sigunCdId != null and sigunCdId != '') and sigunCdId != 'searchAllLocation'">
+			AND CGSLAM.ADSTDG_CD LIKE SUBSTRING(#{sigunCdId}, 0, 5) || '%'
+		</if>
+	</sql>
+	
+	<select id="findAdsiDsrcColctInfoList" parameterType="adsiDsrcColctInfoCur" resultType="adsiDsrcColctInfoCur">
+		SELECT
+			TO_CHAR(ADCIC.anls_dt, 'YYYYMMDD'),
+			CASE WHEN AMFD1.rse_nm is null
+				THEN AMFD1.rse_id
+			ELSE AMFD1.rse_nm
+			END as STR_RSE_NM,
+			CASE WHEN AMFD2.rse_nm is null
+				THEN AMFD2.rse_id
+			ELSE AMFD2.rse_nm
+			END as END_RSE_NM,
+			CGSLAM.ROAD_NAME,
+			COALESCE(ROUND(SUM(ADCIC.SPEED) / COUNT(ADCIC.dsrc_sctn_id), 0), 0)as AVG_SPD
+		FROM GGITS.mrt_dsrc_clct_stats ADCIC
+		INNER JOIN bigdata.ext_ADSI_DSRC_SCTN_INFO ADSI
+			on (ADCIC.dsrc_sctn_id = ADSI.dsrc_sctn_id and ADCIC.mng_inst_cd = ADSI.mng_inst_cd)
+		INNER JOIN bigdata.ext_ADSI_M_FA_DSRC AMFD1
+			ON	(AMFD1.RSE_ID = ADSI.START_RSE_ID and AMFD1.mng_inst_cd = ADSI.mng_inst_cd)
+		INNER JOIN bigdata.ext_ADSI_M_FA_DSRC AMFD2
+			ON	(AMFD2.RSE_ID = ADSI.END_RSE_ID and AMFD2.mng_inst_cd = ADSI.mng_inst_cd)
+		INNER JOIN bigdata.ext_ADSI_DSRC_SCTN_STLINK_MPPG ADSSM
+			ON (ADSI.dsrc_sctn_id = ADSSM.dsrc_sctn_id and ADCIC.mng_inst_cd = ADSI.mng_inst_cd)
+		INNER JOIN ggits.C_GM_STD_LINK_ADSTDG_MPPG CGSLAM
+			ON ADSSM.STD_LINK_ID = CGSLAM.LINK_ID
+		WHERE 1=1
+			<include refid="dsrcInfo-Where"/>
+		AND CGSLAM.ROAD_NAME <![CDATA[<>]]> '-'
+		GROUP BY 1,2,3,CGSLAM.ROAD_NAME
+		<if test="page != null and page != '' and page != 0">
+			LIMIT 10 OFFSET (#{page} - 1) * 10
+		</if>
+	</select>
+	
+	<select id="countDsrcColctInfo" parameterType="adsiDsrcColctInfoCur" resultType="int">
+		SELECT
+			COUNT(A.STR_RSE_ID)
+		FROM (
+			SELECT
+			AMFD1.RSE_ID as STR_RSE_ID
+			FROM ggits.mrt_dsrc_clct_stats ADCIC
+			INNER JOIN bigdata.ext_ADSI_DSRC_SCTN_INFO ADSI
+			ON (ADCIC.dsrc_sctn_id = ADSI.dsrc_sctn_id and ADCIC.mng_inst_cd = ADSI.mng_inst_cd)
+			INNER JOIN bigdata.ext_ADSI_M_FA_DSRC AMFD1
+			ON (AMFD1.RSE_ID = ADSI.START_RSE_ID and AMFD1.mng_inst_cd = ADSI.mng_inst_cd)
+			INNER JOIN bigdata.ext_ADSI_M_FA_DSRC AMFD2
+			ON (AMFD2.RSE_ID = ADSI.END_RSE_ID and AMFD2.mng_inst_cd = ADSI.mng_inst_cd)
+			INNER JOIN bigdata.ext_ADSI_DSRC_SCTN_STLINK_MPPG ADSSM
+			ON (ADSI.dsrc_sctn_id = ADSSM.dsrc_sctn_id and ADCIC.mng_inst_cd = ADSI.mng_inst_cd)
+			INNER JOIN ggits.C_GM_STD_LINK_ADSTDG_MPPG CGSLAM
+			ON ADSSM.STD_LINK_ID = CGSLAM.LINK_ID
+			WHERE 1=1
+				<include refid="dsrcInfo-Where"/>
+			AND CGSLAM.ROAD_NAME <![CDATA[<>]]> '-'
+			GROUP BY to_char(ADCIC.anls_dt, 'YYYYMMDD'), AMFD1.RSE_ID, AMFD2.RSE_ID, CGSLAM.ROAD_NAME
+		)A
+	</select>
+</mapper>

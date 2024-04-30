@@ -1,9 +1,9 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
-
-<div class="pt16 pb16" id="codeSaveFrm">
-	<div class="flex-center gap16 mt16">
-		<input type="hidden" name="grpCdId" id="grpCdId" value="${mOpCode.grpCdId}">
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>   
+<div class="" id="codeSaveFrm">
+	<div class="flex-center gap16">
+		<input type="hidden" name="grpCdId" id="grpCdId" value="<c:out value='${mOpCode.grpCdId}'/>">
 		<div class="flex-column modal_input_box">
 			<label class="modal_input_label">코드</label>
 			<input type="text" name="cdId" id="cdId" class="modal_input data-validate" placeholder="코드를 입력해 주세요."

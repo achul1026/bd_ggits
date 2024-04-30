@@ -1,0 +1,102 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.GgsplBusPeriodicinfoMapper'>
+
+    <select id="findAllRealTimeBusMoveInfo" parameterType="ggsplBusPeriodicinfo" resultType="ggsplBusPeriodicinfo">
+        select
+        distinct egbp.collect_id,
+        egbp.server_no,
+        egbp.veh_id,
+        egbp.collect_date,
+        egbp.route_id,
+        egbp.gps_x,
+        egbp.gps_y,
+        egbp.remainseat_cnt,
+        egbp.passenger_cnt,
+        egbp.totalseat_cnt,
+        GV.COMPANY_ID,
+        GV.PLATE_NO,
+        EGBR.ROUTE_NM,
+        EGBR.COMPANY_NM,
+        EGBR.ROUTE_TP,
+   		CASE WHEN EGBR.ROUTE_TP ='12' OR EGBR.ROUTE_TP ='13' OR EGBR.ROUTE_TP ='23' THEN '일반버스'
+				WHEN EGBR.ROUTE_TP ='11'  OR EGBR.ROUTE_TP ='14' OR EGBR.ROUTE_TP ='21' OR EGBR.ROUTE_TP ='22' THEN '광역버스'
+				WHEN EGBR.ROUTE_TP ='30' THEN '마을버스'
+				WHEN EGBR.ROUTE_TP ='41' OR EGBR.ROUTE_TP ='42' OR EGBR.ROUTE_TP ='43' THEN '시외버스'
+				WHEN EGBR.ROUTE_TP ='51' OR EGBR.ROUTE_TP ='52' OR EGBR.ROUTE_TP ='53' THEN '공항버스'
+				ELSE '일반버스'
+				END AS ROUTE_TP_NM,
+		EGD.DISTRICT_GNM 
+        from ggspl_bus_periodicinfo_cur egbp
+                 inner join (
+                select
+                MAX(collect_date) as RCT_COLLECT_DATE,
+                route_id ,
+                veh_id
+                from
+                ggspl_bus_periodicinfo_cur
+                where collect_date > now() - interval'5 minute'
+                group by ROUTE_ID, veh_id
+        ) RCT_BUS on egbp.route_id = RCT_BUS.ROUTE_ID and egbp.veh_id = rct_bus.veh_id and egbp.collect_date  = RCT_BUS.RCT_COLLECT_DATE
+                 LEFT JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE EGBR ON egbp.ROUTE_ID = EGBR.ROUTE_ID
+                 LEFT JOIN BIGDATA.EXT_GGBIS_DISTRICT EGD ON EGBR.AREA_CD = EGD.AREA_CD 
+                 LEFT JOIN BIGDATA.EXT_GGBIS_VEHICLE GV ON egbp.VEH_ID = GV.VEH_ID
+        WHERE
+        1=1
+   		<if test="routeTpList != null">
+			AND EGBR.ROUTE_TP IN
+			<foreach collection="routeTpList" item="routeTp" open="(" close=")" separator=",">
+				#{routeTp}
+			</foreach>
+		</if>
+        <if test="routeNm != null and routeNm != '' ">
+            AND	EGBR.ROUTE_NM LIKE '%' || #{routeNm} || '%'
+        </if>
+        <if test="districtGnm != null and districtGnm !=''">
+            AND	EGD.DISTRICT_GNM = #{districtGnm}
+        </if>
+        order by (
+        <if test="routeNm != null and routeNm != '' ">
+                  case when  egbr.route_NM = #{routeNm} then 1 else 2 end,
+        </if>
+                  egbr.route_NM)
+        <if test="page != null and page != '' and page != 0 ">
+            LIMIT 5 OFFSET (#{page} - 1) * 5
+        </if>
+    </select>
+
+
+    <select id="countAllRealTimeBusMoveInfo" parameterType="ggsplBusPeriodicinfo" resultType="int">
+        select
+        count(DISTINCT EGBP.COLLECT_ID)
+        from ggspl_bus_periodicinfo_cur egbp
+        inner join (
+        select
+        MAX(collect_date) as RCT_COLLECT_DATE,
+        route_id ,
+        veh_id
+        from
+        ggspl_bus_periodicinfo_cur
+        where collect_date > now() - interval'5 minute'
+        group by ROUTE_ID, veh_id
+        ) RCT_BUS on egbp.route_id = RCT_BUS.ROUTE_ID and egbp.veh_id = rct_bus.veh_id and egbp.collect_date  = RCT_BUS.RCT_COLLECT_DATE
+        LEFT JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE EGBR ON egbp.ROUTE_ID = EGBR.ROUTE_ID
+        LEFT JOIN BIGDATA.EXT_GGBIS_DISTRICT EGD ON EGBR.AREA_CD = EGD.AREA_CD 
+        LEFT JOIN BIGDATA.EXT_GGBIS_VEHICLE GV ON egbp.VEH_ID = GV.VEH_ID
+        WHERE
+        1=1
+   		<if test="routeTpList != null">
+			AND EGBR.ROUTE_TP IN
+			<foreach collection="routeTpList" item="routeTp" open="(" close=")" separator=",">
+				#{routeTp}
+			</foreach>
+		</if>
+        <if test="districtGnm != null and districtGnm !=''">
+            AND	EGD.DISTRICT_GNM = #{districtGnm}
+        </if>
+        <if test="routeNm != null and routeNm != '' ">
+            AND	EGBR.ROUTE_NM LIKE '%' || #{routeNm} || '%'
+        </if>
+    </select>
+</mapper>

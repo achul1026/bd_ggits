@@ -2,4 +2,191 @@
 <!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.GgbisBusRouteMapper'>
+	<select id="findAllBusUserRankList" parameterType="mapBigdataSearchDTO" resultType="map">
+		WITH BUS_USE_USER_RANK_LIST AS (
+			SELECT
+				A.BUS_ROUTE_NM
+				, A.BUS_USER_CNT
+			FROM
+				(
+				SELECT
+					gbr.ROUTE_NM as BUS_ROUTE_NM
+					, SUM(mbrla.BUS_USER_CNT) as BUS_USER_CNT
+				FROM
+					BIGDATA.EXT_GGBIS_BUS_ROUTE gbr
+				inner JOIN MRT_BUS_RUNG_LOG_ANAL mbrla
+					ON gbr.ROUTE_ID = mbrla.BUS_ROUTE_ID
+				<where>
+				<if test="searchTime != null and searchTime != ''">
+					AND mbrla.CLCT_YMD = replace(#{searchTime},'-','')
+				</if>
+				<if test="routeTp != null and routeTp != ''">
+					AND gbr.ROUTE_TP = #{routeTp}
+				</if>
+				<if test="sigunCdId != null and sigunCdId != '' and sigunCdId != 'searchAllLocation'">
+					AND gbr.SIDO_CD = #{sigunCdId}
+				</if>
+					</where>
+				GROUP BY gbr.ROUTE_NM
+				ORDER BY BUS_USER_CNT DESC
+				LIMIT 5
+				)A
+			GROUP BY A.BUS_ROUTE_NM, A.BUS_USER_CNT
+		)
+		SELECT
+			ARRAY_TO_STRING(ARRAY_AGG(BUS_ROUTE_NM), ',') AS "busRouteIdArr"
+			, ARRAY_TO_STRING(ARRAY_AGG(BUS_USER_CNT), ',') AS "busUserCntArr"
+		FROM
+			BUS_USE_USER_RANK_LIST
+	</select>
+
+	<select id="findAllBusTrnsitUserRankList" parameterType="mapBigdataSearchDTO" resultType="map">
+		WITH BUS_TRSFR_USER_RANK_LIST AS (
+				SELECT
+					A.BUS_ROUTE_NM
+					, A.TRSFR_CNT
+				FROM
+					(
+					SELECT
+						gbr.ROUTE_NM as BUS_ROUTE_NM
+						, SUM(mbrla.TRSFR_CNT) as TRSFR_CNT
+					FROM
+							BIGDATA.EXT_GGBIS_BUS_ROUTE gbr
+					inner JOIN MRT_BUS_RUNG_LOG_ANAL mbrla
+						ON gbr.ROUTE_ID = mbrla.BUS_ROUTE_ID
+					<where>
+					<if test="searchTime != null and searchTime != ''">
+						AND mbrla.CLCT_YMD = replace(#{searchTime},'-','')
+					</if>
+					<if test="routeTp != null and routeTp != ''">
+						AND gbr.ROUTE_TP = #{routeTp}
+					</if>
+					<if test="sigunCdId != null and sigunCdId != '' and sigunCdId != 'searchAllLocation'">
+						AND gbr.SIDO_CD = #{sigunCdId}
+					</if>
+					</where>
+					GROUP BY gbr.ROUTE_NM
+					ORDER BY TRSFR_CNT DESC
+					LIMIT 5
+					)A
+				GROUP BY A.BUS_ROUTE_NM, A.TRSFR_CNT
+			)
+		SELECT
+			ARRAY_TO_STRING(ARRAY_AGG(BUS_ROUTE_NM), ',') AS "busRouteIdArr"
+			, ARRAY_TO_STRING(ARRAY_AGG(TRSFR_CNT), ',') AS "busTrsfrUserCntArr"
+		FROM
+			BUS_TRSFR_USER_RANK_LIST
+	</select>
+    <select id="findAllRouteInfoByStationId" resultType="ggbisBusRoute">
+        SELECT
+            GBR.ROUTE_ID
+             ,GBR.ROUTE_NM
+             ,GBR.ROUTE_TP
+             ,GBR.ROUTE_LENGTH
+             ,GBR.ROUTE_INTERVAL
+             ,GBR.ST_STA_NM
+             ,GBR.ED_STA_NM
+             ,GBR.ST_STA_ID
+             ,GBR.ED_STA_ID
+             ,GBR.SIDO_CD
+             ,GBR.MANAGE_TP
+             ,GBR.PERM_VOL
+             ,GBR.BEGIN_DATE
+             ,GBR.CLOSE_DATE
+             ,GBR.ROUTE_EX
+             ,GBR.COMPANY_ID
+             ,GBR.COMPANY_NM
+             ,GBR.ADMIN_NM
+             ,GBR.TURN_SEQ
+             ,GBR.ROUTE_ALLOC
+             ,GBR.EB_ROUTE_ID
+             ,GBR.ROUTE_ALLOC_COMPNAY_ID
+             ,GBR.USE_YN
+             ,GBR.REMARK
+             ,GBR.AREA_CD
+             ,GBR.TURN_STA_ID
+             ,GBR.TURN_USE_YN
+             ,GBR.TURNINFO_FLAG
+             ,GBR.LASTVEH_FLAG
+             ,GBR.TURNPROCESS_FLAG
+             ,GBR.FIRSTVEH_FLAG
+        	,GBS.ETL_DT
+        FROM
+			BIGDATA.EXT_GGBIS_BUS_ROUTE GBR
+                INNER JOIN BIGDATA.EXT_GGBIS_BUSROUTE_STATION GBS ON GBS.ROUTE_ID = GBR.ROUTE_ID
+        WHERE GBS.STATION_ID = #{stationId}
+    </select>
+    
+    <select id="countPubTrfRouteInfo" parameterType="mapBigdataSearchDTO" resultType="int">
+    	SELECT
+    		COUNT(1)
+    	FROM BIGDATA.EXT_GGBIS_BUS_ROUTE GBR
+    	WHERE GBR.ROUTE_NM LIKE '%' || #{routeNm} || '%'
+    </select>
+    
+    <select id="findAllPubTrfRouteInfoList" parameterType="mapBigdataSearchDTO" resultType="ggbisBusRoute">
+    	SELECT
+    		GBR.ROUTE_ID
+    		, GBR.ROUTE_NM
+    		, GBR.ST_STA_NM
+    		, GBR.ED_STA_NM
+    		, CASE WHEN GBR.ROUTE_TP ='11' THEN '직행좌석형시내버스'
+				WHEN GBR.ROUTE_TP ='12' THEN '좌석형시내버스'
+				WHEN GBR.ROUTE_TP ='13' THEN '일반형시내버스'
+			   WHEN GBR.ROUTE_TP ='14' THEN '광역버스'
+				WHEN GBR.ROUTE_TP ='21' THEN '직행좌석형농어촌버스'
+				WHEN GBR.ROUTE_TP ='22' THEN '좌석형농어촌버스'
+				WHEN GBR.ROUTE_TP ='23' THEN '일반형농어촌버스'
+				WHEN GBR.ROUTE_TP ='30' THEN '마을버스'
+				WHEN GBR.ROUTE_TP ='41' THEN '고속형시외버스'
+				WHEN GBR.ROUTE_TP ='42' THEN '좌석형시외버스'
+				WHEN GBR.ROUTE_TP ='43' THEN '일반형시외버스'
+				WHEN GBR.ROUTE_TP ='51' THEN '리무진형공항버스'
+				WHEN GBR.ROUTE_TP ='52' THEN '좌석형공항버스'
+				WHEN GBR.ROUTE_TP ='53' THEN '일반형공항버스'
+				END AS ROUTE_TP
+    	FROM BIGDATA.EXT_GGBIS_BUS_ROUTE GBR
+    	WHERE GBR.ROUTE_NM LIKE '%' || #{routeNm} || '%'
+		order by (case when GBR.ROUTE_NM = #{routeNm} then 1 else 2 end, GBR.ROUTE_NM)
+    	LIMIT 5 OFFSET (#{page} - 1) * 5
+    </select>
+
+	<select id="findOneByRouteId"  resultType="ggbisBusRoute">
+		SELECT
+		    distinct
+			GBR.ROUTE_ID
+			 ,GBR.ROUTE_NM
+			 ,GBR.ROUTE_TP
+			 ,GBR.ROUTE_LENGTH
+			 ,GBR.ROUTE_INTERVAL
+			 ,GBR.ST_STA_NM
+			 ,GBR.ED_STA_NM
+			 ,GBR.ST_STA_ID
+			 ,GBR.ED_STA_ID
+			 ,GBR.SIDO_CD
+			 ,GBR.MANAGE_TP
+			 ,GBR.PERM_VOL
+			 ,GBR.BEGIN_DATE
+			 ,GBR.CLOSE_DATE
+			 ,GBR.ROUTE_EX
+			 ,GBR.COMPANY_ID
+			 ,GBR.COMPANY_NM
+			 ,GBR.ADMIN_NM
+			 ,GBR.TURN_SEQ
+			 ,GBR.ROUTE_ALLOC
+			 ,GBR.EB_ROUTE_ID
+			 ,GBR.ROUTE_ALLOC_COMPNAY_ID
+			 ,GBR.USE_YN
+			 ,GBR.REMARK
+			 ,GBR.AREA_CD
+			 ,GBR.TURN_STA_ID
+			 ,GBR.TURN_USE_YN
+			 ,GBR.TURNINFO_FLAG
+			 ,GBR.LASTVEH_FLAG
+			 ,GBR.TURNPROCESS_FLAG
+			 ,GBR.FIRSTVEH_FLAG
+		FROM
+			BIGDATA.EXT_GGBIS_BUS_ROUTE GBR
+		WHERE GBR.ROUTE_ID = #{routeId}
+	</select>
 </mapper>

@@ -2,60 +2,443 @@
 <!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.MrtSmcrsrdTrfvlmAnalMapper'>
+	<select id="findAllRoadAndAngleInfoBySearchOption" parameterType="mapBigdataSearchDTO" resultType="mrtSmcrsrdTrfvlmAnal">
+		select
+			ST_Azimuth(
+					ST_PointN(st_linemerge(cgsl.geometry) , ST_NPoints(st_linemerge(cgsl.geometry))-1)
+				, ST_PointN(st_linemerge(cgsl.geometry) , ST_NPoints(st_linemerge(cgsl.geometry)))
+				)/(2*pi())*360 as angle,
+		/*st_asgeojson(ST_PointN(st_linemerge(cgsl.geometry) , ST_NPoints(st_linemerge(cgsl.geometry)))) as st,*/
+		st_asgeojson(ST_Project(ST_PointN(st_linemerge(cgsl.geometry) , ST_NPoints(st_linemerge(cgsl.geometry))), 25, ST_Azimuth(
+		ST_PointN(st_linemerge(cgsl.geometry) , ST_NPoints(st_linemerge(cgsl.geometry)))
+		, ST_PointN(st_linemerge(cgsl.geometry) , ST_NPoints(st_linemerge(cgsl.geometry))-1)
+		))) as st,
+		st_asgeojson(ST_PointN(st_linemerge(cgsl.geometry) , ST_NPoints(st_linemerge(cgsl.geometry))-1)) as ed,
+			eascari.CRSRD_ID,
+			eascari.acs_road_id,
+			crsrd.crsrd_nm ,
+			eascari.acs_road_nm ,
+			eascari.mng_inst_cd
+			,SUM(MSTA.STRGHT_TRFVLM) AS STRGHT_TRFVLM
+			,SUM(MSTA.TRNGHT_TRFVLM) AS TRNGHT_TRFVLM
+			,SUM(MSTA.TRNLFT_TRFVLM) AS TRNLFT_TRFVLM
+			,SUM(MSTA.STRGHT_TRFVLM) + SUM(MSTA.TRNGHT_TRFVLM) + SUM(MSTA.TRNLFT_TRFVLM) AS TRFVLM_TOTAL
+		from
+			BIGDATA.ext_adsi_smcrsrd_crsrd_acs_road_info eascari
+		inner join bigdata.ext_adsi_smcrsrd_crsrd_info crsrd on eascari.mng_inst_cd = crsrd.mng_inst_cd  and eascari.crsrd_id = crsrd.crsrd_id
+				inner join (
+				select
+					MAX(ASCARI.ETL_DT) as RCT_ETL_DT,
+					ASCARI.CRSRD_ID,
+					ASCARI.ACS_ROAD_ID,
+					ASCARI.MNG_INST_CD
+				from BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO ASCARI
+				group by  ASCARI.CRSRD_ID, ASCARI.ACS_ROAD_ID, ASCARI.MNG_INST_CD
+			) RCT_ASCARI on  RCT_ASCARI.MNG_INST_CD = eascari.MNG_INST_CD AND RCT_ASCARI.RCT_ETL_DT = eascari.ETL_DT and RCT_ASCARI.CRSRD_ID = eascari.CRSRD_ID and RCT_ASCARI.ACS_ROAD_ID = eascari.ACS_ROAD_ID
+				inner join (
+				select
+					MAX(easci.ETL_DT) as RCT_ETL_DT,
+					easci.CRSRD_ID,
+					easci.ACS_ROAD_ID,
+					easci.MNG_INST_CD,
+					easci.camera_id
+				from bigdata.ext_adsi_smcrsrd_camera_info easci
+				group by  easci.CRSRD_ID, easci.ACS_ROAD_ID, easci.MNG_INST_CD, easci.camera_id
+			) easci on eascari.mng_inst_cd = easci.mng_inst_cd and eascari.acs_road_id = easci.acs_road_id and eascari.crsrd_id = easci.crsrd_id
+				left join c_gm_std_link cgsl on cgsl.link_id = eascari.link_id
+				left join c_gm_std_link_adstdg_mppg cgslam on cgslam.link_id = cgsl.link_id
+		inner join mrt_smcrsrd_trfvlm_anal msta on eascari.mng_inst_cd = msta.mng_inst_cd  and  msta.crsrd_id = easci.crsrd_id and msta.camera_id = easci.camera_id
+	   <where>
+		<!-- 연도별 검색 -->
+		<if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+			AND TO_CHAR(MSTA.PRDCTN_DT, 'YYYY') = #{searchYear}
+		</if>
+		<!-- 기간 검색 -->
+		<if test="startDate != null and startDate != '' ">
+			<![CDATA[
+			AND msta.prdctn_dt >= to_timestamp(#{startDate}||' 00:00:00', 'YYYY-MM-DD HH24:MI:SS')
+			and msta.prdctn_dt <= to_timestamp(#{startDate}||' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+		   ]]>
+		</if>
+		<!-- 시간 검색 -->
+		<if test="searchTime != null and searchTime != ''">
+			<choose>
+				<when test="searchTime == 'workingTime' ">
+					<![CDATA[
+						and MSTA.prdctn_time::numeric >= '06'::numeric
+						and MSTA.prdctn_time::numeric <= '10'::numeric
+						]]>
+				</when>
+				<when test="searchTime == 'workingEndTime' ">
+					<![CDATA[
+						and MSTA.prdctn_time::numeric >= '17'::numeric
+						and MSTA.prdctn_time::numeric <= '20'::numeric
+						]]>
+				</when>
+				<otherwise>
+					<![CDATA[
+						and MSTA.prdctn_time::numeric >= #{startTime}::numeric
+						and MSTA.prdctn_time::numeric <= #{endTime}::numeric
+						]]>
+				</otherwise>
+			</choose>
+		</if>
+		<if test="searchLocation != null and searchLocation != '' and searchLocation != 'searchAllLocation' ">
+			AND SUBSTRING(cgslam.ADSTDG_CD,0,5) = SUBSTRING(#{searchLocation},0,5)
+		</if>
+	   </where>
+		group by cgsl.geometry,
+				 eascari.CRSRD_ID,
+				 eascari.acs_road_id,
+				crsrd.crsrd_nm ,
+				eascari.acs_road_nm ,
+				 eascari.mng_inst_cd
+	</select>
+
+	<select id="findAllBySearchOptionGroupTime" parameterType="mapBigdataSearchDTO" resultType="mrtSmcrsrdTrfvlmAnal">
+		select
+		msta.prdctn_time ,
+		eascari.CRSRD_ID,
+		eascari.acs_road_id,
+		crsrd.crsrd_nm ,
+		eascari.acs_road_nm ,
+		eascari.mng_inst_cd
+		,SUM(MSTA.STRGHT_TRFVLM) + SUM(MSTA.TRNGHT_TRFVLM) + SUM(MSTA.TRNLFT_TRFVLM) AS TRFVLM_TOTAL
+		from
+		BIGDATA.ext_adsi_smcrsrd_crsrd_acs_road_info eascari
+		inner join bigdata.ext_adsi_smcrsrd_crsrd_info crsrd on eascari.mng_inst_cd = crsrd.mng_inst_cd  and eascari.crsrd_id = crsrd.crsrd_id
+		inner join (
+		select
+		MAX(ASCARI.ETL_DT) as RCT_ETL_DT,
+		ASCARI.CRSRD_ID,
+		ASCARI.ACS_ROAD_ID,
+		ASCARI.MNG_INST_CD
+		from BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO ASCARI
+		group by  ASCARI.CRSRD_ID, ASCARI.ACS_ROAD_ID, ASCARI.MNG_INST_CD
+		) RCT_ASCARI on  RCT_ASCARI.MNG_INST_CD = eascari.MNG_INST_CD AND RCT_ASCARI.RCT_ETL_DT = eascari.ETL_DT and RCT_ASCARI.CRSRD_ID = eascari.CRSRD_ID and RCT_ASCARI.ACS_ROAD_ID = eascari.ACS_ROAD_ID
+		inner join (
+		select
+		MAX(easci.ETL_DT) as RCT_ETL_DT,
+		easci.CRSRD_ID,
+		easci.ACS_ROAD_ID,
+		easci.MNG_INST_CD,
+		easci.camera_id
+		from bigdata.ext_adsi_smcrsrd_camera_info easci
+		group by  easci.CRSRD_ID, easci.ACS_ROAD_ID, easci.MNG_INST_CD, easci.camera_id
+		) easci on eascari.mng_inst_cd = easci.mng_inst_cd and eascari.acs_road_id = easci.acs_road_id and eascari.crsrd_id = easci.crsrd_id
+		left join c_gm_std_link cgsl on cgsl.link_id = eascari.link_id
+		left join c_gm_std_link_adstdg_mppg cgslam on cgslam.link_id = cgsl.link_id
+		inner join mrt_smcrsrd_trfvlm_anal msta on eascari.mng_inst_cd = msta.mng_inst_cd  and  msta.crsrd_id = easci.crsrd_id and msta.camera_id = easci.camera_id
+		<where>
+			<!-- 연도별 검색 -->
+			<if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+				AND TO_CHAR(MSTA.PRDCTN_DT, 'YYYY') = #{searchYear}
+			</if>
+			<!-- 기간 검색 -->
+			<if test="startDate != null and startDate != '' ">
+				<![CDATA[
+			AND msta.prdctn_dt >= to_timestamp(#{startDate}||' 00:00:00', 'YYYY-MM-DD HH24:MI:SS')
+			and msta.prdctn_dt <= to_timestamp(#{startDate}||' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+		   ]]>
+			</if>
+			<if test="searchLocation != null and searchLocation != '' and searchLocation != 'searchAllLocation' ">
+				AND SUBSTRING(cgslam.ADSTDG_CD,0,5) = SUBSTRING(#{searchLocation},0,5)
+			</if>
+		</where>
+		group by msta.prdctn_time,
+		eascari.CRSRD_ID,
+		eascari.acs_road_id,
+		crsrd.crsrd_nm ,
+		eascari.acs_road_nm ,
+		eascari.mng_inst_cd
+		order by msta.prdctn_time asc
+	</select>
+
+	<select id="findAllBySearchOptionTop10" parameterType="mapBigdataSearchDTO" resultType="mrtSmcrsrdTrfvlmAnal">
+		select
+		eascari.CRSRD_ID,
+		eascari.acs_road_id,
+		crsrd.crsrd_nm ,
+		eascari.acs_road_nm ,
+		eascari.mng_inst_cd
+		,SUM(MSTA.STRGHT_TRFVLM) + SUM(MSTA.TRNGHT_TRFVLM) + SUM(MSTA.TRNLFT_TRFVLM) AS TRFVLM_TOTAL
+		from
+		BIGDATA.ext_adsi_smcrsrd_crsrd_acs_road_info eascari
+		inner join bigdata.ext_adsi_smcrsrd_crsrd_info crsrd on eascari.mng_inst_cd = crsrd.mng_inst_cd  and eascari.crsrd_id = crsrd.crsrd_id
+		inner join (
+		select
+		MAX(ASCARI.ETL_DT) as RCT_ETL_DT,
+		ASCARI.CRSRD_ID,
+		ASCARI.ACS_ROAD_ID,
+		ASCARI.MNG_INST_CD
+		from BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO ASCARI
+		group by  ASCARI.CRSRD_ID, ASCARI.ACS_ROAD_ID, ASCARI.MNG_INST_CD
+		) RCT_ASCARI on  RCT_ASCARI.MNG_INST_CD = eascari.MNG_INST_CD AND RCT_ASCARI.RCT_ETL_DT = eascari.ETL_DT and RCT_ASCARI.CRSRD_ID = eascari.CRSRD_ID and RCT_ASCARI.ACS_ROAD_ID = eascari.ACS_ROAD_ID
+		inner join (
+		select
+		MAX(easci.ETL_DT) as RCT_ETL_DT,
+		easci.CRSRD_ID,
+		easci.ACS_ROAD_ID,
+		easci.MNG_INST_CD,
+		easci.camera_id
+		from bigdata.ext_adsi_smcrsrd_camera_info easci
+		group by  easci.CRSRD_ID, easci.ACS_ROAD_ID, easci.MNG_INST_CD, easci.camera_id
+		) easci on eascari.mng_inst_cd = easci.mng_inst_cd and eascari.acs_road_id = easci.acs_road_id and eascari.crsrd_id = easci.crsrd_id
+		left join c_gm_std_link cgsl on cgsl.link_id = eascari.link_id
+		left join c_gm_std_link_adstdg_mppg cgslam on cgslam.link_id = cgsl.link_id
+		inner join mrt_smcrsrd_trfvlm_anal msta on eascari.mng_inst_cd = msta.mng_inst_cd  and  msta.crsrd_id = easci.crsrd_id and msta.camera_id = easci.camera_id
+		<where>
+			<!-- 연도별 검색 -->
+			<if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+				AND TO_CHAR(MSTA.PRDCTN_DT, 'YYYY') = #{searchYear}
+			</if>
+			<!-- 기간 검색 -->
+			<if test="startDate != null and startDate != '' ">
+				<![CDATA[
+			AND msta.prdctn_dt >= to_timestamp(#{startDate}||' 00:00:00', 'YYYY-MM-DD HH24:MI:SS')
+			and msta.prdctn_dt <= to_timestamp(#{startDate}||' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+		   ]]>
+			</if>
+			<if test="searchLocation != null and searchLocation != '' and searchLocation != 'searchAllLocation' ">
+				AND SUBSTRING(cgslam.ADSTDG_CD,0,5) = SUBSTRING(#{searchLocation},0,5)
+			</if>
+		</where>
+		group by
+	 	eascari.CRSRD_ID,
+		eascari.acs_road_id,
+		crsrd.crsrd_nm ,
+		eascari.acs_road_nm ,
+		eascari.mng_inst_cd
+		order by 6 desc
+		limit 10
+	</select>
 
     <select id="findBySearchOption" parameterType="mapBigdataSearchDTO" resultType="mrtSmcrsrdTrfvlmAnal">
         SELECT
-        MSTA.CRSRD_ID
-        ,MSTA.CAMERA_ID
-        ,SUM(MSTA.STRGHT_TRFVLM) AS STRGHT_TRFVLM
-        ,SUM(MSTA.TRNGHT_TRFVLM) AS TRNGHT_TRFVLM
-        ,SUM(MSTA.TRNLFT_TRFVLM) AS TRNLFT_TRFVLM
-        ,SUM(MSTA.STRGHT_TRFVLM) + SUM(MSTA.TRNGHT_TRFVLM) + SUM(MSTA.TRNLFT_TRFVLM) AS TRFVLM_TOTAL
-        ,SUM(MSTA.WTLN_LEN) AS WTLN_LEN
-        ,STRING_AGG(TO_CHAR(MSTA.PRDCTN_DT , 'YYYY-MM-DD HH24:MI')||'|'|| STRGHT_TRFVLM ||'|'|| TRNGHT_TRFVLM ||'|'|| TRNLFT_TRFVLM, '$$'  ORDER BY MSTA.PRDCTN_DT ASC) AS TIME_GROUP_TXT
-        ,MSTA.ETL_DT
-        ,ASCI.NODE_ID
-        ,ASCI.CRSRD_NM
-        ,ASCI.LON_CRDN
-        ,ASCI.LAT_CRDN
-        ,ASCI.MNG_INST_CD
+		        MSTA.CRSRD_ID
+		        ,SUM(MSTA.STRGHT_TRFVLM) AS STRGHT_TRFVLM
+		        ,SUM(MSTA.TRNGHT_TRFVLM) AS TRNGHT_TRFVLM
+		        ,SUM(MSTA.TRNLFT_TRFVLM) AS TRNLFT_TRFVLM
+		        ,SUM(MSTA.STRGHT_TRFVLM) + SUM(MSTA.TRNGHT_TRFVLM) + SUM(MSTA.TRNLFT_TRFVLM) AS TRFVLM_TOTAL
+		        ,SUM(MSTA.WTLN_LEN) AS WTLN_LEN
+		        ,MSTA.ETL_DT
+		        ,ASCI.NODE_ID
+		        ,ASCI.CRSRD_NM
+		        ,ASCI.LON_CRDN
+		        ,ASCI.LAT_CRDN
+		        ,ASCI.MNG_INST_CD
         FROM
-            MRT_SMCRSRD_TRFVLM_ANAL MSTA
-                INNER JOIN ADSI_SMCRSRD_CRSRD_INFO ASCI ON MSTA.CRSRD_ID = ASCI.CRSRD_ID
-       WHERE
-       1=1
+            	MRT_SMCRSRD_TRFVLM_ANAL MSTA
+        LEFT JOIN BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_INFO ASCI ON MSTA.CRSRD_ID = ASCI.CRSRD_ID
+        LEFT JOIN C_GM_STD_NODE_ADSTDG_MPPG CGSNAM ON ASCI.NODE_ID = CGSNAM.NODE_ID
+       	WHERE 1=1
         <!-- 연도별 검색 -->
         <if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
-            AND TO_CHAR(MSTA.ANLS_DT, 'YYYY') = #{searchYear}
+            AND TO_CHAR(MSTA.PRDCTN_DT, 'YYYY') = #{searchYear}
         </if>
         <!-- 기간 검색 -->
-        <if test="searchPeriod != null and searchPeriod != ''">
-            <choose>
-                <when test="searchPeriod == 'weekday' ">
-                    AND TO_CHAR(MSTA.ANLS_DT::DATE, 'D') BETWEEN '2' AND '6'
-                </when>
-                <when test="searchPeriod == 'weekend' ">
-                    AND TO_CHAR(MSTA.ANLS_DT::DATE, 'D') = '1' OR TO_CHAR(MSCL.ANLS_DT::DATE, 'D') = '7'
-                </when>
-                <otherwise>
-                    AND TO_CHAR(MSTA.ANLS_DT, 'YYYY-MM-DD') BETWEEN #{startDate} AND #{endDate}
-                </otherwise>
-            </choose>
+        <if test="startDate != null and startDate != '' ">
+            AND TO_CHAR(MSTA.PRDCTN_DT, 'YYYY-MM-DD') BETWEEN #{startDate} AND #{endDate}
         </if>
         <!-- 시간 검색 -->
         <if test="searchTime != null and searchTime != ''">
             <choose>
-                <when test="searchTime == 'workingTime' ">
-                    AND TO_CHAR(MSTA.ANLS_DT, 'HH24') BETWEEN '06' AND '10'
-                </when>
-                <when test="searchPeriod == 'workingEndTime' ">
-                    AND TO_CHAR(MSTA.ANLS_DT, 'HH24') BETWEEN '17' AND '20'
-                </when>
-                <otherwise>
-                    AND TO_CHAR(MSTA.ANLS_DT, 'HH24') BETWEEN #{startTime} AND #{endTime}
-                </otherwise>
+				<when test="searchTime == 'workingTime' ">
+					<![CDATA[
+						and MSTA.prdctn_time::numeric >= '06'::numeric
+						and MSTA.prdctn_time::numeric <= '10'::numeric
+						]]>
+				</when>
+				<when test="searchTime == 'workingEndTime' ">
+					<![CDATA[
+						and MSTA.prdctn_time::numeric >= '17'::numeric
+						and MSTA.prdctn_time::numeric <= '20'::numeric
+						]]>
+				</when>
+				<otherwise>
+					<![CDATA[
+						and MSTA.prdctn_time::numeric >= #{startTime}::numeric
+						and MSTA.prdctn_time::numeric <= #{endTime}::numeric
+						]]>
+				</otherwise>
             </choose>
         </if>
-        GROUP by MSTA.CRSRD_ID, MSTA.CAMERA_ID, MSTA.ETL_DT, ASCI.NODE_ID, ASCI.CRSRD_NM, ASCI.LON_CRDN, ASCI.LAT_CRDN, ASCI.MNG_INST_CD
+        <if test="searchLocation != null and searchLocation != '' and searchLocation != 'searchAllLocation' ">
+			AND SUBSTRING(CGSNAM.ADSTDG_CD,0,5) = SUBSTRING(#{searchLocation},0,5)
+        </if>
+        GROUP by MSTA.CRSRD_ID, MSTA.ETL_DT, ASCI.NODE_ID, ASCI.CRSRD_NM, ASCI.LON_CRDN, ASCI.LAT_CRDN, ASCI.MNG_INST_CD
     </select>
+
+
+	<select id="findBySearchOptionGroupYmd" parameterType="mapBigdataSearchDTO" resultType="mrtSmcrsrdTrfvlmAnal">
+		select
+		MSTA.CRSRD_ID
+		,string_agg(yyyymmdd||'='||TRFVLM_TOTAL, ',') as time_group_txt
+		,MSTA.NODE_ID
+		,MSTA.CRSRD_NM
+		,MSTA.LON_CRDN
+		,MSTA.LAT_CRDN
+		,MSTA.MNG_INST_CD
+		,SUM(MSTA.STRGHT_TRFVLM) as STRGHT_TRFVLM
+		,SUM(MSTA.TRNGHT_TRFVLM) as TRNGHT_TRFVLM
+		,SUM(MSTA.TRNLFT_TRFVLM) as TRNLFT_TRFVLM
+		,AVG(MSTA.WTLN_LEN) as WTLN_LEN
+		FROM(
+			SELECT
+			TO_CHAR(MSTA.PRDCTN_DT, 'YYYY-MM-DD') as yyyymmdd
+			,MSTA.CRSRD_ID
+			,SUM(MSTA.STRGHT_TRFVLM) AS STRGHT_TRFVLM
+			,SUM(MSTA.TRNGHT_TRFVLM) AS TRNGHT_TRFVLM
+			,SUM(MSTA.TRNLFT_TRFVLM) AS TRNLFT_TRFVLM
+			,SUM(MSTA.STRGHT_TRFVLM) + SUM(MSTA.TRNGHT_TRFVLM) + SUM(MSTA.TRNLFT_TRFVLM) AS TRFVLM_TOTAL
+			,AVG(MSTA.WTLN_LEN) AS WTLN_LEN
+			,MSTA.ETL_DT
+			,ASCI.NODE_ID
+			,ASCI.CRSRD_NM
+			,ASCI.LON_CRDN
+			,ASCI.LAT_CRDN
+			,ASCI.MNG_INST_CD
+			FROM
+			MRT_SMCRSRD_TRFVLM_ANAL MSTA
+			INNER JOIN BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_INFO ASCI ON MSTA.CRSRD_ID = ASCI.CRSRD_ID
+			LEFT JOIN C_GM_STD_NODE_ADSTDG_MPPG CGSNAM ON ASCI.NODE_ID = CGSNAM.NODE_ID
+			WHERE 1=1
+			<!-- 연도별 검색 -->
+			<if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+				AND TO_CHAR(MSTA.PRDCTN_DT, 'YYYY') = #{searchYear}
+			</if>
+			<!-- 기간 검색 -->
+			<if test="startDate != null and startDate != ''">
+				AND TO_CHAR(MSTA.PRDCTN_DT, 'YYYY-MM-DD') = #{startDate}
+			</if>
+			<!-- 시간 검색 -->
+			<if test="searchTime != null and searchTime != ''">
+				<choose>
+					<when test="searchTime == 'workingTime' ">
+						<![CDATA[
+						and MSTA.prdctn_time::numeric >= '06'::numeric
+						and MSTA.prdctn_time::numeric <= '10'::numeric
+						]]>
+					</when>
+					<when test="searchTime == 'workingEndTime' ">
+						<![CDATA[
+						and MSTA.prdctn_time::numeric >= '17'::numeric
+						and MSTA.prdctn_time::numeric <= '20'::numeric
+						]]>
+					</when>
+					<otherwise>
+						<![CDATA[
+						and MSTA.prdctn_time::numeric >= #{startTime}::numeric
+						and MSTA.prdctn_time::numeric <= #{endTime}::numeric
+						]]>
+					</otherwise>
+				</choose>
+			</if>
+			<if test="searchLocation != null and searchLocation != '' and searchLocation != 'searchAllLocation' ">
+				AND SUBSTRING(CGSNAM.ADSTDG_CD,0,5) = SUBSTRING(#{searchLocation},0,5)
+			</if>
+			GROUP by MSTA.CRSRD_ID, MSTA.ETL_DT, ASCI.NODE_ID, ASCI.CRSRD_NM, ASCI.LON_CRDN, ASCI.LAT_CRDN, ASCI.MNG_INST_CD, TO_CHAR(MSTA.PRDCTN_DT, 'YYYY-MM-DD')
+		)
+		MSTA
+		group by MSTA.CRSRD_ID, MSTA.NODE_ID, MSTA.CRSRD_NM, MSTA.LON_CRDN, MSTA.LAT_CRDN, MSTA.MNG_INST_CD
+	</select>
+
+	<select id="findBySearchOptionGroupYmdForChart" parameterType="mapBigdataSearchDTO" resultType="mrtSmcrsrdTrfvlmAnal">
+		select
+		MSTA.TRFVLM_TOTAL
+		,MSTA.yyyymmdd
+		,MSTA.adstdg_cd
+		FROM(
+		select
+		TO_CHAR(MSTA.PRDCTN_DT, 'YYYY-MM-DD') as yyyymmdd
+		,SUM(MSTA.STRGHT_TRFVLM) AS STRGHT_TRFVLM
+		,SUM(MSTA.TRNGHT_TRFVLM) AS TRNGHT_TRFVLM
+		,SUM(MSTA.TRNLFT_TRFVLM) AS TRNLFT_TRFVLM
+		,SUM(MSTA.STRGHT_TRFVLM) + SUM(MSTA.TRNGHT_TRFVLM) + SUM(MSTA.TRNLFT_TRFVLM) AS TRFVLM_TOTAL
+		,SUM(MSTA.WTLN_LEN) AS WTLN_LEN
+		,substring(CGSNAM.adstdg_cd,0, 6) as adstdg_cd
+		FROM
+		MRT_SMCRSRD_TRFVLM_ANAL MSTA
+		INNER JOIN BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_INFO ASCI ON MSTA.CRSRD_ID = ASCI.CRSRD_ID
+		LEFT JOIN C_GM_STD_NODE_ADSTDG_MPPG CGSNAM ON ASCI.NODE_ID = CGSNAM.NODE_ID
+		WHERE 1=1
+		<!-- 연도별 검색 -->
+		<if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+			AND TO_CHAR(MSTA.PRDCTN_DT, 'YYYY') = #{searchYear}
+		</if>
+		<!-- 기간 검색 -->
+		<if test="startDate != null and startDate != '' and endDate != null and endDate != '' ">
+			AND TO_CHAR(MSTA.PRDCTN_DT, 'YYYY-MM-DD') BETWEEN #{startDate} AND #{endDate}
+		</if>
+		<!-- 시간 검색 -->
+		<if test="searchTime != null and searchTime != ''">
+			<choose>
+				<when test="searchTime == 'workingTime' ">
+					<![CDATA[
+						and MSTA.prdctn_time::numeric >= '06'::numeric
+						and MSTA.prdctn_time::numeric <= '10'::numeric
+						]]>
+				</when>
+				<when test="searchTime == 'workingEndTime' ">
+					<![CDATA[
+						and MSTA.prdctn_time::numeric >= '17'::numeric
+						and MSTA.prdctn_time::numeric <= '20'::numeric
+						]]>
+				</when>
+				<otherwise>
+					<![CDATA[
+						and MSTA.prdctn_time::numeric >= #{startTime}::numeric
+						and MSTA.prdctn_time::numeric <= #{endTime}::numeric
+						]]>
+				</otherwise>
+			</choose>
+		</if>
+		<if test="searchLocation != null and searchLocation != '' and searchLocation != 'searchAllLocation' ">
+			AND SUBSTRING(CGSNAM.ADSTDG_CD,0,5) = SUBSTRING(#{searchLocation},0,5)
+		</if>
+		GROUP by substring(CGSNAM.adstdg_cd,0, 6) ,TO_CHAR(MSTA.PRDCTN_DT, 'YYYY-MM-DD')
+		)
+		MSTA
+		group by MSTA.TRFVLM_TOTAL,MSTA.adstdg_cd,MSTA.yyyymmdd
+	</select>
+    
+    <select id="findAllsmcrsrdTrfvlmRank" parameterType="String" resultType="map">
+    	WITH CROSSROAD_TRFVLM_LIST AS (
+										SELECT 
+											A.CRSRD_NM
+											,A.TRFVLM_TOTAL
+										FROM(
+										SELECT
+									        MSTA.CRSRD_ID
+									        ,SUM(MSTA.STRGHT_TRFVLM) + SUM(MSTA.TRNGHT_TRFVLM) + SUM(MSTA.TRNLFT_TRFVLM) AS TRFVLM_TOTAL
+									        ,ASCI.CRSRD_NM
+									        FROM
+									            MRT_SMCRSRD_TRFVLM_ANAL MSTA
+									        INNER JOIN BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_INFO ASCI ON MSTA.CRSRD_ID = ASCI.CRSRD_ID
+									       WHERE
+									       1=1
+									       AND TO_CHAR(MSTA.PRDCTN_DT, 'YYYY-MM-DD') = #{searchTime} -- 오늘날짜 기준
+									       GROUP by MSTA.CRSRD_ID,  ASCI.CRSRD_NM
+									       order by TRFVLM_TOTAL desc
+									       limit 5
+										)A
+										GROUP BY A.CRSRD_NM, A.TRFVLM_TOTAL
+	) 
+	SELECT 	
+			ARRAY_TO_STRING(ARRAY_AGG(CRSRD_NM), ',') AS "crsrdNmArr"
+			,ARRAY_TO_STRING(ARRAY_AGG(TRFVLM_TOTAL), ',') AS "trfvlmTotalArr"
+	FROM 
+		CROSSROAD_TRFVLM_LIST
+    </select>
+    
+    
+    <select id="findAllDataYears" resultType="map">
+        SELECT
+				TO_CHAR(MSTA.PRDCTN_DT,'YYYY') AS "year"
+		FROM
+				MRT_SMCRSRD_TRFVLM_ANAL MSTA
+		GROUP BY TO_CHAR(MSTA.PRDCTN_DT,'YYYY')
+		ORDER BY TO_CHAR(MSTA.PRDCTN_DT,'YYYY') DESC
+    </select>
+
 </mapper>

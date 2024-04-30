@@ -1,0 +1,86 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.GgsplBusRouteVltnInfoMapper'>
+    <select id="countAllBySearchOption" parameterType="ggsplBusPeriodicinfo" resultType="int">
+        select
+            count(1)
+        from
+            ggits.ggspl_bus_route_vltn_info_cur egbrvi
+                inner join bigdata.ext_ggbis_bus_route egbr on egbr.route_id = egbrvi.route_id
+                inner join bigdata.ext_ggbis_vehicle egv on egv.veh_id = egbrvi.vhcl_id
+                inner join (
+                select area_cd ,district_snm , district_gnm  from bigdata.ext_ggbis_district
+                group by area_cd,district_snm , district_gnm
+            ) egd on egbr.area_cd = egd.area_cd
+        <where>
+        clct_dt >= current_date and stts_cd = '4'
+            <if test="routeTpList != null">
+                AND EGBR.ROUTE_TP IN
+                <foreach collection="routeTpList" item="routeTp" open="(" close=")" separator=",">
+                    #{routeTp}
+                </foreach>
+            </if>
+            <if test="routeNm != null and routeNm != '' ">
+                AND	EGBR.ROUTE_NM LIKE '%' || #{routeNm} || '%'
+            </if>
+            <if test="districtGnm != null and districtGnm !=''">
+                AND	EGD.DISTRICT_GNM = #{districtGnm}
+            </if>
+        </where>
+    </select>
+    <select id="findAllBySearchOption" parameterType="ggsplBusPeriodicinfo" resultType="ggsplBusRouteVltnInfo">
+        select
+            to_char(egbrvi.clct_dt,'YYYY-MM-DD HH24:MI:SS') as clct_dt,
+            egbr.route_nm,
+            egv.admin_nm ,
+            egv.company_nm,
+            egv.plate_no,
+            egd.district_snm,
+            egd.district_gnm,
+            CASE WHEN EGBR.ROUTE_TP ='12' OR EGBR.ROUTE_TP ='13' OR EGBR.ROUTE_TP ='23' THEN '일반버스'
+            WHEN EGBR.ROUTE_TP ='11' OR EGBR.ROUTE_TP ='14' OR EGBR.ROUTE_TP ='21' OR EGBR.ROUTE_TP ='22' THEN '광역버스'
+            WHEN EGBR.ROUTE_TP ='30' THEN '마을버스'
+            WHEN EGBR.ROUTE_TP ='41' OR EGBR.ROUTE_TP ='42' OR EGBR.ROUTE_TP ='43' THEN '시외버스'
+            WHEN EGBR.ROUTE_TP ='51' OR EGBR.ROUTE_TP ='52' OR EGBR.ROUTE_TP ='53' THEN '공항버스'
+            ELSE '일반버스'
+            END AS ROUTE_TP
+        from
+                ggits.ggspl_bus_route_vltn_info_cur egbrvi
+                inner join bigdata.ext_ggbis_bus_route egbr on egbr.route_id = egbrvi.route_id
+                inner join bigdata.ext_ggbis_vehicle egv on egv.veh_id = egbrvi.vhcl_id
+                inner join (
+                select area_cd ,district_snm , district_gnm  from bigdata.ext_ggbis_district
+                group by area_cd,district_snm , district_gnm
+            ) egd on egbr.area_cd = egd.area_cd
+            <where>
+            clct_dt >= current_date and stts_cd = '4'
+                <if test="routeTpList != null">
+                    AND EGBR.ROUTE_TP IN
+                    <foreach collection="routeTpList" item="routeTp" open="(" close=")" separator=",">
+                        #{routeTp}
+                    </foreach>
+                </if>
+                <if test="routeNm != null and routeNm != '' ">
+                    AND	EGBR.ROUTE_NM LIKE '%' || #{routeNm} || '%'
+                </if>
+                <if test="districtGnm != null and districtGnm !=''">
+                    AND	EGD.DISTRICT_GNM = #{districtGnm}
+                </if>
+            </where>
+            <choose>
+                <when test="routeNm != null and routeNm != '' ">
+                    order by (
+                    case when egbr.route_nm = #{routeNm} then 1 else 2 end,
+                    egbr.route_nm),
+                    egbrvi.clct_dt desc
+                </when>
+                <otherwise>
+                    order by egbrvi.clct_dt desc
+                </otherwise>
+            </choose>
+            <if test="page != null and page != '' and page != 0 ">
+                LIMIT 5 OFFSET (#{page} - 1) * 5
+            </if>
+    </select>
+</mapper>

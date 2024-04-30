@@ -21,6 +21,8 @@ public class MOpGrpInfo extends CommonEntity{
 	//그룹원 수
 	private long userCnt;
 	
+	private String mngInstCd; // 관리 기관코드
+	private String oprtrGrd; // 운영자 등급
 	
 	public String getGrpId() {
 		return grpId;
@@ -101,6 +103,22 @@ public class MOpGrpInfo extends CommonEntity{
 
 	public void setUpdtDt(Timestamp updtDt) {
 		this.updtDt = updtDt;
+	}
+
+	public String getMngInstCd() {
+		return mngInstCd;
+	}
+
+	public void setMngInstCd(String mngInstCd) {
+		this.mngInstCd = mngInstCd;
+	}
+
+	public String getOprtrGrd() {
+		return oprtrGrd;
+	}
+
+	public void setOprtrGrd(String oprtrGrd) {
+		this.oprtrGrd = oprtrGrd;
 	}
 	
 	

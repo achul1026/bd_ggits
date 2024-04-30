@@ -9,8 +9,12 @@ public class TrfIpcssStrsctTrfvlm {
     private long    busLrgszTrfvlm;        
     private long    frghtSmlszTrfvlm;        
     private long    frghtMdmszTrfvlm;        
-    private long    frghtLrgszTrfvlm;        
-
+    private long    frghtLrgszTrfvlm;
+    private String strsctDrctNo;
+    private String dywkDiv;
+    private String exmnYmd;
+    private String strsctNo;
+    private String etlDt;
 
   public String getIpcssMngNo() {
     return ipcssMngNo;
@@ -56,17 +60,15 @@ public class TrfIpcssStrsctTrfvlm {
     this.psgvhclTrfvlm = psgvhclTrfvlm;
   }
 
-
   public long getBusTrfvlm() {
-    return busTrfvlm;
-  }
+	return busTrfvlm;
+}
 
-  public void setBusTrfvlm(long busTrfvlm) {
-    this.busTrfvlm = busTrfvlm;
-  }
+public void setBusTrfvlm(long busTrfvlm) {
+	this.busTrfvlm = busTrfvlm;
+}
 
-
-  public long getBusLrgszTrfvlm() {
+public long getBusLrgszTrfvlm() {
     return busLrgszTrfvlm;
   }
 
@@ -100,5 +102,44 @@ public class TrfIpcssStrsctTrfvlm {
   public void setFrghtLrgszTrfvlm(long frghtLrgszTrfvlm) {
     this.frghtLrgszTrfvlm = frghtLrgszTrfvlm;
   }
+
+public String getStrsctDrctNo() {
+	return strsctDrctNo;
+}
+
+public void setStrsctDrctNo(String strsctDrctNo) {
+	this.strsctDrctNo = strsctDrctNo;
+}
+
+public String getDywkDiv() {
+	return dywkDiv;
+}
+
+public void setDywkDiv(String dywkDiv) {
+	this.dywkDiv = dywkDiv;
+}
+
+public String getExmnYmd() {
+	return exmnYmd;
+}
+
+public void setExmnYmd(String exmnYmd) {
+	this.exmnYmd = exmnYmd;
+}
+public String getStrsctNo() {
+	return strsctNo;
+}
+
+public void setStrsctNo(String strsctNo) {
+	this.strsctNo = strsctNo;
+}
+
+public String getEtlDt() {
+	return etlDt;
+}
+
+public void setEtlDt(String etlDt) {
+	this.etlDt = etlDt;
+}
 
 }

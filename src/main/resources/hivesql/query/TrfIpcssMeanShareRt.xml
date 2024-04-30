@@ -1,0 +1,113 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.hivesql.mapper.TrfIpcssMeanShareRtMapper'>
+	
+	<select id="findAllMeanShareRtList" parameterType="trfvlmStatisticsDTO" resultType="trfIpcssMeanShareRt">
+		SELECT 
+			IPCSS_MNG_NO
+			, SMLFACT_NM
+			, SMLFACT_ADDR
+			, SCALE
+			, TOTFRAR
+			, EXMN_DIV_NM
+			, EXMN_YMD
+			, EXMN_DOC_NM
+		FROM GGITS.TRF_IPCSS_MEAN_SHARE_RT
+		WHERE IPCSS_MNG_NO = #{ipcssMngNo}
+			<if test="dwellYn != '' and dwellYn != null">
+				<if test='"Y".equals(dwellYn)'>
+					AND USG_CD IN ('001','101','103','106','109','111','112')
+				</if>
+				<if test='"N".equals(dwellYn)'>
+					AND USG_CD NOT IN ('001','101','103','106','109','111','112')
+				</if>				
+			</if>
+		GROUP BY IPCSS_MNG_NO, SMLFACT_NM, SMLFACT_ADDR, SCALE, TOTFRAR, EXMN_DIV_NM, EXMN_YMD, EXMN_DOC_NM, MEAN_SHARE_NO
+		ORDER BY CAST(MEAN_SHARE_NO AS INT)
+	</select>
+	
+	<select id="findOneMeanShareRtInfoForDwell" parameterType="trfIpcssMeanShareRt" resultType="trfIpcssMeanShareRt">
+		SELECT 
+			timsr.USG_CD
+			, timsr.TRF_USE_CD
+			, timsr.TRF_MEAN_VHCCLS
+			, ROUND(timsr.SHARE_RT, 2) AS SHARE_RT
+		FROM GGITS.TRF_IPCSS_MEAN_SHARE_RT timsr
+		WHERE timsr.SMLFACT_NM = #{smlfactNm} AND timsr.SMLFACT_ADDR = #{smlfactAddr} AND timsr.IPCSS_MNG_NO = #{ipcssMngNo}  
+			AND timsr.TRF_USE_CD in ('1','2','3','4') AND timsr.TRF_MEAN_VHCCLS in ('1','2','3','4','5')
+		GROUP BY timsr.USG_CD, timsr.TRF_USE_CD, timsr.TRF_MEAN_VHCCLS, timsr.SHARE_RT, timsr.USG_NO
+		ORDER BY CAST(TIMSR.USG_NO AS INT)
+	</select>
+
+	<select id="findOneMeanShareRtInfoForNonDwell" parameterType="trfIpcssMeanShareRt" resultType="trfIpcssMeanShareRt">
+		SELECT 
+			timsr.USG_CD
+			, timsr.TRF_USE_CD
+			, timsr.TRF_MEAN_VHCCLS
+			, ROUND(timsr.SHARE_RT, 2) AS SHARE_RT
+		FROM GGITS.TRF_IPCSS_MEAN_SHARE_RT timsr
+		WHERE timsr.SMLFACT_NM = #{smlfactNm} AND timsr.SMLFACT_ADDR = #{smlfactAddr} AND timsr.IPCSS_MNG_NO = #{ipcssMngNo}  
+			AND timsr.TRF_USE_CD in ('5','6') AND timsr.TRF_MEAN_VHCCLS in ('1','2','3','4','5')
+		GROUP BY timsr.USG_CD, timsr.TRF_USE_CD, timsr.TRF_MEAN_VHCCLS, timsr.SHARE_RT, timsr.USG_NO
+		ORDER BY CAST(TIMSR.USG_NO AS INT)
+	</select>
+	
+	<select id="findAllChartData" parameterType="map" resultType="map">
+		SELECT 
+			COLLECT_LIST(A.meanShareRt) as meanShareRtArr
+		from (
+			SELECT 
+					tims.TRF_MEAN_VHCCLS
+					, ROUND(SUM(tims.share_rt) / count(trf_mean_vhccls),2) AS meanShareRt
+				FROM GGITS.trf_ipcss_mean_share_rt tims 
+				WHERE tims.IPCSS_MNG_NO = #{ipcssMngNo} AND tims.TRF_USE_CD = #{trfUseCd}
+				GROUP BY tims.TRF_MEAN_VHCCLS
+				ORDER BY tims.TRF_MEAN_VHCCLS
+		)A
+	</select>
+	
+	<insert id="saveMeanShareRt" parameterType="trfIpcssMeanShareRt">
+		INSERT INTO GGITS.TRF_IPCSS_MEAN_SHARE_RT
+			VALUES(
+			#{ipcssMngNo}, 
+			#{smlfactNm}, 
+			#{smlfactAddr}, 
+			#{scale}, 
+			#{totfrar}, 
+			#{exmnDivNm}, 
+			#{exmnYmd}, 
+			#{exmnDocNm}, 
+			#{usgCd}, 
+			#{trfUseCd}, 
+			#{trfMeanVhccls}, 
+			#{shareRt},
+			FROM_UNIXTIME(UNIX_TIMESTAMP(), 'yyyyMMddHHmmss'),
+			CAST(#{usgNo} as int),
+			CAST(#{meanShareNo} as int));
+	</insert>
+	
+	<delete id="deleteTrafficImpactReportByIpcssMngNo" parameterType="String">
+		DELETE 
+		FROM 
+			GGITS.TRF_IPCSS_MEAN_SHARE_RT 
+		WHERE
+			IPCSS_MNG_NO = #{ipcssMngNo}
+	</delete>
+	
+	<delete id="deleteTrafficImpactReportForUsg" parameterType="trfvlmStatisticsDTO">
+		DELETE 
+		FROM 
+			GGITS.TRF_IPCSS_MEAN_SHARE_RT 
+		WHERE
+			IPCSS_MNG_NO = #{ipcssMngNo}
+		<if test="dwellYn != '' and dwellYn != null">
+			<if test='"Y".equals(dwellYn)'>
+				AND USG_CD IN ('001','101','103','106','109','111','112')
+			</if>
+			<if test='"N".equals(dwellYn)'>
+				AND USG_CD NOT IN ('001','101','103','106','109','111','112')
+			</if>				
+		</if>
+	</delete>
+</mapper>

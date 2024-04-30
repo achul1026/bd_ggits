@@ -16,6 +16,11 @@ public class MrtSmcSpotAbn extends CommonEntity {
     private String    etlDt;        //etl 일시
     
     private String acsRoadNm;	// 도로명
+    private String roadRank;	// 도로 등급
+    private String roadName;
+    private Double avgTrfvlm;			// 평균 교통량
+	private Double avgSpd;				// 평균 속도
+	private Double sumTrfvlm;			// 누적 교통량
 
     private String orderByOption = "trfvlm"; //정렬옵션 ex)trfvlm 교통량 , speed 속도
     
@@ -132,5 +137,45 @@ public class MrtSmcSpotAbn extends CommonEntity {
   public void setOrderByOption(String orderByOption) {
 	this.orderByOption = orderByOption;
   }
+
+public String getRoadRank() {
+	return roadRank;
+}
+
+public void setRoadRank(String roadRank) {
+	this.roadRank = roadRank;
+}
+
+public String getRoadName() {
+	return roadName;
+}
+
+public void setRoadName(String roadName) {
+	this.roadName = roadName;
+}
+
+public Double getAvgTrfvlm() {
+	return avgTrfvlm;
+}
+
+public void setAvgTrfvlm(Double avgTrfvlm) {
+	this.avgTrfvlm = avgTrfvlm;
+}
+
+public Double getAvgSpd() {
+	return avgSpd;
+}
+
+public void setAvgSpd(Double avgSpd) {
+	this.avgSpd = avgSpd;
+}
+
+public Double getSumTrfvlm() {
+	return sumTrfvlm;
+}
+
+public void setSumTrfvlm(Double sumTrfvlm) {
+	this.sumTrfvlm = sumTrfvlm;
+}
 
 }

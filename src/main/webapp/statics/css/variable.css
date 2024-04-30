@@ -1,22 +1,24 @@
 :root {
     --box-bg-color: rgba(0, 0, 0, 0.66);
     --mapping-bg-color: rgba(0, 0, 0, 0.60);
-    --hd-bg-color:#000;
-    --main-txt-color:#fff;
-    --white-bg-color:#fff;
-    --black-txt-color:#000;
-    --sub-bg-color:rgba(0, 0, 0, 0.88);
-    --side-bar-color:#000;
-    --black-color:#000;
-    --table-2depth-color:#252525;
-    --dashboard-box-color:rgba(0,0,0, 0.80);
-    --dashboard-title-border:rgba(255,255,255, 0.44);
-    --dashboard-item-hover:rgba(143, 90, 255, 0.54);
-    --tab-box-title:#1e6a5d;
-    --text-red-color-500:#ff5454;
+    --hd-bg-color: #000;
+    --main-txt-color: #fff;
+    --white-bg-color: #fff;
+    --black-txt-color: #000;
+    --sub-bg-color: rgba(0, 0, 0, 0.88);
+    --side-bar-color: #000;
+    --black-color: #000;
+    --table-2depth-color: #252525;
+    --dashboard-box-color: rgba(0, 0, 0, 0.80);
+    --dashboard-title-border: rgba(163, 163, 163, 0.44);
+    --dashboard-item-hover: rgba(143, 90, 255, 0.54);
+    /* --tab-box-title:#1e6a5d; */
+    --tab-box-title: #008770;
+    --text-red-color-500: #ff5454;
 
     /* 버튼컬러 */
-    --btn-green-color:rgba(2, 178, 147, 0.44);
+  /*--btn-green-color:rgba(2, 178, 147, 0.44); */
+    --btn-green-color:#008770;
     --btn-dark-color:#3e3e3e;
     --btn-side-color:rgba(0,0,0,0.77);
     --btn-light-green-color:#008736;
@@ -27,96 +29,103 @@
     --btn-dash-dark-red-color:#D80000;
 
 
-    
     /* 키컬러, 텍스트컬러 */
-    --key-color-100:#D6FFF8;
-    --key-color-200:#B6FFF2;
-    --key-color-300:#8DFFEB;
-    --key-color-400:#58EDD2;
-    --key-color-500:#25C8AB;
-    --key-color-600:#02B293;
-    --key-color-700:#037661;
-    
+    --key-color-100: #D6FFF8;
+    --key-color-200: #B6FFF2;
+    --key-color-300: #8DFFEB;
+    --key-color-400: #58EDD2;
+    --key-color-500: #25C8AB;
+    --key-color-600: #02B293;
+    --key-color-700: #037661;
+    --key-color-800: #008770;
+
+
     /* 서브컬러 */
-    --sub-color-50:#F5F0FF;
-    --sub-color-100:#E8DDFF;
-    --sub-color-200:#DBCAFF;
-    --sub-color-300:#C2A6FF;
-    --sub-color-400:#AD86FF;
-    --sub-color-500:#8F5AFF;
-    --sub-color-600:#7233F9;
-    --sub-color-700:#5527B6;
-    
+    --sub-color-50: #F5F0FF;
+    --sub-color-100: #E8DDFF;
+    --sub-color-200: #DBCAFF;
+    --sub-color-300: #C2A6FF;
+    --sub-color-400: #AD86FF;
+    --sub-color-500: #8F5AFF;
+    --sub-color-600: #7233F9;
+    --sub-color-700: #5527B6;
+
     /* 관측교통량 */
-    --traffic-color-100:#FFFFFF;
-    --traffic-color-200:#EAEAEA;
-    --traffic-color-300:#CECECE;
-    --traffic-color-400:#979797;
+    --traffic-color-100: #FFFFFF;
+    --traffic-color-200: #EAEAEA;
+    --traffic-color-300: #CECECE;
+    --traffic-color-400: #979797;
 
     /* 텍스트 컬러 */
-    --yellow-color-100:#FFF8D3;
-    --yellow-color-200:#FFF6C9;
-    --yellow-color-300:#FFEF9C;
-    --yellow-color-400:#FEEA81;
-    --yellow-color-500:#FFE455;
-    --yellow-color-600:#FED501;
+    --yellow-color-100: #FFF8D3;
+    --yellow-color-200: #FFF6C9;
+    --yellow-color-300: #FFEF9C;
+    --yellow-color-400: #FEEA81;
+    --yellow-color-500: #FFE455;
+    --yellow-color-600: #FED501;
 
     /* 위험도 색상 */
-    --danger-color-100:#FFDDDD;
-    --danger-color-200:#FFC7C7;
-    --danger-color-300:#FFB0B0;
-    --danger-color-400:#FF8181;
-    --danger-color-500:#FF5F5F;
-    --danger-color-600:#FF2828;
+    --danger-color-100: #FFDDDD;
+    --danger-color-200: #FFC7C7;
+    --danger-color-300: #FFB0B0;
+    --danger-color-400: #FF8181;
+    --danger-color-500: #FF5F5F;
+    --danger-color-600: #FF2828;
 
     /* 밀집도 색상 */
-    --ppl-orange-color-100:#FFEED4;
-    --ppl-orange-color-200:#FFE4BB;
-    --ppl-orange-color-300:#FFD597;
-    --ppl-orange-color-400:#FFC56D;
-    --ppl-orange-color-500:#f5a732;
-    --ppl-orange-color-600:#FF9900;
+    --ppl-orange-color-100: #FFEED4;
+    --ppl-orange-color-200: #FFE4BB;
+    --ppl-orange-color-300: #FFD597;
+    --ppl-orange-color-400: #FFC56D;
+    --ppl-orange-color-500: #f5a732;
+    --ppl-orange-color-600: #FF9900;
 
-    --ppl-yellow-color-100:#FEFFD4;
-    --ppl-yellow-color-200:#FEFFBB;
-    --ppl-yellow-color-300:#FFF597;
-    --ppl-yellow-color-400:#F3FF6D;
-    --ppl-yellow-color-500:#F2F532;
-    --ppl-yellow-color-600:#FAFF00;
+    --ppl-yellow-color-100: #FEFFD4;
+    --ppl-yellow-color-200: #FEFFBB;
+    --ppl-yellow-color-300: #FFF597;
+    --ppl-yellow-color-400: #F3FF6D;
+    --ppl-yellow-color-500: #F2F532;
+    --ppl-yellow-color-600: #FAFF00;
 
-    --ppl-green-color-100:#E7FFD4;
-    --ppl-green-color-200:#D5FFBB;
-    --ppl-green-color-300:#C5FF97;
-    --ppl-green-color-400:#B6FF6D;
-    --ppl-green-color-500:#9FF532;
-    --ppl-green-color-600:#52FF00;
+    --ppl-green-color-100: #E7FFD4;
+    --ppl-green-color-200: #D5FFBB;
+    --ppl-green-color-300: #C5FF97;
+    --ppl-green-color-400: #B6FF6D;
+    --ppl-green-color-500: #9FF532;
+    --ppl-green-color-600: #52FF00;
 
     /* 다크테마 */
-    --dark-color-100:#3D3D3D;
-    --dark-color-200:#535353;
-    --dark-color-300:#676767;
-    --dark-color-400:#828282;
-    --dark-color-500:#2e2e2e;
-    --dark-color-600:#000000;
-    --dark-color-700:#666666;
-    --dark-color-800:#f6f6f6;
+    --dark-color-100: #3D3D3D;
+    --dark-color-200: #535353;
+    --dark-color-300: #676767;
+    --dark-color-400: #828282;
+    --dark-color-500: #2e2e2e;
+    --dark-color-600: #000000;
+    --dark-color-700: #666666;
+    --dark-color-800: #f6f6f6;
+    --dark-color-900: #414141;
+    --dark-color-1000: #414141;
+    --dark-color-1100: #efefef;
 
 
     /* 선 색상 */
-    --line-color-100:#EFEFEF;
-    --line-color-200:#DEDEDE;
-    --line-color-300:#01DAB3;
-    --line-color-400:#ededed;
-    --line-color-500:#515151;
-    --line-color-600:#757575;
-    --line-color-700:#2E94F2;
-    
+    --line-color-100: #EFEFEF;
+    --line-color-200: #DEDEDE;
+    --line-color-300: #01DAB3;
+    --line-color-400: #ededed;
+    --line-color-500: #515151;
+    --line-color-600: #757575;
+    --line-color-700: #2E94F2;
+    --line-color-800: #9d9d9d;
 
     /* 대시보드 아이콘 컬러 */
-    --dash--icon--blue:#446DFF;
-    --dash--icon--red:#FF4646;
-    --dash--icon--pink:#FF54BB;
-    --dash--icon--yellow:#FF8A00;
-    --dash--icon--violet:#8F5AFF;
-    --dash--icon--green:#03a500;
+    --dash--icon--blue: #446DFF;
+    --dash--icon--red: #FF4646;
+    --dash--icon--pink: #FF54BB;
+    --dash--icon--yellow: #FF8A00;
+    --dash--icon--violet: #8F5AFF;
+    --dash--icon--green: #03a500;
+
+    /* 대시보드 상황별 색상 컬러 */
+	 --dash--icon--sub--red:#ff6666;
 }

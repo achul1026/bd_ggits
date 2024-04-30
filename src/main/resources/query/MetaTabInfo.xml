@@ -26,38 +26,57 @@
 		MTI.UPDT_DT
 	FROM
 		META_TAB_INFO MTI
+	<if test="dataType != null and dataType != ''">
+		LEFT JOIN (
+		SELECT
+			TBL_ID ,
+			DSET_ID,
+			DATA_TYPE 
+		FROM
+			META_COL_INFO
+		GROUP by TBL_ID , DSET_ID, DATA_TYPE
+		) MCI ON MCI.TBL_ID = MTI.TBL_ID AND MCI.DSET_ID = MTI.DSET_ID 
+	</if>
 	WHERE
 		1 = 1
 		<if test="clschmId != null and clschmId != ''">
 			AND MTI.CLSCHM_ID = #{clschmId}
 		</if>
 		<if test="dataType != null and dataType != ''">
-			AND (
-			SELECT
-				unnest (ARRAY_AGG(DATA_TYPE))
-				FROM 
-				META_COL_INFO MCI
-			WHERE
-				MTI.TBL_ID = MCI.TBL_ID ) IN (#{dataType})
+			AND MCI.DATA_TYPE = #{dataType}
+<!-- 			AND ( -->
+<!-- 			SELECT -->
+<!-- 				unnest (ARRAY_AGG(DATA_TYPE)) -->
+<!-- 				FROM  -->
+<!-- 				META_COL_INFO MCI -->
+<!-- 			WHERE -->
+<!-- 				MTI.TBL_ID = MCI.TBL_ID ) IN (#{dataType}) -->
 		</if>
 		<if test="opngDataListNm != null and opngDataListNm != ''">
 			AND MTI.OPNG_DATA_LIST_NM LIKE CONCAT('%', #{opngDataListNm}, '%')
 		</if>
-		<if test="tblEngNm != null and tblEngNm != ''">
-			AND MTI.TBL_ENG_NM LIKE CONCAT('%', #{tblEngNm}, '%')
-		</if>
-		<if test="tblKoreanNm != null and tblKoreanNm != ''">
-			AND MTI.TBL_KOREAN_NM LIKE CONCAT('%', #{tblKoreanNm}, '%')
-		</if>
-		<if test="tblKoreanNm != null and tblKoreanNm != ''">
-			AND MTI.TBL_KOREAN_NM LIKE CONCAT('%', #{tblKoreanNm}, '%')
-		</if>
-		<if test="tblOwnrNm != null and tblOwnrNm != ''">
-			AND MTI.TBL_OWNR_NM LIKE CONCAT('%', #{tblOwnrNm}, '%')
-		</if>
-		<if test="dataKeyword != null and dataKeyword != ''">
-			AND MTI.DATA_KEYWORD LIKE CONCAT('%', #{dataKeyword}, '%')
-		</if>
+		<choose>
+			<when test="searchContent != null and searchContent != ''">
+					AND (MTI.TBL_ENG_NM LIKE '%'||#{searchContent}||'%'
+					OR MTI.TBL_KOREAN_NM LIKE '%'||#{searchContent}||'%'
+					OR MTI.TBL_OWNR_NM LIKE '%'||#{searchContent}||'%'
+					OR MTI.DATA_KEYWORD LIKE '%'||#{searchContent}||'%')
+			</when>
+			<otherwise>
+				<if test="tblEngNm != null and tblEngNm != ''">
+					AND MTI.TBL_ENG_NM LIKE '%'||#{tblEngNm}||'%'
+				</if>
+				<if test="tblKoreanNm != null and tblKoreanNm != ''">
+					AND MTI.TBL_KOREAN_NM LIKE '%'||#{tblKoreanNm}||'%'
+				</if>
+				<if test="tblOwnrNm != null and tblOwnrNm != ''">
+					AND MTI.TBL_OWNR_NM LIKE '%'||#{tblOwnrNm}||'%'
+				</if>
+				<if test="dataKeyword != null and dataKeyword != ''">
+					AND MTI.DATA_KEYWORD LIKE '%'||#{dataKeyword}||'%'
+				</if>
+			</otherwise>	
+		</choose>
 		ORDER BY ROWNUM DESC 
 		LIMIT 10 OFFSET (#{page} - 1) * 10
 	</select>
@@ -77,37 +96,56 @@
      	SELECT
      		COUNT(*)
      	FROM META_TAB_INFO MTI
+		<if test="dataType != null and dataType != ''">
+			LEFT JOIN (
+			SELECT
+				TBL_ID ,
+				DSET_ID,
+				DATA_TYPE 
+			FROM
+				META_COL_INFO
+			GROUP by TBL_ID , DSET_ID, DATA_TYPE
+			) MCI ON MCI.TBL_ID = MTI.TBL_ID AND MCI.DSET_ID = MTI.DSET_ID 
+		</if>
 		WHERE 1=1
+		<if test="dataType != null and dataType != ''">
+			AND MCI.DATA_TYPE = #{dataType}
+<!-- 			AND ( -->
+<!-- 			SELECT -->
+<!-- 				unnest (ARRAY_AGG(DATA_TYPE)) -->
+<!-- 				FROM  -->
+<!-- 				META_COL_INFO MCI -->
+<!-- 			WHERE -->
+<!-- 				MTI.TBL_ID = MCI.TBL_ID ) IN (#{dataType}) -->
+		</if>
 		<if test="clschmId != null and clschmId != ''">
 			AND MTI.CLSCHM_ID = #{clschmId}
-		</if>
-		<if test="dataType != null and dataType != ''">
-			AND (
-			SELECT
-				unnest (ARRAY_AGG(DATA_TYPE))
-				FROM 
-				META_COL_INFO MCI
-			WHERE
-				MTI.TBL_ID = MCI.TBL_ID ) IN (#{dataType})
 		</if>
 		<if test="opngDataListNm != null and opngDataListNm != ''">
 			AND MTI.OPNG_DATA_LIST_NM LIKE CONCAT('%', #{opngDataListNm}, '%')
 		</if>
-		<if test="tblEngNm != null and tblEngNm != ''">
-			AND MTI.TBL_ENG_NM LIKE CONCAT('%', #{tblEngNm}, '%')
-		</if>
-		<if test="tblKoreanNm != null and tblKoreanNm != ''">
-			AND MTI.TBL_KOREAN_NM LIKE CONCAT('%', #{tblKoreanNm}, '%')
-		</if>
-		<if test="tblKoreanNm != null and tblKoreanNm != ''">
-			AND MTI.TBL_KOREAN_NM LIKE CONCAT('%', #{tblKoreanNm}, '%')
-		</if>
-		<if test="tblOwnrNm != null and tblOwnrNm != ''">
-			AND MTI.TBL_OWNR_NM LIKE CONCAT('%', #{tblOwnrNm}, '%')
-		</if>
-		<if test="dataKeyword != null and dataKeyword != ''">
-			AND MTI.DATA_KEYWORD LIKE CONCAT('%', #{dataKeyword}, '%')
-		</if>
+		<choose>
+			<when test="searchContent != null and searchContent != ''">
+					AND (MTI.TBL_ENG_NM LIKE '%'||#{searchContent}||'%'
+					OR MTI.TBL_KOREAN_NM LIKE '%'||#{searchContent}||'%'
+					OR MTI.TBL_OWNR_NM LIKE '%'||#{searchContent}||'%'
+					OR MTI.DATA_KEYWORD LIKE '%'||#{searchContent}||'%')
+			</when>
+			<otherwise>
+				<if test="tblEngNm != null and tblEngNm != ''">
+					AND MTI.TBL_ENG_NM LIKE '%'||#{tblEngNm}||'%'
+				</if>
+				<if test="tblKoreanNm != null and tblKoreanNm != ''">
+					AND MTI.TBL_KOREAN_NM LIKE '%'||#{tblKoreanNm}||'%'
+				</if>
+				<if test="tblOwnrNm != null and tblOwnrNm != ''">
+					AND MTI.TBL_OWNR_NM LIKE '%'||#{tblOwnrNm}||'%'
+				</if>
+				<if test="dataKeyword != null and dataKeyword != ''">
+					AND MTI.DATA_KEYWORD LIKE '%'||#{dataKeyword}||'%'
+				</if>
+			</otherwise>	
+		</choose>
      </select>
      
      <select id="findOneByTblId" parameterType="String" resultType="metaTabInfo">
@@ -130,10 +168,16 @@
 			MTI.CLSCHM_ID,
 			MTI.DATA_SAVE_CYCL,
 			MTI.UPDT_DT,
-			MDI.RLTINST_ID
+			DI.RLTINST_ID,
+			CI.CLSCHM_NM,
+			MII.RLTINST_NM 
 		FROM META_TAB_INFO MTI
-		LEFT JOIN META_DB_INFO MDI 
-		ON MTI.DSET_ID = MDI.DB_ID 
+		LEFT JOIN DSET_INFO DI 
+		ON MTI.DSET_ID = DI.DSET_ID
+		LEFT JOIN CLSCHM_INFO CI 
+		ON MTI.CLSCHM_ID  = CI.CLSCHM_ID 
+		LEFT JOIN META_INFSYS_INFO MII 
+		ON DI.RLTINST_ID  = MII.RLTINST_ID
 		WHERE MTI.TBL_ID = #{tblId}	
      </select>
      
@@ -205,15 +249,19 @@
 		WITH META_DATA_ARRAY_LIST AS (
 			SELECT 
 					UNNEST(STRING_TO_ARRAY(MTI.DATA_KEYWORD,',')) AS DATA_KEYWORD_ARRAY ,
-					UNNEST(STRING_TO_ARRAY(MTI.CLSCHM_ID  ,',')) AS CLSCHM_ID_ARRAY ,
+					UNNEST(STRING_TO_ARRAY(CI.CLSCHM_ID  ,',')) AS CLSCHM_ID_ARRAY ,
+					UNNEST(STRING_TO_ARRAY(CI.CLSCHM_NM  ,',')) AS CLSCHM_NM_ARRAY ,
 					UNNEST(STRING_TO_ARRAY(MCI.data_type ,',')) AS DATA_TYPE_ARRAY 
 			FROM
 					META_TAB_INFO MTI
 			LEFT JOIN META_COL_INFO MCI ON MTI.TBL_ID = MCI.TBL_ID
+			LEFT JOIN DSET_INFO DI ON MTI.DSET_ID =  DI.DSET_ID
+			LEFT JOIN CLSCHM_INFO CI ON MTI.CLSCHM_ID = CI.CLSCHM_ID
 		) 
 		SELECT 	
 					ARRAY_REMOVE(ARRAY_AGG(DISTINCT  DATA_KEYWORD_ARRAY), NULL) AS "dataKeywordList", 
 					ARRAY_REMOVE(ARRAY_AGG(DISTINCT  CLSCHM_ID_ARRAY), NULL) AS "clschmIdList", 
+					ARRAY_REMOVE(ARRAY_AGG(DISTINCT  CLSCHM_NM_ARRAY), NULL) AS "clschmNmList", 
 					ARRAY_REMOVE(ARRAY_AGG(DISTINCT  DATA_TYPE_ARRAY), NULL) AS "dataTypeList"
 		FROM 
 			META_DATA_ARRAY_LIST
@@ -225,4 +273,43 @@
 				TBL_ID = #{tblId} 
 			AND DSET_ID = #{dsetId}
      </delete>
+     
+     <select id="findTblIdAndTblNmAndTblTypeByDsetId" parameterType="String" resultType="metaTabInfo">
+     	SELECT
+     	 	TBL_ID,
+     	 	TBL_ENG_NM,
+     	 	TBL_TYPE
+     	FROM 
+     		META_TAB_INFO MTI 
+     	WHERE
+     		DSET_ID = #{dsetId}
+     </select>
+     
+     <select id="findAllCsvInfo" parameterType="MetaTabInfo" resultType="map">
+     	SELECT
+		    <foreach collection="colInfoList" item="colInfoItem" separator=",">
+		    	<choose>
+					<when test="colInfoItem.dataType == 'geometry'">
+						ST_ASGEOJSON(${colInfoItem.colEngNm}) AS ${colInfoItem.colEngNm}
+					</when>
+					<otherwise>
+				    	${colInfoItem.colEngNm}
+					</otherwise>
+		    	</choose>
+		    </foreach>
+     	FROM
+     		${tblEngNm}
+     </select>
+     
+     <select id="findDataTypeList" resultType="String">
+		SELECT 
+			MCI.DATA_TYPE
+		FROM
+			META_TAB_INFO MTI
+		LEFT JOIN META_COL_INFO MCI ON MTI.TBL_ID = MCI.TBL_ID
+		LEFT JOIN DSET_INFO DI ON MTI.DSET_ID =  DI.DSET_ID
+		WHERE MCI.DATA_TYPE IS NOT NULL
+		GROUP BY MCI.DATA_TYPE
+		ORDER BY MCI.DATA_TYPE
+     </select>
 </mapper>

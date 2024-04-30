@@ -1,0 +1,133 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MrtTrfHlctcCngstnSctnMapper'>
+	<select id="findAllDataYears" resultType="map">
+		SELECT
+			anls_mm as year,
+            to_char(to_date(anls_mm,'YYYYMM'),'YYYY년 MM월') as yearNm
+		FROM
+			mrt_trf_hlctc_cngstn_sctn mthcs
+		GROUP BY 1
+		ORDER BY 1 desc
+	</select>
+
+	<select id="findAllBySearchOption" parameterType="mapBigdataSearchDTO" resultType="mrtTrfHlctcCngstnSctn">
+		select
+		mthcs.anls_mm
+		,mthcs.link_id
+		,mthcs.road_div
+		,mthcs.route_nm
+		,mthcs.start_node_id
+		,mthcs.start_node_nm
+		,mthcs.end_node_id
+		,mthcs.end_node_nm
+		,mthcs.route_drct
+		,mthcs.sctn_len
+		,mthcs.avg_speed
+		,mthcs.avg_cngstn_time
+		,glspi.link_seq
+		,glspi.link_lvl
+		,glspi.route_id
+		,glspi.start_node
+		,glspi.end_node
+		,glspi.road_rank
+		,glspi.link_len
+		,glspi.route_no
+		,glspi.start_nm
+		,glspi.end_nm
+		,glspi.road_nm
+		,glspi.link_nm
+		,glspi.rmk
+		,glspi.old_id
+		,glspi.route_way
+		,glspi.route_seq
+		,glspi.year
+		,glspi.route_korn
+		,st_asgeojson(glspi.geom) geojson
+		from
+		ggits_link_srvc_pvsn_info glspi
+		left outer join (
+		    select
+		    *
+		    from mrt_trf_hlctc_cngstn_sctn mthcs
+		    where
+			mthcs.anls_mm = #{startDate}
+		<if test="searchRoadRank != null and searchRoadRank != ''">
+			AND mthcs.ROAD_DIV IN
+			<foreach item="roadRank" collection="searchRoadRank.split(',')" open="(" separator="," close=")">
+				#{roadRank}
+			</foreach>
+		</if>
+		) mthcs on mthcs.link_id = glspi.link_id
+		where glspi.link_lvl = 10
+	</select>
+
+	<select id="findSvcCongestionTop10BySearchOption" parameterType="mapBigdataSearchDTO" resultType="mrtTrfHlctcCngstnSctn">
+		SELECT
+		MTHCS.ANLS_MM,
+		MTHCS.ROAD_DIV,
+		MTHCS.ROUTE_NM,
+		MTHCS.START_NODE_NM,
+		MTHCS.END_NODE_NM,
+		MTHCS.ROUTE_DRCT,
+		MTHCS.SCTN_LEN,
+		ROUND(MTHCS.AVG_SPEED , 0) AS AVG_SPEED_STR,
+		MTHCS.AVG_CNGSTN_TIME
+		FROM
+		MRT_TRF_HLCTC_CNGSTN_SCTN MTHCS
+		<where>
+		and mthcs.anls_mm = #{startDate}
+		<if test="searchRoadRank != null and searchRoadRank != ''">
+			AND mthcs.ROAD_DIV IN
+			<foreach item="roadRank" collection="searchRoadRank.split(',')" open="(" separator="," close=")">
+				#{roadRank}
+			</foreach>
+		</if>
+		AND MTHCS.AVG_CNGSTN_TIME IS NOT NULL
+		</where>
+		ORDER BY MTHCS.AVG_CNGSTN_TIME DESC
+		LIMIT 10
+	</select>
+	<select id="findSvcCongestionTop10" parameterType="mrtTrfHlctcCngstnSctn" resultType="mrtTrfHlctcCngstnSctn">
+		SELECT 
+				MTHCS.ANLS_MM,
+				MTHCS.LINK_ID,
+				MTHCS.ROAD_DIV,
+				MTHCS.ROUTE_NM,
+				MTHCS.START_NODE_NM,
+				MTHCS.END_NODE_NM,
+				MTHCS.ROUTE_DRCT,
+				MTHCS.SCTN_LEN,
+				ROUND(MTHCS.AVG_SPEED , 0) AS AVG_SPEED_STR,
+				MTHCS.AVG_CNGSTN_TIME
+		FROM
+			MRT_TRF_HLCTC_CNGSTN_SCTN MTHCS
+		<where>
+			<if test="anlsMm != null and anlsMm != ''">
+				AND MTHCS.ANLS_MM = #{anlsMm}
+			</if>
+			<if test="roadDiv != null and roadDiv != ''">
+				AND MTHCS.ROAD_DIV = #{roadDiv}
+			</if>
+				AND AVG_CNGSTN_TIME IS NOT NULL
+		</where>
+		ORDER BY MTHCS.AVG_CNGSTN_TIME DESC
+		LIMIT 10
+	</select>
+	
+	<select id="findRoadDivList" resultType="String">
+		SELECT 
+			ROAD_DIV 
+		FROM MRT_TRF_HLCTC_CNGSTN_SCTN
+		GROUP BY ROAD_DIV
+		ORDER BY ROAD_DIV
+	</select>
+	
+	<select id="findMaxAnlsMm" resultType="String">
+		SELECT
+			MAX(ANLS_MM) AS ANLS_MM
+		FROM
+			MRT_TRF_HLCTC_CNGSTN_SCTN
+	</select>
+</mapper>

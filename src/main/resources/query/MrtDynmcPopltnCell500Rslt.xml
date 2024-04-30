@@ -1,0 +1,229 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MrtDynmcPopltnCell500RsltMapper'>
+    <cache flushInterval="60000"/>
+    <select id="findAllBySearchDto" parameterType="mapBigdataSearchDTO" resultType="mrtDynmcPopltnCell500Rslt">
+        SELECT
+            MDPCR.BASEYMD
+            ,MDPCR.TIMEZN
+            ,MDPCR.CELL_500
+            ,MDPCR.FLT_POP
+            ,MDPCR.ETL_DT
+            ,KCMI.CITY_CD
+        	,ADSTDG.CD_NM AS adstsdg_nm
+        FROM
+            MRT_DYNMC_POPLTN_CELL500_RSLT MDPCR
+        INNER JOIN (
+            SELECT
+            KCMI.CELL_500_ID,KCMI.CITY_CD,KCMI.ADMI_CD
+		FROM
+            KT_CELL_MAPN_INFO KCMI
+            GROUP BY KCMI.CELL_500_ID,KCMI.CITY_CD,KCMI.ADMI_CD
+        ) KCMI ON KCMI.CELL_500_ID = MDPCR.CELL_500
+		LEFT OUTER JOIN M_OP_CODE ADSTDG ON ADSTDG.GRP_CD_ID = 'ADMI_CD' AND KCMI.ADMI_CD = ADSTDG.CD_ID
+        <where>
+        <!-- 기간 검색 -->
+        AND MDPCR.BASEYMD = replace(#{startDate},'-','')
+        <if test="searchLocation != null and searchLocation != '' and searchLocation != 'searchAllLocation'">
+            AND KCMI.CITY_CD||'0' = #{searchLocation}
+        </if>
+		</where>
+    </select>
+
+	<select id="findAllBySearchDtoMax" parameterType="mapBigdataSearchDTO" resultType="mrtDynmcPopltnCell500Rslt">
+		SELECT
+		MDPCR.BASEYMD
+		,MDPCR.TIMEZN
+		,MDPCR.CELL_500
+		,MDPCR.FLT_POP
+		,MDPCR.ETL_DT
+		,KCMI.CITY_CD
+		,ADSTDG.CD_NM AS adstsdg_nm
+		FROM
+		MRT_DYNMC_POPLTN_CELL500_RSLT MDPCR
+		INNER JOIN (
+		SELECT
+		KCMI.CELL_500_ID,KCMI.CITY_CD,KCMI.ADMI_CD
+		FROM
+		KT_CELL_MAPN_INFO KCMI
+		GROUP BY KCMI.CELL_500_ID,KCMI.CITY_CD,KCMI.ADMI_CD
+		) KCMI ON KCMI.CELL_500_ID = MDPCR.CELL_500
+		LEFT OUTER JOIN M_OP_CODE ADSTDG ON ADSTDG.GRP_CD_ID = 'ADMI_CD' AND KCMI.ADMI_CD = ADSTDG.CD_ID
+		<where>
+			<!-- 기간 검색 -->
+			AND MDPCR.BASEYMD = (
+			select max(BASEYMD) from MRT_DYNMC_POPLTN_CELL500_RSLT
+			)
+			<if test="searchLocation != null and searchLocation != '' and searchLocation != 'searchAllLocation'">
+				AND KCMI.CITY_CD||'0' = #{searchLocation}
+			</if>
+		</where>
+	</select>
+
+    <select id="findAllBySearchDtoForChart" parameterType="mapBigdataSearchDTO" resultType="mrtDynmcPopltnCell500Rslt">
+        SELECT
+        MDPCR.BASEYMD
+        ,MDPCR.TIMEZN
+        ,MAX(MDPCR.FLT_POP) as FLT_POP
+        ,KCMI.CITY_CD
+        FROM
+        MRT_DYNMC_POPLTN_CELL500_RSLT MDPCR
+        INNER JOIN (
+        SELECT
+        KCMI.CELL_500_ID,KCMI.CITY_CD
+        FROM
+        KT_CELL_MAPN_INFO KCMI
+        GROUP BY KCMI.CELL_500_ID,KCMI.CITY_CD
+        ) KCMI ON KCMI.CELL_500_ID = MDPCR.CELL_500
+        <where>
+        <!-- 기간 검색 -->
+        AND MDPCR.BASEYMD = replace(#{startDate},'-','')
+        <if test="searchLocation != null and searchLocation != '' and searchLocation != 'searchAllLocation'">
+            AND KCMI.CITY_CD||'0' = #{searchLocation}
+        </if>
+		</where>
+        GROUP BY MDPCR.BASEYMD ,MDPCR.TIMEZN,KCMI.CITY_CD
+    </select>
+
+	<select id="findAllBySearchDtoForChartMax" parameterType="mapBigdataSearchDTO" resultType="mrtDynmcPopltnCell500Rslt">
+		SELECT
+		MDPCR.BASEYMD
+		,MDPCR.TIMEZN
+		,MAX(MDPCR.FLT_POP) as FLT_POP
+		,KCMI.CITY_CD
+		FROM
+		MRT_DYNMC_POPLTN_CELL500_RSLT MDPCR
+		INNER JOIN (
+		SELECT
+		KCMI.CELL_500_ID,KCMI.CITY_CD
+		FROM
+		KT_CELL_MAPN_INFO KCMI
+		GROUP BY KCMI.CELL_500_ID,KCMI.CITY_CD
+		) KCMI ON KCMI.CELL_500_ID = MDPCR.CELL_500
+		<where>
+			<!-- 기간 검색 -->
+			AND MDPCR.BASEYMD = (
+			select max(BASEYMD) from MRT_DYNMC_POPLTN_CELL500_RSLT
+			)
+			<if test="searchLocation != null and searchLocation != '' and searchLocation != 'searchAllLocation'">
+				AND KCMI.CITY_CD||'0' = #{searchLocation}
+			</if>
+		</where>
+		GROUP BY MDPCR.BASEYMD ,MDPCR.TIMEZN,KCMI.CITY_CD
+	</select>
+    
+    <select id="findAllFlatPopltnRank" resultType="map">
+    	WITH FLAT_POPLTN_LIST AS (
+    		SELECT 
+	  			A.FLT_POP
+	  			, A.CD_NM
+    		FROM(
+    				SELECT
+				        AVG(MDPCR.FLT_POP) as FLT_POP
+				        ,kcmi.CD_NM
+				   	FROM
+				    	MRT_DYNMC_POPLTN_CELL500_RSLT MDPCR
+				    INNER JOIN (
+				        SELECT
+				        	KCMI.CELL_500_ID,KCMI.CITY_CD, MOC.CD_NM 
+				        FROM
+				        	KT_CELL_MAPN_INFO KCMI
+				        INNER JOIN M_OP_CODE moc 
+				        	ON (moc.grp_cd_id = 'SGG_CD' and moc.CD_ID like kcmi.CITY_CD || '%') 
+				        GROUP BY KCMI.CELL_500_ID, KCMI.CITY_CD, MOC.CD_NM 
+				        ) KCMI ON KCMI.CELL_500_ID = MDPCR.CELL_500
+			        WHERE
+			        1=1 AND FLT_POP > 0
+			        GROUP BY kcmi.CD_NM
+			        ORDER BY FLT_POP DESC
+			        LIMIT 10
+   				)A
+    		GROUP BY A.FLT_POP, A.CD_NM
+    	)
+    	SELECT 
+    		ARRAY_TO_STRING(ARRAY_AGG(FLT_POP), ',') as "flatPopltnDataArr"
+    		, ARRAY_TO_STRING(ARRAY_AGG(CD_NM), ',') as "flatPopltnLabelArr"
+    	FROM FLAT_POPLTN_LIST
+    </select>
+    
+    <select id="findAllDataYears" resultType="map">
+        select
+            substring(BASEYMD, 0,5) as "year"
+        from
+            MRT_DYNMC_POPLTN_CELL500_RSLT
+        group by
+            1
+        order by 1  desc
+	</select>
+	
+	<select id="findPopulationPredictionTop10" resultType="mrtDynmcPopltnCell500Rslt">
+		with KC_MPG as
+				 (
+					 SELECT KCMI.CELL_500_ID,KCMI.ADMI_CD
+						  ,ADSTDG.cd_nm as dong_nm
+						  ,moc.cd_nm as city_nm
+					 FROM ggits.kt_cell_500_admi_mpng KCMI
+							  inner JOIN M_OP_CODE ADSTDG ON ADSTDG.GRP_CD_ID = 'ADMI_CD' AND KCMI.ADMI_CD = ADSTDG.CD_ID
+							  INNER JOIN M_OP_CODE MOC ON MOC.GRP_CD_ID = 'SGG_CD' AND substring(KCMI.ADMI_CD,1,4) = substring(MOC.CD_ID,1,4)  -- 시군구 코드 비매칭 처리
+				 )
+		SELECT
+			round(SUM(MDPCR.FLT_POP),0) AS FLT_POP,
+			--KCMI.CITY_CD ,
+			KCMPG.ADMI_CD ,
+			KCMPG.city_nm,
+			REPLACE (KCMPG.dong_nm,'경기도 ','') as ADSTSDG_NM
+		FROM
+			MRT_DYNMC_POPLTN_CELL500_RSLT MDPCR
+				inner join KC_MPG KCMPG on MDPCR.cell_500 = KCMPG.cell_500_id
+		WHERE
+			MDPCR.BASEYMD = TO_CHAR(CURRENT_DATE, 'YYYYMMDD')
+		  <![CDATA[
+		  	AND MDPCR.TIMEZN = TO_CHAR(NOW()+INTERVAL '12 HOURS','HH24')
+			]]>
+		  /*AND MDPCR.TIMEZN = TO_CHAR(NOW()+INTERVAL '12 HOURS','HH24')*/
+		GROUP BY
+			--KCMPG.CITY_CD ,
+			KCMPG.ADMI_CD,
+			KCMPG.city_nm ,
+			REPLACE (KCMPG.dong_nm,'경기도 ','')
+		ORDER BY SUM(MDPCR.FLT_POP) DESC
+			LIMIT 10
+	</select>
+
+	<select id="findPopulationPredictionTop10Max" resultType="mrtDynmcPopltnCell500Rslt">
+		with KC_MPG as
+				 (
+					 SELECT KCMI.CELL_500_ID,KCMI.ADMI_CD
+						  ,ADSTDG.cd_nm as dong_nm
+						  ,moc.cd_nm as city_nm
+					 FROM ggits.kt_cell_500_admi_mpng KCMI
+							  inner JOIN M_OP_CODE ADSTDG ON ADSTDG.GRP_CD_ID = 'ADMI_CD' AND KCMI.ADMI_CD = ADSTDG.CD_ID
+							  INNER JOIN M_OP_CODE MOC ON MOC.GRP_CD_ID = 'SGG_CD' AND substring(KCMI.ADMI_CD,1,4) = substring(MOC.CD_ID,1,4)  -- 시군구 코드 비매칭 처리
+				 )
+		SELECT
+			round(SUM(MDPCR.FLT_POP),0) AS FLT_POP,
+			--KCMI.CITY_CD ,
+			KCMPG.ADMI_CD ,
+			KCMPG.city_nm,
+			REPLACE (KCMPG.dong_nm,'경기도 ','') as ADSTSDG_NM
+		FROM
+			MRT_DYNMC_POPLTN_CELL500_RSLT MDPCR
+				inner join KC_MPG KCMPG on MDPCR.cell_500 = KCMPG.cell_500_id
+		WHERE
+			MDPCR.BASEYMD = (
+				select max(BASEYMD) from MRT_DYNMC_POPLTN_CELL500_RSLT
+			)
+		  <![CDATA[
+		  AND MDPCR.TIMEZN = TO_CHAR(NOW()+INTERVAL '12 HOURS','HH24')
+			]]>
+		  /*AND MDPCR.TIMEZN = TO_CHAR(NOW()+INTERVAL '12 HOURS','HH24')*/
+		GROUP BY
+			--KCMPG.CITY_CD ,
+			KCMPG.ADMI_CD,
+			KCMPG.city_nm ,
+			REPLACE (KCMPG.dong_nm,'경기도 ','')
+		ORDER BY SUM(MDPCR.FLT_POP) DESC
+			LIMIT 10
+	</select>
+</mapper>

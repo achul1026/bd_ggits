@@ -3,15 +3,20 @@
  * @returns {Promise<{featureCollection: {features: *, type: string}}>}
  * @constructor
  */
-const CM_BusRoute = async function(routeId){
+const CM_BusRoute = async function(routeId, direction, updown){
     let param = "";
     if(routeId) {
         param = "?routeId="+routeId;
+        if(direction) {
+            param = param+"&direction="+direction;
+        }
+        if(updown) {
+            param = param+"&updown=updown";
+        }
     }
     let list =  await self.util.getJsonFormApi("/monitoring/getBusRouteInfo.ajax"+param);
     let features = [];
     for(const info of list) {
-        const routeLength = info.routeIds.split("||").length;
         let routeTable = `<div class="popup_scroll">
 				<table class="popup_table">
                 <thead>
@@ -23,13 +28,15 @@ const CM_BusRoute = async function(routeId){
                 </thead>
                 <tbody>
                 `;
-        const routeNms = info.routeNms ? info.routeNms.split("||") : [];
-        const adminNms = info.adminNms ? info.adminNms.split("||") : [];
-        const companyNms = info.companyNms ? info.companyNms.split("||") : [];
-        const stStaNms = info.stStaNms ? info.stStaNms.split("||") : [];
-        const edStaNms = info.edStaNms ? info.edStaNms.split("||") : [];
-        for(let i = 0; i < routeLength; i++){
-            routeTable += `
+        if(info.routeIds) {
+            const routeLength = info.routeIds.split("||").length;
+            const routeNms = info.routeNms ? info.routeNms.split("||") : [];
+            const adminNms = info.adminNms ? info.adminNms.split("||") : [];
+            const companyNms = info.companyNms ? info.companyNms.split("||") : [];
+            const stStaNms = info.stStaNms ? info.stStaNms.split("||") : [];
+            const edStaNms = info.edStaNms ? info.edStaNms.split("||") : [];
+            for (let i = 0; i < routeLength; i++) {
+                routeTable += `
                     <tr>
                         <th>${routeNms[i] ? routeNms[i] : '-'}</th>
                         <td>${adminNms[i] ? adminNms[i] : '-'}</td>
@@ -37,6 +44,9 @@ const CM_BusRoute = async function(routeId){
                         <td>${stStaNms[i] ? stStaNms[i] : '-'}</td>
                         <td>${edStaNms[i] ? edStaNms[i] : '-'}</td>
                     </tr>`;
+            }
+        }else {
+
         }
         routeTable += "</tbody></table></div>";
         const obj = {

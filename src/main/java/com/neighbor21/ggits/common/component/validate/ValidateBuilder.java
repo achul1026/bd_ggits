@@ -1,7 +1,5 @@
 package com.neighbor21.ggits.common.component.validate;
 
-import org.apache.commons.text.CaseUtils;
-
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
@@ -52,10 +50,9 @@ public class ValidateBuilder {
             try {
                 v = _checkByDto(target);
             } catch (ValidateException e) {
-                v = new ValidateResult(false, e.getMessage());
+                v = new ValidateResult(false, "Validation 오류");
             } catch (Exception e) {
-                e.printStackTrace();
-                v = new ValidateResult(false, e.getMessage());
+                v = new ValidateResult(false, "Validation 오류");
             }
         }
 

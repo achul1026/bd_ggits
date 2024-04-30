@@ -4,18 +4,24 @@
 <mapper namespace='com.neighbor21.ggits.common.mapper.MrtBusRungLogAnalMapper'>
 	<sql id="mrtBusRungLogAnal-Where">
 		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
-			AND mbrla.CLCT_YMD 
-			BETWEEN #{strDt} AND #{endDt}
+			AND mbrla.CLCT_YMD
+			BETWEEN replace(#{strDt},'-','') AND replace(#{endDt},'-','')
 		</if>
 		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
 			<![CDATA[
-			AND #{strDt} <= mrsra.CLCT_YMD
+			AND replace(#{strDt},'-','') <= mbrla.CLCT_YMD
 			]]>
 		</if>
 		<if test="(strDt == '' or strDt == null) and (endDt != '' and endDt != null)">
 			<![CDATA[
-			AND mbrla.CLCT_YMD <= #{endDt}
+			AND mbrla.CLCT_YMD <= replace(#{endDt},'-','')
 			]]>
+		</if>
+		<if test="sigunCdId != null and sigunCdId != '' and sigunCdId != 'searchAllLocation'">
+			AND SUBSTRING(gnr.SIDO_CD,0,6) = SUBSTRING(#{sigunCdId},0)
+		</if>
+		<if test="searchContent != '' and searchContent != null">
+			AND gnr.ROUTE_NM LIKE '%' || #{searchContent} || '%'
 		</if>
 		<if test="dayOfTheWeek != null">
 			 AND EXTRACT (ISODOW from TO_DATE(mbrla.CLCT_YMD, 'YYYYMMDD'))::varchar(1) IN 
@@ -27,9 +33,9 @@
 	
 	<select id="countBusInfoLogList" parameterType="commonEntity" resultType="int">
 		SELECT
-			COUNT(*)
+			COUNT(1)
 		FROM MRT_BUS_RUNG_LOG_ANAL mbrla
-		LEFT JOIN GGBIS_BUS_ROUTE gnr
+		INNER JOIN bigdata.EXT_GGBIS_BUS_ROUTE gnr
 		  ON mbrla.BUS_ROUTE_ID = gnr.ROUTE_ID
 		WHERE
 			1=1
@@ -46,53 +52,289 @@
 			, mbrla.BUS_USER_CNT
 			, mbrla.TRSFR_CNT
 		FROM MRT_BUS_RUNG_LOG_ANAL mbrla
-		LEFT JOIN GGBIS_BUS_ROUTE gnr
+		INNER JOIN bigdata.EXT_GGBIS_BUS_ROUTE gnr
 		  ON mbrla.BUS_ROUTE_ID = gnr.ROUTE_ID
-		WHERE
-			1=1
+		<where>
 			<include refid="mrtBusRungLogAnal-Where"/>
+		</where>
+		ORDER BY mbrla.CLCT_YMD DESC
+		LIMIT 10 OFFSET (#{page}- 1) * 10
 	</select>
 	
 	<select id="findAllDataYears" resultType="map">
-		SELECT
-			TO_CHAR(TO_DATE(CLCT_YMD, 'YYYYMMDD'),'YYYY') AS "year"
-		FROM
+		select
+			generate_series(substring(min(clct_ymd), 0,5)::int, extract(year from now())::int) as year
+		from
 			MRT_BUS_RUNG_LOG_ANAL
-		GROUP BY TO_CHAR(TO_DATE(CLCT_YMD, 'YYYYMMDD'),'YYYY')
-		ORDER BY TO_CHAR(TO_DATE(CLCT_YMD, 'YYYYMMDD'),'YYYY') DESC  
+		order by 1 desc
 	</select>
-	
-	<select id="countAllSttnPbTrfUseStatsAnal" parameterType="mapBigdataSearchDTO" resultType="int">
+
+	<select id="countByRouteNmPaging" parameterType="mapBigdataSearchDTO" resultType="int">
+		select
+		count(*)
+		from(
+		select
+		mbrla.bus_route_id ,
+		gbr.route_nm ,
+		CASE
+		WHEN gbr.ROUTE_TP ='11' THEN '직행좌석형시내버스'
+		WHEN gbr.ROUTE_TP ='12' THEN '좌석형시내버스'
+		WHEN gbr.ROUTE_TP ='13' THEN '일반형시내버스'
+		WHEN gbr.ROUTE_TP ='21' THEN '직행좌석형농어촌버스'
+		WHEN gbr.ROUTE_TP ='22' THEN '좌석형농어촌버스'
+		WHEN gbr.ROUTE_TP ='23' THEN '일반형농어촌버스'
+		WHEN gbr.ROUTE_TP ='30' THEN '마을버스'
+		WHEN gbr.ROUTE_TP ='41' THEN '고속형시외버스'
+		WHEN gbr.ROUTE_TP ='42' THEN '좌석형시외버스'
+		WHEN gbr.ROUTE_TP ='43' THEN '일반형시외버스'
+		WHEN gbr.ROUTE_TP ='51' THEN '리무진형공항버스'
+		WHEN gbr.ROUTE_TP ='52' THEN '좌석형공항버스'
+		WHEN gbr.ROUTE_TP ='53' THEN '일반형공항버스'
+		END AS ROUTE_TP,
+		gbr.st_sta_nm ,
+		gbr.ed_sta_nm ,
+		sum(mbrla.trsfr_cnt) as trsfr_cnt,
+		sum(mbrla.psgr_cnt) as psgr_cnt,
+		sum(mbrla.bus_user_cnt) as bus_user_cnt
+		from bigdata.ext_ggbis_bus_route gbr
+		inner join mrt_bus_rung_log_anal mbrla on gbr.route_id = mbrla.bus_route_id
+		<where>
+			<!-- 연도별 검색 -->
+			<if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+				AND MBRLA.CLCT_YMD LIKE #{searchYear} || '%'
+			</if>
+			<!-- 기간 검색 -->
+			<if test="searchPeriod != null and searchPeriod != ''">
+				<choose>
+					<when test="searchPeriod == 'weekday' ">
+						AND MBRLA.DYWK_CD BETWEEN '2' AND '6'
+					</when>
+					<when test="searchPeriod == 'weekend' ">
+						AND (MBRLA.DYWK_CD = '1' OR MBRLA.DYWK_CD = '7')
+					</when>
+					<otherwise>
+						AND MBRLA.CLCT_YMD BETWEEN REPLACE(#{startDate},'-','') AND REPLACE(#{endDate},'-','')
+					</otherwise>
+				</choose>
+			</if>
+			<if test="routeNm != null and routeNm != ''">
+				AND gbr.route_nm LIKE '%' ||  #{routeNm} || '%'
+			</if>
+		</where>
+		group by
+		mbrla.bus_route_id ,
+		gbr.route_nm ,
+		gbr.route_tp ,
+		gbr.st_sta_nm ,
+		gbr.ed_sta_nm) cnt
+	</select>
+
+	<select id="findListByRouteNmPaging" parameterType="mapBigdataSearchDTO" resultType="mrtBusRungLogAnal">
+		select
+			mbrla.bus_route_id ,
+			gbr.route_nm ,
+			CASE
+				WHEN gbr.ROUTE_TP ='11' THEN '직행좌석형시내버스'
+				WHEN gbr.ROUTE_TP ='12' THEN '좌석형시내버스'
+				WHEN gbr.ROUTE_TP ='13' THEN '일반형시내버스'
+				WHEN gbr.ROUTE_TP ='21' THEN '직행좌석형농어촌버스'
+				WHEN gbr.ROUTE_TP ='22' THEN '좌석형농어촌버스'
+				WHEN gbr.ROUTE_TP ='23' THEN '일반형농어촌버스'
+				WHEN gbr.ROUTE_TP ='30' THEN '마을버스'
+				WHEN gbr.ROUTE_TP ='41' THEN '고속형시외버스'
+				WHEN gbr.ROUTE_TP ='42' THEN '좌석형시외버스'
+				WHEN gbr.ROUTE_TP ='43' THEN '일반형시외버스'
+				WHEN gbr.ROUTE_TP ='51' THEN '리무진형공항버스'
+				WHEN gbr.ROUTE_TP ='52' THEN '좌석형공항버스'
+				WHEN gbr.ROUTE_TP ='53' THEN '일반형공항버스'
+				END AS ROUTE_TP,
+			gbr.st_sta_nm ,
+			gbr.ed_sta_nm ,
+			gbr.st_sta_id ,
+			gbr.ed_sta_id ,
+			sum(mbrla.trsfr_cnt) as trsfr_cnt,
+			sum(mbrla.psgr_cnt) as psgr_cnt,
+			sum(mbrla.bus_user_cnt) as bus_user_cnt
+		from bigdata.ext_ggbis_bus_route gbr
+			inner join mrt_bus_rung_log_anal mbrla on gbr.route_id = mbrla.bus_route_id
+		<where>
+			<!-- 연도별 검색 -->
+			<if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+				AND MBRLA.CLCT_YMD LIKE #{searchYear} || '%'
+			</if>
+			<!-- 기간 검색 -->
+			<if test="searchPeriod != null and searchPeriod != ''">
+				<choose>
+					<when test="searchPeriod == 'weekday' ">
+						AND MBRLA.DYWK_CD BETWEEN '2' AND '6'
+					</when>
+					<when test="searchPeriod == 'weekend' ">
+						AND (MBRLA.DYWK_CD = '1' OR MBRLA.DYWK_CD = '7')
+					</when>
+					<otherwise>
+						AND MBRLA.CLCT_YMD BETWEEN REPLACE(#{startDate},'-','') AND REPLACE(#{endDate},'-','')
+					</otherwise>
+				</choose>
+			</if>
+			<if test="routeNm != null and routeNm != ''">
+				AND gbr.route_nm LIKE '%' ||  #{routeNm} || '%'
+			</if>
+		</where>
+		group by
+			mbrla.bus_route_id ,
+			gbr.route_nm ,
+			gbr.route_tp ,
+			gbr.st_sta_nm ,
+			gbr.ed_sta_nm,
+			gbr.st_sta_id ,
+			gbr.ed_sta_id
+		order by (case when gbr.route_nm = #{routeNm} then 1 else 2 end, GBR.ROUTE_NM)
+		LIMIT 5 OFFSET (#{page} - 1) * 5
+	</select>
+	<select id="findAllByRouteId" parameterType="mapBigdataSearchDTO" resultType="mrtBusRungLogAnal">
+		select
+		gbr.route_nm
+		,st_station.station_nm as st_station_nm
+		,ed_station.station_nm as ed_station_nm
+		,st_station.station_id as st_station_id
+		,ed_station.station_id as ed_station_id
+		,SUM(MBRLA.TRSFR_CNT) as TRSFR_CNT
+		,SUM(MBRLA.PSGR_CNT) as PSGR_CNT
+		,SUM(MBRLA.BUS_USER_CNT) as BUS_USER_CNT
+		,cgsl.link_id
+		,ST_ASGEOJSON(ST_LINEMERGE(cgsl.GEOMETRY)) AS GEOJSON
+		,cgsl.ROAD_NAME
+		from bigdata.ext_ggbis_busroute_infounit gbi
+			inner join bigdata.ext_ggbis_bus_route gbr on gbi.route_id = gbr.route_id
+			inner join bigdata.ext_ggbis_bus_section gbs on gbi.section_id = gbs.section_id
+			left outer join bigdata.ext_ggbis_bus_station st_station  on gbs.st_sta_id = st_station.station_id
+			left outer join bigdata.ext_ggbis_bus_station ed_station  on gbs.ed_sta_id = ed_station.station_id
+			inner join bigdata.ext_ggbis_link_mapping glm on gbi.link_id = glm.link_id
+			inner join c_gm_std_link cgsl on glm.st_link_id = cgsl.link_id
+			left join mrt_bus_rung_log_anal mbrla on gbs.st_sta_id = mbrla.ride_bstp_id and gbs.ed_sta_id = mbrla.lndi_bstp_id
+		WHERE GBI.ROUTE_ID = #{routeId}
+		<!-- 연도별 검색 -->
+		<if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+			AND MBRLA.CLCT_YMD LIKE #{searchYear} || '%'
+		</if>
+		<!-- 기간 검색 -->
+		<if test="searchPeriod != null and searchPeriod != ''">
+			<choose>
+				<when test="searchPeriod == 'weekday' ">
+					AND MBRLA.DYWK_CD BETWEEN '2' AND '6'
+				</when>
+				<when test="searchPeriod == 'weekend' ">
+					AND (MBRLA.DYWK_CD = '1' OR MBRLA.DYWK_CD = '7')
+				</when>
+				<otherwise>
+					AND MBRLA.CLCT_YMD BETWEEN REPLACE(#{startDate},'-','') AND REPLACE(#{endDate},'-','')
+				</otherwise>
+			</choose>
+		</if>
+		GROUP BY gbr.route_nm, ST_STATION.STATION_NM,ED_STATION.STATION_NM,ST_STATION.STATION_ID ,ED_STATION.STATION_ID,CGSL.LINK_ID, GEOJSON,CGSL.ROAD_NAME;
+	</select>
+	<!-- 출발지, 도착지 정류장으로 링크정보 조회 -->
+	<select id="findAllBusRouteLinkByStartStationIdAndEndStationIdOrRouteId" parameterType="mapBigdataSearchDTO" resultType="mrtBusRungLogAnal">
+		select
+		EGBS.ROUTE_ID
+		,EGBS.STATION_ID
+		,EGBS.STA_ORDER
+		,EGBS.USE_YN
+		,EGBS.NEAR_STA_CNT
+		,EGBS.MAIN_STA_YN
+		,EGBS.COORD_X
+		,EGBS.COORD_Y
+		,EGBS.BUS_DIRECTION
+		,EGBS.BUS_DISTANCE
+		,EGBS.GIS_LENGTH
+		,EGBS.SUM_LENGTH
+		,EGBS.LINK_ORDER
+		,EGBS.GOWAY_TP
+		,EGBS.SERVICE_CNT
+		,EGBS.DIRECTION_DESC
+		,EGBS.STATION_NM
+		,EGBS.ROUTE_NM
+		,EGBS.ST_LINK_ID
+		,EGBS.LINK_ID
+		,EGBS.DRVEND_YN
+		,EGBS.DRVEND_TIME
+		,EGBS.DRVEND_VEH_ID
+		,EGBS.DRVEND_PLATE_NO
+		,EGBS.DRVEND_COMPANY_NM
+		,EGBS.DELAY_YN
+		,EGBR.ROUTE_NM
+		,MBRLA.TRSFR_CNT
+		,MBRLA.PSGR_CNT
+		,MBRLA.BUS_USER_CNT
+		,MBRLA.BUS_RUNG_DSTNE
+		,ST_ASGEOJSON(ST_LINEMERGE(GCIL.GEOMETRY)) AS GEOJSON
+		,GCIL.ROAD_NAME
+		FROM
+		BIGDATA.EXT_GGBIS_BUSROUTE_STATION EGBS
+		INNER JOIN (
 		SELECT
-			COUNT(*)
-		FROM MRT_BUS_RUNG_LOG_ANAL mbrla
-		LEFT JOIN GGBIS_BUS_ROUTE gnr
-		  ON mbrla.BUS_ROUTE_ID = gnr.ROUTE_ID 
+		EGBS.ROUTE_ID,
+		EGBS.STATION_ID AS END_STATION_ID,
+		MAX(EGBS.STA_ORDER) AS END_STA_ORDER,
+		ST_STATION.START_STATION_ID,
+		ST_STATION.START_STA_ORDER
+		FROM
+		BIGDATA.EXT_GGBIS_BUSROUTE_STATION EGBS
+		INNER JOIN (
+		SELECT
+		ROUTE_ID ,
+		STATION_ID AS START_STATION_ID,
+		STA_ORDER AS START_STA_ORDER
+		FROM
+		BIGDATA.EXT_GGBIS_BUSROUTE_STATION EGBS
 		WHERE
-			1=1
-		<if test="searchPeriod != '' and searchPeriod != null">
-			AND EXTRACT (ISODOW FROM TO_DATE(mbrla.CLCT_YMD, 'YYYYMMDD'))::varchar(1) IN 
-			<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
-            	#{item}
-            </foreach>
+		EGBS.STATION_ID = #{startStationId} 
+		GROUP BY ROUTE_ID , STATION_ID, START_STA_ORDER)
+		ST_STATION ON EGBS.ROUTE_ID = ST_STATION.ROUTE_ID AND EGBS.STA_ORDER > ST_STATION.START_STA_ORDER
+		WHERE EGBS.STATION_ID = #{endStationId} 
+		GROUP BY EGBS.ROUTE_ID, EGBS.STATION_ID, ST_STATION.START_STATION_ID, ST_STATION.START_STA_ORDER)
+		BUS_ROUTE ON BUS_ROUTE.ROUTE_ID = EGBS.ROUTE_ID AND (BUS_ROUTE.START_STA_ORDER <![CDATA[<=]]> EGBS.STA_ORDER AND BUS_ROUTE.END_STA_ORDER >= EGBS.STA_ORDER)
+		INNER JOIN MRT_BUS_RUNG_LOG_ANAL MBRLA ON MBRLA.BUS_ROUTE_ID = EGBS.ROUTE_ID
+		INNER JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE EGBR ON EGBS.ROUTE_ID = EGBR.ROUTE_ID
+		INNER JOIN C_GM_STD_LINK  GCIL ON EGBS.LINK_ID = GCIL.LINK_ID
+		WHERE 1=1
+		<if test="routeId != null and routeId != ''">
+			AND EGBS.ROUTE_ID = #{routeId}
+		</if>
+		<!-- 연도별 검색 -->
+		<if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+			AND MBRLA.CLCT_YMD LIKE #{searchYear} || '%'
+		</if>
+		<!-- 기간 검색 -->
+		<if test="searchPeriod != null and searchPeriod != ''">
+			<choose>
+				<when test="searchPeriod == 'weekday' ">
+					AND MBRLA.DYWK_CD BETWEEN '2' AND '6'
+				</when>
+				<when test="searchPeriod == 'weekend' ">
+					AND (MBRLA.DYWK_CD = '1' OR MBRLA.DYWK_CD = '7')
+				</when>
+				<otherwise>
+					AND MBRLA.CLCT_YMD BETWEEN REPLACE(#{startDate},'-','') AND REPLACE(#{endDate},'-','')
+				</otherwise>
+			</choose>
 		</if>
 	</select>
-	<select id="findAllSttnPbTrfUseStatsAnsl" parameterType="mapBigdataSearchDTO" resultType="mrtBusRungLogAnal">
+
+	<select id="findAllGroupBySGGAndRouteTp" resultType="mrtBusRungLogAnal">
 		SELECT
-			gnr.ROUTE_NM
-		FROM MRT_BUS_RUNG_LOG_ANAL mbrla
-		LEFT JOIN GGBIS_BUS_ROUTE gnr
-		  ON mbrla.BUS_ROUTE_ID = gnr.ROUTE_ID
-		WHERE
-			1=1
-		<if test="searchPeriod != '' and searchPeriod != null">
-			AND EXTRACT (ISODOW FROM TO_DATE(mbrla.CLCT_YMD, 'YYYYMMDD'))::varchar(1) IN 
-			<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
-            	#{item}
-            </foreach>
-		</if>
-		<if test="page != null and page != '' and page != 0 ">
-            LIMIT 5 OFFSET (#{page} - 1) * 5
-        </if>
+			SUM(MBRLA.TRSFR_CNT) AS TRSFR_CNT -- 환승수
+			 ,SUM(MBRLA.PSGR_CNT) AS PSGR_CNT -- 승객수
+			 ,SUM(MBRLA.BUS_USER_CNT) AS BUS_USER_CNT
+			--,MBRLA.BUS_ROUTE_ID
+			 ,GBS.SIDO_CD
+			 ,GBR.ROUTE_TP
+		FROM MRT_BUS_RUNG_LOG_ANAL MBRLA
+				 INNER JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE GBR ON GBR.ROUTE_ID = MBRLA.BUS_ROUTE_ID
+				 INNER JOIN BIGDATA.EXT_GGBIS_BUS_STATION GBS ON GBS.STATION_ID = MBRLA.RIDE_BSTP_ID -- 승차정류장
+		GROUP BY
+			--MBRLA.BUS_ROUTE_ID
+			GBS.SIDO_CD -- 권역별
+		   ,GBR.ROUTE_TP;
 	</select>
 </mapper>

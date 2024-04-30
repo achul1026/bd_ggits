@@ -5,6 +5,7 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Param;
 import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
 
+import com.neighbor21.ggits.common.dto.MapMonitoringLinkDataDTO;
 import com.neighbor21.ggits.common.entity.CommonEntity;
 import com.neighbor21.ggits.common.entity.LTcDataLog;
 
@@ -92,4 +93,22 @@ public interface LTcDataLogMapper {
      * @return
      */
 	public List<LTcDataLog> findAllSmcrdDataLogList(CommonEntity commonEntity);
+	
+	/**
+	  * @Method Name : findAllForMonitoringLinkData
+	  * @작성일 : 2023. 11. 13.
+	  * @작성자 : NK.KIM
+	  * @Method 설명 : 연계 대상데이터 목록 조회
+	  * @return
+	  */
+	public List<MapMonitoringLinkDataDTO> findAllForMonitoringLinkData();
+
+	/**
+	  * @Method Name : findAllErrorDataForMonitoringLinkData
+	  * @작성일 : 2023. 11. 14.
+	  * @작성자 : NK.KIM
+	  * @Method 설명 : 연계 대상데이터 데러 목록 조회
+	  * @return
+	  */
+	public List<MapMonitoringLinkDataDTO> findAllErrorDataForMonitoringLinkData();
 }

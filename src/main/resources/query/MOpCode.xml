@@ -3,7 +3,7 @@
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.MOpCodeMapper'>
 	<sql id="mOpCode-Where">
-		 <if test="searchType == 'all'">
+		 <if test="searchType == 'all' and searchContent != null and searchContent != '' ">
 		 	AND (USE_YN LIKE '%' ||  #{searchContent} || '%' 
 		 		OR CD_ID LIKE '%' ||  #{searchContent} || '%' 
 		 		OR CD_NM LIKE '%' ||  #{searchContent} || '%')
@@ -32,7 +32,7 @@
      	FROM M_OP_CODE
      	WHERE GRP_CD_ID = #{grpCdId}
      	<include refid="mOpCode-Where"/>
-     	ORDER BY ROWNUM DESC 
+     	ORDER BY ROWNUM DESC
 		LIMIT 10 OFFSET (#{page} - 1) * 10
     </select>
 
@@ -45,9 +45,29 @@
      	    , CRT_DT
      		, UPTUSR_ID
      		, UPDT_DT
+			, DESCR
+			, USE_YN
      	FROM M_OP_CODE
      	WHERE GRP_CD_ID = #{grpCdId}
-     	ORDER BY CD_ID
+     	ORDER BY SORT_NO
+    </select>
+    
+   	<select id="findAllCodeListByGrpCdIdForMonitoring" parameterType="Long" resultType="mOpCode">
+		SELECT
+	 		DISTINCT MOC.CD_ID
+	     		, MOC.CD_NM
+	     		, MOC.USE_YN
+	     	    , MOC.CRTUSR_ID
+	     	    , MOC.CRT_DT
+	     		, MOC.UPTUSR_ID
+	     		, MOC.UPDT_DT
+     	FROM M_OP_MENU MOM
+     	INNER JOIN M_OP_ATHR_MENU MOAM ON MOAM.MENU_ID = MOM.MENU_ID 
+     	INNER JOIN M_OP_CODE MOC ON MOC.CD_ID = MOM.CATEG_CD
+     	WHERE MOC.GRP_CD_ID = 'MENU_CTGRY_CD'
+     	AND MOM.USE_YN ='Y'
+     	AND MOAM.AUTH_ID = #{authId}
+     	ORDER BY MOC.CD_ID
     </select>
      
 	<select id="countCodeBygrpCdIdAndCdId" parameterType="mOpCode" resultType="int">
@@ -97,6 +117,32 @@
      	<if test="grpCdId != null and grpCdId != ''">
      		AND GRP_CD_ID = #{grpCdId}
      	</if>
+		 ORDER BY SORT_NO ASC
+     </select>
+     
+     <select id="findOneMOpCodeLikeCdIdAndGrpCdId" parameterType="mOpCode" resultType="mOpCode">
+     	SELECT
+     		GRP_CD_ID
+     		, CD_ID
+     		, CD_NM
+     		, DESCR
+     		, USE_YN
+     		, SORT_NO
+     	FROM M_OP_CODE
+     	WHERE CD_ID LIKE CONCAT('%', #{cdId}, '%')
+     	<if test="grpCdId != null and grpCdId != ''">
+     		AND GRP_CD_ID = #{grpCdId}
+     	</if>
+		 ORDER BY SORT_NO ASC
+     </select>
+     
+     <select id="findOndeMOpCodeCdNmAndGrpCdId" parameterType="mOpCode" resultType="mOpCode">
+     	SELECT
+     		CD_ID
+     	FROM M_OP_CODE
+     	WHERE
+     		GRP_CD_ID = #{grpCdId}
+     		AND CD_NM = #{cdNm}
      </select>
 
      <insert id="saveCode" parameterType="mOpCode">

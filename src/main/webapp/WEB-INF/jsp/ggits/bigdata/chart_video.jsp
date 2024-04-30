@@ -27,7 +27,10 @@
         </div>
         <div class="chart_video_box">
             <div class="chart_video"></div>
-            <div>차트 들어갈곳 입니다</div>
+            <div>
+                <canvas id="map_chart_canvas"></canvas>
+
+            </div>
         </div>
     </div>
     <div class="chart_play_footer">
@@ -37,4 +40,4 @@
             <div>1.4X</div>
         </div>
     </div>
-</div>           
+</div>

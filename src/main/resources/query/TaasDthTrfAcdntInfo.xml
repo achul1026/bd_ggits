@@ -27,7 +27,7 @@
              ,YCORD
              ,LON_CRDN
              ,LAT_CRDN
-        FROM TAAS_DTH_TRF_ACDNT_INFO;
+        FROM BIGDATA.EXT_TAAS_DTH_TRF_ACDNT_INFO;
     </select>
 
     <select id="findAllByAcdntGroupBySGG" parameterType="mapBigdataSearchDTO" resultType="taasDthTrfAcdntInfo">
@@ -40,7 +40,7 @@
         ,SUM(tdtai.SINJPSN_CNT) as SINJPSN_CNT
         ,SUM(tdtai.INJ_DCLR_CNT) as INJ_DCLR_CNT
         ,tdtai.WRNGDOR_LAW_VLTN_CD
-        FROM TAAS_DTH_TRF_ACDNT_INFO tdtai
+        FROM BIGDATA.EXT_TAAS_DTH_TRF_ACDNT_INFO tdtai
         where
         1=1
         <!-- 기간 검색 -->
@@ -63,7 +63,7 @@
                 <when test="searchTime == 'workingTime' ">
                     AND TO_CHAR(to_timestamp(tdtai.occur_yy_mm_dd_time, 'YYYYMMDDHH24'),'HH24') BETWEEN '06' AND '10'
                 </when>
-                <when test="searchPeriod == 'workingEndTime' ">
+                <when test="searchTime == 'workingEndTime' ">
                     AND TO_CHAR(to_timestamp(tdtai.occur_yy_mm_dd_time, 'YYYYMMDDHH24'),'HH24') BETWEEN '17' AND '20'
                 </when>
                 <otherwise>

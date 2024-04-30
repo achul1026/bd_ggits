@@ -1,6 +1,7 @@
 package com.neighbor21.ggits.common.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
 
@@ -20,4 +21,13 @@ public interface MGmStdLinkNodeMngInfoMapper {
 	public void deleteByStdInfoId(String stdInfoId);
 	
 	public void updateMGmStdLinkNodeMngInfo(MGmStdLinkNodeMngInfo mGmStdLinkNodeMngInfo);
+	
+	/**
+	  * @Method Name : findAllDataYears
+	  * @작성일 : 2023. 11. 6.
+	  * @작성자 : NK.KIM
+	  * @Method 설명 : 노드/링크 자료실 연도별 목록 조회
+	  * @return
+	  */
+	public List<Map<String,Object>> findAllDataYears();
 }

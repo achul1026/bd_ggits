@@ -1,154 +1,93 @@
 package com.neighbor21.ggits.common.entity;
 public class MOpOpenApiInfo extends CommonEntity {
-    private String    apiId;        
-    private String    filextId;        
-    private String    tagId;        
-    private String    authCd;        
-    private String    apiNm;        
-    private String    apiCallUrl;        
-    private long    apiCallLimitCnt;        
-    private String    clsfDivCd;        
-    private String    mngInstCd;        
-    private String    dataRegistYmd;        
-    private String    dataUpdtYmd;        
-    private String    updtCycl;        
-    private String    contents;        
-    private String    infoExplain;        
-    private String    openApiInfo;
-
-
-  public String getApiId() {
-    return apiId;
+  private String dsetId;
+  private String apiNm;
+  private String apiCallUrl;
+  private String dataRegistYmd;
+  private String dataUpdtYmd;
+  private String descr;
+  private long maxPvsnCnt;
+  private String contents;
+  private Long oprtrId; // 운영자 아이디
+  private String mngInstCd; // 운영자 소속 코드
+  
+  // 검색
+  private String oprtrNm; // 등록자
+  private String mngInstNm; // 관리기관
+  
+  public String getDsetId() {
+    return dsetId;
   }
-
-  public void setApiId(String apiId) {
-    this.apiId = apiId;
+  public void setDsetId(String dsetId) {
+    this.dsetId = dsetId;
   }
-
-
-  public String getFilextId() {
-    return filextId;
-  }
-
-  public void setFilextId(String filextId) {
-    this.filextId = filextId;
-  }
-
-
-  public String getTagId() {
-    return tagId;
-  }
-
-  public void setTagId(String tagId) {
-    this.tagId = tagId;
-  }
-
-
-  public String getAuthCd() {
-    return authCd;
-  }
-
-  public void setAuthCd(String authCd) {
-    this.authCd = authCd;
-  }
-
-
   public String getApiNm() {
     return apiNm;
   }
-
   public void setApiNm(String apiNm) {
     this.apiNm = apiNm;
   }
-
-
   public String getApiCallUrl() {
     return apiCallUrl;
   }
-
   public void setApiCallUrl(String apiCallUrl) {
     this.apiCallUrl = apiCallUrl;
   }
-
-
-  public long getApiCallLimitCnt() {
-    return apiCallLimitCnt;
-  }
-
-  public void setApiCallLimitCnt(long apiCallLimitCnt) {
-    this.apiCallLimitCnt = apiCallLimitCnt;
-  }
-
-
-  public String getClsfDivCd() {
-    return clsfDivCd;
-  }
-
-  public void setClsfDivCd(String clsfDivCd) {
-    this.clsfDivCd = clsfDivCd;
-  }
-
-
-  public String getMngInstCd() {
-    return mngInstCd;
-  }
-
-  public void setMngInstCd(String mngInstCd) {
-    this.mngInstCd = mngInstCd;
-  }
-
-
   public String getDataRegistYmd() {
     return dataRegistYmd;
   }
-
   public void setDataRegistYmd(String dataRegistYmd) {
     this.dataRegistYmd = dataRegistYmd;
   }
-
-
   public String getDataUpdtYmd() {
     return dataUpdtYmd;
   }
-
   public void setDataUpdtYmd(String dataUpdtYmd) {
     this.dataUpdtYmd = dataUpdtYmd;
   }
-
-
-  public String getUpdtCycl() {
-    return updtCycl;
+  public String getDescr() {
+    return descr;
   }
-
-  public void setUpdtCycl(String updtCycl) {
-    this.updtCycl = updtCycl;
+  public void setDescr(String descr) {
+    this.descr = descr;
   }
-
-
+  public long getMaxPvsnCnt() {
+    return maxPvsnCnt;
+  }
+  public void setMaxPvsnCnt(long maxPvsnCnt) {
+    this.maxPvsnCnt = maxPvsnCnt;
+  }
   public String getContents() {
     return contents;
   }
-
   public void setContents(String contents) {
     this.contents = contents;
   }
-
-
-  public String getInfoExplain() {
-    return infoExplain;
+  public Long getOprtrId() {
+    return oprtrId;
   }
-
-  public void setInfoExplain(String infoExplain) {
-    this.infoExplain = infoExplain;
+  public void setOprtrId(Long oprtrId) {
+    this.oprtrId = oprtrId;
   }
-
-
-  public String getOpenApiInfo() {
-    return openApiInfo;
+  public String getMngInstCd() {
+    return mngInstCd;
   }
-
-  public void setOpenApiInfo(String openApiInfo) {
-    this.openApiInfo = openApiInfo;
+  public void setMngInstCd(String mngInstCd) {
+    this.mngInstCd = mngInstCd;
   }
-
+  
+  
+  public String getOprtrNm() {
+    return oprtrNm;
+  }
+  public void setOprtrNm(String oprtrNm) {
+    this.oprtrNm = oprtrNm;
+  }
+  public String getMngInstNm() {
+    return mngInstNm;
+  }
+  public void setMngInstNm(String mngInstNm) {
+    this.mngInstNm = mngInstNm;
+  }
+  
 }

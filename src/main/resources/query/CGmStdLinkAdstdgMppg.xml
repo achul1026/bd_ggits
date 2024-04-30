@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.CGmStdLinkAdstdgMppgMapper'>
+
+    <select id="findAllGroupDongNmBySggCd" resultType="cGmStdLinkAdstdgMppg">
+        select
+            cgslam.adstdg_nm
+        from c_gm_std_link_adstdg_mppg cgslam
+        <where>
+            <if test="searchLocation != null and searchLocation != '' ">
+                AND SUBSTRING(CGSLAM.ADSTDG_CD,0,5) = SUBSTRING(#{searchLocation},0,5)
+            </if>
+            and cgslam.adstdg_nm is not null
+            and cgslam.adstdg_nm != ''
+        </where>
+        group by cgslam.adstdg_nm
+        order by cgslam.adstdg_nm asc
+    </select>
+</mapper>

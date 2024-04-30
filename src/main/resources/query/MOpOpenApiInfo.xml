@@ -4,50 +4,121 @@
 <mapper namespace='com.neighbor21.ggits.common.mapper.MOpOpenApiInfoMapper'>
 	<select id="findAllMOpOpenApiInfo" parameterType="mOpOpenApiInfo" resultType="mOpOpenApiInfo">
 		SELECT
-			ROW_NUMBER() OVER(ORDER BY MOOAI.API_ID) AS ROWNUM,
-			MOOAI.API_ID,
-			MOOAI.FILEXT_ID,
-			MOOAI.TAG_ID,
-			MOOAI.AUTH_CD,
-			MOOAI.API_NM,
-			MOOAI.API_CALL_URL,
-			MOOAI.API_CALL_LIMIT_CNT,
-			MOOAI.CLSF_DIV_CD,
-			MOOAI.MNG_INST_CD,
-			MOOAI.DATA_REGIST_YMD,
-			MOOAI.DATA_UPDT_YMD,
-			MOOAI.UPDT_CYCL,
-			MOOAI.CONTENTS,
-			MOOAI.INFO_EXPLAIN,
-			MOOAI.OPEN_API_INFO
+			ROW_NUMBER() OVER(ORDER BY TO_DATE(DATA_REGIST_YMD, 'yyyyMMdd')) AS ROWNUM,
+			DSET_ID,
+			API_NM,
+			API_CALL_URL,
+			TO_CHAR(TO_DATE(DATA_REGIST_YMD, 'yyyyMMdd'),'yyyy-MM-dd') AS "dataRegistYmd",
+			TO_CHAR(TO_DATE(DATA_UPDT_YMD, 'yyyyMMdd'),'yyyy-MM-dd') AS "dataUpdtYmd",
+			MOOAI.DESCR
 		FROM
-			M_OP_OPEN_API_INFO MOOAI
+		 	M_OP_OPEN_API_INFO MOOAI
+			 	LEFT JOIN M_OP_CODE MOC 
+			 		ON MOOAI.MNG_INST_CD = MOC.CD_ID
+				LEFT JOIN M_OP_OPERATOR MOO 
+					ON MOOAI.oprtr_id = MOO.OPRTR_ID
 		WHERE 1=1
+		<if test="searchType != null and searchType != ''">
+			<if test="searchType == 'apiNm' ">
+				AND API_NM LIKE CONCAT('%', #{searchContent}, '%')
+			</if>
+			<if test="searchType == 'oprtrNm' ">
+				AND MOO.OPRTR_NM LIKE CONCAT('%', #{searchContent}, '%')
+			</if>
+			<if test="searchType == 'mngInstNm' ">
+				AND CD_NM LIKE CONCAT('%', #{searchContent}, '%')
+			</if>
+			<if test="searchType == 'all' ">
+				AND (
+						API_NM LIKE CONCAT('%', #{searchContent}, '%')
+					OR 	MOO.OPRTR_NM LIKE CONCAT('%', #{searchContent}, '%')
+					OR	CD_NM LIKE CONCAT('%', #{searchContent}, '%')
+					)	
+			</if>
+		</if>
 		ORDER BY ROWNUM DESC
+		LIMIT 10 OFFSET (#{page} - 1) * 10
 	</select>
-
-	<select id="findOneByApiId" parameterType="String" resultType="mOpOpenApiInfo">
+	
+	<select id="countAllBySearchOption" resultType="int" parameterType="mOpOpenApiInfo">
 		SELECT
-			MOOAI.API_ID,
-			MOOAI.FILEXT_ID,
-			MOOAI.TAG_ID,
-			MOOAI.AUTH_CD,
-			MOOAI.API_NM,
-			MOOAI.API_CALL_URL,
-			MOOAI.API_CALL_LIMIT_CNT,
-			MOOAI.CLSF_DIV_CD,
-			MOOAI.MNG_INST_CD,
-			MOOAI.DATA_REGIST_YMD,
-			MOOAI.DATA_UPDT_YMD,
-			MOOAI.UPDT_CYCL,
-			MOOAI.CONTENTS,
-			MOOAI.INFO_EXPLAIN,
-			MOOAI.OPEN_API_INFO
+			COUNT(*)
+		FROM 
+		 	M_OP_OPEN_API_INFO MOOAI
+			 	LEFT JOIN M_OP_CODE MOC 
+			 		ON MOOAI.MNG_INST_CD = MOC.CD_ID
+				LEFT JOIN M_OP_OPERATOR MOO 
+					ON MOOAI.oprtr_id = MOO.OPRTR_ID
+		WHERE 1=1
+		<if test="searchType != null and searchType != ''">
+			<if test="searchType == 'apiNm' ">
+				AND API_NM LIKE CONCAT('%', #{searchContent}, '%')
+			</if>
+			<if test="searchType == 'all' ">
+				AND (
+						API_NM LIKE CONCAT('%', #{searchContent}, '%')
+					OR 	MOO.OPRTR_NM LIKE CONCAT('%', #{searchContent}, '%')
+					OR	CD_NM LIKE CONCAT('%', #{searchContent}, '%')
+					)	
+			</if>
+		</if>
+	</select>
+
+	<select id="findOneByDsetId" parameterType="String" resultType="mOpOpenApiInfo">
+		SELECT
+			ROW_NUMBER() OVER(ORDER BY TO_DATE(DATA_REGIST_YMD, 'yyyyMMdd')) AS ROWNUM,
+			DSET_ID,
+			API_NM,
+			API_CALL_URL,
+			TO_CHAR(TO_DATE(DATA_REGIST_YMD, 'yyyyMMdd'),'yyyy-MM-dd') AS "dataRegistYmd",
+			TO_CHAR(TO_DATE(DATA_UPDT_YMD, 'yyyyMMdd'),'yyyy-MM-dd') AS "dataUpdtYmd",
+			DESCR,
+			MAX_PVSN_CNT,
+			CONTENTS,
+			OPRTR_ID
 		FROM
-			M_OP_OPEN_API_INFO MOOAI
-		WHERE MOOAI.API_ID = #{apiId}
+			M_OP_OPEN_API_INFO
+		WHERE DSET_ID = #{dsetId}
 	</select>
 	
-	
+	<insert id="saveMOpOpenApiInfo" parameterType="mOpOpenApiInfo">
+		INSERT INTO M_OP_OPEN_API_INFO (
+			DSET_ID,
+			API_NM,
+			API_CALL_URL,
+			DATA_REGIST_YMD,
+			DATA_UPDT_YMD,
+			DESCR,
+			MAX_PVSN_CNT,
+			CONTENTS,
+			OPRTR_ID,
+			MNG_INST_CD
+		) VALUES( 
+			#{dsetId},
+			#{apiNm},
+			#{apiCallUrl},
+			#{dataRegistYmd},
+			#{dataUpdtYmd},
+			#{descr},
+			#{maxPvsnCnt},
+			#{contents},
+			#{oprtrId},
+			#{mngInstCd}
+		)
+	</insert>
 
+	<update id="updateMOpOpenApiInfo" parameterType="mOpOpenApiInfo">
+		UPDATE M_OP_OPEN_API_INFO SET 
+			API_NM = #{apiNm},
+			API_CALL_URL = #{apiCallUrl},
+			DATA_UPDT_YMD = #{dataUpdtYmd},
+			DESCR = #{descr},
+			CONTENTS = #{contents}
+		WHERE DSET_ID = #{dsetId}
+	</update>
+	
+	<delete id="deleteMOpOpenApiInfo" parameterType="mOpOpenApiInfo">
+		DELETE FROM M_OP_OPEN_API_INFO
+		WHERE DSET_ID = #{dsetId}
+	</delete>
 </mapper>

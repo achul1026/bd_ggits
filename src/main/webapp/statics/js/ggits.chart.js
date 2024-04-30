@@ -1,6 +1,6 @@
 // 차트 라이브러리 커스텀
 
-const GITSChartType = {BAR : "bar", LINE : "line", DOUGHNUT : "doughnut"};
+const GITSChartType = {POLAR : "polarArea", SCATTER : "scatter",RADAR : "radar", BAR : "bar", LINE : "line", DOUGHNUT : "doughnut", MATRIX : "matrix"};
 let GITSChart = function(type){
     //GITSChart 의 function
     let _self = this;
@@ -22,7 +22,7 @@ let GITSChart = function(type){
 
     //옵션
     let _opt = {};
-
+    let _isViewLabel = false;
     // bar, line 의 옵션
     let _typeOpts = {
         bar : {
@@ -44,7 +44,7 @@ let GITSChart = function(type){
                     },
                     grid: {
                         color:'rgba(255, 255, 255, 0.44)',
-                        tickColor:'black',
+                        tickColor:'transparent',
                         display:false
                     }
                 },
@@ -59,7 +59,7 @@ let GITSChart = function(type){
                     },
                     grid: {
                         color:'rgba(255, 255, 255, 0.44)',
-                        tickColor:'black',
+                        tickColor:'transparent',
                         display:false
                     }
                 },
@@ -70,7 +70,7 @@ let GITSChart = function(type){
                     usePointStyle:true,
                     labels: {
                         color:"#fff",
-                        padding:5,
+                        padding:10,
 						boxWidth:16,
 						font: {
 							family:'Pretendard',
@@ -88,26 +88,29 @@ let GITSChart = function(type){
             maintainAspectRatio :false,
             elements: {
                 point: {
-                    radius: 0,
+                    radius: 2,
                 },
             },
+			options:{
+				indexAxis:'y',
+			},
             scales: {
                 y: {
-                    beginAtZero: false,
+                    beginAtZero: true,
                     ticks: {
                         stepSize:1,
                         color :'#fff',
 						font: {
 							family:'Pretendard',
-						}
+						},
                     },
                     grid: {
                         color:'rgba(255, 255, 255, 0.44)',
-                        tickColor:'black'
+                        tickColor:'transparent'
                     }
                 },
                 x: {
-                    beginAtZero: false,
+                    beginAtZero: true,
                     ticks: {
                         color:'#fff',
 						font: {
@@ -116,7 +119,7 @@ let GITSChart = function(type){
                     },
                     grid: {
                         color:'rgba(255, 255, 255, 0.44)',
-                        tickColor:'black',
+                        tickColor:'transparent',
                         display:false
                     }
                 },
@@ -125,6 +128,7 @@ let GITSChart = function(type){
                 legend: {
                     position:'bottom',
                     labels: {
+						padding:10,
                         color:"#fff",
 						boxWidth:16,
 						font: {
@@ -143,6 +147,7 @@ let GITSChart = function(type){
                 legend: {
                     position:'bottom',
                     labels: {
+						padding:10,
                         color:"#fff",
 						boxWidth:16,
 						font: {
@@ -151,9 +156,152 @@ let GITSChart = function(type){
                     }
                 },
             },
-		}
+		},
+        polarArea : {
+            animation: {
+                duration: 0
+            },
+            maintainAspectRatio :false,
+            plugins: {
+                legend: {
+                    position:'bottom',
+                    labels: {
+                        padding:10,
+                        color:"#fff",
+                        boxWidth:16,
+                        font: {
+                            size:12,
+                        }
+                    }
+                },
+            },
+        },
+        scatter : {
+            animation: {
+                duration: 0
+            },
+            maintainAspectRatio :false,
+            elements: {
+                point: {
+                    radius: 2,
+                },
+            },
+            options:{
+                indexAxis:'y',
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize:1,
+                        color :'#fff',
+                        font: {
+                            family:'Pretendard',
+                        },
+                    },
+                    grid: {
+                        color:'rgba(255, 255, 255, 0.44)',
+                        tickColor:'transparent'
+                    }
+                },
+                x: {
+                    beginAtZero: true,
+                    ticks: {
+                        color:'#fff',
+                        font: {
+                            family:'Pretendard',
+                        }
+                    },
+                    grid: {
+                        color:'rgba(255, 255, 255, 0.44)',
+                        tickColor:'transparent',
+                        display:false
+                    }
+                },
+            },
+            plugins: {
+                legend: {
+                    position:'bottom',
+                    labels: {
+                        padding:10,
+                        color:"#fff",
+                        boxWidth:16,
+                        font: {
+                            size:12,
+                        }
+                    }
+                },
+            },
+        },
+        radar : {
+            animation: {
+                duration: 0
+            },
+            maintainAspectRatio :false,
+            plugins: {
+                legend: {
+                    position:'bottom',
+                    labels: {
+                        padding:10,
+                        color:"#fff",
+                        boxWidth:16,
+                        font: {
+                            size:12,
+                        }
+                    }
+                },
+            },
+        },
+        matrix :{
+            aspectRatio: 5,
+            plugins: {
+                legend: false,
+                tooltip: {
+                    displayColors: false,
+                    callbacks: {
+                        title() {
+                            return '';
+                        },
+                        label(context) {
+                            const v = context.dataset.data[context.dataIndex];
+                            return ['v: ' + v];
+                        }
+                    }
+                },
+            },
+            scales: {
+                x: {
+                    type: 'category',
+                    labels: ['00:00', '01:00', '02:00'],
+                    ticks: {
+                        display: true,
+						color:'#fff',
+						font: {
+							family:'Pretendard',
+						},
+                    },
+                    grid: {
+                        display: false
+                    }
+                },
+                y: {
+                    type: 'category',
+                    labels: ['화양로', '삼평로', '여기로'],
+                    offset: true,
+                    ticks: {
+						color:'#fff',
+                        display: true,
+						font: {
+							family:'Pretendard',
+						},
+                    },
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
     }
-
     const clearData = function(){
         let _element = null;
         let _data = {};
@@ -174,6 +322,41 @@ let GITSChart = function(type){
     // 옵션 값 받아오기
     _self.setOption = function(opt) {
         _opt = $.extend(_opt, opt, {});
+        return _self;
+    }
+    _self.setLittleFontSize = function() {
+        _opt = $.extend(_opt, {
+            scales : {
+                y: {
+                    ticks: {
+                        font: {
+                            size: 10
+                        }
+                    }
+                },
+                x: {
+                    ticks: {
+                        font: {
+                            size: 10
+                        }
+                    }
+                },
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        font: {
+                            size:10,
+                        }
+                    },
+
+                },
+            }
+        }, {});
+        return _self;
+    }
+    _self.setViewLabel = function(){
+        _isViewLabel = true;
         return _self;
     }
 
@@ -210,7 +393,7 @@ let GITSChart = function(type){
     _self.setGridColor = function(color) {
         try{
             _opt.scales.y.grid.color = color;
-        }catch(e) {}
+        }catch(e) {console.error('option error')}
         return _self;
     }
 
@@ -218,25 +401,32 @@ let GITSChart = function(type){
 	_self.setTickColorX = function(tickColorX) {
 		try {
 			_opt.scales.x.grid.tickColor = tickColorX
-		}catch(e) {}
+		}catch(e) {console.error('option error')}
 		return _self;
 	}
 	_self.setTickColorY = function(tickColorY) {
 		try {
 			_opt.scales.y.grid.tickColor = tickColorY
-		}catch(e) {}
+		}catch(e) {console.error('option error')}
 		return _self;
 	}
 	_self.setTickX = function(tickX) {
 		try {
 			_opt.scales.x.ticks.color = tickX
-		}catch(e) {}
+		}catch(e) {console.error('option error')}
 		return _self;
 	}
 	_self.setTickY = function(tickY) {
 		try {
 			_opt.scales.y.ticks.color = tickY
-		}catch(e) {}
+		}catch(e) {console.error('option error')}
+		return _self;
+	}
+	//y축 ticks display
+	_self.setTickDisplayY = function(displayY) {
+		try {
+			_opt.scales.y.ticks.display = displayY
+		}catch(e) {console.error('option error')}
 		return _self;
 	}
 
@@ -244,29 +434,28 @@ let GITSChart = function(type){
     _self.setLabelDisplay = function(display) {
         try{
             _opt.plugins.legend.display = display;
-        }catch(e) {}
+        }catch(e) {console.error('option error')}
         return _self;
     }
 
 	_self.setLabelPadding = function(padding) {
 		try {
 			_opt.plugins.legend.labels.padding = padding
-		}catch(e) {}
+		}catch(e) {console.error('option error')}
 		return _self;
 	}
-	
 	
 	_self.SetMaxWidth = function(width) {
 		try {
 			_opt.maxBarThickness = width
-		}catch(e) {}
+		}catch(e) {console.error('option error')}
 		return _self;
 	}
     // Y축 stepSize
     _self.setTicksStep = function(stepSize) {
         try {
             _opt.scales.y.ticks.stepSize = stepSize
-        } catch(e) {}
+        } catch(e) {console.error('option error')}
         return _self;
     }
 
@@ -274,7 +463,7 @@ let GITSChart = function(type){
     _self.setTickStepX = function(stepSizeX) {
         try {
             _opt.scales.x.ticks.stepSize = stepSizeX
-        } catch(e) {}
+        } catch(e) {console.error('option error')}
         return _self;
     }
 
@@ -282,7 +471,7 @@ let GITSChart = function(type){
     _self.setAxis = function(indexAxis) {
         try {
             _opt.indexAxis = indexAxis
-        } catch(e) {}
+        } catch(e) {console.error('option error')}
         return _self;
     }
 
@@ -290,7 +479,7 @@ let GITSChart = function(type){
     _self.setAxisStackedX = function(stackedX) {
         try {
             _opt.scales.x.stacked = stackedX
-        } catch(e) {}
+        } catch(e) {console.error('option error')}
         return _self;
     }
 
@@ -298,7 +487,7 @@ let GITSChart = function(type){
     _self.setAxisStackedY = function(stackedY) {
         try {
             _opt.scales.y.stacked = stackedY
-        } catch(e) {}
+        } catch(e) {console.error('option error')}
         return _self;
     }
 
@@ -306,7 +495,7 @@ let GITSChart = function(type){
     _self.setBarGridY = function(barGridY) {
         try {
             _typeOpts.bar.scales.y.grid.display = barGridY
-        } catch(e) {}
+        } catch(e) {console.error('option error')}
         return _self;
     }
 
@@ -314,7 +503,7 @@ let GITSChart = function(type){
     _self.setBarGridX = function(barGridX) {
         try {
             _typeOpts.bar.scales.x.grid.display = barGridX
-        } catch(e) {}
+        } catch(e) {console.error('option error')}
         return _self;
     }
 
@@ -322,7 +511,7 @@ let GITSChart = function(type){
     _self.setDisplayX = function(Xdisplay) {
         try {
             _typeOpts.bar.scales.x.display = Xdisplay
-        } catch(e) {}
+        } catch(e) {console.error('option error')}
         return _self;
     }
     
@@ -330,18 +519,16 @@ let GITSChart = function(type){
     _self.setDisplayY = function(Ydisplay) {
         try {
             _typeOpts.bar.scales.y.display = Ydisplay
-        } catch(e) {}
+        } catch(e) {console.error('option error')}
         return _self;
     }
 
 	_self.setPoint = function(point) {
 		try {
 			_typeOpts.line.elements.point.radius = point
-		} catch(e) {}
+		} catch(e) {console.error('option error')}
 		return _self;
 	}
-    
-
 
     //데이터 넣기
     _self.setDataSet = function(...args){
@@ -364,16 +551,33 @@ let GITSChart = function(type){
         return _self;
     }
 
+	//lable name change
+	_self.labelCallback = function(item) {
+		try {
+			_opt.scales.y.ticks.callback = item 
+		} catch(e) {console.error('option error')}
+		return _self;
+	}
+
     //차트 호출
     _self.draw = function(){
         if(typeof Chart === "undefined") {
             console.error("chart.js가 import 되어 있지 않습니다.");
             return;
         }
-        new Chart(_element, {
+        let obj = {
             type:_type,
             data: _data,
             options: _opt
-        });
+        };
+        if(_isViewLabel) obj.plugins = [ChartDataLabels];
+        return new Chart(_element, obj);
     }
+
+	_self.setLabelPosition = function(position) {
+		try {
+		_opt.plugins.legend.position = position
+		} catch(e) {console.error('option error')}
+		return _self;
+	}
 }

@@ -9,11 +9,9 @@ import org.springframework.stereotype.Component;
 
 import com.neighbor21.ggits.api.module.BaseMapDataComponent;
 import com.neighbor21.ggits.common.dto.MapBigdataSearchDTO;
-import com.neighbor21.ggits.common.entity.MrtSigCrsdTrfAnal;
 import com.neighbor21.ggits.common.enums.MapBigdataSubMenuCd;
 import com.neighbor21.ggits.common.mapper.MrtSigCrsdTrfAnalMapper;
 import com.neighbor21.ggits.common.mapper.MrtSigCtrlLogMapper;
-import com.neighbor21.ggits.common.util.GgitsCommonUtils;
 
 /**
  * 빅데이터-교통패턴분석 데이터 컴포넌트
@@ -39,27 +37,23 @@ public class BDTrafficActiveEffectAnalysisComponent extends BaseMapDataComponent
       * @param mapBigdataSearchDTO
       * @return
       */
-    public <T> List<T> getTrafficActiveEffectAnalysis(MapBigdataSearchDTO mapBigdataSearchDTO){
+    @SuppressWarnings("unchecked")
+	public <T> List<T> getTrafficActiveEffectAnalysis(MapBigdataSearchDTO mapBigdataSearchDTO){
     	
     	List<?> result = new ArrayList<T>();
-    	String menuCode = mapBigdataSearchDTO.getMenuCode(); 
-    	
-    	if(MapBigdataSubMenuCd.TRAFFIC_EFFECT_CONGESTION_SECTION.getMenuCode().equals(menuCode)) {			//정체구간
-			Long endTime = Long.parseLong(mapBigdataSearchDTO.getStartTime()) + 1L;
-			if(endTime >= 24) {
-				endTime = 0L;
-			}
-			mapBigdataSearchDTO.setEndTime(endTime > 10 ? String.valueOf(endTime) : "0"+String.valueOf(endTime));
-    		result = mrtSigCrsdTrfAnalMapper.findAllGroupByLinkId(mapBigdataSearchDTO);
-    	}else if(MapBigdataSubMenuCd.TRAFFIC_EFFECT_EMERGENCY_VEHICLE.getMenuCode().equals(menuCode)) {	
-    		//긴급차량 우선 신호시스템 제어 효과
-    		//TODO:: 테이블 데이터 확인 후 컬럼 결과값 재수정
-    		result = mrtSigCtrlLogMapper.findAllGroupByLinkId(mapBigdataSearchDTO);
-    	}
+		result = mrtSigCrsdTrfAnalMapper.findAllGroupByLinkId(mapBigdataSearchDTO);
     	
         return (List<T>) result;
     }
+	public <T> List<T> getTrafficActiveEffectAnalysisChart(MapBigdataSearchDTO mapBigdataSearchDTO){
 
+		List<?> result = new ArrayList<T>();
+		result = mrtSigCrsdTrfAnalMapper.findAllForChart(mapBigdataSearchDTO);
+
+		return (List<T>) result;
+	}
+    
+    @SuppressWarnings("unchecked")
 	public <T> List<T> getTrafficActiveEffectAnalysisMerge(MapBigdataSearchDTO mapBigdataSearchDTO){
 
 		List<?> result = new ArrayList<T>();
@@ -67,10 +61,6 @@ public class BDTrafficActiveEffectAnalysisComponent extends BaseMapDataComponent
 
 		if(MapBigdataSubMenuCd.TRAFFIC_EFFECT_CONGESTION_SECTION.getMenuCode().equals(menuCode)) {			//정체구간
 			result = mrtSigCrsdTrfAnalMapper.findAllMergeDataGroupByLinkId(mapBigdataSearchDTO);
-		}else if(MapBigdataSubMenuCd.TRAFFIC_EFFECT_EMERGENCY_VEHICLE.getMenuCode().equals(menuCode)) {
-			//긴급차량 우선 신호시스템 제어 효과
-			//TODO:: 테이블 데이터 확인 후 컬럼 결과값 재수정
-			result = mrtSigCtrlLogMapper.findAllGroupByLinkId(mapBigdataSearchDTO);
 		}
 
 		return (List<T>) result;

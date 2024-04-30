@@ -6,14 +6,14 @@
     <div class="original_box clearfix">
     	<form id="searchForm" method="get">
     		<input type="hidden" id="mapPage" name="page" value="1"/>
+    		<input type="hidden" name="pageType" value="<c:out value='${type}'/>">
 	        <div class="tab_item_box flex-center">
 	            <h5 class="tab_item_title">연도별</h5>
-	            <input type="hidden" id="startYear" value="${yearsList[0].year}">
-            	<input type="hidden" id="endYear" value="${yearsList[fn:length(yearsList) -1].year}">
+	            <input type="hidden" id="startYear" value="<c:out value='${yearsList[0].year}'/>">
+            	<input type="hidden" id="endYear" value="<c:out value='${yearsList[fn:length(yearsList) -1].year}'/>">
 	            <select class="selectBox radius" name="searchYear" id="searchYear">
-	                <option value="searchAllYear">전체</option>
 	           		<c:forEach var="yearsList" items="${yearsList}" varStatus="status">
-	                	<option value="${yearsList.year}">${yearsList.year}년</option>
+	                	<option value="<c:out value="${yearsList.year}"/>"><c:out value="${yearsList.year}"/>년</option>
 	           		</c:forEach>
 	            </select>
 	        </div>
@@ -22,9 +22,9 @@
 	                <h5 class="tab_item_title">기간</h5>
 	                <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" name="searchPeriod" class="none" value="weekdays">평일</label>
 	                <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" name="searchPeriod" class="none" value="weekend">주말</label>
-	                <label class="group_btn_item is-dark-btn radius inpd direct"><input type="checkbox" id="dateChk" class="none">직접입력</label>
+	                <label class="group_btn_item is-dark-btn radius inpd direct"><input type="checkbox" id="dateChk" class="none" name="searchPeriod" value="directDate">직접입력</label>
 	            </div>
-	            <div class="calendar direct_time none">
+	            <div class="calendar direct_time none" id="directDate">
 		            <input type="text" class="date_picker input_same mr8 input_picker" name="startDate" id="startDate" placeholder="날짜를 선택해주세요." autocomplete="off">
 		            ~
 		            <div class="end_calendar_box">
@@ -33,51 +33,41 @@
 		            </div>	            
 				</div>
 	        </div>
-<!-- 	        <div class="tab_item_box"> -->
-<!-- 	            <div class="flex-center"> -->
-<!-- 	                <h5 class="tab_item_title">시간</h5> -->
-<!-- 	                <select class="selectBox radius"> -->
-<!-- 	                    <option>14시 ~ 16시</option> -->
-<!-- 	                    <option>테스트</option> -->
-<!-- 	                    <option>테스트</option> -->
-<!-- 	                    <option>테스트</option> -->
-<!-- 	                </select> -->
-<!-- 	                <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" class="none">출근 <span class="group_btn_span">(06시~10시)</span></label> -->
-<!-- 	                <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" class="none">퇴근 <span class="group_btn_span">(17시~20시)</span></label> -->
-<!-- 	                <label class="group_btn_item is-dark-btn radius inpd direct"><input type="checkbox" class="none">직접 입력</label> -->
-<!-- 	            </div> -->
-<!-- 	            <div class="calendar direct_time none"> -->
-<!-- 					<select class="selectBox selectTime" id="startTime"></select> -->
-<!-- 	                ~ -->
-<!-- 					<select class="selectBox selectTime" id="endTime"></select> -->
-<!-- 	            </div> -->
-<!-- 	        </div> -->
-			<div class="tab_item_box flex-center">
-		        <h5 class="tab_item_title">지역검색</h5>
-		        <input type="text" placeholder="지역을 입력해주세요." class="input_same search_box radius">
-	        </div>
-			<div class="tab_item_box flex-center border-none">
-		        <h5 class="tab_item_title">노선</h5>
-		        <input type="text" placeholder="노선을 입력해주세요." name="searchContent" class="input_same search_box radius">
-	        	<button type="button" class="is-darkgreen-btn ml8" onclick="fnSearchList();">검색</button>
+			<div class="tab_item_box flex-column gap8">
+				<div class="tab_item_box flex-center">
+	            	<h5 class="tab_item_title">지역별</h5>
+	            	<select class="selectBox radius" name="sigunCdId">
+	                <option value="searchAllLocation">전체 지역</option>
+					<c:forEach var="sggCdList" items="${sggCdList}">
+	                	<option value="<c:out value='${sggCdList.cdId}00000'/>"><c:out value='${sggCdList.cdNm}'/></option>
+					</c:forEach>
+	            </select>
+	       		</div>
+				<div class="flex-center">
+			        <h5 class="tab_item_title">노선</h5>
+			        <input type="text" placeholder="노선을 입력해주세요." name="searchContent" class="input_same search_box radius">
+		        	<button type="button" class="is-darkgreen-btn ml8" onclick="fnSearchList();">검색</button>
+				</div>
 	        </div>
         </form>
 		<div class="tab_item_box flex-center pt8 none" id="tableHeader">
 			<h5 class="tab_item_title"></h5>
-			<div class="gis_table_scroll" style="width:440px;">
+			<div class="gis_table_scroll" style="width:500px;">
 				<div class="table_search_number tableTitle">
-                	<span>"${paging.totalCount eq null || paging.totalCount eq '' ? '0' : ''}개"</span>의 검색결과를 찾았습니다.
+                	<span id="totalCnt"><c:out value='${paging.totalCount eq null || paging.totalCount eq "" ? "0" : ""}'/></span>개의 검색결과를 찾았습니다.
                 </div>				
-				<table>
+				<table id="modalTable" class="result_change">
 				    <colgroup>
+				        <col style="width:10%">
 				        <col style="width:20%">
 				        <col style="width:20%">
 				        <col style="width:20%">
-				        <col style="width:20%">
-				        <col style="width:20%">
+				        <col style="width:15%">
+				        <col style="width:15%">
 				    </colgroup>
 				    <thead>
 				        <tr>
+				            <th scope="col">선택</th>
 				            <th scope="col">버스번호</th>
 				            <th scope="col">출발지</th>
 				            <th scope="col">종착지</th>
@@ -103,29 +93,34 @@
 	gisCheckInit();
 	datePickerInit();
 	dateTiemInit();
-	tabTitleCss();
-	resultRemove();
+	settingBigdataSearchParam("BD_PB_TRANS_004");
+	var dataTotalCnt = '<c:out value="${paging.totalCount eq null || paging.totalCount eq '' ? '0' : ''}"/>';
 
+	$("#totalCnt").text(numberComma(dataTotalCnt))
+	
 	function publicTransportResult() {
 	    var remarksItem =$(`
 		        <div class="remarks_container">
 			        <div class="remarks_title_box">
-			            <h6 class="remarks_title">범례 - 대중교통 분류</h6>
+			            <h6 class="remarks_title">범례 - 승하차/환승 분류</h6>
 			        </div>
-		        	<div class="remarks_wrap tab-none">
+		        	<div class="remarks_wrap">
 		            	<div>
-			                <div class="check_line_container">
-			                    <button type="button" class="check_line_box remarks-red">광역버스</button>
-			                    <button type="button" class="check_line_box remarks-orange">마을버스</button>
-			                    <button type="button" class="check_line_box remarks-yellow-green">시내버스</button>
-			                    <button type="button" class="check_line_box remarks-light-green">기타</button>
-			                </div>
+			                <ul class="check_line_container">
+			                    <li class="check_line_box remarks-red">승차수</li>
+			                    <li class="check_line_box remarks-orange">하차수</li>
+			                    <li class="check_line_box remarks-green">환승수</li>
+			                </ul>
 		            	</div>
-			            <div class="unit">단위 : 도로 위험 유형</div>
+			            <div class="unit">단위 : 승하차/환승 횟수</div>
 		        	</div>
-		    	</div>`)        
+		    	</div>`)
+		$('#map-container').find(".remarks_container").remove();
 	        $('#map-container').append(remarksItem);
-	        legendToggle();		
+	        legendToggle();
+
+			window.map.bigdata.getPublicTransferUsageGroupBySGG($("#searchForm").serialize());
+			bigdataSearchForm = $("#searchForm").serializeObject();
 	}	
 	
 	
@@ -146,7 +141,7 @@
 			}
 		}
 		
-		$("table>tbody > tr").remove();
+		$("#modalTable>tbody > tr").remove();
     	$("#modalPaging > .dashboard-pg-wrap").remove();
     	var page = $("#mapPage").val();
     	
@@ -159,22 +154,27 @@
     			var title = '';
     			var startDate = '';
     			var endDate = '';
-    			if(result.data.resultList.length > 0){
-    				$("#tableHeader").removeClass("none");
-    			}
-    			$(result.data.resultList).each(function(index, item){
+    			if(result.data.resultList.length == 0){
     				html += '<tr>' +
-								'<td>' + item.routeNm + '</td>' +
-								'<td>' + item.stStaNm + '</td>' +
-								'<td>' + item.edStaNm + '</td>' + 									
-								'<td>-</td>' +
-								'<td>-</td>' +
+								'<td colspan="5">노선 정보를 찾을 수 없습니다.</td>' +
 							'</tr>';
-    			});
-    			$("table>tbody").append(html);
+    			}else{
+	    			$(result.data.resultList).each(function(index, item){
+	    				html += '<tr>' +
+									'<td>' + '<input type="radio" id="listItem'+index+'" name="listItem" class="bigdata_input_radio">' + '</td>' +
+									'<td>' + '<label for="listItem'+index+'">' + item.routeNm + '</label>' + '</td>' +
+									'<td>' + '<label for="listItem'+index+'">' + item.stStaNm + '</label>' + '</td>' +
+									'<td>' + '<label for="listItem'+index+'">' + item.edStaNm + '</label>' + '</td>' +						
+									'<td>' + '<label for="listItem'+index+'">' + '-' + '</label>' + '</td>' +
+									'<td>' + '<label for="listItem'+index+'">' + '-' + '</label>' + '</td>' +
+								'</tr>';
+	    			});
+    			}
+    			$("#tableHeader").removeClass("none");
+    			$("#modalTable>tbody").append(html);
     			var paging = result.data.paging;
     			if(paging != null && paging != ''){
-    				title += '<span>'+paging.totalCount+'개</span>의 검색결과를 찾았습니다.';
+    				title += '<span id="totalCnt2">'+paging.totalCount+'</span>개의 검색결과를 찾았습니다.';
     				$("#modalPaging").append(getGisPagingHtml(paging, page));
     			}
     			$(".tableTitle").html(title);
@@ -182,6 +182,8 @@
     			endDate = result.data.searchOption.endDate;
     			$("#startDate").val(startDate.substring(0,10));
     			$("#endDate").val(endDate.substring(0,10));
+    			var dataTotalCnt2 = paging.totalCount;
+    			$("#totalCnt2").text(numberComma(dataTotalCnt2))
     		}
     	})
 	}

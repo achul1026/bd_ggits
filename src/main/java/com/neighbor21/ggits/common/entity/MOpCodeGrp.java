@@ -2,19 +2,19 @@ package com.neighbor21.ggits.common.entity;
 
 import java.sql.Timestamp;
 
-//마스터 운영 코드 그룹
-public class MOpCodeGrp extends CommonEntity{
+// 마스터 운영 코드 그룹
+public class MOpCodeGrp extends CommonEntity {
 
-  private String grpCdId; //그룹 코드 아이디
-  private String grpCdNm; //그룹 코드 명
-  private String upperGrpCdId; //상위 그룹 코드 아이디
-  private String cdCond1Descr; //코드 조건1 설명
-  private String cdCond2Descr; //코드 조건2 설명
-  private String descr; //설명
-  private String useYn;	//사용 여부
-  private String crtusrId; //생성자 아이디
-  private Timestamp crtDt;	// 생성 일시
-  private String uptusrId;  // 수정자 아이디
+  private String grpCdId; // 그룹 코드 아이디
+  private String grpCdNm; // 그룹 코드 명
+  private String upperGrpCdId; // 상위 그룹 코드 아이디
+  private String cdCond1Descr; // 코드 조건1 설명
+  private String cdCond2Descr; // 코드 조건2 설명
+  private String descr; // 설명
+  private String useYn; // 사용 여부
+  private String crtusrId; // 생성자 아이디
+  private Timestamp crtDt; // 생성 일시
+  private String uptusrId; // 수정자 아이디
   private Timestamp updtDt; // 수정 일시
 
   public String getGrpCdId() {
@@ -70,43 +70,45 @@ public class MOpCodeGrp extends CommonEntity{
     this.descr = descr;
   }
 
-public String getUseYn() {
-	return useYn;
-}
+  @Override
+  public String getUseYn() {
+    return useYn;
+  }
 
-public void setUseYn(String useYn) {
-	this.useYn = useYn;
-}
+  @Override
+  public void setUseYn(String useYn) {
+    this.useYn = useYn;
+  }
 
-public String getCrtusrId() {
-	return crtusrId;
-}
+  public String getCrtusrId() {
+    return crtusrId;
+  }
 
-public void setCrtusrId(String crtusrId) {
-	this.crtusrId = crtusrId;
-}
+  public void setCrtusrId(String crtusrId) {
+    this.crtusrId = crtusrId;
+  }
 
-public Timestamp getCrtDt() {
-	return crtDt;
-}
+  public Timestamp getCrtDt() {
+    return crtDt;
+  }
 
-public void setCrtDt(Timestamp crtDt) {
-	this.crtDt = crtDt;
-}
+  public void setCrtDt(Timestamp crtDt) {
+    this.crtDt = crtDt;
+  }
 
-public String getUptusrId() {
-	return uptusrId;
-}
+  public String getUptusrId() {
+    return uptusrId;
+  }
 
-public void setUptusrId(String uptusrId) {
-	this.uptusrId = uptusrId;
-}
+  public void setUptusrId(String uptusrId) {
+    this.uptusrId = uptusrId;
+  }
 
-public Timestamp getUpdtDt() {
-	return updtDt;
-}
+  public Timestamp getUpdtDt() {
+    return updtDt;
+  }
 
-public void setUpdtDt(Timestamp updtDt) {
-	this.updtDt = updtDt;
-}
+  public void setUpdtDt(Timestamp updtDt) {
+    this.updtDt = updtDt;
+  }
 }

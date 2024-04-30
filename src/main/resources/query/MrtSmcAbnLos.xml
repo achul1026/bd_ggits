@@ -5,8 +5,8 @@
 	<sql id="mrtSmcAbnLos-Where">
 		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
 			AND mssl.ANLS_DT 
-			BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
-		    	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			BETWEEN TO_TIMESTAMP(#{strDt}|| ' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}|| ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
 		</if>
 		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
 			<![CDATA[
@@ -18,6 +18,12 @@
 			AND mssl.ANLS_DT <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
 			]]>
 		</if>
+		<if test="sigunCdId != null and sigunCdId != '' and sigunCdId != 'searchAllLocation'">
+			AND SUBSTRING(cgslam.ADSTDG_CD,0,5) = SUBSTRING(#{sigunCdId},0,5)
+		</if>
+		<if test="searchContent != null and searchContent != ''">
+			AND gcil.ROAD_NAME LIKE '%' || #{searchContent} || '%'
+		</if>
 		<if test="dayOfTheWeek != null">
 			AND EXTRACT (ISODOW from mssl.ANLS_DT)::varchar(1) IN 
 				<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
@@ -28,13 +34,17 @@
 	
 	<select id="countSmcAbnLosList" parameterType="commonEntity" resultType="int">
 		SELECT
-			COUNT(*)
+			COUNT(mssl.*)
 		FROM MRT_SMC_SPOT_LOS mssl
-		LEFT JOIN 
-			ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO ascari
+		INNER JOIN 
+			BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO ascari
 			ON mssl.ACS_ROAD_ID = ascari.ACS_ROAD_ID 
 			AND mssl.MNG_INST_CD = ascari.MNG_INST_CD 
 			AND mssl.CRSRD_ID = ascari.CRSRD_ID
+		INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam
+			ON ASCARI.LINK_ID = cgslam.LINK_ID
+		LEFT JOIN C_GM_STD_LINK  gcil
+			ON cgslam.LINK_ID = gcil.LINK_ID
 		WHERE
 			1=1
 			<include refid="mrtSmcAbnLos-Where"/>
@@ -42,18 +52,34 @@
 	
 	<select id="findAllSmcAbnLosList" parameterType="commonEntity" resultType="mrtSmcAbnLos">
 		select
-			mssl.VHCL_TRFVLM
-			, mssl.AVG_VHCL_SPEED
+			COALESCE(mssl.VHCL_TRFVLM, 0) as VHCL_TRFVLM
+			, COALESCE(mssl.AVG_VHCL_SPEED, 0) as AVG_VHCL_SPEED
 			, ascari.ACS_ROAD_NM
+			, gcil.ROAD_NAME
+			, CASE WHEN gcil.ROAD_RANK ='101' THEN '고속국도'
+				WHEN gcil.ROAD_RANK ='102' THEN '도시고속국도'
+				WHEN gcil.ROAD_RANK ='103' THEN '일반국도'
+				WHEN gcil.ROAD_RANK ='104' THEN '특별광역시도'
+				WHEN gcil.ROAD_RANK ='105' THEN '국가지원지방도'
+				WHEN gcil.ROAD_RANK ='106' THEN '지방도'
+				WHEN gcil.ROAD_RANK ='107' THEN '시군도'
+				WHEN gcil.ROAD_RANK ='108' THEN '기타'
+				END AS ROAD_RANK
 		FROM MRT_SMC_SPOT_LOS mssl
-		LEFT JOIN 
-			ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO ascari
+		INNER JOIN
+			BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO ascari
 			ON mssl.ACS_ROAD_ID = ascari.ACS_ROAD_ID 
 			AND mssl.MNG_INST_CD = ascari.MNG_INST_CD 
 			AND mssl.CRSRD_ID = ascari.CRSRD_ID
+		INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam
+			ON ASCARI.LINK_ID = cgslam.LINK_ID
+		LEFT JOIN C_GM_STD_LINK  gcil
+			ON cgslam.LINK_ID = gcil.LINK_ID
 		WHERE
 			1=1
 			<include refid="mrtSmcAbnLos-Where"/>
+		ORDER BY mssl.ANLS_DT DESC
+		LIMIT 10 OFFSET (#{page} - 1) * 10
 	</select>
 	
 	<select id="findByTrfvimCngrtAndAvgVhclSpeed" parameterType="mrtSmcAbnLos" resultType="mrtSmcAbnLos">
@@ -71,5 +97,61 @@
 		<!-- TODO:: 혼잡에 관련된 데이터를 알 수 있는 방법이 필요함 -->
 		ORDER BY ROWNUM DESC 
 		LIMIT 10 OFFSET (#{page} - 1) * 10
+	</select>
+	
+	<select id="findCongestionSestionInfo" parameterType="congestionSestionInfoRequest" resultType="congestionSestionInfoResponse">
+		SELECT 
+			TRFVLM_CNGRT,
+			LINK_ID,
+			ROUND(AVG(AVG_VHCL_SPEED),0) AS AVG_VHCL_SPEED
+		FROM  MRT_SMC_ABN_LOS
+		<trim prefix="WHERE" prefixOverrides="AND">
+			<if test="linkId != null and linkId != ''">
+				AND LINK_ID = #{linkId}
+			</if>
+			<if test="date != null and date != ''">
+				AND ANLS_DT BETWEEN TO_TIMESTAMP(#{date}||' 00:00:00', 'YYYYMMDD HH24:MI:SS') 
+				AND TO_TIMESTAMP(#{date}||' 23:59:59', 'YYYYMMDD HH24:MI:SS')
+			</if>
+		</trim>
+		GROUP BY TRFVLM_CNGRT , LINK_ID
+		ORDER BY TRFVLM_CNGRT DESC , AVG_VHCL_SPEED DESC
+	</select>
+
+	<select id="findAllSmcAbnLosListForMap"  parameterType="mapBigdataSearchDTO" resultType="mrtSmcAbnLos">
+		select
+			cgsl.LINK_ID
+			 ,msal.avg_vhcl_speed
+			 ,case
+				when trfvlm_cngrt = '원활'
+				then '1'
+				when trfvlm_cngrt = '서행'
+				then '2'
+				when trfvlm_cngrt = '정체'
+				then '3'
+				else trfvlm_cngrt
+				end as trfvlm_cngrt
+			 ,ST_ASGEOJSON(ST_LINEMERGE(cgsl.GEOMETRY)) AS GEOJSON
+			 ,cgsl.ROAD_RANK
+			 ,cgsl.ROAD_NAME
+			 ,cgsl.ROAD_TYPE
+		from mrt_smc_abn_los  msal
+		 inner join c_gm_std_link cgsl on msal.link_id = cgsl.link_id
+		inner join c_gm_std_link_adstdg_mppg cgslam on msal.link_id = cgslam.link_id
+		<where>
+			AND msal.anls_dt >=  to_timestamp(#{startDate}||' 00:00:00', 'YYYY-MM-DD HH24:MI:SS')
+			<![CDATA[
+			AND msal.anls_dt <=  to_timestamp(#{startDate}||' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+			]]>
+			 <if test="searchRoadRank != null and searchRoadRank != ''">
+				 AND cgsl.ROAD_RANK IN
+				 <foreach item="roadRank" collection="searchRoadRank.split(',')" open="(" separator="," close=")">
+					 #{roadRank}
+				 </foreach>
+			 </if>
+			 <if test="searchLocation != null and searchLocation != '' and searchLocation != 'searchAllLocation' ">
+				 AND SUBSTRING(cgslam.ADSTDG_CD,0,5) = SUBSTRING(#{searchLocation},0,5)
+			 </if>
+		 </where>
 	</select>
 </mapper>

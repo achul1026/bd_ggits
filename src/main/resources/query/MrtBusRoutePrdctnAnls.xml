@@ -1,0 +1,149 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MrtBusRoutePrdctnAnlsMapper'>
+	<select id="countAllBusRouteOptPrdt" parameterType="mapBigdataSearchDTO" resultType="int">
+		SELECT 
+			COUNT(*)
+		FROM MRT_BUS_ROUTE_PRDCTN_ANLS mbrpa
+		INNER JOIN MRT_CNDCY_PATH_ADD_INFO mcpai
+			ON (mbrpa.BASEYM = mcpai.BASEYM and mbrpa.BTC_ID = mcpai.BTC_ID)
+		WHERE mbrpa.ROUTE_NM = #{routeNm}
+		  and mcpai.obj_func_id = '2'
+	</select>
+	
+	<select id="findAllBusRouteOptPrdt" parameterType="mapBigdataSearchDTO" resultType="mrtBusRoutePrdctnAnls">
+		SELECT 
+			mcpai.CAND_ROUTE_ID
+			, mcpai.BASEYM
+			, mcpai.BTC_ID
+			, mcpai.SCORE
+			, mbrpa.ROUTE_ID
+			, mbrpa.ROUTE_NM
+			, mcpai.LENGTH
+			, mcpai.LENGTH_RATIO
+			, mcpai.score_imprv
+			, mcpai.length_var
+			, mcpai.num_psngr
+			, mcpai.num_psngr_var
+		FROM MRT_BUS_ROUTE_PRDCTN_ANLS mbrpa
+		INNER JOIN MRT_CNDCY_PATH_ADD_INFO mcpai
+			ON (mbrpa.BASEYM = mcpai.BASEYM and mbrpa.BTC_ID = mcpai.BTC_ID)
+		WHERE mbrpa.ROUTE_NM = #{routeNm}
+		and mcpai.obj_func_id = '2'
+		ORDER BY mbrpa.BASEYM DESC, substr(mcpai.btc_id,11,2) asc, mcpai.CAND_ROUTE_ID asc
+	</select>
+	
+	<select id="findAllBusRouteLengthRank" resultType="map">
+		WITH BUS_ROUTE_PRDCTN_LSIT AS (
+			SELECT 
+				A.ROUTE_NM
+				,A.ROUTE_LENGTH
+				,A.LENGTH
+			FROM (
+				SELECT
+					mbrpa.ROUTE_ID
+					, mbrpa.ROUTE_NM 
+					, routeInfo.ROUTE_LENGTH  
+					, mcpai.LENGTH 
+					, routeInfo.ROUTE_LENGTH::numeric  - mcpai.LENGTH::numeric  as lengthDef
+				FROM MRT_BUS_ROUTE_PRDCTN_ANLS mbrpa 
+				INNER JOIN MRT_CNDCY_PATH_ADD_INFO mcpai  
+					ON (mbrpa.BASEYM = mcpai.BASEYM and mbrpa.BTC_ID = mcpai.BTC_ID) 
+				INNER JOIN (
+					SELECT
+						mbrpa.ROUTE_ID
+						, egbr.ROUTE_LENGTH
+						, egbr.ROUTE_LENGTH::numeric  - mcpai.LENGTH::numeric  as lengthDef
+					FROM MRT_BUS_ROUTE_PRDCTN_ANLS mbrpa 
+					INNER JOIN MRT_CNDCY_PATH_ADD_INFO mcpai  
+						ON (mbrpa.BASEYM = mcpai.BASEYM and mbrpa.BTC_ID = mcpai.BTC_ID) 
+					INNER JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE egbr
+						ON mbrpa.ROUTE_ID = egbr.ROUTE_ID 
+					ORDER BY lengthDef DESC 
+					LIMIT 1
+				)routeInfo
+					on routeInfo.route_id = mbrpa.ROUTE_ID
+				where mcpai.obj_func_id = '2'
+				ORDER BY lengthDef DESC 
+				LIMIT 5
+			)A
+		GROUP BY A.ROUTE_NM,A.ROUTE_LENGTH,A.LENGTH
+		)
+		SELECT 
+			ARRAY_TO_STRING(ARRAY_AGG(ROUTE_NM), ',') as "busRouteArr"
+			,ARRAY_TO_STRING(ARRAY_AGG(ROUTE_LENGTH), ',') as "exitingRouteInfoArr" 
+	    	, ARRAY_TO_STRING(ARRAY_AGG(LENGTH), ',') as "prdctnRouteInfoArr"
+		FROM BUS_ROUTE_PRDCTN_LSIT
+	</select>
+	
+	<select id="findAllBusRouteCurvtRank" resultType="map">
+		WITH BUS_ROUTE_PRDCTN_LIST as(
+		SELECT 
+			A.ROUTE_NM
+			, A.CURVT
+			, A.LENGTH_RATIO
+		FROM (
+			SELECT
+				mbrpa.ROUTE_NM 
+				, routeInfo.CURVT 
+				, mcpai.LENGTH_RATIO 
+				, routeInfo.CURVT::NUMERIC  - mcpai.LENGTH_RATIO::NUMERIC  as curvtDef
+			FROM MRT_BUS_ROUTE_PRDCTN_ANLS mbrpa 
+			INNER JOIN MRT_CNDCY_PATH_ADD_INFO mcpai  
+				ON (mbrpa.BASEYM = mcpai.BASEYM and mbrpa.BTC_ID = mcpai.BTC_ID) 
+			INNER JOIN (
+				SELECT
+					mbrpa.ROUTE_ID
+					, mbrda.ROUTE_NM 
+					, mbrda.CURVT 
+					, mcpai.LENGTH_RATIO 
+					, mbrda.CURVT::NUMERIC  - mcpai.LENGTH_RATIO::NUMERIC  as curvtDef
+				FROM MRT_BUS_ROUTE_PRDCTN_ANLS mbrpa 
+				INNER JOIN MRT_CNDCY_PATH_ADD_INFO mcpai  
+					ON (mbrpa.BASEYM = mcpai.BASEYM and mbrpa.BTC_ID = mcpai.BTC_ID) 
+				INNER JOIN mrt_bus_route_det_anal mbrda
+					ON mbrpa.ROUTE_ID = mbrda.bus_route_id 
+				ORDER BY curvtDef DESC
+				LIMIT 1
+			) routeInfo
+				ON routeInfo.ROUTE_ID = mbrpa.ROUTE_ID
+			where mcpai.obj_func_id = '2'
+			ORDER BY curvtDef DESC
+			LIMIT 5
+		)A
+		GROUP BY A.ROUTE_NM, A.CURVT, A.LENGTH_RATIO 
+	)
+	SELECT 
+		ARRAY_TO_STRING(ARRAY_AGG(ROUTE_NM), ',') as "busRouteArr"
+		,ARRAY_TO_STRING(ARRAY_AGG(CURVT), ',') as "exitingRouteInfoArr" 
+    	, ARRAY_TO_STRING(ARRAY_AGG(LENGTH_RATIO), ',') as "prdctnRouteInfoArr"
+	from BUS_ROUTE_PRDCTN_LIST;
+	</select>
+	
+	<select id="findAllBusRouteScoreRank" resultType="map">
+		WITH BUS_ROUTE_PRDCTN_LIST AS (
+			SELECT 
+				A.ROUTE_NM
+				, A.SCORE
+			FROM (
+				SELECT 
+					mbrpa.ROUTE_ID 
+					, mbrpa.ROUTE_NM 
+				 	,mcpai.SCORE 
+				FROM MRT_BUS_ROUTE_PRDCTN_ANLS mbrpa 
+				INNER JOIN MRT_CNDCY_PATH_ADD_INFO mcpai  
+					ON (mbrpa.BASEYM = mcpai.BASEYM and mbrpa.BTC_ID = mcpai.BTC_ID)
+				where mcpai.obj_func_id = '2'
+				ORDER BY mcpai.SCORE DESC
+				LIMIT 10
+			)A
+		GROUP BY A.ROUTE_NM, A.SCORE
+		ORDER BY A.SCORE DESC
+		)
+		SELECT 
+			ARRAY_TO_STRING(ARRAY_AGG(ROUTE_NM order by ROUTE_NM desc),',') as "routeNmArr"
+			, ARRAY_TO_STRING(ARRAY_AGG(SCORE order by SCORE desc),',') as "scoreArr"
+		FROM BUS_ROUTE_PRDCTN_LIST
+	</select>
+</mapper>

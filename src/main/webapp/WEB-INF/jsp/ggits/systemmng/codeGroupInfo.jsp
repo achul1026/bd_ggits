@@ -17,19 +17,19 @@
             <h2 class="blind">그룹코드 정보</h2>
             <div class="contents_wrap">
 	            <form id="codeGrpUpdFrm">
-	            	<input type="hidden" id="grpCdId" name="grpCdId" value="${grpCodeInfo.grpCdId}">
+	            	<input type="hidden" id="grpCdId" name="grpCdId" value="<c:out value='${grpCodeInfo.grpCdId}'/>">
 	                <div class="group">
 	                    <div class="group_text">그룹코드 (필수)</div>
-	                    ${grpCodeInfo.grpCdId}
+	                    <c:out value="${grpCodeInfo.grpCdId}"/>
 	                </div>
 	                <div class="group">
-	                    <div class="group_text">그룹코드명 (필수)</div>
+	                    <div class="group_text">그룹코드명 (필수)<span class="required-alert">*</span></div>
 	                    <input type="text" placeholder="코드명을 입력해 주세요." name="grpCdNm" id="grpCdNm" 
-	                    	class="input_same group_box data-validate" data-valid-name="그룹코드명" data-valid-required value="${grpCodeInfo.grpCdNm}" maxlength="50">
+	                    	class="input_same group_box data-validate" data-valid-name="그룹코드명" data-valid-required value="<c:out value='${grpCodeInfo.grpCdNm}'/>" maxlength="50">
 	                </div>
 	                <div class="group">
 	                    <div class="group_text">그룹코드 설명</div>
-	                    <input type="text" placeholder="코드 설명을 입력해 주세요." name="descr" id="descr" class="input_same group_box" value="${grpCodeInfo.descr}" maxlength="400">
+	                    <input type="text" placeholder="코드 설명을 입력해 주세요." name="descr" id="descr" class="input_same group_box" value="<c:out value='${grpCodeInfo.descr}'/>" maxlength="400">
 	                </div>
 	                <div class="group">
 	                    <div class="group_text">사용여부 (필수)</div>
@@ -37,33 +37,43 @@
 	                        <option value="Y" <c:if test="${grpCodeInfo.useYn eq 'Y'}">selected</c:if>>사용</option>
 	                        <option value="N" <c:if test="${grpCodeInfo.useYn eq 'N'}">selected</c:if>>미사용</option>
 	                    </select>
-		                <button type="button" id="uptGrpCodeBtn" class="is-darkgreen-btn mt10">저장</button>
+		                <button type="button" id="uptGrpCodeBtn" class="is-darkgreen-btn">저장</button>
 	                </div>
 	            </form>
 	            
-	            <div class="group">
-	            	<div class="flex-column">
-		            	<div class="test">
+	            <div class="group wd100">
+	            	<div class="flex-column wd100">
+		            	<div>
 			           		<div class="group_text">관리코드 설명</div>
 			                <div>
 				               	<form id="searchForm" method="get">
-			                 		<div class="flex-end">
-			                 			<input type="hidden" id="page" name="page"  value="1"/>
-				                 		<select class="selectBox float-none pr40" name="useYn" id="searchUseYn">
-				                    		<option value="" <c:if test="${useYn eq ''}">selected</c:if>>사용여부 전체</option>
-				                      		<option value="Y" <c:if test="${useYn eq 'Y'}">selected</c:if>>사용</option>
-				                      		<option value="N" <c:if test="${useYn eq 'N'}">selected</c:if>>미사용</option>
-				                		</select>
-				                     	<select class="selectBox pr40" name="searchType" id="searchType">
-				                        	<option value="all" <c:if test="${searchType eq 'all'}">selected</c:if>>전체</option>
-				                        	<option value="cdId" <c:if test="${searchType eq 'cdId'}">selected</c:if>>코드</option>
-				                        	<option value="cdNm" <c:if test="${searchType eq 'cdnm'}">selected</c:if>>코드명</option>
-				                     	</select>
-				                     	<div class="btn_search_wrap float-none mt10">
-				                        	<input type="text" placeholder="검색어를 입력하세요." name="searchContent" id="searchContent" class="input_same group_box" value="${searchContent}">
-				                        	<input type="button" value="검색" class="input_same search_box2" onclick="fnSearchList();">
-				                        	<button type="button" id="saveCodeInfoBtn" class="is-darkgreen-btn mj0">추가하기</button>
-				                     	</div>
+			                 		<div class="btn_search_wrap btn_search_wrap_left float-right">
+			                 			<ul>
+			                 				<li>
+			                 					<input type="hidden" id="page" name="page"  value="1"/>
+						                 		<select class="selectBox float-none pr40 mj0" name="useYn" id="searchUseYn">
+						                    		<option value="" <c:if test="${useYn eq ''}">selected</c:if>>사용여부 전체</option>
+						                      		<option value="Y" <c:if test="${useYn eq 'Y'}">selected</c:if>>사용</option>
+						                      		<option value="N" <c:if test="${useYn eq 'N'}">selected</c:if>>미사용</option>
+						                		</select>
+			                 				</li>
+			                 				<li>
+			                 					<select class="selectBox pr40 mj0" name="searchType" id="searchType">
+						                        	<option value="all" <c:if test="${searchType eq 'all'}">selected</c:if>>전체</option>
+						                        	<option value="cdId" <c:if test="${searchType eq 'cdId'}">selected</c:if>>코드</option>
+						                        	<option value="cdNm" <c:if test="${searchType eq 'cdnm'}">selected</c:if>>코드명</option>
+						                     	</select>
+			                 				</li>
+			                 				<li>
+			                 					<input type="text" placeholder="검색어를 입력하세요." name="searchContent" id="searchContent" class="input_same group_box" value="<c:out value='${searchContent}'/>">
+			                 				</li>
+			                 				<li>
+			                 					<input type="button" value="검색" class="input_same search_box2" onclick="fnSearchList();">
+			                 				</li>
+			                 				<li>
+			                 					<button type="button" id="saveCodeInfoBtn" class="is-darkgreen-btn mj0">추가하기</button>
+			                 				</li>
+			                 			</ul>
 					        		</div>
 				               	</form>
 				            </div>
@@ -93,19 +103,19 @@
 						        <c:choose>
 						        	<c:when test="${fn:length(codeList) > 0 }">
 						          		<c:forEach var="codeInfo" items="${codeList}" varStatus="status">
-						           			<tr class="pointer modalcodeinfo" data-cdid="${codeInfo.cdId}">
-									     		<td>${codeInfo.rownum}</td>
-									     		<td>${codeInfo.cdId}</td>
-									     		<td>${codeInfo.cdNm}</td>
+						           			<tr class="pointer modalcodeinfo" data-cdid="<c:out value='${codeInfo.cdId}'/>">
+									     		<td><c:out value="${codeInfo.rownum}"/></td>
+									     		<td><c:out value="${codeInfo.cdId}"/></td>
+									     		<td><c:out value="${codeInfo.cdNm}"/></td>
 									     		<td>
 									     			<c:if test="${codeInfo.useYn == 'Y'}">사용</c:if>
 									   				<c:if test="${codeInfo.useYn == 'N'}">미사용</c:if>
 									     		</td>
-									     		<td>${codeInfo.crtusrId}</td>
+									     		<td><c:out value="${codeInfo.crtusrId}"/></td>
 									     		<td>
 							                  		<fmt:formatDate pattern="yyyy-MM-dd" value="${codeInfo.crtDt}"/>
 						                  		</td>
-									     		<td>${codeInfo.uptusrId}</td>
+									     		<td><c:out value="${codeInfo.uptusrId}"/></td>
 									     		<td>
 							                  		<fmt:formatDate pattern="yyyy-MM-dd" value="${codeInfo.updtDt}"/>
 						                  		</td>
@@ -121,7 +131,7 @@
 						</div>
 					</div>
 	            </div>
-	            <div class="group mt96">
+	            <div class="group group_search ">
 	                <button type="button" id="delGrpCodeBtn" class="is-darkgreen-btn">삭제</button>
 	                <a href="${pageContext.request.contextPath}/system/codegrp/list.do" class="is-dark-btn">이전 페이지</a>
 	            </div>
@@ -130,10 +140,18 @@
     </div>
 </main>
 <script>
-function fnSearchList(){
-	document.getElementById('searchForm').action= "${pageContext.request.contextPath}detail.do";
-	document.getElementById('searchForm').submit();
-}	
+	$(document).ready(function() {
+		$('#searchContent').keydown(function() {
+			if (event.keyCode === 13) {
+				event.preventDefault();
+			}
+		});
+	});
+
+	function fnSearchList(){
+		document.getElementById('searchForm').action= "${pageContext.request.contextPath}detail.do";
+		document.getElementById('searchForm').submit();
+	}	
 	$("#searchUseYn").on("change", function(){
 		fnSearchList();
 	})

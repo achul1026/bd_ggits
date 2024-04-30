@@ -5,7 +5,7 @@
 
 <div>
 	<div>
-        <div class="flex-center">
+        <div class="flex">
         	<input type="hidden" id="modalPage" name="page" value="1">
 	        <input type="text" id="searchContent"  class="modal_input_srbox" placeholder="검색어를 입력해주세요.">
 	        <input type="button" class="modal_input_srbtn ml8" value="찾기">
@@ -14,7 +14,7 @@
 	</div>
 	<div class="modal_table_container none">
 		<div>
-			<div class="modal_input_txt ml8">총 <span id="totCnt"></span> 개의 검색결과가 있습니다.</div>
+			<div class="modal_input_txt ml8">총 <span id="totCnt">""</span> 개의 검색결과가 있습니다.</div>
 		</div>
 		<table class="modal_table mt8" style="width:26rem">
 			<colgroup>
@@ -22,6 +22,7 @@
 			</colgroup>
 			<thead>
 				<tr>
+					<th>체크여부</th>
 					<th class="pl24">행정기관명</th>
 				</tr>
 			</thead>
@@ -32,7 +33,12 @@
 							<tr>
 								<td class="pl24">
 									<label class="flex-center">
-										<input type="radio" class="mr8" name="modalCdId" value="${codeList.cdId}" data-cdnm="${codeList.cdNm}">${codeList.cdNm}
+										<input type="radio" class="mr8" name="modalCdId" value="<c:out value='${codeList.cdId}'/>" data-cdnm="<c:out value='${codeList.cdNm}'/>"><c:out value='${codeList.cdNm}'/>
+									</label>
+								</td>	
+								<td class="pl24">
+									<label class="flex-center">
+										<input type="radio" class="mr8" name="modalCdId" value="<c:out value='${codeList.cdId}'/>" data-cdnm="<c:out value='${codeList.cdNm}'/>"><c:out value='${codeList.cdNm}'/>
 									</label>
 								</td>	
 							</tr>

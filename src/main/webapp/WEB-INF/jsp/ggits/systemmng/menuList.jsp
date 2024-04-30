@@ -10,25 +10,11 @@
             </aside>
             <section class="main_section">
                 <h2 class="blind">메뉴 관리</h2>
-                <div class="table_btn_wrap clearfix">
-                    <select class="selectBox" id="schMenuId" name="menuId">
-                        <option value="all">전체 메인 메뉴</option>
-	                    <c:forEach var="upperMenuList" items="${upperMenuList}">
-                        	<option value="${upperMenuList.menuId}" ${menuId eq upperMenuList.menuId ? 'selected':''}>${upperMenuList.menuNm}</option>
-                        </c:forEach>
-                    </select>
-                    <div class="btn_search_wrap">
+                    <div class="btn_search_wrap btn_search_wrap_between float-right">
                         <button type="button" class="is-darkgreen-btn mj0" id="menuRegBtn">등록하기</button>
                     </div>
-                </div>
                 <table>
                     <colgroup>
-                        <col style="width:10%">
-                        <col style="width:16%">
-                        <col style="width:10%">
-                        <col style="width:24%">
-                        <col style="width:30%">
-                        <col style="width:10%">
                     </colgroup>
                     <tr>
                       <th scope="col">노출 순서</th>
@@ -40,28 +26,17 @@
                     </tr>
                     <c:forEach var="menuList" items="${menuList}" varStatus="upprStatus">
 	                    <tbody>
-	                        <tr class="table_1depth" onclick="detailView('${menuList.upperMenu.menuId}')">
-	                            <td>${upprStatus.count}</td>
-	                            <td>${menuList.upperMenu.menuNm}</td>
-	                            <td>${menuList.subMenuCnt} 개</td>
-	                            <td>${menuList.upperMenu.urlPttrn}</td>
-	                            <td>${not empty menuList.subMenuList? menuList.subMenuList[0].urlAddr:menuList.upperMenu.urlAddr}</td>
-	                            <td>${menuList.upperMenu.useYn eq 'Y' ? '노출' : '비노출'}</td>
+	                        <tr class="table_1depth" onclick="detailView('<c:out value="${menuList.upperMenu.menuId}"/>')">
+	                            <td><c:out value="${upprStatus.count}"/></td>
+	                            <td><c:out value="${menuList.upperMenu.menuNm}"/></td>
+	                            <td><c:out value="${menuList.subMenuCnt}"/> 개</td>
+	                            <td><c:out value="${menuList.upperMenu.urlPttrn}"/></td>
+	                            <td><c:out value="${not empty menuList.subMenuList? menuList.subMenuList[0].urlAddr:menuList.upperMenu.urlAddr}"/></td>
+	                            <td><c:out value="${menuList.upperMenu.useYn eq 'Y' ? '노출' : '비노출'}"/></td>
 	                        </tr>
-<%-- 	                        <c:forEach var="subMenuList" items="${menuList.subMenuList}" varStatus="subStatus"> --%>
-<!-- 		                        <tr class=""> -->
-<%-- 		                            <td>${upprStatus.count}-${subStatus.count}</td> --%>
-<%-- 		                            <td>${menuList.upperMenu.menuNm}</td> --%>
-<%-- 		                            <td>${subMenuList.menuNm}</td> --%>
-<%-- 		                            <td>${subMenuList.urlPttrn}</td> --%>
-<%-- 		                            <td>${subMenuList.urlAddr}</td> --%>
-<%-- 		                            <td>${subMenuList.useYn eq 'Y' ? '노출' : '비노출'}</td> --%>
-<!-- 		                        </tr> -->
-<%-- 	                        </c:forEach> --%>
 	                    </tbody>
                     </c:forEach>
                   </table>
-<%--                 <%@ include file="/WEB-INF/jsp/ggits/utils/paging.jsp" %> --%>
             </section>
         </div>
     </main>
@@ -159,7 +134,7 @@
     		var urlPttrn = $("#mainUrlPttrn").val();
     		var	useYn = $("#mainUseYn").val();
     		var sortNo = $("#mainSortNo").val();
-    		var categCd = $("#categCd").val();
+//     		var categCd = $("#categCd").val();
     		
     		// 데이터 유효성 검사
     		if(!$("#mainMenuWrap").soValid()){
@@ -173,7 +148,7 @@
     		obj.urlPttrn = urlPttrn;
     		obj.useYn = useYn;
     		obj.sortNo = sortNo;
-    		obj.categCd = categCd;
+//     		obj.categCd = categCd;
     		
     		$.ajax({
     			type : "post",

@@ -1,0 +1,69 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.GOpTrfInfoStatsRptMapper'>
+
+	<select id="findOneByRptId" resultType="gOpTrfInfoStatsRpt" parameterType="String">
+		SELECT
+			RPT_ID,	
+			OPRTR_ID,
+			RPT_TITLE,
+			DTL_URL,
+			REGIST_YMD
+		FROM G_OP_TRF_INFO_STATS_RPT
+		WHERE RPT_ID = #{rptId}
+	</select>
+	
+	<select id="countBySearchOption" resultType="Long" parameterType="gOpTrfInfoStatsRpt">
+		SELECT
+			COUNT(*)
+		FROM G_OP_TRF_INFO_STATS_RPT
+		WHERE 1=1
+		<if test="searchContent != null and searchContent != ''">
+			AND RPT_TITLE LIKE '%' ||  #{searchContent} || '%'
+		</if>
+	</select>
+	
+	<insert id="saveGOpTrfInfoStatsRpt" parameterType="gOpTrfInfoStatsRpt">
+		INSERT INTO G_OP_TRF_INFO_STATS_RPT (
+			OPRTR_ID,
+			RPT_ID,
+			RPT_TITLE,
+			DTL_URL,
+			REGIST_YMD
+		) VALUES (
+			#{oprtrId},
+			#{rptId},
+			#{rptTitle},
+			#{dtlUrl},
+			#{registYmd}
+		)
+	</insert>
+	
+	<select id="findGOpTrfInfoStatsRptListBySearchOption" parameterType="gOpTrfInfoStatsRpt" resultType="gOpTrfInfoStatsRpt">
+		SELECT
+     		ROW_NUMBER() OVER(ORDER BY GOTISR.REGIST_YMD) AS ROWNUM,
+			GOTISR.RPT_ID,			
+			GOTISR.OPRTR_ID,
+			GOTISR.RPT_TITLE,
+			GOTISR.DTL_URL,
+			TO_CHAR(TO_DATE(GOTISR.REGIST_YMD,'yyyyMMdd'),'yyyy.MM.dd') AS "registYmd",
+			MOO.OPRTR_EMAIL,	
+			MOO.OPRTR_NM
+		FROM G_OP_TRF_INFO_STATS_RPT GOTISR
+		LEFT JOIN M_OP_OPERATOR MOO
+		ON MOO.OPRTR_ID = GOTISR.OPRTR_ID
+		WHERE 1=1
+		<if test="searchContent != null and searchContent != ''">
+			AND RPT_TITLE LIKE '%' ||  #{searchContent} || '%'
+		</if>
+		ORDER BY ROWNUM DESC
+		LIMIT 10 OFFSET (#{page} - 1) * 10
+	</select>
+	
+	<delete id="deleteGOpTrfInfoStatsRpt" parameterType="String">
+		DELETE FROM G_OP_TRF_INFO_STATS_RPT
+		WHERE RPT_ID = #{rptId}
+	</delete>
+	
+</mapper>

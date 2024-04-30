@@ -114,23 +114,19 @@ public class CodeMngController {
     		return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST , dtoValidatorResult.getMessage());
     	}
 
-    	try {		
-    		
-    		MOpOperator mOpOperator = (MOpOperator) session.getAttribute("mOpOperatorInfo");
-    		int mOpCodeGrpCnt = 0;
-    		// 중복 확인
-    		mOpCodeGrpCnt = mOpCodeGrpMapper.countCodeGrpByCdId(mOpCodeGrp.getGrpCdId());
-    		
-    		if(mOpCodeGrpCnt == 0) {
-    			mOpCodeGrp.setCrtusrId(String.valueOf(mOpOperator.getOprtrId()));
-    			mOpCodeGrp.setUptusrId(String.valueOf(mOpOperator.getOprtrId()));
-    			mOpCodeGrpMapper.save(mOpCodeGrp);
-    		}else {
-    			return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST , "중복된 그룹코드가 존재 합니다.");
-    		}
-		} catch (Exception e) {
-			return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST , "그룹 코드 등록에 실패하였습니다.");
+		MOpOperator mOpOperator = (MOpOperator) session.getAttribute("mOpOperatorInfo");
+		int mOpCodeGrpCnt = 0;
+		// 중복 확인
+		mOpCodeGrpCnt = mOpCodeGrpMapper.countCodeGrpByCdId(mOpCodeGrp.getGrpCdId());
+		
+		if(mOpCodeGrpCnt == 0) {
+			mOpCodeGrp.setCrtusrId(String.valueOf(mOpOperator.getOprtrId()));
+			mOpCodeGrp.setUptusrId(String.valueOf(mOpOperator.getOprtrId()));
+			mOpCodeGrpMapper.save(mOpCodeGrp);
+		}else {
+			return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST , "중복된 그룹코드가 존재 합니다.");
 		}
+		
  		return CommonResponse.ResponseCodeAndMessage(HttpStatus.OK , "그룹 코드가 등록되었습니다.");
     }
     
@@ -209,18 +205,15 @@ public class CodeMngController {
 			throw new CommonException(ErrorCode.ENTITY_DATA_NULL,"그룹 코드 정보가 존재하지 않습니다.");
 		}
 		
-    	try {
-    		MOpOperator mOpOperator =  (MOpOperator) session.getAttribute("mOpOperatorInfo");
-    		
-    		dbCodeGrp.setGrpCdId(mOpCodeGrp.getGrpCdId());
-    		dbCodeGrp.setGrpCdNm(mOpCodeGrp.getGrpCdNm());
-    		dbCodeGrp.setDescr(mOpCodeGrp.getDescr());
-    		dbCodeGrp.setUseYn(mOpCodeGrp.getUseYn());
-    		dbCodeGrp.setUptusrId(String.valueOf(mOpOperator.getOprtrId()));
-    		mOpCodeGrpMapper.updateCodeGrp(dbCodeGrp);
-		} catch (Exception e) {
-			return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST, "그룹 코드 수정에 실패하였습니다.");
-		}
+		MOpOperator mOpOperator =  (MOpOperator) session.getAttribute("mOpOperatorInfo");
+		
+		dbCodeGrp.setGrpCdId(mOpCodeGrp.getGrpCdId());
+		dbCodeGrp.setGrpCdNm(mOpCodeGrp.getGrpCdNm());
+		dbCodeGrp.setDescr(mOpCodeGrp.getDescr());
+		dbCodeGrp.setUseYn(mOpCodeGrp.getUseYn());
+		dbCodeGrp.setUptusrId(String.valueOf(mOpOperator.getOprtrId()));
+		mOpCodeGrpMapper.updateCodeGrp(dbCodeGrp);
+		
     	return CommonResponse.ResponseCodeAndMessage(HttpStatus.OK, "그룹 코드가 수정되었습니다.");
     }
     
@@ -245,22 +238,19 @@ public class CodeMngController {
     	if(!dtoValidatorResult.isSuccess()) {
     		return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST , dtoValidatorResult.getMessage());
     	}
-		try {
-			List<MOpCode> dbOpCodeList = mOpCodeMapper.findAllCodeList(mOpCode);
-			
-			if(dbOpCodeList.size() > 0) {
-				for(MOpCode dbOpCode : dbOpCodeList) {
-					mOpCodeMapper.deleteCodeByCdId(dbOpCode.getCdId());
-				}
+    	
+		List<MOpCode> dbOpCodeList = mOpCodeMapper.findAllCodeList(mOpCode);
+		
+		if(dbOpCodeList.size() > 0) {
+			for(MOpCode dbOpCode : dbOpCodeList) {
+				mOpCodeMapper.deleteCodeByCdId(dbOpCode.getCdId());
 			}
-			
-			MOpCodeGrp dbOpCodeGrp = mOpCodeGrpMapper.findOneCodeGrp(grpCdId);
-			if(!dbOpCodeGrp.equals(null)) {
-				mOpCodeGrpMapper.deleteCodeGrpByGrpCdId(dbOpCodeGrp.getGrpCdId());
-			}
-		} catch (Exception e) {
-			return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST , "그룹 코드 삭제에 실패하였습니다.");
-		}    		
+		}
+		
+		MOpCodeGrp dbOpCodeGrp = mOpCodeGrpMapper.findOneCodeGrp(grpCdId);
+		if(!dbOpCodeGrp.equals(null)) {
+			mOpCodeGrpMapper.deleteCodeGrpByGrpCdId(dbOpCodeGrp.getGrpCdId());
+		}
     
     	return CommonResponse.ResponseCodeAndMessage(HttpStatus.OK , "그룹 코드를 삭제하였습니다.");
     }
@@ -294,22 +284,19 @@ public class CodeMngController {
   		   return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST, dtoValidatorResult.getMessage());
   	   }
     	
-    	try {
-    		MOpOperator mOpOperator =  (MOpOperator) session.getAttribute("mOpOperatorInfo");
-    		int mOpCodeCnt = 0;
-    		
-    		mOpCode.setCrtusrId(String.valueOf(mOpOperator.getOprtrId()));
-    		mOpCode.setUptusrId(String.valueOf(mOpOperator.getOprtrId()));
-    		mOpCodeCnt = mOpCodeMapper.countCodeBygrpCdIdAndCdId(mOpCode);
-    		
-    		if(mOpCodeCnt == 0) {
-    			mOpCodeMapper.saveCode(mOpCode);
-    		}else {
-    			return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST, "중복된 관리 코드가 존재 합니다.");
-    		}
-		} catch (Exception e) {
-			return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST, "관리 코드 등록중 오류가 발생하였습니다.");
+		MOpOperator mOpOperator =  (MOpOperator) session.getAttribute("mOpOperatorInfo");
+		int mOpCodeCnt = 0;
+		
+		mOpCode.setCrtusrId(String.valueOf(mOpOperator.getOprtrId()));
+		mOpCode.setUptusrId(String.valueOf(mOpOperator.getOprtrId()));
+		mOpCodeCnt = mOpCodeMapper.countCodeBygrpCdIdAndCdId(mOpCode);
+		
+		if(mOpCodeCnt == 0) {
+			mOpCodeMapper.saveCode(mOpCode);
+		}else {
+			return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST, "중복된 관리 코드가 존재 합니다.");
 		}
+		
     	return CommonResponse.ResponseCodeAndMessage(HttpStatus.OK, "관리 코드를 등록하였습니다.");
     }
     
@@ -347,21 +334,17 @@ public class CodeMngController {
     		throw new CommonException(ErrorCode.ENTITY_DATA_NULL,"관리 코드 정보가 존재하지 않습니다.");
     	}
     	
-    	try {
-    		MOpOperator mOpOperator =  (MOpOperator) session.getAttribute("mOpOperatorInfo");
-    		
-    		mOpCode.setUptusrId(String.valueOf(mOpOperator.getOprtrId()));
-    		int codeDuplChk = mOpCodeMapper.countMOpCodeByCdId(mOpCode.getCdId());
-    		
-    		if(codeDuplChk > 0) {
-    			mOpCodeMapper.updateCode(mOpCode);
-    		}else {
-    			return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST, "관리 코드를 찾을 수 없습니다.");
-    		}
-    		
-		} catch (Exception e) {
-			return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST, "관리 코드 수정중 오류가 발생하였습니다.");
+		MOpOperator mOpOperator =  (MOpOperator) session.getAttribute("mOpOperatorInfo");
+		
+		mOpCode.setUptusrId(String.valueOf(mOpOperator.getOprtrId()));
+		int codeDuplChk = mOpCodeMapper.countMOpCodeByCdId(mOpCode.getCdId());
+		
+		if(codeDuplChk > 0) {
+			mOpCodeMapper.updateCode(mOpCode);
+		}else {
+			return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST, "관리 코드를 찾을 수 없습니다.");
 		}
+    		
     	return CommonResponse.ResponseCodeAndMessage(HttpStatus.OK, "관리 코드를 수정하였습니다.");
     }
     
@@ -383,17 +366,14 @@ public class CodeMngController {
     		return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST , dtoValidatorResult.getMessage());
     	}
 
-    	try {
-			int countCodeChk = mOpCodeMapper.countMOpCodeByCdId(cdId);
-			
-			if(countCodeChk > 0) {
-				mOpCodeMapper.deleteCodeByCdId(cdId);
-			}else {
-				return CommonResponse.ResponseCodeAndMessage(HttpStatus.NOT_FOUND ,"삭제 할 관리 코드 정보를 찾지 못했습니다.");
-			}
-		} catch (Exception e) {
-			return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST, "관리 코드 삭제중 오류가 발생하였습니다.");
+		int countCodeChk = mOpCodeMapper.countMOpCodeByCdId(cdId);
+		
+		if(countCodeChk > 0) {
+			mOpCodeMapper.deleteCodeByCdId(cdId);
+		}else {
+			return CommonResponse.ResponseCodeAndMessage(HttpStatus.NOT_FOUND ,"삭제 할 관리 코드 정보를 찾지 못했습니다.");
 		}
+		
     	return CommonResponse.ResponseCodeAndMessage(HttpStatus.OK, "관리 코드를 삭제하였습니다.");
     }
     

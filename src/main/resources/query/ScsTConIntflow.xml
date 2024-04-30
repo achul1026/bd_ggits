@@ -8,20 +8,20 @@
 		SELECT
 				STCIC.INT_LCNO 							AS "id",
 				STCIC.INT_NAME							AS "name",
-				ST_X(ST_ASTEXT(ST_CENTROID(GCIN.GEOM))) AS "lon",
-				ST_Y(ST_ASTEXT(ST_CENTROID(GCIN.GEOM))) AS "lat"
+				STCIC.INT_LNG							AS "lon",
+				STCIC.INT_LAT							AS "lat"
 		FROM
-				SCS_T_CON_INTLC STCIC
-		LEFT JOIN GY_COMM_INFO_NODE GCIN ON STCIC.INT_NODE_ID = GCIN.NODE_ID
+			SCS_T_CON_INTLC_CUR STCIC
 		WHERE 
 				1=1
-			<if test="nodeName != null and nodeName != ''">
-				AND GCIN.NODE_NAME LIKE '%' 		|| #{nodeName} || '%'
+			<if test="name != null and name != ''">
+				AND STCIC.INT_NAME LIKE '%' || #{name} || '%'
 			</if>
 			<if test="id != null and id != ''">
 				AND STCIC.INT_LCNO = CAST(#{id} AS INTEGER)
 			</if>    
-		ORDER BY STCIC.UPDATE_DATE DESC 
+		AND (STCIC.INT_LNG != 0 and STCIC.INT_LNG != 0)
+		ORDER BY STCIC.INT_NAME DESC 
 		<if test="page != null and page != '' and page != 0 ">
 		LIMIT 5 OFFSET (#{page} - 1) * 5  	
 		</if> 				
@@ -31,12 +31,12 @@
 		SELECT
 				COUNT(*)
 		FROM
-				SCS_T_CON_INTLC STCIC
-		LEFT JOIN GY_COMM_INFO_NODE GCIN ON STCIC.INT_NODE_ID = GCIN.NODE_ID
+			SCS_T_CON_INTLC_CUR STCIC
 		WHERE 
 				1=1
-			<if test="nodeName != null and nodeName != ''">
-				AND GCIN.NODE_NAME LIKE '%' 		|| #{nodeName} || '%'
+		AND (STCIC.INT_LNG != 0 and STCIC.INT_LNG != 0)
+			<if test="name != null and name != ''">
+				AND STCIC.INT_NAME LIKE '%' || #{name} || '%'
 			</if>
 			<if test="id != null and id != ''">
 				AND STCIC.INT_LCNO = CAST(#{id} AS INTEGER)
@@ -45,16 +45,34 @@
 	
 	<select id="findAllSignalNodeList" parameterType="gyCommInfoNode" resultType="map">
 		SELECT
-				ST_X(ST_ASTEXT(ST_CENTROID(GCIN.GEOM))) AS "lon",
-				ST_Y(ST_ASTEXT(ST_CENTROID(GCIN.GEOM))) AS "lat",
-				GCIN.NODE_ID 							AS "nodeId",
-				GCIN.NODE_NAME							AS "label", 
-				GCIN.NODE_NAME 							AS "value"
+				ST_X(ST_ASTEXT(ST_CENTROID(CGSN.GEOMETRY))) AS "lon",
+				ST_Y(ST_ASTEXT(ST_CENTROID(CGSN.GEOMETRY))) AS "lat",
+				CGSN.NODE_ID 							AS "nodeId",
+				CGSN.NODE_NAME							AS "label", 
+				CGSN.NODE_NAME 							AS "value"
 		FROM
-				SCS_T_CON_INTFLOW STCI
-		LEFT JOIN SCS_T_CON_INTLC STCIC ON STCI.INT_LCNO = STCIC.INT_LCNO
-		LEFT JOIN GY_COMM_INFO_NODE GCIN ON STCIC.INT_NODE_ID = GCIN.NODE_ID
-		GROUP BY GCIN.GEOM,GCIN.NODE_NAME ,GCIN.NODE_ID
+			bigdata.ext_SCS_T_CON_INTFLOW STCI
+		INNER JOIN bigdata.ext_SCS_T_CON_INTLC STCIC ON STCI.INT_LCNO = STCIC.INT_LCNO
+		INNER JOIN C_GM_STD_NODE CGSN ON STCIC.INT_NODE_ID = CGSN.NODE_ID
+		GROUP BY CGSN.GEOMETRY,CGSN.NODE_NAME ,CGSN.NODE_ID
 	</select>
-	
+
+	<select id="findByIntLcno" resultType="scsTConIntflow">
+		SELECT
+		STCI.int_lcno
+		,STCI.int_planclss
+		,STCI.int_ring
+		,STCI.int_phaseno
+		,STCI.update_date
+		,STCI.flow_no
+		,STCI.flow_s_lng
+		,STCI.flow_s_lat
+		,STCI.flow_m_lng
+		,STCI.flow_m_lat
+		,STCI.flow_e_lng
+		,STCI.flow_e_lat
+		from  bigdata.ext_SCS_T_CON_INTFLOW STCI
+		WHERE
+		STCI.int_lcno = #{intLcno}
+	</select>
 </mapper>

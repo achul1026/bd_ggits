@@ -7,14 +7,14 @@
                 <h1 class="login_logo_box login_title">비밀번호 찾기</h1>
                 <div class="login_tip">
                     이메일을 선택 후 비밀번호를 재설정할 수 있습니다.
-                    <input type="hidden" id="oprtrNm" name="oprtrNm" value="${oprtrNm}"/>
-                    <input type="hidden" id="oprtrTel" name="oprtrTel" value="${oprtrTel}"/>
+                    <input type="hidden" id="oprtrNm" name="oprtrNm" value="<c:out value='${oprtrNm}'/>"/>
+                    <input type="hidden" id="oprtrTel" name="oprtrTel" value="<c:out value='${oprtrTel}'/>"/>
                 </div>
                 	<c:forEach var="mOpOperatorList" items="${mOpOperatorList}">
 	                    <div class="input_wrap">
 	                    	<label class="login_radio_label">
-		                        <input type="radio" class="login_radio" name="oprtrId" value="${mOpOperatorList.oprtrId}">
-								${mOpOperatorList.oprtrEmail}
+		                        <input type="radio" class="login_radio" name="oprtrId" value="<c:out value='${mOpOperatorList.oprtrId}'/>">
+								<c:out value='${mOpOperatorList.oprtrEmail}'/>
 	                    	</label>
 	                    </div>
                 	</c:forEach>

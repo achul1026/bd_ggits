@@ -5,8 +5,8 @@
 	<sql id="mrtBusSttnFctlAnal-Where">
 		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
 			AND mbsfa.ANLS_DT 
-			BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
-		    	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			BETWEEN TO_TIMESTAMP(#{strDt}|| ' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}|| ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
 		</if>
 		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
 			<![CDATA[
@@ -19,7 +19,10 @@
 			]]>
 		</if>
 		<if test="searchContent != null and searchContent != ''">
-			AND gbsi.BSTP_NM LIKE '%' || #{searchContent} || '%' 
+			AND gbs.STATION_NM LIKE '%' || #{searchContent} || '%' 
+		</if>
+		<if test="sigunCdId != null and sigunCdId != '' and sigunCdId != 'searchAllLocation'">
+			AND SUBSTRING(gbs.SIDO_CD,0,6) = #{sigunCdId}
 		</if>
 		<if test="dayOfTheWeek != null">
 			AND EXTRACT (ISODOW from mbsfa.ANLS_DT)::varchar(1) IN 
@@ -31,12 +34,11 @@
 	
 	<select id="countBusSttnFcltList" parameterType="commonEntity" resultType="int">	
 		SELECT	
-			COUNT(*)
+			COUNT(mbsfa.*)
 		FROM
 			MRT_BUS_STTN_FCTL_ANAL mbsfa
-		LEFT JOIN 
-			GGDTDR_BUS_STTN_INFO gbsi
-			ON mbsfa.BSTP_ID = gbsi.BSTP_ID
+		INNER JOIN BIGDATA.EXT_GGBIS_BUS_STATION gbs
+			ON mbsfa.BSTP_ID = gbs.STATION_ID
 		WHERE
 			1=1
 			<include refid="mrtBusSttnFctlAnal-Where"/>
@@ -44,14 +46,18 @@
 	
 	<select id="findAllBusSttnFcltsList" parameterType="commonEntity" resultType="mrtBusSttnFctlAnal">
 		SELECT	
-			gbsi.BSTP_NM
+			gbs.STATION_NM as BSTP_NM
+			, mbsfa.BIT_TYPE
+			, mbsfa.BIT_CNT
+			, mbsfa.ANLS_DT
 		FROM
 			MRT_BUS_STTN_FCTL_ANAL mbsfa
-		LEFT JOIN 
-			GGDTDR_BUS_STTN_INFO gbsi
-			ON mbsfa.BSTP_ID = gbsi.BSTP_ID
+		INNER JOIN BIGDATA.EXT_GGBIS_BUS_STATION gbs
+			ON mbsfa.BSTP_ID = gbs.STATION_ID
 		WHERE
 			1=1
 			<include refid="mrtBusSttnFctlAnal-Where"/>
+		ORDER BY mbsfa.ANLS_DT DESC
+		LIMIT 10 OFFSET (#{page} - 1) * 10;
 	</select>
 </mapper>

@@ -3,6 +3,7 @@ package com.neighbor21.ggits.common.mapper;
 import java.util.List;
 import java.util.Map;
 
+import com.neighbor21.ggits.common.entity.AdsiSmcrsrdCrsrdAcsRoadInfo;
 import org.apache.ibatis.annotations.Param;
 import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
 
@@ -11,19 +12,7 @@ import com.neighbor21.ggits.common.entity.MrtSmcTrfPat;
 
 @Mapper
 public interface MrtSmcTrfPatMapper {
-    /**
-     * TODO :: 가데이터 수집 추후 제거
-     * @param linkId
-     * @param vol
-     * @param spd
-     */
-    void insertDev(@Param("linkId") String linkId, @Param("vol") long vol, @Param("spd") double spd);
 
-    /**
-     * 교통량 전체 조회
-     * @return
-     */
-    List<MrtSmcTrfPat> findAll();
 
     /**
      * 교통량 전체 링크아이디로 그룹
@@ -45,5 +34,16 @@ public interface MrtSmcTrfPatMapper {
       * @return
       */
     List<Map<String,Object>> findAllDataYears();
-    
+
+
+    /*디테일정보용*/
+    List<MrtSmcTrfPat> findAllByTotalChart(MapBigdataSearchDTO mapBigdataSearchDTO);
+    List<MrtSmcTrfPat> findAllByTotalChartGroupDay(MapBigdataSearchDTO mapBigdataSearchDTO);
+    List<MrtSmcTrfPat> findAllBySGGChart(MapBigdataSearchDTO mapBigdataSearchDTO);
+    List<MrtSmcTrfPat> findAllBySGGChartGroupDay(MapBigdataSearchDTO mapBigdataSearchDTO);
+    List<MrtSmcTrfPat> findAllByTop10Chart(MapBigdataSearchDTO mapBigdataSearchDTO);
+
+
+    List<Map<String, Object>> findAllByLinkIdOrRoadNm(MapBigdataSearchDTO mapBigdataSearchDTO);
+    Integer countByLinkIdOrRoadNm(MapBigdataSearchDTO mapBigdataSearchDTO);
 }

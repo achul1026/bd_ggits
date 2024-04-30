@@ -9,166 +9,116 @@
                         교통 DB화 통계 정보를 <br>조회합니다.
                     </div>
                     <div class="side_btn">
-                        <a href="${pageContext.request.contextPath}/statistics/traffic/database/list.do">교통총괄지표</a>
-                        <a href="${pageContext.request.contextPath}/statistics/traffic/database/impact/list.do"  class="on">교통영향평가</a>
+                        <a href="${pageContext.request.contextPath}/statistics/traffic/database/impact/list.do"  class="on" onclick="startLoading()">교통영향평가</a>
                     </div>
                 </div>
             </aside>
             <section class="main_section">
-                <h2 class="blind">교통 DB화 통계</h2>
-                <div class="contents_wrap">
-                    <div class="group2">
-                        <div class="group_text2">검색</div>
-                        <div class="flex-center gap24">
-                            <div>
-                                <span class="group_btn_title">분류</span>
-                                <input type="hidden" id="selectedType" value="${type}">
-                                <select class="selectBox" id="selectBox">
-                                    <option value="crossroad_by_traffic">교차로별 교통량</option>
-                                    <option value="section_by_traffic">구간별 교통량</option>
-                                    <option value="mean_by_traffic">이용수단별</option>
-                                    <option value="similar_facilities_by_floating_population">유사시설별 유동인구</option>
-                                    <option value="use_by_traffic_mean_share_rate">용도별 교통수단 분담률</option>
-                                    <option value="use_by_nbopl_cnt">용도별 재차인원</option>
-                                    <option value="parking_occurrence">주차발생</option>
-                                    <option value="time_by_in_and_out_pass">시간대별 유출입 통행</option>
-                                    <option value="time_by_pass_distribution">시간대별 통행 분포</option>
-                                </select>
-                            </div>
-                            <div>
-                                <span class="group_btn_title">지역</span>
-                                <select class="selectBox">
-                                    <option>팔달구</option>
-                                    <option>test1</option>
-                                    <option>test2</option>
-                                    <option>test3</option>
-                                    <option>test4</option>
-                                    <option>test5</option>
-                                </select>
-                            </div>
-                            <div>
-                                <span class="group_btn_title">교차로명</span>
-                                <select class="selectBox">
-                                    <option>팔달사거리 ~ 팔달삼거리</option>
-                                    <option>test1</option>
-                                    <option>test2</option>
-                                    <option>test3</option>
-                                    <option>test4</option>
-                                    <option>test5</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="search_detail_btn">
-                            상세 검색 <i></i>
-                        </div>
-                    </div>
-                    <div class="search_detail_wrap">
-                    	<form>
-                    		<input type="hidden" id="ipcssMngNo" value="${ipcssMngNo}">
-	                        <div class="group2">
-	                            <div class="group_text2">기간 설정</div>
-	                            <div class="flex-center">
-	                                <div class="calendar">
-	                                    <input type="text" class="date_picker input_same mr8" placeholder="날짜를 선택해주세요.">
-										<select class="selectBox selectTime" id="startTime"></select>
-	                                    ~
-	                                    <input type="text" class="end_date_picker input_same mr8 ml8" placeholder="날짜를 선택해주세요.">
-										<select class="selectBox selectTime" id="endTime"></select>
-	                                    <label class="group_btn_item is-dark-btn"><input type="checkbox" class="none">첨두</label>
-	                                    <label class="group_btn_item is-dark-btn"><input type="checkbox" class="none">비첨두</label>
-	                                </div>
-	                            </div>
-	                        </div>
-	                        <div class="group2">
-	                            <div class="group_text2">요일 설정</div>
-	                            <div class="flex-center gap24">
-	                                <div>
-	                                    <label class="group_btn_item is-dark-btn"><input type="checkbox" class="none">일</label>
-	                                    <label class="group_btn_item is-dark-btn"><input type="checkbox" class="none">월</label>
-	                                    <label class="group_btn_item is-dark-btn"><input type="checkbox" class="none">화</label>
-	                                    <label class="group_btn_item is-dark-btn"><input type="checkbox" class="none">수</label>
-	                                    <label class="group_btn_item is-dark-btn"><input type="checkbox" class="none">목</label>
-	                                    <label class="group_btn_item is-dark-btn"><input type="checkbox" class="none">금</label>
-	                                    <label class="group_btn_item is-dark-btn"><input type="checkbox" class="none">토</label>
-	                                </div>
-	                            </div>
-	                        </div>	                        
-		                    <div class="group2_btn">
-		                    	<!-- button id  name 바꿔서 사용하세요  -->
-		                        <button type="button" class="is-darkgreen-btn" id="searchBtn">찾기</button>
-		                        <input type="reset" class="is-dark-btn selected_reset" value="검색값 초기화">
-		                    </div>
-	                    </form>
-                    </div>
-                </div>
-   				
-				<!-- tab9 -->
-                <div class="search_container tab9">
+            	<c:import url="/WEB-INF/jsp/ggits/statistics/searchTrfImpact.jsp" />
+                <div class="search_container mt8">
                 	<div class="search_table_width">
-	                    <table class="mt16">
-	                        <colgroup>
-	                            <col style="width:100px">
-	                            <col style="width:200px">
-	                            <col style="width:100px">
-	                            <col style="width:100px">
-	                            <col style="width:100px">
-	                            <col style="width:100px">
-	                            <col style="width:100px">
-	                            <col style="width:100px">
-	                            <col style="width:100px">
-	                            <col style="width:100px">
-	                        </colgroup>
-							<thead>
-		                        <tr>
-		                            <th scope="col" rowspan="2">날짜</th>
-		                            <th scope="col" rowspan="2">시간</th>
-		                            <th scope="col">통근유입</th>
-		                            <th scope="col">통근유출</th>
-		                            <th scope="col">통학유입</th>
-		                            <th scope="col">통학유출</th>
-		                            <th scope="col">기타유입</th>
-		                            <th scope="col">기타유출</th>
-		                            <th scope="col">방문유입</th>
-		                            <th scope="col">방문유출</th>
-		                        </tr>
-							</thead>
-							<tbody>
-		                        <tr class="tr_total">
-		                            <td rowspan="3">23.12.21</td>
-		                            <td>합계</td>
-		                            <td>80</td>
-		                            <td>40</td>
-		                            <td>120</td>
-		                            <td>60</td>
-		                            <td>100</td>
-		                            <td>40</td>
-		                            <td>40</td>
-		                            <td>40</td>
-		                        </tr>
-		                        <tr>
-		                        	<td>06:00 ~ 07:00</td>
-		                            <td>40</td>
-		                            <td>20</td>
-		                            <td>60</td>
-		                            <td>30</td>
-		                            <td>50</td>
-		                            <td>50</td>
-		                            <td>20</td>
-		                            <td>20</td>
-		                        </tr>
-		                        <tr>
-		                        	<td>08:00 ~ 09:00</td>
-		                            <td>40</td>
-		                            <td>20</td>
-		                            <td>60</td>
-		                            <td>30</td>
-		                            <td>50</td>
-		                            <td>60</td>
-		                            <td>60</td>
-		                            <td>60</td>
-		                        </tr>
-	                        </tbody>
-	                    </table>
+		        		<div class="flex">
+							<div class="row1 flex">
+								<div class="flex">
+									<div class="table_middle table_title table_line3">주거</div>
+									<div class="flex-column">
+										<div class="table_column600 table_title">주거 용도 - 상주</div>
+										<div class="flex">
+											<div class="table_column200 table_title">통근</div>	
+											<div class="table_column200 table_title">통학</div>	
+											<div class="table_column200 table_title">기타</div>	
+										</div>
+										<div class="flex">
+											<div class="table_small table_title">유입</div>
+											<div class="table_small table_title">유출</div>
+											<div class="table_small table_title">유입</div>
+											<div class="table_small table_title">유출</div>
+											<div class="table_small table_title">유입</div>
+											<div class="table_small table_title">유출</div>
+										</div>					
+									</div>
+									<div class="flex-column">
+										<div class="table_column200 table_title table_line2">방문</div>
+										<div class="flex">
+											<div class="table_small table_title">유입</div>
+											<div class="table_small table_title">유출</div>
+										</div>					
+									</div>
+									
+									<!-- 비주거용도 for start -->
+									<c:forEach begin="0" end="19" step="1" varStatus="status">
+										<div class="flex-column">
+											<div class="table_column500 table_title">비주거 용도<c:out value='${status.index+1}'/></div>
+											<div class="flex">
+												<div class="flex-column">
+													<div class="table_title table_small">용도명칭</div>
+													<div class="table_title table_small usgNmTrgt">(작성하세요)</div>
+												</div>
+												<div class="flex-column">
+													<div class="table_column200 table_title">상근</div>
+													<div class="flex">
+														<div class="table_title table_small">유입</div>
+														<div class="table_title table_small">유출</div>
+													</div>
+												</div>
+												<div class="flex-column">
+													<div class="table_column200 table_title">이용</div>
+													<div class="flex">
+														<div class="table_title table_small">유입</div>
+														<div class="table_title table_small">유출</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</c:forEach>
+									<!-- 비주거용도 for end -->
+								</div>
+							</div>
+		        		</div>
+		        		<!-- row start -->
+		        		<c:choose>
+		        			<c:when test="${fn:length(impactReportList) > 0}">
+		        				<c:forEach var="impactInfo" items="${impactReportList}">
+			        				<div class="row_value flex max-content">
+										<div class="table_middle table_txt"><c:out value='${impactInfo.timeSctnNm}'/></div>
+										<ul class="flex">
+											<c:set var="dataLength" value="${fn:length(impactInfo.trfvlmStatisticsList)}"/>
+											<c:forEach var="impactDeatil" items="${impactInfo.trfvlmStatisticsList}" varStatus="status">
+												<!-- column start -->
+												<c:if test="${status.index >= 0 && status.index <= 3}">
+													<li class="table_small table_txt"><c:out value='${impactDeatil.inflRt}'/></li>
+													<li class="table_small table_txt"><c:out value='${impactDeatil.outflRt}'/></li>												
+												</c:if>
+												<c:if test="${status.index >= 4}">
+													<c:if test="${status.index % 2 == 0}">
+														<li class="table_small table_txt"><c:out value='${impactInfo.timeSctnNm}'/></li>
+													</c:if>
+													<li class="table_small table_txt"><c:out value='${impactDeatil.inflRt}'/></li>
+													<li class="table_small table_txt"><c:out value='${impactDeatil.outflRt}'/></li>
+												</c:if>
+												<!-- value end -->											
+											</c:forEach>
+											<c:if test="${25 - dataLength > 0}">
+												<c:set var="endPoint" value="${25 - dataLength}"/>
+												<c:forEach begin="0" end="${endPoint-1}" step="1" varStatus="status">
+													<ul class="flex">
+<!-- 														value for start -->
+														<li class="table_small table_txt">-</li>
+														<li class="table_small table_txt">-</li>
+														<li class="table_small table_txt">-</li>
+														<li class="table_small table_txt">-</li>
+														<li class="table_small table_txt">-</li>
+<!-- 														value for start -->
+													</ul>
+												</c:forEach>
+											</c:if>
+										</ul>
+									</div>
+		        				</c:forEach>
+		        			</c:when>
+		        		</c:choose>
+       					
+						<!-- time value for end -->
 	                </div>
                     <div class="table_chart_wrap">
 	                    <div class="table_chart_list">
@@ -184,13 +134,26 @@
             </section> 
         </div>
 	<script>
-	
 	/* 검색결과 */
 	$('#searchBtn').on('click', function(){
 		$('.search_head').removeClass('none');
 	})
 
 	$(document).ready(function() {
+		var searchFilter = $(`
+        <div class="group2">
+        	<div class="group_text2">요일 구분</div>
+				<div class="chngDywkDiv">
+					<input type="hidden" id="dywkDiv" value="<c:out value='${dywkDiv}'/>">
+					<select class="selectBox" name="dywkDivSelectBox" id="dywkDivSelectBox">
+						<option value="평일">평일</option>
+						<option value="주말">주말</option>
+					</select>
+				</div>      
+    	</div>		
+	`)
+	$('.contents_wrap').append(searchFilter);
+		
 		$('#selectBox').change(function() {
 			var type = $('#selectBox option:selected').val();
 			var ipcssMngNo = $("#ipcssMngNo").val();
@@ -199,45 +162,132 @@
 
 		var selectedType = $("#selectedType").val();
 		$('#selectBox').val(selectedType).prop("selected",true);
+		
+		$('.chngDywkDiv').on('change', '#dywkDivSelectBox', function() {
+			var type = $('#selectBox option:selected').val();
+			var ipcssMngNo = $("#ipcssMngNo").val();
+			var dywkDiv = $('#dywkDivSelectBox option:selected').val();
+	    	location.href="${pageContext.request.contextPath}/statistics/traffic/database/assessment/"+type+"/list.do?ipcssMngNo="+ipcssMngNo+"&dywkDiv="+dywkDiv;
+		});
+		
+		var dywkDiv = $("#dywkDiv").val();
+		$('#dywkDivSelectBox').val(dywkDiv).prop("selected",true);
+		
+		var cdNmArr = '<c:out value="${cdNmArr}"/>';
+		cdNmArr = cdNmArr.split(","); 
+		$(".usgNmTrgt").each(function(index, item){
+			if(!isNull(cdNmArr[index]) && cdNmArr[index] != ''){
+				$(this).text(cdNmArr[index]);
+			}
+		})
 	});
 	
+	$('#upload_btn').on('click', function(){
+		var type = $('#selectBox option:selected').val();
+		var ipcssMngNo = $("#ipcssMngNo").val();
+        new ModalBuilder().init('교통영향평가 수정').ajaxBody("${pageContext.request.contextPath}/common/modal/csvupdate/list.do?type="+type+"&ipcssMngNo="+ipcssMngNo).footer(1,'수정',function(button, modal){
+       		// validation 체크
+        	$.ajax({
+       			url : "${pageContext.request.contextPath}/statistics/traffic/database/impact/"+type+"/update.ajax?ipcssMngNo="+ipcssMngNo,
+       			type : "POST",
+       			data : new FormData($("#frmAttachedFiles")[0]),
+       			dataType: "json",
+       			processData: false,
+       			contentType: false,
+       			beforeSend : function(){
+	    			startLoading();
+	    		},
+       			success: function(data) {
+       				if(data.code == 200){
+						new ModalBuilder().init().successBody("교통영향평가를 수정하였습니다.").footer(4,'확인',function(button, modal){
+							modal.close();
+							location.reload();
+						}).open();
+						modalAlertWrap();						
+					} else {
+						new ModalBuilder().init().alertBoby(data.message).footer(4,'확인',function(button, modal){modal.close();}).open();
+						modalAlertWrap();						
+					}
+       			},
+       			error: function(error){
+       				new ModalBuilder().init().alertBoby("교통영향평가 수정에 실패하였습니다.").footer(4,'확인',function(button, modal){modal.close();}).open();
+					modalAlertWrap();	
+       			},
+	    		 complete : function(){
+	    			 impactEndLoading();
+	             }
+       		});
+        }).open();
+       	$('.modal_footer').removeClass('none');
+    });
+	
 	// 시간대별 통행
+	var timeDataArray = '<c:out value="${timeDataArray}"/>';
+	var inflRt1 = '<c:out value="${inflRt1}"/>';
+	var outflRt1 = '<c:out value="${outflRt1}"/>';
+	var inflRt2 = '<c:out value="${inflRt2}"/>';
+	var outflRt2 = '<c:out value="${outflRt2}"/>';
+	var inflRt3 = '<c:out value="${inflRt3}"/>';
+	var outflRt3 = '<c:out value="${outflRt3}"/>';
+	var inflRt4 = '<c:out value="${inflRt4}"/>';
+	var outflRt4 = '<c:out value="${outflRt4}"/>';
+	var inflRt5 = '<c:out value="${inflRt5}"/>';
+	var outflRt5 = '<c:out value="${outflRt5}"/>';
+	var inflRt6 = '<c:out value="${inflRt6}"/>';
+	var outflRt6 = '<c:out value="${outflRt6}"/>';
+
     new GITSChart(GITSChartType.BAR).init("passage_chart")
-    .setDataSetLabel('00~01시','01~02시','02~03시','03~04시','04~05시','04~05시','05~06시','06~07시',
-    		'07~08시','08~09시','09~10시','10~11시','11~12시','12~13시','13~14시','14~15시','15~16시',
-    		'16~17시','17~18시','18~19시','19~20시','20~21시','21~22시','22~23시','23~24시')
-    .setDataSet({
-        label:'통근유입',
-        data: [3, 4, 2, 5, 0, 1, 3, 4, 5, 5, 3, 4, 2, 5, 1, 1, 3, 4, 5, 5, 0, 1, 2, 3, 0],
-        backgroundColor:'#00bcb1'
-    }, {
-        label:'통근유츨',
-        data: [3, 4, 2, 5, 1, 1, 3, 4, 5, 5, 3, 4, 2, 5, 3, 1, 3, 4, 5, 5, 2, 1, 2, 3, 1],
-        backgroundColor:'#ad49fb'
-    }, {
-        label:'통학유입',
-        data: [3, 4, 2, 5, 2, 1, 3, 4, 5, 5, 3, 4, 2, 5, 0, 1, 3, 4, 5, 5, 3, 1, 2, 3, 3],
-        backgroundColor:'#91de6c'
-    }, {
-        label:'통학유출',
-        data: [3, 4, 2, 5, 4, 1, 3, 4, 5, 5, 3, 4, 2, 5, 6, 1, 3, 4, 5, 5, 1, 1, 2, 3, 1],
-        backgroundColor:'#ff5454'
-    }, {
-        label:'기타유입',
-        data: [3, 4, 2, 5, 4, 1, 3, 4, 5, 5, 3, 4, 2, 5, 6, 1, 3, 4, 5, 5, 1, 1, 2, 3, 0],
-        backgroundColor:'#65abdd'
-    }, {
-        label:'기타유출',
-        data: [3, 4, 2, 5, 4, 1, 3, 4, 5, 5, 3, 4, 2, 5, 6, 1, 3, 4, 5, 5, 1, 1, 2, 3, 5],
-        backgroundColor:'#c38686'
-    }, {
-        label:'방문유입',
-        data: [3, 4, 2, 5, 4, 1, 3, 4, 5, 5, 3, 4, 2, 5, 6, 1, 3, 4, 5, 5, 1, 1, 2, 3, 4],
-        backgroundColor:'#e983ce'
-    }, {
-        label:'방문유출',
-        data: [3, 4, 2, 5, 4, 1, 3, 4, 5, 5, 3, 4, 2, 5, 6, 1, 3, 4, 5, 5, 1, 1, 2, 3, 2],
-        backgroundColor:'#c9cb5a'
+    .setData({
+ 	labels: timeDataArray.split(','),
+    datasets: [{
+		    	label:'통근유입',
+		        data: inflRt1.split(','),
+		        backgroundColor:'#00bcb1'
+    		},{
+    			label:'통근유출',
+    	        data: outflRt1.split(','),
+    	        backgroundColor:'#ad49fb'
+    		},{
+    			label:'통학유입',
+    	        data: inflRt2.split(','),
+    	        backgroundColor:'#91de6c'			
+    		},{
+    			label:'통학유출',
+    	        data: outflRt2.split(','),
+    	        backgroundColor:'#ff5454'	
+    		},{
+    			label:'기타유입',
+   		        data: inflRt3.split(','),
+   		        backgroundColor:'#65abdd'
+    		},{
+    			label:'기타유출',
+    	        data: outflRt3.split(','),
+    	        backgroundColor:'#c38686'
+    		},{
+    			label:'방문유입',
+    	        data: inflRt4.split(','),
+    	        backgroundColor:'#e983ce'
+    		},{
+    			label:'방문유출',
+    	        data: outflRt4.split(','),
+    	        backgroundColor:'#c9cb5a'
+    		},{
+    			label:'상근유입',
+    	        data: inflRt5.split(','),
+    	        backgroundColor:'red'
+    		},{
+    			label:'상근유출',
+    	        data: outflRt5.split(','),
+    	        backgroundColor:'yellow'
+    		},{
+    			label:'이용유입',
+    	        data: inflRt6.split(','),
+    	        backgroundColor:'blue'
+    		},{
+    			label:'이용유출',
+    	        data: outflRt6.split(','),
+    	        backgroundColor:'green'
+    		}]
     })
     .setBarGridY(true)
     .setLabelPadding(20)

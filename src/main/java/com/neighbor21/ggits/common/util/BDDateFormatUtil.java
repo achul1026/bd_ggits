@@ -1,7 +1,9 @@
 package com.neighbor21.ggits.common.util;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.util.Calendar;
 import java.util.Date;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -23,8 +25,7 @@ public class BDDateFormatUtil extends DateFormatUtils {
 	  * @return LocalDate
 	  */
 	public static LocalDate isNow() {
-		LocalDate now = LocalDate.now();
-		return now;
+		return LocalDate.now();
 	}
 	
 	/**
@@ -40,5 +41,51 @@ public class BDDateFormatUtil extends DateFormatUtils {
 		Date now = new Date();
 		
 		return sdf.format(now);
+	}
+	
+	public static String isDateCal(String pattern, int calNum) {
+		SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.DATE, calNum); // 일 계산
+				
+		Date date = new Date(cal.getTimeInMillis());
+		
+		return sdf.format(date);
+	}
+
+	public static String formatDate(String dateStr) throws ParseException {
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+		SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy년 MM월 dd일");
+		String result = "";
+		// 20231119금,20231120금
+		if(!dateStr.equals("000000000")) {
+			if(dateStr.contains(",")) {
+				String[] dateArr = dateStr.split(",");
+				for(int i=0; i< dateArr.length; i++) {
+					String datePartStr = dateArr[i].substring(0,8);
+					String dayOfWeekStr = dateArr[i].substring(8);
+					
+					Date datePart = sdf.parse(datePartStr);
+					String date = sdf2.format(datePart);
+					if(i == 0) {
+						result = date + "(" + dayOfWeekStr + ")";					
+					}else {
+						result += " , " + date + "(" + dayOfWeekStr + ")";										
+					}
+				}
+			}else {
+				String datePartStr = dateStr.substring(0,7);
+				String dayOfWeekStr = dateStr.substring(8);
+				
+				Date datePart = sdf.parse(datePartStr);
+				String date = sdf2.format(datePart);
+				result += date + "(" + dayOfWeekStr + ")";
+			}
+		}else {
+			result = "0000년 00월 00일(0요일)";
+		}
+		
+		
+		return result;
 	}
 }

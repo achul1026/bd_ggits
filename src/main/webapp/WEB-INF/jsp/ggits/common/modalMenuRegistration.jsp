@@ -2,7 +2,7 @@
     pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
     
-<div class="pt24 pb24" style="width:34rem;">
+<div class="" style="width:34rem;">
 	<form id="menuSaveFrm">
 		<div class="flex-center gap16">
 			<div class="flex-column modal_input_box">
@@ -40,7 +40,7 @@
 		        <select id="categCd" name="categCd" class="modal_input_selectbox">
 		        	<option value="">없음</option>
 		        	<c:forEach var="ctgryCdList"  items="${ctgryCdList}">
-		        		<option value="${ctgryCdList.cdId}">${ctgryCdList.cdNm}</option>
+		        		<option value="<c:out value='${ctgryCdList.cdId}'/>"><c:out value='${ctgryCdList.cdNm}'/></option>
 		        	</c:forEach>
 		        </select>
 			</div>

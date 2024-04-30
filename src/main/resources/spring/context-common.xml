@@ -3,13 +3,21 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:util="http://www.springframework.org/schema/util"
+   xmlns:task="http://www.springframework.org/schema/task"
+   xmlns:tx="http://www.springframework.org/schema/tx"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
-		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.3.xsd">
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.3.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.1.xsd">
 
-	<context:component-scan base-package="com.neighbor21.ggits.*">
-		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller" />
-	</context:component-scan>
+	<context:component-scan base-package="com.neighbor21.ggits.common.*" />
+	<context:component-scan base-package="com.neighbor21.ggits.web.service.*" />
+	<context:component-scan base-package="com.neighbor21.ggits.openapi.service" />
+	<context:component-scan base-package="com.neighbor21.ggits.api.module.*" />
+	<tx:annotation-driven transaction-manager="txManager"/>
+	<task:scheduler id="jobScheduler" pool-size="3"  />
+	<task:annotation-driven scheduler="jobScheduler"/>
 	<bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
 		<property name="basenames">
 			<list>
@@ -22,7 +30,7 @@
 			<value>60</value>
 		</property>
 	</bean>
-	
+
 	<bean id="leaveaTrace" class="org.egovframe.rte.fdl.cmmn.trace.LeaveaTrace">
 		<property name="traceHandlerServices">
 			<list>
@@ -46,16 +54,17 @@
 			</list>
 		</property>
 	</bean>
-	
+
 	<bean id="antPathMater" class="org.springframework.util.AntPathMatcher" />
 	<bean id="defaultTraceHandler" class="org.egovframe.rte.fdl.cmmn.trace.handler.DefaultTraceHandler" />
-	
+
 	<!-- MultipartResolver -->
 	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
 		<property name="maxUploadSize" value="1000000000"/>
 		<property name="maxInMemorySize" value="1000000000" />
 	</bean>
-	
+
 	<util:properties id="commonProperties" location="classpath:/properties/common.properties"/>
-	 
+	<util:properties id="databaseProperties" location="classpath:/properties/database.properties"/>
+
 </beans>

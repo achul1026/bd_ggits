@@ -2,48 +2,37 @@
     pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
+<div class="modal-fillter-btn-wrap">
+	  <c:out value='${gOpTrfInfoStatsRpt.dtlUrl}'/>
+</div>
+<div class="iframe-btn-wrap">
+	<c:if test="${isUserChk and authCd eq 'AUC000'}">
+		<button type="button"class="is-darkgreen-btn iframe-btn" onclick="deleteBtn('<c:out value="${gOpTrfInfoStatsRpt.rptId}"/>')">삭제</button>
+	</c:if>
+</div>
 
-<div class="pt16 pb16">
-	<div class="flex-center gap16">
-	    <div class="">집계 기간</div>
-	    <div class="flex-center">
-	        <div class="calendar">
-	            <input type="text" class="date_picker input_same mr8 input_picker modal_input_bg" placeholder="날짜를 선택해주세요.">
-	            ~
-	            <div class="end_calendar_box">
-					<div class="date_picker_block"></div>								            
-		            <input type="text" class="end_date_picker input_same mr8 ml8 input_picker modal_input_bg" placeholder="날짜를 선택해주세요.">
-		        </div>
-	        </div>
-	    </div>
-	</div>
-</div>
-<div class="tab_set">
-    <div class="tab_fc">
-        <div class="table_btn_left">
-            <button type="button" class="tab_btn_item is-dark-btn modal_input_bg" data-index="1">교통량</button>
-            <button type="button" class="tab_btn_item is-dark-btn" data-index="2">소통정보</button>
-            <button type="button" class="tab_btn_item is-dark-btn" data-index="3">평균속도</button>
-        </div>
-    </div>
-    <div class="contents_wrap tab_area mt16">
-        <div class="tab1">
-          	<div style="height:260px">
-          		<canvas id="modal_chart1"></canvas>
-          	</div>
-          	<div class="mt8">수원시의 인계동의 교통량이 가장 많습니다.</div>			
-        </div>
-        <div class="tab-none tab2">
-          	<div style="height:260px">
-          		<canvas id="modal_chart2"></canvas>
-          	</div>
-          	<div class="mt8">수원시의 인계동의 소통정보가 가장 많습니다.</div>	
-        </div>
-        <div class="tab-none tab3">
-          	<div style="height:260px">
-          		<canvas id="modal_chart3"></canvas>
-          	</div>
-          	<div class="mt8">수원시의 인계동의 평균속도가 가장 높습니다.</div>	
-        </div>
-	</div>
-</div>
+<script>
+	function deleteBtn(rptId){
+		new ModalBuilder().init().alertBoby("삭제하시면 다시 복구 할 수 없습니다.<br>삭제하시겠습니까?").footer(5,'삭제하기',function(button, modal){
+			$.ajax({
+				type : "get",
+				url : "${pageContext.request.contextPath}/statistics/analysis/traffic/report/"+rptId+"/delete.ajax",
+					success : function(result) {
+					var resultCode = result.code;
+					if(resultCode == '200'){
+						new ModalBuilder().init().successBody(result.message).footer(4,'확인',function(button, modal){
+							modal.close();
+	    					location.reload();
+						}).open();
+						modalAlertWrap();
+					}else{
+						new ModalBuilder().init().alertBoby(result.message).footer(4,'확인',function(button, modal){modal.close();}).open();
+						modalAlertWrap();
+					}
+	  			}
+			});
+		},'취소하기',function(button, modal){
+			modalAlertClose();    
+		}).open();
+	}
+</script>

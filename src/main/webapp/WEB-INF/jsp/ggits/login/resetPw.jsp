@@ -1,4 +1,6 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <div id="skip" class="center">
 	<a href="${pageContext.request.contextPath}/index.html">메인페이지 바로가기</a>
 </div>
@@ -9,19 +11,19 @@
                 <div class="login_tip">
                     비밀번호를 변경해주세요.<br>
                     <strong class="login_tip_txt">비밀번호는 N자리 이상 1개 이상의 특수문자</strong>를 포함해야 합니다. <br>
-                	${oprtrEmail} 계정의 비밀번호를 재설정 해주세요.
+                    <c:out value='${oprtrEmail}'/> 계정의 비밀번호를 재설정 해주세요.
                 </div>
                 <form action="/" method="GET" class="login_form" id="userChngPwForm">
-                	<input type="hidden" id="oprtrTel" name="oprtrTel" value="${oprtrTel}" />
-                	<input type="hidden" id="oprtrNm" name="oprtrNm" value="${oprtrNm}"/>
-                	<input type="hidden" id="oprtrId" name="oprtrId" value="${oprtrId}"/>
+                	<input type="hidden" id="oprtrTel" name="oprtrTel" value="<c:out value='${oprtrTel}'/>" />
+                	<input type="hidden" id="oprtrNm" name="oprtrNm" value="<c:out value='${oprtrNm}'/>"/>
+                	<input type="hidden" id="oprtrId" name="oprtrId" value="<c:out value='${oprtrId}'/>"/>
                     <div class="input_wrap">
                         <input type="password" class="input_item chkPw data-validate" id="oprtrPswd" name="oprtrPswd" onkeyup="isPwValidated(this)" required
                         	data-valid-name="새 비밀번호" data-valid-required maxlength="32"/>
                         <label class="input_label">새 비밀번호</label>
                         <span class="input_line"></span>
                         <p class="error_message"></p>
-                        <button type="button" class="eye_img"><img src="../statics/images/eye_off.png" alt="눈"></button>
+                        <button type="button" class="eye_img"><img src="${pageContext.request.contextPath}/statics/images/eye_off.png" alt="눈"></button>
                     </div>
                     <div class="input_wrap input_margin">
                         <input type="password" class="input_item chkNewPw data-validate" id="oprtrPswdChk" name="oprtrPswdChk" onkeyup="isPwValidated(this)" required
@@ -29,7 +31,7 @@
                         <label class="input_label">새 비밀번호 확인</label>
                         <span class="input_line"></span>
                         <p class="error_message"></p>
-                        <button type="button" class="eye_img"><img src="../statics/images/eye_off.png" alt="눈"></button>
+                        <button type="button" class="eye_img"><img src="${pageContext.request.contextPath}/statics/images/eye_off.png" alt="눈"></button>
                     </div>
                     <button type="button" id="resetPwBtn" class="is-button password_btn">변경 완료</button>
                     <div class="login_bottom_item">

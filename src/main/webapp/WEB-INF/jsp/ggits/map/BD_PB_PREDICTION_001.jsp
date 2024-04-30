@@ -1,8 +1,8 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-	pageEncoding="UTF-8"%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>   
 <div class="bigdata_wrap">
     <div class="sub_data_list tab_set mj0">
-    	<div class="tab_fc mt16 mb8">
+    	<div class="tab_fc pd16">
 	        <ul>
 	            <li><button type="button" class="sub_data_btn" data-index="1">유동인구 분류</button></li>
 	            <li><button type="button" class="sub_data_btn" data-index="2">버스노선 최적화<br>전후비교</button></li>
@@ -23,13 +23,13 @@
 					</div>	            
 	                <div class="result_item">
 	                	<div>
-	                		<button type="button" class="prev_text mb8 mt8"><span class="prev_arrow">←</span> 이전</button>
+	                		<button type="button" class="prev_text rollbackBtn"><span class="prev_arrow">←</span> 이전</button>
 	                	</div>
-	                    <div class="tab_item_box flex-center">
-	                        <h5 class="tab_item_title">기준</h5>
-	                        <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" class="none">시군 별</label>
-	                        <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" class="none">읍면동 별</label>
-	                    </div>
+<!-- 	                    <div class="tab_item_box flex-center"> -->
+<!-- 	                        <h5 class="tab_item_title">기준</h5> -->
+<!-- 	                        <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" class="none">시군 별</label> -->
+<!-- 	                        <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" class="none">읍면동 별</label> -->
+<!-- 	                    </div> -->
 	                    <div class="tab_item_box"  style="width:450px; height:300px;">
 	                        <canvas id="tab1"></canvas>
 	                    </div>
@@ -50,16 +50,14 @@
 					</div>	            
 	                <div class="result_item">
 	                	<div>
-	                		<button type="button" class="prev_text mb8 mt8"><span class="prev_arrow">←</span> 이전</button>
+	                		<button type="button" class="prev_text rollbackBtn"><span class="prev_arrow">←</span> 이전</button>
 	                	</div>
 	                    <div class="tab_item_box flex-center">
 	                        <h5 class="tab_item_title">항목</h5>
-	                        <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" class="none">승객 예상 수요</label>
-	                        <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" class="none">운행 거리/시간</label>
-	                        <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" class="none">가중치</label>
+	                        <label class="group_btn_item is-dark-btn radius inpd is-darkgreen-btn"><input type="checkbox" class="none selectType" value="score" selected>평가점수</label>
 	                    </div>
-	                    <div class="tab_item_box"  style="width:450px; height:300px;">
-	                        <canvas id="tab2"></canvas>
+	                    <div class="tab_item_box chartBox2"  style="width:450px; height:300px;">
+	                        <canvas id="tab2" class="chartCan2"></canvas>
 	                    </div>
 	                </div>
 	            </div>
@@ -75,56 +73,93 @@
 	gisCheckInit();
 	bigdataPopupClose();
 	
-    //tab1
+	//tab1
+	var flatPopltnDataArr = '<c:out value="${flatPopltnDataArr}"/>';
+	var flatPopltnLabelArr = '<c:out value="${flatPopltnLabelArr}"/>';
+
     new GITSChart(GITSChartType.BAR).init("tab1")
-    .setDataSetLabel('파장동', '마교동', '염화동', '길동')
-    .setDataSet({
-        label:'경기',
-        data:[40, 60, 80, 40],
-        backgroundColor:'#00BCB1'
-    },{
-        label:'인천',
-        data:[20, 40, 60, 10],
-        backgroundColor:'#AD49FB'
-    },{
-        label:'서울',
-        data:[30, 20, 20, 40],
-        backgroundColor:'#F00'
-    },{
-        label:'강원',
-        data:[20, 20, 10, 30],
-        backgroundColor:'#F90'
-    },{
-        label:'충청',
-        data:[40, 30, 10, 10],
-        backgroundColor:'#0075FF'
-    },{
-        label:'전남',
-        data:[10, 10, 15, 20],
-        backgroundColor:'#91DE6C'
-    }
-    )
+    .setData({
+             labels: flatPopltnLabelArr.split(','),
+             datasets: [{
+            	 label:'유동인구',
+            	 data: flatPopltnDataArr.split(','),
+            	 backgroundColor:['#F00','#AD49FB','#00BCB1','#F90','#0075FF','#00E0FF','#00D870','#FFF500','#FFB800','#FF7CD3']
+             }]
+         })	
     .setTickStepX(10)
     .setAxis('y')
     .setBarGridX(true)
-    .draw();
-
-    //tab2
-    new GITSChart(GITSChartType.BAR).init("tab2")
-    .setDataSetLabel('기존노선', '최적화 노선1', '최적화 노선2')
-    .setDataSet({
-        label:'운행 거리(km)',
-        data:[100, 150, 120],
-        backgroundColor:'#00BCB1'
-    },{
-        label:'운행 시간(분)',
-        data:[40, 60, 50],
-        backgroundColor:'#AD49FB'
-    })
-    .setTickStepX(40)
-    .setAxis('y')
-    .setBarGridX(true)
-    .setAxisStackedX(false)
-    .setAxisStackedY(false)
     .draw();	
+	
+    //tab2
+	var routeNmArr = '<c:out value="${routeNmArr}"/>';
+	var scoreArr = '<c:out value="${scoreArr}"/>';
+
+	 new GITSChart(GITSChartType.BAR).init("tab2")
+     .setData({
+              labels: routeNmArr.split(','),
+              datasets: [{
+             	 label:'평가점수',
+             	 data: scoreArr.split(','),
+            	 backgroundColor:['#F00','#AD49FB','#00BCB1','#F90','#0075FF','#00E0FF','#00D870','#FFF500','#FFB800','#FF7CD3']
+              }]
+          })	
+     .setTickStepX(10)
+     .setAxis('y')
+     .setBarGridX(true)
+     .draw();	
+    
+    $(".selectType").on("click", function(){
+    	$(".chartCan2").remove();
+		$(".chartBox2").append(
+				 '<canvas id="tab2" class="chartCan2"></canvas>'
+		)
+		var searchType = $(this).val();
+		fnSearchList(searchType);
+    })
+    
+    function fnSearchList(searchType){
+		$.ajax({
+    		type : "get",
+    		data : {
+    			"searchResultType" : searchType
+    		},
+    		url : "${pageContext.request.contextPath}/map/bigdata/pb/prediction/BD_PB_PREDICTION_001/data.ajax",
+    		beforeSend : function(){
+    			startLoading();
+    		},
+    		success : function(result){
+   				var routeNmArr = result.data.routeNmArr
+   				var scoreArr = result.data.scoreArr
+   				busPrdctnRankScore(routeNmArr, scoreArr);
+    		},
+    		complete : function(){
+    			endLoading();
+    		}
+    	});
+    }
+    
+    function busPrdctnRankScore(routeNmArr, scoreArr){
+        new GITSChart(GITSChartType.BAR).init("tab2")
+        .setData({
+                 labels: routeNmArr.split(','),
+                 datasets: [{
+                	 label:'평가점수',
+                	 data: scoreArr.split(','),
+                	 backgroundColor:['#F00','#AD49FB','#00BCB1','#F90','#0075FF','#00E0FF','#00D870','#FFF500','#FFB800','#FF7CD3']
+                 }]
+             })	
+        .setTickStepX(10)
+        .setAxis('y')
+        .setBarGridX(true)
+        .draw();
+    }
+    
+    $(".rollbackBtn").on("click", function(){
+    	$(".chartCan2").remove();
+		$(".chartBox2").append(
+				 '<canvas id="tab2" class="chartCan2"></canvas>'
+		)
+		fnSearchList("score");
+    })
 </script>

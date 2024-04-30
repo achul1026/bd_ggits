@@ -1,4 +1,5 @@
 package com.neighbor21.ggits.common.mapper;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -49,6 +50,14 @@ public interface MOpMenuMapper {
 	 * @Method 설명 : 하위 메뉴 리스트 조회
 	 */
 	public List<MOpMenu> findAllBySortNoIsNotNullAndUpprMenuId(String upperMenuId);
+	
+	/**
+	 * @Method Name : findAllBySortNoIsNotNullAndUpprMenuId
+	 * @작성일 : 2023. 12. 26.
+	 * @작성자 : NK.KIM
+	 * @Method 설명 : 하위 메뉴 리스트 조회(메뉴관리)
+	 */
+	public List<MOpMenu> findAllSubMenuBySortNoIsNotNullAndUpprMenuId(String upperMenuId);
 
 	/**
 	 * @Method Name : findAllByUpperMenuIdAndAuthId
@@ -88,7 +97,7 @@ public interface MOpMenuMapper {
 	 * @작성자 : KY.LEE
 	 * @Method 설명 : 메뉴 삭제
 	 */
-	public void deleteMOpMenuByMenuId(String menuId);
+	public void deleteMOpMenuByMenuId(String menuId) throws SQLException;
 
 	/**
 	 * @Method Name : update
@@ -138,4 +147,12 @@ public interface MOpMenuMapper {
 	 * @Method 설명 : 메뉴패턴 타입으로 메뉴 ID조회
 	 */
 	public List<String> findMenuIdByMenuPttrnType(MOpMenu mOpMenu);
+
+	/**
+	 * @Method Name : findOneMenuIdByMenuPttrnType
+	 * @작성일 : 2023. 11. 02.
+	 * @작성자 : KY.LEE
+	 * @Method 설명 : 메뉴패턴 타입으로 메뉴 ID조회 단건
+	 */
+	public String findOneMenuIdByMenuPttrnType(MOpMenu mOpMenu);
 }

@@ -2,4 +2,33 @@
 <!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.ClschmInfoMapper'>
+	<select id="findAllClschNm" resultType="String">
+		SELECT 
+			CLSCHM_NM
+		FROM CLSCHM_INFO	
+	</select>
+	
+	<select id="findClschmIdByClschmNm" resultType="String" parameterType="String">
+		SELECT
+			CLSCHM_ID
+		FROM CLSCHM_INFO
+		WHERE CLSCHM_NM = #{clschmNm}
+	</select> 
+	
+	<insert id="saveClschmInfo" parameterType="clschmInfo">
+		INSERT INTO CLSCHM_INFO (
+			CLSCHM_ID,
+			CLSCHM_NM,
+			CLSCHM_DESCR,
+			CATEG_NM,
+			KEYWORD
+		) VALUES ( 
+			#{clschmId},
+			#{clschmNm},
+			#{clschmDescr},
+			#{categNm},
+			#{keyword}
+		)
+	</insert>
+
 </mapper>

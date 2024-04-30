@@ -1,0 +1,89 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.hivesql.mapper.TrfIpcssActPopltnBsuntMapper'>
+	
+	<select id="findAllActPopltnBsuntList" parameterType="trfvlmStatisticsDTO" resultType="trfIpcssActPopltnBsunt">
+		SELECT 
+			IPCSS_MNG_NO
+			, SMLFACT_NM
+			, SMLFACT_ADDR
+			, SCALE
+			, TOTFRAR
+			, EXMN_DIV_NM
+			, EXMN_YMD
+			, EXMN_DOC_NM
+		FROM GGITS.TRF_IPCSS_ACT_POPLTN_BSUNT
+		WHERE IPCSS_MNG_NO = #{ipcssMngNo}
+		GROUP BY IPCSS_MNG_NO, SMLFACT_NM, SMLFACT_ADDR, SCALE, TOTFRAR, EXMN_DIV_NM, EXMN_YMD, EXMN_DOC_NM, ACT_POPLTN_NO
+		ORDER BY CAST(ACT_POPLTN_NO AS INT) ASC
+		
+	</select>
+	
+	<select id="findOneActPopltnBsuntInfo" parameterType="trfIpcssActPopltnBsunt" resultType="trfIpcssActPopltnBsunt">
+		SELECT 
+			tiapb.USG_CD
+			, tiapb.USG_TOTFRAR 
+			, tiapb.RESDNG_BSUNT 
+			, tiapb.VISIT_BSUNT 
+			, tiapb.BSUNT_UNIT 
+		FROM GGITS.TRF_IPCSS_ACT_POPLTN_BSUNT tiapb
+		WHERE tiapb.SMLFACT_NM = #{smlfactNm} AND tiapb.SMLFACT_ADDR = #{smlfactAddr} AND tiapb.IPCSS_MNG_NO = #{ipcssMngNo}
+		ORDER BY CAST(tiapb.USG_NO AS INT)
+	</select>
+	
+	<select id="findAllusgNoList" parameterType="trfvlmStatisticsDTO" resultType="trfIpcssActPopltnBsunt">
+		SELECT 
+			 A.USG_CD
+		FROM(
+			SELECT 
+				tiapb.USG_CD
+			FROM GGITS.TRF_IPCSS_ACT_POPLTN_BSUNT tiapb 
+			WHERE tiapb.IPCSS_MNG_NO = #{ipcssMngNo}
+			GROUP BY tiapb.USG_CD, tiapb.USG_NO, tiapb.ACT_POPLTN_NO 
+			ORDER BY  tiapb.USG_NO, tiapb.ACT_POPLTN_NO 
+		)A
+		GROUP  BY A.USG_CD
+	</select>
+	
+	<select id="findAllChartData" parameterType="trfvlmStatisticsDTO" resultType="trfIpcssActPopltnBsunt">
+		SELECT 
+			tiapb.USG_CD
+			, SUM(tiapb.RESDNG_BSUNT) AS RESDNG_BSUNT
+			, SUM(tiapb.VISIT_BSUNT) AS VISIT_BSUNT
+		FROM GGITS.TRF_IPCSS_ACT_POPLTN_BSUNT  tiapb
+		WHERE tiapb.IPCSS_MNG_NO = #{ipcssMngNo} AND tiapb.USG_CD = #{usgCd}
+		GROUP BY tiapb.USG_CD 
+	</select>
+	
+	<insert id="saveActPopltnBsunt" parameterType="trfIpcssActPopltnBsunt">
+		INSERT INTO GGITS.TRF_IPCSS_ACT_POPLTN_BSUNT
+			VALUES(
+			#{ipcssMngNo}, 
+			#{smlfactNm}, 
+			#{smlfactAddr}, 
+			#{scale}, 
+			#{totfrar}, 
+			#{exmnDivNm}, 
+			#{exmnYmd}, 
+			#{exmnDocNm}, 
+			#{usgCd}, 
+			#{usgTotfrar}, 
+			#{resdngBsunt}, 
+			#{visitBsunt}, 
+			#{bsuntUnit},
+			FROM_UNIXTIME(UNIX_TIMESTAMP(), 'yyyyMMddHHmmss'),
+			#{usgNo},
+			#{actPopltnNo},
+			CAST(1 as int),
+			CAST(1 as int))
+	</insert>
+	
+	<delete id="deleteTrafficImpactReportByIpcssMngNo" parameterType="String">
+		DELETE 
+		FROM
+			GGITS.TRF_IPCSS_ACT_POPLTN_BSUNT
+		WHERE
+			IPCSS_MNG_NO = #{ipcssMngNo}
+	</delete>
+</mapper>

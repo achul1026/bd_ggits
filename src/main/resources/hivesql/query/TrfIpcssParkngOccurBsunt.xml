@@ -1,0 +1,86 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.hivesql.mapper.TrfIpcssParkngOccurBsuntMapper'>
+	<select id="findAllParkngOccurBsuntList" parameterType="trfvlmStatisticsDTO" resultType="trfIpcssParkngOccurBsunt">
+		SELECT 
+			IPCSS_MNG_NO
+			, SMLFACT_NM
+			, SMLFACT_ADDR
+			, SCALE
+			, TOTFRAR
+			, EXMN_DIV_NM
+			, EXMN_YMD
+			, EXMN_DOC_NM
+		FROM GGITS.TRF_IPCSS_PARKNG_OCCUR_BSUNT
+		WHERE IPCSS_MNG_NO = #{ipcssMngNo}
+		GROUP BY IPCSS_MNG_NO, SMLFACT_NM, SMLFACT_ADDR, SCALE,TOTFRAR, EXMN_DIV_NM, EXMN_YMD, EXMN_DOC_NM, PARKNG_OCCUR_NO
+		ORDER BY CAST(PARKNG_OCCUR_NO AS INT)
+	</select>
+	
+	<select id="findOneParkngOccurBsuntInfo" parameterType="trfIpcssParkngOccurBsunt" resultType="trfIpcssParkngOccurBsunt">
+		SELECT 
+			tipob.USG_CD
+			, tipob.USG_TOTFRAR
+			, COALESCE(tipob.WKDAY_BSUNT, 0) as WKDAY_BSUNT
+			, COALESCE(tipob.WKEND_BSUNT, 0) as WKEND_BSUNT
+			, tipob.BSUNT_UNIT
+		FROM GGITS.TRF_IPCSS_PARKNG_OCCUR_BSUNT tipob
+		WHERE tipob.SMLFACT_NM = #{smlfactNm} and tipob.SMLFACT_ADDR = #{smlfactAddr} AND tipob.IPCSS_MNG_NO = #{ipcssMngNo}
+		ORDER BY CAST(TIPOB.USG_SQNO AS INT)
+	</select>
+	
+	<select id="findAllUsgNoList" parameterType="trfvlmStatisticsDTO" resultType="trfIpcssParkngOccurBsunt">
+		SELECT 
+			A.USG_CD
+		FROM(
+			SELECT 
+			 	tipob.USG_CD
+			 	, tipob.USG_SQNO
+			FROM GGITS.TRF_IPCSS_PARKNG_OCCUR_BSUNT tipob 
+			WHERE tipob.IPCSS_MNG_NO = #{ipcssMngNo}
+			GROUP BY tipob.USG_CD, tipob.USG_SQNO, tipob.PARKNG_OCCUR_NO 
+			ORDER BY  tipob.PARKNG_OCCUR_NO 
+		)A
+		GROUP  BY  A.USG_CD
+	</select>
+	
+	<select id="findAllChartData" parameterType="trfvlmStatisticsDTO" resultType="TrfIpcssParkngOccurBsunt">
+		SELECT 
+			tipob.USG_CD
+			, SUM(WKDAY_BSUNT) AS WKDAY_BSUNT
+			, SUM(WKEND_BSUNT) AS WKEND_BSUNT
+		FROM GGITS.TRF_IPCSS_PARKNG_OCCUR_BSUNT tipob
+		WHERE IPCSS_MNG_NO = #{ipcssMngNo} AND USG_CD = #{usgCd}
+		GROUP BY tipob.USG_CD
+	</select>
+	
+	<insert id="saveParkngOccurBsunt" parameterType="trfIpcssParkngOccurBsunt">
+		INSERT INTO GGITS.TRF_IPCSS_PARKNG_OCCUR_BSUNT
+			VALUES(
+			#{ipcssMngNo}, 
+			#{smlfactNm}, 
+			#{smlfactAddr}, 
+			#{scale}, 
+			#{totfrar}, 
+			#{exmnDivNm}, 
+			#{exmnYmd}, 
+			#{exmnDocNm}, 
+			CAST(#{usgSqno} as int),
+			#{usgCd}, 
+			#{usgTotfrar}, 
+			#{wkdayBsunt}, 
+			#{wkendBsunt}, 
+			#{bsuntUnit},
+			FROM_UNIXTIME(UNIX_TIMESTAMP(), 'yyyyMMddHHmmss'),
+			CAST(#{parkngOccurNo} as int))
+	</insert>
+	
+	<delete id="deleteTrafficImpactReportByIpcssMngNo" parameterType="String">
+		DELETE 
+		FROM 
+			GGITS.TRF_IPCSS_PARKNG_OCCUR_BSUNT 
+		WHERE
+			IPCSS_MNG_NO = #{ipcssMngNo}
+	</delete>	
+</mapper>

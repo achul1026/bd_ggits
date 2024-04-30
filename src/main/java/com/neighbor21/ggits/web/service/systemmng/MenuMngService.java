@@ -1,6 +1,9 @@
 package com.neighbor21.ggits.web.service.systemmng;
 
+import java.sql.SQLException;
 import java.util.Map;
+
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,7 +43,7 @@ public class MenuMngService{
 		return count+1;
 	}
 	
-	public String saveMainMenu(MOpMenu mOpMenu) {
+	public String saveMainMenu(MOpMenu mOpMenu) throws SQLException {
 		
 		String menuId = this.countByMenuIdNextVal();
 		Long menuLvl = MenuLvl.MAIN_MENU.getLevel();
@@ -51,6 +54,7 @@ public class MenuMngService{
 		mOpMenu.setDescr(mOpMenu.getMenuNm());
 		mOpMenu.setSortNo(sortNo);
 		mOpMenu.setCategCd(mOpMenu.getCategCd());
+		mOpMenu.setCdDivCd("CDC000");
 		//메인메뉴는 무조건 0번
 		mOpMenu.setSbmnuSortNo(0L);
 		
@@ -73,7 +77,7 @@ public class MenuMngService{
 
 
 	
-	public MOpMenu saveSubMenu(Map<String, Object> paramMap) {
+	public MOpMenu saveSubMenu(Map<String, Object> paramMap) throws SQLException{
 		MOpMenu mOpMenu = new MOpMenu();
 		String mainMenuId = String.valueOf(paramMap.get("menuId"));
 		String menuId = this.countByMenuIdNextVal();
@@ -103,12 +107,13 @@ public class MenuMngService{
 		mOpMenu.setDescr(menuNm);
 		mOpMenu.setSbmnuSortNo(sbmnuSortNo);
 		mOpMenu.setCategCd(categCd);
+		mOpMenu.setCdDivCd("CDC000");
 		
 		mOpMenuMapper.save(mOpMenu);
 		return mOpMenu;
 	}
 	
-	public void updateMainMenu(MOpMenu mOpMenu) {
+	public void updateMainMenu(MOpMenu mOpMenu) throws SQLException {
 		String menuId = mOpMenu.getMenuId();
 		if(GgitsCommonUtils.isNull(menuId)) {
 			throw new CommonException(ErrorCode.PARAMETER_DATA_NULL);
@@ -120,14 +125,16 @@ public class MenuMngService{
 			dbMOpMenu.setUrlPttrn(mOpMenu.getUrlPttrn());
 			dbMOpMenu.setUrlAddr(mOpMenu.getUrlAddr());
 			dbMOpMenu.setSortNo(mOpMenu.getSortNo());
-			dbMOpMenu.setCategCd(mOpMenu.getCategCd());
+			if(mOpMenu.getCategCd() != null && !"".equals(mOpMenu.getCategCd())) {
+				dbMOpMenu.setCategCd(mOpMenu.getCategCd());
+			}
 			mOpMenuMapper.update(dbMOpMenu);
 		} else {
 			throw new CommonException(ErrorCode.PARAMETER_DATA_NULL);
 		}
 	}
 
-	public void updateSubMenu(MOpMenu mOpMenu) {
+	public void updateSubMenu(MOpMenu mOpMenu) throws SQLException {
 		String menuId = mOpMenu.getMenuId();
 		if(GgitsCommonUtils.isNull(menuId)) {
 			throw new CommonException(ErrorCode.PARAMETER_DATA_NULL);
@@ -138,6 +145,9 @@ public class MenuMngService{
 			dbMOpMenu.setUseYn(mOpMenu.getUseYn());
 			dbMOpMenu.setUrlPttrn(mOpMenu.getUrlPttrn());
 			dbMOpMenu.setUrlAddr(mOpMenu.getUrlAddr());
+			if(!GgitsCommonUtils.isNull(mOpMenu.getCategCd())) {
+				dbMOpMenu.setCategCd(mOpMenu.getCategCd());
+			}
 			mOpMenuMapper.update(dbMOpMenu);
 		} else {
 			throw new CommonException(ErrorCode.PARAMETER_DATA_NULL);
@@ -152,5 +162,16 @@ public class MenuMngService{
 		lOpUseMenu.setLgnIp(LoginSessionUtils.getUserIpAddr());
 		
 		lOpUseMenuMapper.saveLOpUseMenu(lOpUseMenu);
+	}
+	
+	public void removeMenuSession() {
+ 		//기존 메뉴값 재세팅
+ 		HttpSession session = LoginSessionUtils.getSessionRequest().getSession();
+ 		
+ 		if(session != null) {
+ 			session.removeAttribute("gnbMenuDTO");
+ 			session.removeAttribute("streamMenuList");
+ 			session.removeAttribute("menuCtgryList");
+ 		}
 	}
 }

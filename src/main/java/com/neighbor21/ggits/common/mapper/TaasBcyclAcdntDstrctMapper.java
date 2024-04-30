@@ -1,9 +1,9 @@
 package com.neighbor21.ggits.common.mapper;
-import com.neighbor21.ggits.common.entity.TaasAdsiAcdntDstrct;
-import com.neighbor21.ggits.common.entity.TaasBcyclAcdntDstrct;
+import java.util.List;
+
 import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
 
-import java.util.List;
+import com.neighbor21.ggits.common.entity.TaasBcyclAcdntDstrct;
 
 @Mapper
 public interface TaasBcyclAcdntDstrctMapper {

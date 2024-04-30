@@ -20,8 +20,8 @@
              ,gcin.node_name
              ,gcin.node_id
         FROM
-            adsi_smcrsrd_camera_info camera
-                inner join adsi_smcrsrd_crsrd_info asci on camera.crsrd_id  = asci.crsrd_id
-                inner join gy_comm_info_node gcin on asci.node_id = gcin.node_id
+            BIGDATA.EXT_adsi_smcrsrd_camera_info camera
+                inner join BIGDATA.EXT_adsi_smcrsrd_crsrd_info asci on camera.crsrd_id  = asci.crsrd_id
+                inner join c_gm_std_node gcin on asci.node_id = gcin.node_id 
     </select>
 </mapper>

@@ -16,18 +16,27 @@
 		<form id="searchForm" method="get">
 			<input type="hidden" id="page" name="page" value="1"/>
 			<div class="table_btn_wrap clearfix">
-				<div class="flex-end">
-					<div class="mr8">
-	             		<input type="text" name="strDt" id="strDt" class="date_picker input_same mr8 input_picker" placeholder="날짜를 선택해주세요." value="${strDt}">
-	                    ~
-	                    <input type="text" name="endDt" id="endDt" class="end_date_picker input_same ml8 input_picker" placeholder="날짜를 선택해주세요." value="${endDt}">
-					</div>
-					<div class="btn_search_wrap float-none">
-						<div class="search_head">그룹명</div>
-						<input type="text" placeholder="검색어를 입력하세요." class="input_same search_box" name="searchContent" value="${searchContent}">  
-						<input type="button" value="검색" class="input_same search_box2" onclick="fnSearchList();"> 
-						<a href="${pageContext.request.contextPath}/system/user/group/save.do" class="is-darkgreen-btn mj0">등록하기</a>
-					</div>
+				<div class="btn_search_wrap btn_search_wrap_left float-right">
+					<ul>
+						<li>
+							<input type="text" name="strDt" id="strDt" class="date_picker input_same input_picker" placeholder="날짜를 선택해주세요." value="<c:out value='${strDt}'/>" autocomplete="off">
+						</li>
+						<li>
+							~
+						</li>
+						<li>
+							<input type="text" name="endDt" id="endDt" class="end_date_picker input_same input_picker" placeholder="날짜를 선택해주세요." value="<c:out value='${endDt}'/>" autocomplete="off">
+						</li>
+						<li>
+							그룹명 : <input type="text" placeholder="검색어를 입력하세요." class="input_same search_box" name="searchContent" value="<c:out value='${searchContent}'/>">  
+						</li>
+						<li>
+							<input type="button" value="검색" class="input_same search_box2 pointer" onclick="fnSearchList();"> 
+						</li>
+						<li>
+							<a href="${pageContext.request.contextPath}/system/user/group/save.do" class="is-darkgreen-btn mj0">등록하기</a>
+						</li>
+					</ul>
 				</div>
 			</div>
 		</form>
@@ -50,11 +59,11 @@
 				<th scope="col">등록일</th>
 			</tr>
 			<c:forEach var="groupList" items="${groupList}">
-				<tr onclick="location.href='${pageContext.request.contextPath}/system/user/group/${groupList.grpId}/detail.do';" class="pointer">
-					<td>${groupList.rownum}</td>
-					<td>${groupList.grpNm}</td>
-					<td>${groupList.authNm}</td>
-					<td>${groupList.userCnt}</td>
+				<tr onclick="location.href='${pageContext.request.contextPath}/system/user/group/<c:out value="${groupList.grpId}"/>/detail.do';" class="pointer">
+					<td><c:out value="${groupList.rownum}"/></td>
+					<td><c:out value="${groupList.grpNm}"/></td>
+					<td><c:out value="${groupList.authNm}"/></td>
+					<td><c:out value="${groupList.userCnt}"/></td>
 					<td><fmt:formatDate value="${groupList.updtDt}" pattern="yyyy-MM-dd" /></td>
 					<td><fmt:formatDate value="${groupList.crtDt}" pattern="yyyy-MM-dd" /></td>
 				</tr>

@@ -2,4 +2,70 @@
 <!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.MrtIpcssAnalMapper'>
+	<sql id="mrtIpcssAnal-Where">
+		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
+			AND to_timestamp(mia.EXMN_YMD, 'YYYYMMDD')
+			BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD') 
+		    	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD')
+		 </if>
+		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
+			<![CDATA[
+			AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD')  <= to_timestamp(mia.EXMN_YMD, 'YYYYMMDD')
+			]]>
+		</if>
+		<if test="(strDt == '' or strDt == null) and (endDt != '' and endDt != null)">
+			<![CDATA[
+			AND to_timestamp(mia.EXMN_YMD, 'YYYYMMDD') <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD')
+			]]>
+		</if>
+		<if test="searchContent != null and searchContent != ''">
+			AND mia.EXMN_DIV_NM LIKE ('%' || #{searchContent} || '%')
+		</if>
+		<if test="dayOfTheWeek != null">
+			 AND EXTRACT (ISODOW from TO_DATE(mia.EXMN_YMD, 'YYYYMMDD'))::varchar(1) IN 
+				<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+		</if>
+	</sql>
+	<select id="findAllIpcssAnalList" parameterType="commonEntity" resultType="mrtIpcssAnal">
+		SELECT 
+			mia.EXMN_YMD, 
+			mia.EXMN_DIV_NM 
+		FROM MRT_IPCSS_ANAL mia
+		WHERE 
+			1=1
+		<include refid="mrtIpcssAnal-Where"/>
+		GROUP BY mia.EXMN_YMD, mia.EXMN_DIV_NM 
+		ORDER BY TO_DATE(mia.EXMN_YMD, 'YYYYMMDD') DESC
+		<if test="page != null and page != ''">
+		LIMIT 10 OFFSET (#{page} - 1) * 10		
+		</if>
+	</select>
+	
+	<select id="countIpcssAnal" parameterType="commonEntity" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM (
+			SELECT 
+				mia.EXMN_DIV_NM 
+			FROM MRT_IPCSS_ANAL mia
+			WHERE 
+				1=1
+			<include refid="mrtIpcssAnal-Where"/>
+			GROUP BY mia.EXMN_YMD, mia.EXMN_DIV_NM 
+		)A
+	</select>
+	
+	<select id="findOneIpcssAnalInfo" parameterType="mrtIpcssAnal" resultType="map">
+		<foreach collection="ipcssTypeArray" item="ipcssType" separator="union all">
+			SELECT
+				COALESCE(SUM(VISIT_BSUNT),0) as VISIT_BSUNT
+				,COALESCE(SUM(RESDNG_BSUNT),0) as RESDNG_BSUNT
+			FROM
+				MRT_IPCSS_ANAL
+			WHERE
+				USG_CD = '' || #{ipcssType} || '' AND EXMN_YMD = #{exmnYmd} and EXMN_DIV_NM = #{exmnDivNm}
+		</foreach>
+	</select>
 </mapper>

@@ -2,7 +2,7 @@
 	pageEncoding="UTF-8"%>
 <div class="bigdata_wrap">
     <div class="sub_data_list tab_set mj0">
-    	<div class="tab_fc mt16 mb8">
+    	<div class="tab_fc pd16">
 	        <ul>
 	            <li><button type="button" class="sub_data_btn" data-index="1">교차로별<br>교통신호 연동</button></li>
 	        </ul>
@@ -22,7 +22,7 @@
 					</div>	            
 	                <div class="result_item">
 	                	<div>
-	                		<button type="button" class="prev_text mb8 mt8"><span class="prev_arrow">←</span> 이전</button>
+	                		<button type="button" class="prev_text rollbackBtn"><span class="prev_arrow">←</span> 이전</button>
 	                	</div>
                         <div class="tab_item_box">
                             <div class="btn_search_wrap float-none mb16 flex-between">
@@ -45,12 +45,12 @@
 	                                        <th scope="col" rowspan="2">SA</th>
 	                                        <th scope="col" rowspan="2">교차로명</th>
 	                                        <th scope="col" rowspan="2">거리</th>
-	                                        <th scope="col" class="th_padding_bt center">상행연동</th>
-	                                        <th scope="col" class="th_padding_bt center">하행연동</th>
+	                                        <th scope="col" class="">상행연동</th>
+	                                        <th scope="col" class="">하행연동</th>
 	                                    </tr>
 	                                    <tr>
-	                                        <th class="center">링 현시 이동류</th>
-	                                        <th class="center">링 현시 이동류</th>
+	                                        <th class="">링 현시 이동류</th>
+	                                        <th class="">링 현시 이동류</th>
 	                                    </tr>
 	                                </thead>
 	                                <tbody>
@@ -59,48 +59,48 @@
 	                                        <td rowspan="2">1</td>
 	                                        <td rowspan="2">신동사거리</td>
 	                                        <td rowspan="2">586</td>
-	                                        <td class="border-none th_padding_bt center"><span class="mr8">A</span><span class="mr8">2</span><span class="mr8">←2</span></td>
-	                                        <td class="border-none th_padding_bt center"><span class="mr8">A</span><span class="mr8">2</span><span class="mr8">→2</span></td>
+	                                        <td class=""><span class="">A</span><span class="">2</span><span class="">←2</span></td>
+	                                        <td class=""><span class="">A</span><span class="">2</span><span class="">→2</span></td>
 	                                    </tr>
 	                                    <tr>
-	                                        <td class="center"><span class="mr8">A</span><span class="mr8">2</span><span class="mr8">←2</span></td>
-	                                        <td class="center"><span class="mr8">A</span><span class="mr8">2</span><span class="mr8">→2</span></td>
-	                                    </tr>
-	                                    <tr>
-	                                        <td rowspan="2">1</td>
-	                                        <td rowspan="2">1</td>
-	                                        <td rowspan="2">신동사거리</td>
-	                                        <td rowspan="2">586</td>
-	                                        <td class="border-none th_padding_bt center"><span class="mr8">A</span><span class="mr8">2</span><span class="mr8">←2</span></td>
-	                                        <td class="border-none th_padding_bt center"><span class="mr8">A</span><span class="mr8">2</span><span class="mr8">→2</span></td>
-	                                    </tr>
-	                                    <tr>
-	                                        <td class="center"><span class="mr8">A</span><span class="mr8">2</span><span class="mr8">←2</span></td>
-	                                        <td class="center"><span class="mr8">A</span><span class="mr8">2</span><span class="mr8">→2</span></td>
+	                                        <td class=""><span class="">A</span><span class="">2</span><span class="">←2</span></td>
+	                                        <td class=""><span class="">A</span><span class="">2</span><span class="">→2</span></td>
 	                                    </tr>
 	                                    <tr>
 	                                        <td rowspan="2">1</td>
 	                                        <td rowspan="2">1</td>
 	                                        <td rowspan="2">신동사거리</td>
 	                                        <td rowspan="2">586</td>
-	                                        <td class="border-none th_padding_bt center"><span class="mr8">A</span><span class="mr8">2</span><span class="mr8">←2</span></td>
-	                                        <td class="border-none th_padding_bt center"><span class="mr8">A</span><span class="mr8">2</span><span class="mr8">→2</span></td>
+	                                        <td class=""><span class="">A</span><span class="">2</span><span class="">←2</span></td>
+	                                        <td class=""><span class="">A</span><span class="">2</span><span class="">→2</span></td>
 	                                    </tr>
 	                                    <tr>
-	                                        <td class="center"><span class="mr8">A</span><span class="mr8">2</span><span class="mr8">←2</span></td>
-	                                        <td class="center"><span class="mr8">A</span><span class="mr8">2</span><span class="mr8">→2</span></td>
+	                                        <td class=""><span class="">A</span><span class="">2</span><span class="">←2</span></td>
+	                                        <td class=""><span class="">A</span><span class="">2</span><span class="">→2</span></td>
 	                                    </tr>
 	                                    <tr>
 	                                        <td rowspan="2">1</td>
 	                                        <td rowspan="2">1</td>
 	                                        <td rowspan="2">신동사거리</td>
 	                                        <td rowspan="2">586</td>
-	                                        <td class="border-none th_padding_bt center"><span class="mr8">A</span><span class="mr8">2</span><span class="mr8">←2</span></td>
-	                                        <td class="border-none th_padding_bt center"><span class="mr8">A</span><span class="mr8">2</span><span class="mr8">→2</span></td>
+	                                        <td class=""><span class="">A</span><span class="">2</span><span class="">←2</span></td>
+	                                        <td class=""><span class="">A</span><span class="">2</span><span class="">→2</span></td>
 	                                    </tr>
 	                                    <tr>
-	                                        <td class="center"><span class="mr8">A</span><span class="mr8">2</span><span class="mr8">←2</span></td>
-	                                        <td class="center"><span class="mr8">A</span><span class="mr8">2</span><span class="mr8">→2</span></td>
+	                                        <td class=""><span class="">A</span><span class="">2</span><span class="">←2</span></td>
+	                                        <td class=""><span class="">A</span><span class="">2</span><span class="">→2</span></td>
+	                                    </tr>
+	                                    <tr>
+	                                        <td rowspan="2">1</td>
+	                                        <td rowspan="2">1</td>
+	                                        <td rowspan="2">신동사거리</td>
+	                                        <td rowspan="2">586</td>
+	                                        <td class=""><span class="">A</span><span class="">2</span><span class="">←2</span></td>
+	                                        <td class=""><span class="">A</span><span class="">2</span><span class="">→2</span></td>
+	                                    </tr>
+	                                    <tr>
+	                                        <td class=""><span class="">A</span><span class="">2</span><span class="">←2</span></td>
+	                                        <td class=""><span class="">A</span><span class="">2</span><span class="">→2</span></td>
 	                                    </tr>
 	                                </tbody>
 	                            </table>

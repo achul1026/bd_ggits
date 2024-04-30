@@ -5,13 +5,13 @@
         	<div style="width:500px">
         	
 	         메인 메뉴정보<br>
-	         <input type="hidden" id="menuId" value="${mOpMenu.menuId}"/>메인메뉴 명 
+	         <input type="hidden" id="menuId" value="<c:out value='${mOpMenu.menuId}"/>'/>메인메뉴 명 
 
-	         <input type="text" id="mainMenuNm" value="${mOpMenu.menuNm}"/><br>
-	         메인메뉴 URL 패턴 <input type="text" id="mainUrlPttrn" value="${mOpMenu.urlPttrn}"/> <br>
-	         메인메뉴 URL <input type="text" id="mainUrlAddr" value="${mOpMenu.urlAddr}"/> <br>
-	         메인메뉴 노출여부 <input type="text" id="mainUseYn" value="${mOpMenu.useYn}"/> <br>
-	         메인메뉴 노출 순위 <input type="text" id="mainSortNo" value="${mOpMenu.sortNo}"/> <br>
+	         <input type="text" id="mainMenuNm" value="<c:out value='${mOpMenu.menuNm}'/>"/><br>
+	         메인메뉴 URL 패턴 <input type="text" id="mainUrlPttrn" value="<c:out value='${mOpMenu.urlPttrn}'/>"/> <br>
+	         메인메뉴 URL <input type="text" id="mainUrlAddr" value="<c:out value='${mOpMenu.urlAddr}"/>'/>"/> <br>
+	         메인메뉴 노출여부 <input type="text" id="mainUseYn" value="<c:out value='${mOpMenu.useYn}"/>'/>"/> <br>
+	         메인메뉴 노출 순위 <input type="text" id="mainSortNo" value="<c:out value='${mOpMenu.sortNo}'/>"/> <br>
 
 	         
 	         
@@ -27,12 +27,12 @@
 				</tr>
 			<c:forEach var="subMenuList" items="${subMenuList}" varStatus="subStatus">
 				<tr>
-					<td>${subStatus.count}</td>
-					<td>${subMenuList.menuNm}</td>
-					<td>${subMenuList.urlAddr}</td>
-					<td>${subMenuList.useYn eq 'Y' ? '노출' : '비노출'}</td>
+					<td><c:out value="${subStatus.count}"/></td>
+					<td><c:out value="${subMenuList.menuNm}"/></td>
+					<td><c:out value="${subMenuList.urlAddr}"/></td>
+					<td><c:out value="${subMenuList.useYn eq 'Y' ? '노출' : '비노출'}"/></td>
 					<td>
-						<button type="button" id="delSubMenuBtn" onclick="delSubMenu('${subMenuList.menuId}')">삭제하기</button>
+						<button type="button" id="delSubMenuBtn" onclick="delSubMenu('<c:out value="${subMenuList.menuId}"/>')">삭제하기</button>
 					</td>
 				</tr>
 			</c:forEach>
@@ -45,7 +45,7 @@
 				        <select id="categCd" name="categCd">
 				        	<option value="">없음</option>
 				        	<c:forEach var="ctgryCdList"  items="${ctgryCdList}">
-				        		<option value="${ctgryCdList.cdId}">${ctgryCdList.cdNm}</option>
+				        		<option value="<c:out value='${ctgryCdList.cdId}'/>"><c:out value="${ctgryCdList.cdNm}"/></option>
 				        	</c:forEach>
 				        </select>
 				        <br>
@@ -54,7 +54,7 @@
 				</tr>
 			</table>
 <%--         	<button type="button" id="menuDelBtn" onclick="delMainMenu('${mOpMenu.menuId}')">삭제</button> --%>
-        	<button type="button" id="updateMenuBtn" onclick="updateMainMenu('${mOpMenu.menuId}')">저장</button>
+        	<button type="button" id="updateMenuBtn" onclick="updateMainMenu('<c:out value="${mOpMenu.menuId}"/>')">저장</button>
         	</div>
         </div>
     </main>

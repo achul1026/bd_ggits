@@ -23,7 +23,8 @@
 									PRVC_MNG_POLCY_AGRE,
 									OPRTR_STTS_CD ,
 									OPRTR_REGIST_DD,
-									LAYOUT_NO
+									LAYOUT_NO,
+									MNG_INST_CD
      							  ) VALUES (
      							  	(SELECT COALESCE(MAX(OPRTR_ID)+1,1) FROM M_OP_OPERATOR),
      							  	#{grpId},
@@ -43,9 +44,14 @@
      							  	#{prvcMngPolcyAgre},
      							  	#{oprtrSttsCd},
      							  	TO_CHAR(NOW(),'YYYYMMDD'),
-     							  	1
+     							  	#{layoutNo},
+     							  	#{mngInstCd}
      							  )
      </insert>
+     
+     <select id="findOneByOprtrIdNextVal" resultType="long">
+     	SELECT COALESCE(MAX(OPRTR_ID)+1,1) FROM M_OP_OPERATOR
+     </select>
      
      <select id="countMOpOperatorByOprtrEmail" parameterType="mOpOperator" resultType="int">
 		SELECT 
@@ -65,11 +71,41 @@
 			UPDT_DT,
 			NOTE,
 			OPRTR_GRD,
+			MNG_INST_CD,
 			USE_YN		
 		FROM M_OP_OPERATOR
 		WHERE 
 			 OPRTR_EMAIL = #{oprtrEmail}
      	AND OPRTR_NM = #{oprtrNm}
+     </select>
+     
+     <select id="findOneMOpOperatorByEmailAndNameAndTel" parameterType="mOpOperator" resultType="mOpOperator">
+		SELECT 
+	     	MOO.OPRTR_ID,
+			MOO.SYSTEM_CD,
+			MOO.OPRTR_PSWD,
+			MOO.OPRTR_NM,
+			MOO.OPRTR_JBTTL,
+			MOO.OPRTR_DEPT,
+			MOO.UPDT_DT,
+			MOO.NOTE,
+			MOO.OPRTR_GRD,
+			MOO.USE_YN,
+			MOO.OPRTR_EMAIL,
+			MOO.OPRTR_TEL,
+			MOO.GRP_ID,
+			MOO.OPRTR_STTS_CD,
+			MOO.ADDNG_CD,
+			MOO.MNG_INST_CD,
+			MOO.OPRTR_STTS_CD,
+			MOA.AUTH_CD
+		FROM M_OP_OPERATOR MOO
+		INNER JOIN M_OP_GRP_INFO MOGI ON MOO.GRP_ID = MOGI.GRP_ID
+		INNER JOIN M_OP_AUTHORITY MOA ON MOA.AUTH_ID = MOGI.AUTH_ID 
+		WHERE 
+			 OPRTR_EMAIL = #{oprtrEmail}
+     	AND  OPRTR_NM = #{oprtrNm}
+     	AND OPRTR_TEL = #{oprtrTel} 
      </select>
      
      <select id="findAllMOpOperatorByNmAndTel" parameterType="mOpOperator" resultType="mOpOperator">
@@ -89,6 +125,7 @@
 			GRP_ID,
 			OPRTR_STTS_CD,
 			ADDNG_CD,
+			MNG_INST_CD,
 			OPRTR_STTS_CD
 		FROM M_OP_OPERATOR
 		WHERE 
@@ -113,6 +150,7 @@
 			GRP_ID,
 			OPRTR_STTS_CD,
 			ADDNG_CD,
+			MNG_INST_CD,
 			OPRTR_STTS_CD
 		FROM M_OP_OPERATOR
 		WHERE 
@@ -140,6 +178,7 @@
 				ADDNG_CD = #{addngCd},
 				OPRTR_TEL = #{oprtrTel},
 				OPRTR_STTS_CD = #{oprtrSttsCd},
+				MNG_INST_CD = #{mngInstCd},
 				LAYOUT_NO = #{layoutNo}
 			WHERE OPRTR_ID = #{oprtrId}
      </update>
@@ -162,6 +201,7 @@
 			GRP_ID,
 			OPRTR_STTS_CD,
 			ADDNG_CD,
+			MNG_INST_CD,
 			OPRTR_STTS_CD
 		FROM M_OP_OPERATOR
 		WHERE 
@@ -184,7 +224,8 @@
 			MOO.OPRTR_GRD,	
 			TO_CHAR(TO_DATE(MOO.OPRTR_REGIST_DD,'YYYYMMDD'),'YYYY-MM-DD') AS OPRTR_REGIST_DD,
 			MOO.GRP_ID,
-			MOO.LAYOUT_NO,
+			COALESCE(MOO.LAYOUT_NO,0) AS LAYOUT_NO,
+			MOO.MNG_INST_CD,
 			MOGI.GRP_NM
 		FROM
 			M_OP_OPERATOR MOO
@@ -200,6 +241,7 @@
 			MOO.OPRTR_TEL,
 			MOO.OPRTR_STTS_CD,
 			MOO.ADDNG_CD,
+			MOO.MNG_INST_CD,
 			MOO.OPRTR_NM,
 			TO_CHAR(TO_DATE(MOO.OPRTR_REGIST_DD,'YYYYMMDD'),'YYYY-MM-DD') AS OPRTR_REGIST_DD,
 			MOGI.GRP_NM
@@ -248,6 +290,9 @@
 		<if test="oprtrSttsCd != null and oprtrSttsCd != '' and oprtrSttsCd != 'all'">          
             	AND MOO.OPRTR_STTS_CD LIKE #{oprtrSttsCd} 
 		</if>
+		<if test="oprtrGrd != null and oprtrGrd != '' and oprtrGrd != 'SUPER' ">
+		 	AND MOO.MNG_INST_CD = #{mngInstCd}
+		 </if>
 		ORDER BY ROWNUM DESC 	
 		<if test="page != null and page != '' and page != 0 ">
 		LIMIT 10 OFFSET (#{page} - 1) * 10  	
@@ -267,6 +312,7 @@
 			MOO.OPRTR_PSWD,	
 			MOO.OPRTR_JBTTL,	
 			MOO.OPRTR_DEPT,	
+			MOO.MNG_INST_CD,
 			MOO.OPRTR_GRD,	
 			TO_CHAR(TO_DATE(MOO.OPRTR_REGIST_DD,'YYYYMMDD'),'YYYY-MM-DD') AS OPRTR_REGIST_DD,
 			MOO.GRP_ID
@@ -336,6 +382,9 @@
            		BETWEEN TO_DATE(#{strDt}, 'YYYYMMDD')
            		AND TO_DATE(#{endDt}, 'YYYYMMDD')
 		</if>
+		<if test="oprtrGrd != null and oprtrGrd != '' and oprtrGrd != 'SUPER' ">
+		 	AND MOO.MNG_INST_CD = #{mngInstCd}
+		</if>
 	</select>
 	
 	<delete id="deleteByOprtrId" parameterType="long">
@@ -343,7 +392,8 @@
 	</delete>
 	
 	<select id="findLayoutNoByOprtrId" parameterType="long" resultType="long">
-		SELECT LAYOUT_NO
+		SELECT 
+			COALESCE(LAYOUT_NO,0) AS LAYOUT_NO
 		FROM M_OP_OPERATOR
 		WHERE OPRTR_ID = #{oprtrId}
 	</select>

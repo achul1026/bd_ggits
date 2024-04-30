@@ -14,18 +14,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.neighbor21.ggits.common.entity.CommonEntity;
 import com.neighbor21.ggits.common.entity.LTcDataLog;
-import com.neighbor21.ggits.common.entity.LTcOpenApiRqstLog;
 import com.neighbor21.ggits.common.entity.MrtBusRungLogAnal;
 import com.neighbor21.ggits.common.entity.MrtBusSttnRungAnal;
+import com.neighbor21.ggits.common.entity.MrtIpcssAnal;
 import com.neighbor21.ggits.common.entity.MrtStdLinkSectnInfo;
+import com.neighbor21.ggits.common.entity.OpenApiPvsnLog;
 import com.neighbor21.ggits.common.entity.Paging;
 import com.neighbor21.ggits.common.mapper.LTcDataLogMapper;
-import com.neighbor21.ggits.common.mapper.LTcOpenApiRqstLogMapper;
 import com.neighbor21.ggits.common.mapper.MOpCodeMapper;
 import com.neighbor21.ggits.common.mapper.MOpOperatorMapper;
 import com.neighbor21.ggits.common.mapper.MrtBusRungLogAnalMapper;
 import com.neighbor21.ggits.common.mapper.MrtBusSttnRungAnalMapper;
+import com.neighbor21.ggits.common.mapper.MrtIpcssAnalMapper;
 import com.neighbor21.ggits.common.mapper.MrtStdLinkSectnInfoMapper;
+import com.neighbor21.ggits.common.mapper.OpenApiPvsnLogMapper;
+import com.neighbor21.ggits.common.util.BDDateFormatUtil;
 import com.neighbor21.ggits.common.util.BDStringUtil;
 import com.neighbor21.ggits.common.util.GgitsCommonUtils;
 
@@ -34,7 +37,7 @@ import com.neighbor21.ggits.common.util.GgitsCommonUtils;
 public class DataUseStatisticsController {
 	
 	@Autowired
-	LTcOpenApiRqstLogMapper lTcOpenApiRqstLogMapper;
+	OpenApiPvsnLogMapper openApiPvsnLogMapper;
 	
 	@Autowired
 	LTcDataLogMapper lTcDataLogMapper;
@@ -54,6 +57,9 @@ public class DataUseStatisticsController {
 	@Autowired
 	MOpCodeMapper mOpCodeMapper;
 	
+	@Autowired
+	MrtIpcssAnalMapper mrtIpcssAnalMapper; 
+	
 	/**
      * @Method Name : viewDataUseStats
      * @작성일 : 2023. 9. 7.
@@ -63,14 +69,20 @@ public class DataUseStatisticsController {
      */
 	@GetMapping("/data/use/{type}/list.do")
     public String viewDataUseStats(Model model, CommonEntity commonEntity, @PathVariable String type){
-
+		
+		// 처음 접근 시
+		if(GgitsCommonUtils.isNull(commonEntity.getStrDt()) && GgitsCommonUtils.isNull(commonEntity.getEndDt())) {
+			commonEntity.setStrDt(BDDateFormatUtil.isDateCal("yyyy-MM-dd", -7));
+			commonEntity.setEndDt(BDDateFormatUtil.isNowStr("yyyy-MM-dd"));
+		}
+		
 		int totalCnt = 0;
 		switch (type) {
 		case "open_api_use_log":
 			//Open API 활용 이력
-			totalCnt = lTcOpenApiRqstLogMapper.countDataUseStatsList(commonEntity);
-			
-			List<LTcOpenApiRqstLog> ltcOpenApiRqstLogList = lTcOpenApiRqstLogMapper.findAllDataUseStatsList(commonEntity);
+			totalCnt = openApiPvsnLogMapper.countDataUseStatsList(commonEntity);
+						
+			List<OpenApiPvsnLog> ltcOpenApiRqstLogList = openApiPvsnLogMapper.findAllDataUseStatsList(commonEntity);
 
 			model.addAttribute("dataUseStatsList", ltcOpenApiRqstLogList);
 			break;
@@ -111,19 +123,40 @@ public class DataUseStatisticsController {
 	 * @return
 	 */
 	@GetMapping("/data/impact/{type}/list.do")
-	public String viewDataTrafficImpacts(Model model, @PathVariable String type){
+	public String viewDataTrafficImpacts(Model model, @PathVariable String type, CommonEntity commonEntity){
+		int totalCnt = 0;
+		
+		if(!GgitsCommonUtils.isNull(commonEntity.getDayOfTheWeekStr())) {
+			String[] dayOfTheWeekArr = commonEntity.getDayOfTheWeekStr().split(",");
+			commonEntity.setDayOfTheWeek(Arrays.asList(dayOfTheWeekArr));
+		}
 		
 		switch (type) {
-		case "reg_enty_exit_data_tnt":
-			// 지역별 진출입 데이터 집계
-			break;
-		case "catg_enty_exit_data_tnt":
-			// 유형별 진출입 데이터 집계
+		case "reg_enty_exit_data_tnt": // 데이터 집계
+			// 교통영향평가 목록 조회
+			totalCnt = mrtIpcssAnalMapper.countIpcssAnal(commonEntity);
+			List<MrtIpcssAnal> ipcssAnalList = mrtIpcssAnalMapper.findAllIpcssAnalList(commonEntity);
+			
+			// 세부 유형 조회
+			for(MrtIpcssAnal ipcssInfo : ipcssAnalList) {
+				ipcssInfo.setIpcssResultList(mrtIpcssAnalMapper.findOneIpcssAnalInfo(ipcssInfo));
+			}
+			
+			model.addAttribute("ipcssAnalList", ipcssAnalList);
 			break;
 		}
 		
-		//시군 코드 목록
-		model.addAttribute("sggCdList", mOpCodeMapper.findAllCodeListByGrpCdId("SGG_CD"));
+		Paging paging = new Paging();
+    	paging.setPageNo(commonEntity.getPage());
+    	paging.setTotalCount(totalCnt);
+		
+    	model.addAttribute("paging", paging);
+		model.addAttribute("totalCnt", totalCnt);
+		model.addAttribute("searchOption", commonEntity);
+		
+		model.addAttribute("sggCdList", mOpCodeMapper.findAllCodeListByGrpCdId("SGG_CD")); //시군 코드 목록
+		model.addAttribute("usgCdList", mOpCodeMapper.findAllCodeListByGrpCdId("USG_CD")); // 용도 코드
+		model.addAttribute("trfUseCdList", mOpCodeMapper.findAllCodeListByGrpCdId("TRF_USE_CD")); // 유형별 코드
 		return "view/statistics/"+BDStringUtil.convertCamelCase(type);
 	}
 	
@@ -140,23 +173,10 @@ public class DataUseStatisticsController {
 		
 		int totalCnt = 0;
 		
-		String startToday = "";
-		String endToday = "";
-		if(!GgitsCommonUtils.isNull(commonEntity.getStrDt())) {
-			startToday = GgitsCommonUtils.dateToDatetimeStr(commonEntity.getStrDt(), "startDate");
-			if(!GgitsCommonUtils.isNull(commonEntity.getStartTime())) {
-				int startTime = Integer.parseInt(commonEntity.getStartTime());
-				startToday = GgitsCommonUtils.setDateTimeToDateString(startToday,startTime,"yyyy-MM-dd HH:mm:ss",Calendar.HOUR);
-			}
-			commonEntity.setStrDt(startToday);
-		}
-		if(!GgitsCommonUtils.isNull(commonEntity.getEndDt())) {
-			endToday = GgitsCommonUtils.dateToDatetimeStr(commonEntity.getEndDt(), "endDate");			
-			if(!GgitsCommonUtils.isNull(commonEntity.getEndTime())) {
-				int endTime = Integer.parseInt(commonEntity.getEndTime());
-				endToday = GgitsCommonUtils.setDateTimeToDateString(endToday,endTime,"yyyy-MM-dd HH:mm:ss",Calendar.HOUR);
-			}
-			commonEntity.setEndDt(endToday);
+		// 처음 접근 시
+		if(GgitsCommonUtils.isNull(commonEntity.getStrDt()) && GgitsCommonUtils.isNull(commonEntity.getEndDt())) {
+			commonEntity.setStrDt(BDDateFormatUtil.isDateCal("yyyy-MM-dd", -7));
+			commonEntity.setEndDt(BDDateFormatUtil.isNowStr("yyyy-MM-dd"));
 		}
 		
 		if(!GgitsCommonUtils.isNull(commonEntity.getDayOfTheWeekStr())) {

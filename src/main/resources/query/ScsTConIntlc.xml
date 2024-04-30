@@ -2,4 +2,26 @@
 <!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.ScsTConIntlcMapper'>
+    <select id="findAll" resultType="scsTConIntlc">
+        SELECT
+         stci.int_lcno
+        ,stci.update_date
+        ,stci.int_name
+        ,stci.int_type
+        ,stci.int_lctype
+        ,stci.int_lamptype
+        ,stci.main_lcno
+        ,stci.sa_no
+        ,stci.int_node_id
+        ,stci.int_lng
+        ,stci.int_lat
+        ,stci.ppc_type
+        from scs_t_con_intlc_cur stci
+         INNER JOIN (
+            SELECT MAX(stci.UPDATE_DATE) AS RCT_ETL_DT
+                 , stci.int_lcno
+            FROM scs_t_con_intlc_cur stci
+            GROUP BY stci.int_lcno
+        ) RCT_STCI ON RCT_STCI.int_lcno = stci.int_lcno AND RCT_STCI.RCT_ETL_DT = stci.UPDATE_DATE
+    </select>
 </mapper>

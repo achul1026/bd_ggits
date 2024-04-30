@@ -32,15 +32,25 @@ public class AuthMngService{
 	public void saveAuthorityAndMenuAuth(MOpAuthority mOpAuthority) {
 		int authId = mOpAuthorityMapper.findAuthIdNextVal();
 		mOpAuthority.setAuthId(authId);
-		if(mOpAuthority.getMenuIdArr().isEmpty()) {
-			throw new CommonException(ErrorCode.PARAMETER_DATA_NULL);
-		}
-		mOpAuthorityMapper.saveMOpAuthority(mOpAuthority);
-		for(String menuId : mOpAuthority.getMenuIdArr()) {
-			MOpAthrMenu mOpAthrMenu = new MOpAthrMenu();
-			mOpAthrMenu.setMenuId(menuId);
-			mOpAthrMenu.setAuthId(authId);
-			mOpAthrMenuMapper.saveMOpAthrMenu(mOpAthrMenu);
+		if("AUC002".equals(mOpAuthority.getAuthCd())) {
+			int isDuplChk = mOpAuthorityMapper.countByAuthCd(mOpAuthority.getAuthCd());
+			if(isDuplChk == 0) {
+				mOpAuthorityMapper.saveMOpAuthority(mOpAuthority);
+			} else {
+				throw new CommonException(ErrorCode.DATA_DUPLICATE);
+			}
+			
+		} else {
+			if(mOpAuthority.getMenuIdArr().isEmpty()) {
+				throw new CommonException(ErrorCode.PARAMETER_DATA_NULL);
+			}
+			mOpAuthorityMapper.saveMOpAuthority(mOpAuthority);
+			for(String menuId : mOpAuthority.getMenuIdArr()) {
+				MOpAthrMenu mOpAthrMenu = new MOpAthrMenu();
+				mOpAthrMenu.setMenuId(menuId);
+				mOpAthrMenu.setAuthId(authId);
+				mOpAthrMenuMapper.saveMOpAthrMenu(mOpAthrMenu);
+			}
 		}
 	}
 	

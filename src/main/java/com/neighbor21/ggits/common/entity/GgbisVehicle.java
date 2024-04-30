@@ -16,7 +16,7 @@ public class GgbisVehicle {
     private String    useYn;        //사용유무
     private String    sidoCd;        //행정구역 ID
     private String    lowPlate;        //저상차량여부
-    private long    vehCapa;        //승차정원
+    private Long    vehCapa;        //승차정원
     private String    adminNm;        //관할관청
     private String    companyNm;        //운행업체
     private String    deviceNo;        //단말기기기번호
@@ -26,7 +26,8 @@ public class GgbisVehicle {
     private String    inCarDevYn;        //차내안내기여부
     private String    remark;        //비고
     private String    areaCd;        //지역코드
-    private long    totalSeatCnt;        //총좌석수
+    private Long    totalSeatCnt;        //총좌석수
+    private Long pagingTotalCount;
 
 
   public String getVehId() {
@@ -37,7 +38,6 @@ public class GgbisVehicle {
     this.vehId = vehId;
   }
 
-
   public String getPlateNo() {
     return plateNo;
   }
@@ -45,7 +45,6 @@ public class GgbisVehicle {
   public void setPlateNo(String plateNo) {
     this.plateNo = plateNo;
   }
-
 
   public String getCompanyId() {
     return companyId;
@@ -55,7 +54,6 @@ public class GgbisVehicle {
     this.companyId = companyId;
   }
 
-
   public String getVehType() {
     return vehType;
   }
@@ -63,7 +61,6 @@ public class GgbisVehicle {
   public void setVehType(String vehType) {
     this.vehType = vehType;
   }
-
 
   public Timestamp getRegistDate() {
     return registDate;
@@ -73,7 +70,6 @@ public class GgbisVehicle {
     this.registDate = registDate;
   }
 
-
   public Timestamp getExpireDate() {
     return expireDate;
   }
@@ -81,7 +77,6 @@ public class GgbisVehicle {
   public void setExpireDate(Timestamp expireDate) {
     this.expireDate = expireDate;
   }
-
 
   public Timestamp getRegReportDate() {
     return regReportDate;
@@ -91,7 +86,6 @@ public class GgbisVehicle {
     this.regReportDate = regReportDate;
   }
 
-
   public String getVehMake() {
     return vehMake;
   }
@@ -99,7 +93,6 @@ public class GgbisVehicle {
   public void setVehMake(String vehMake) {
     this.vehMake = vehMake;
   }
-
 
   public String getModelName() {
     return modelName;
@@ -109,7 +102,6 @@ public class GgbisVehicle {
     this.modelName = modelName;
   }
 
-
   public String getAirconYn() {
     return airconYn;
   }
@@ -117,7 +109,6 @@ public class GgbisVehicle {
   public void setAirconYn(String airconYn) {
     this.airconYn = airconYn;
   }
-
 
   public String getUseYn() {
     return useYn;
@@ -127,7 +118,6 @@ public class GgbisVehicle {
     this.useYn = useYn;
   }
 
-
   public String getSidoCd() {
     return sidoCd;
   }
@@ -135,7 +125,6 @@ public class GgbisVehicle {
   public void setSidoCd(String sidoCd) {
     this.sidoCd = sidoCd;
   }
-
 
   public String getLowPlate() {
     return lowPlate;
@@ -145,15 +134,13 @@ public class GgbisVehicle {
     this.lowPlate = lowPlate;
   }
 
-
-  public long getVehCapa() {
+  public Long getVehCapa() {
     return vehCapa;
   }
 
-  public void setVehCapa(long vehCapa) {
+  public void setVehCapa(Long vehCapa) {
     this.vehCapa = vehCapa;
   }
-
 
   public String getAdminNm() {
     return adminNm;
@@ -163,7 +150,6 @@ public class GgbisVehicle {
     this.adminNm = adminNm;
   }
 
-
   public String getCompanyNm() {
     return companyNm;
   }
@@ -171,7 +157,6 @@ public class GgbisVehicle {
   public void setCompanyNm(String companyNm) {
     this.companyNm = companyNm;
   }
-
 
   public String getDeviceNo() {
     return deviceNo;
@@ -181,7 +166,6 @@ public class GgbisVehicle {
     this.deviceNo = deviceNo;
   }
 
-
   public String getCdmaNo() {
     return cdmaNo;
   }
@@ -189,7 +173,6 @@ public class GgbisVehicle {
   public void setCdmaNo(String cdmaNo) {
     this.cdmaNo = cdmaNo;
   }
-
 
   public String getGpsModInfo() {
     return gpsModInfo;
@@ -199,7 +182,6 @@ public class GgbisVehicle {
     this.gpsModInfo = gpsModInfo;
   }
 
-
   public String getDestDeviceYn() {
     return destDeviceYn;
   }
@@ -207,7 +189,6 @@ public class GgbisVehicle {
   public void setDestDeviceYn(String destDeviceYn) {
     this.destDeviceYn = destDeviceYn;
   }
-
 
   public String getInCarDevYn() {
     return inCarDevYn;
@@ -217,7 +198,6 @@ public class GgbisVehicle {
     this.inCarDevYn = inCarDevYn;
   }
 
-
   public String getRemark() {
     return remark;
   }
@@ -225,7 +205,6 @@ public class GgbisVehicle {
   public void setRemark(String remark) {
     this.remark = remark;
   }
-
 
   public String getAreaCd() {
     return areaCd;
@@ -235,13 +214,19 @@ public class GgbisVehicle {
     this.areaCd = areaCd;
   }
 
-
-  public long getTotalSeatCnt() {
+  public Long getTotalSeatCnt() {
     return totalSeatCnt;
   }
 
-  public void setTotalSeatCnt(long totalSeatCnt) {
+  public void setTotalSeatCnt(Long totalSeatCnt) {
     this.totalSeatCnt = totalSeatCnt;
   }
 
+  public Long getPagingTotalCount() {
+    return pagingTotalCount;
+  }
+
+  public void setPagingTotalCount(Long pagingTotalCount) {
+    this.pagingTotalCount = pagingTotalCount;
+  }
 }

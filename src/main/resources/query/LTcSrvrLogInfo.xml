@@ -52,12 +52,17 @@
 				]]>
 			</if>	 	 
 		 </if>
+		 <!-- 2023-11-11 기관별 로그 조회 조건 추가 -->
+		 <if test="oprtrGrd != null and oprtrGrd != '' and oprtrGrd != 'SUPER' ">
+		 	AND MOO.MNG_INST_CD = #{mngInstCd}
+		 </if>
 	</sql>
 	
 	<select id="countSrvrLogBySearchInfo" parameterType="lTcSrvrLogInfo" resultType="int">
      	SELECT
      		COUNT(*)
      	FROM L_TC_SRVR_LOG_INFO ltsli
+     	INNER JOIN M_OP_OPERATOR MOO ON ltsli.SESN_ID = MOO.oprtr_email
      	WHERE 1=1
 		<include refid="lTcSrvrLogInfo-Where"/>
      </select>
@@ -65,7 +70,7 @@
      <select id="findOneLTcSrvrLogInfoByLogId" parameterType="String" resultType="lTcSrvrLogInfo">
      	SELECT
      		ltsli.LOG_ID
-     		, TO_CHAR(ltsli.OCCUR_DT,'YYYY-MM-DD') AS OCCUR_DT_STR
+     		, TO_CHAR(ltsli.OCCUR_DT,'YYYY-MM-DD HH24:MI:SS') AS OCCUR_DT_STR
      		, ltsli.LOG_TYPE
      		, ltsli.SESN_ID
      		, ltsli.LGN_IP
@@ -83,10 +88,11 @@
 			ltsli.SRVR_ID,
 			ltsli.SESN_ID,
 			ltsli.LGN_IP,
-			TO_CHAR(ltsli.OCCUR_DT,'YYYY-MM-DD') AS OCCUR_DT_STR,
+			TO_CHAR(ltsli.OCCUR_DT,'YYYY-MM-DD HH24:MI:SS') AS OCCUR_DT_STR,
 			ltsli.LOG_TYPE,
 			moc.CD_NM
 		FROM L_TC_SRVR_LOG_INFO ltsli
+		INNER JOIN M_OP_OPERATOR MOO ON ltsli.SESN_ID = MOO.oprtr_email
 		LEFT JOIN M_OP_CODE moc ON ltsli.LOG_TYPE = moc.CD_ID
 		WHERE 1=1
 		<include refid="lTcSrvrLogInfo-Where"/>

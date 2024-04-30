@@ -15,12 +15,12 @@
             <form id="groupCodeUpdateForm">
              <div class="contents_wrap mt24">
                  <div class="group">
-                     <div class="group_text">그룹코드 (필수)</div>
+                     <div class="group_text">그룹코드 (필수)<span class="required-alert">*</span></div>
                      <input type="text" name="grpCdId" id="grpCdId" placeholder="그룹코드를 입력해 주세요." 
-                     	class="input_same group_box data-validate" data-valid-name="그룹코드" data-valid-required maxlength="20">
+                     	class="input_same group_box data-validate" oninput="this.value=this.value.replace(/[^a-z1-9]/gi,'')" data-valid-name="그룹코드" data-valid-required maxlength="20">
                  </div>
                  <div class="group">
-                     <div class="group_text">그룹코드명 (필수)</div>
+                     <div class="group_text">그룹코드명 (필수)<span class="required-alert">*</span></div>
                      <input type="text" name="grpCdNm" id="grpCdNm" placeholder="그룹코드명을 입력해 주세요." 
                      	class="input_same group_box data-validate" data-valid-name="그룹코드명" data-valid-required maxlength="50">
                  </div>

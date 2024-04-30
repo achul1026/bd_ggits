@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.LOpExtnlAsctnTblCrtLogMapper'>
+
+    <select id="findOneByExtnlAsctnTblNm" resultType="lOpExtnlAsctnTblCrtLog">
+        SELECT
+            extnl_asctn_tbl_nm
+            ,occur_dt
+            ,add_occur_dt
+            ,occur_cycl
+        FROM l_op_extnl_asctn_tbl_crt_log
+        WHERE extnl_asctn_tbl_nm = #{extnlAsctnTblNm}
+    </select>
+
+    <insert id="insert" parameterType="lOpExtnlAsctnTblCrtLog">
+        INSERT
+        INTO l_op_extnl_asctn_tbl_crt_log
+        (
+            extnl_asctn_tbl_nm
+            ,occur_dt
+            ,add_occur_dt
+            ,occur_cycl
+        ) VALUES (
+            #{extnlAsctnTblNm}
+            ,#{occurDt}
+            ,#{addOccurDt}
+            ,#{occurCycl}
+        )
+    </insert>
+
+    <update id="update" parameterType="lOpExtnlAsctnTblCrtLog">
+        UPDATE l_op_extnl_asctn_tbl_crt_log
+        SET
+        occur_dt = #{occurDt}
+        ,add_occur_dt = #{addOccurDt}
+        ,occur_cycl = #{occurCycl}
+        WHERE extnl_asctn_tbl_nm = #{extnlAsctnTblNm}
+    </update>
+</mapper>

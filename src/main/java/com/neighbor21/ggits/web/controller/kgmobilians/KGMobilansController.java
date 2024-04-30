@@ -12,6 +12,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,7 +20,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.neighbor21.ggits.common.entity.CommonResponse;
 import com.neighbor21.ggits.common.util.GgitsCommonUtils;
-import com.neighbor21.ggits.common.util.McashCipher;
+
+import mup.mcash.module.common.McashCipher.McashCipher;
+
 
 @Controller
 @RequestMapping("/kg")
@@ -52,16 +55,31 @@ public class KGMobilansController {
 	@Value("#{commonProperties['kg.mobilans.keygb']}")
 	public String KEYGB;
 	
+	@Value("#{commonProperties['kg.mobilans.key']}")
+	public String KEY;
+	
     @GetMapping("/base/info.ajax")
-    public @ResponseBody CommonResponse<?> baseInfo(){
+    public @ResponseBody CommonResponse<?> baseInfo(HttpServletRequest request){
     	
     	Map<String,Object> resultMap = new HashMap<String, Object>();
+    	String protocol = "https://";
+    	String serverName = "ggdata.gg.go.kr";
+//    	String host = request.getRemoteHost();리
+    	String okUrl = protocol+serverName;
+    	String port = String.valueOf(request.getServerPort());
+//    	if(!GgitsCommonUtils.isNull(port)) {
+//    		okUrl = okUrl+":"+ port;
+//    	}
+    	okUrl = okUrl + OK_URL;
+    	
     	resultMap.put("CASH_GB", CASH_GB);
     	resultMap.put("CI_SVCID", CI_SVCID);
     	resultMap.put("TRADE_ID", GgitsCommonUtils.getUuid());
     	resultMap.put("PAY_MODE", PAY_MODE);
     	resultMap.put("SITE_URL", SITE_URL);
-    	resultMap.put("OK_URL", OK_URL);
+    	
+    	resultMap.put("OK_URL", okUrl);
+//    	resultMap.put("OK_URL", OK_URL);
     	resultMap.put("CI_MODE", CI_MODE);
     	resultMap.put("CRYPT_YN", CRYPT_YN);
     	resultMap.put("KEYGB", KEYGB);
@@ -69,11 +87,11 @@ public class KGMobilansController {
  		return CommonResponse.ResponseCodeAndMessage(HttpStatus.OK , "sueccess" ,resultMap);
     }
     
-    @PostMapping("/identity/verification/sueccess.do")
-    public String identityVerificationSueccess(HttpServletRequest request) throws NoSuchAlgorithmException, UnsupportedEncodingException{
+    @PostMapping("/identity/verification/success.do")
+    public String identityVerificationSueccess(HttpServletRequest request, Model model) throws NoSuchAlgorithmException, UnsupportedEncodingException{
     	
-    	request.setCharacterEncoding("UTF-8");
-//    	request.setCharacterEncoding("EUC-KR");
+//    	request.setCharacterEncoding("UTF-8");
+    	request.setCharacterEncoding("EUC-KR");
 
     	String Svcid		= request.getParameter("Svcid");		//서비스아이디
     	String Mobilid 		= request.getParameter("Mobilid");		//모빌리언스 거래번호
@@ -107,32 +125,42 @@ public class KGMobilansController {
     	' 주) 고유KEY 설정 시 비밀키 : "가맹점 고유 KEY + CI_SVCID 앞 8자리" (16byte)    	// Keygb 1 or 2
     	'	  "userKey" 항목에 key 세팅
     	*********************************************************************************/
-    	Name			= McashCipher.decodeString( Name, "ggitsapp23091813" );
-    	No				= McashCipher.decodeString( No, "ggitsapp23091813" );
-    	Commid			= McashCipher.decodeString( Commid, "ggitsapp23091813" );
-    	Socialno		= McashCipher.decodeString( Socialno, "ggitsapp23091813" );
-    	Sex				= McashCipher.decodeString( Sex, "ggitsapp23091813" );
-    	Foreigner		= McashCipher.decodeString( Foreigner, "ggitsapp23091813" );
-    	Ci				= McashCipher.decodeString( Ci, "ggitsapp23091813" );
-    	Di				= McashCipher.decodeString( Di, "ggitsapp23091813" );
+    	String secretSvcId = Svcid.substring(0, 8); 
+    	String secretKey = KEY + secretSvcId;
+    	Name			= McashCipher.decodeString( Name, secretKey );
+    	No				= McashCipher.decodeString( No, secretKey );
+    	Commid			= McashCipher.decodeString( Commid, secretKey );
+    	Socialno		= McashCipher.decodeString( Socialno, secretKey );
+    	Sex				= McashCipher.decodeString( Sex, secretKey );
+    	Foreigner		= McashCipher.decodeString( Foreigner, secretKey );
+    	Ci				= McashCipher.decodeString( Ci, secretKey );
+    	Di				= McashCipher.decodeString( Di, secretKey );
     	
     	/*********************************************************************************
     	* Mac값 위변조 여부 확인 SHA256(Signdate+Di+Ci+Mobilid+Svcid.substring(0, 8)+Svcid.substring(0, 8))
     	**********************************************************************************/
-    	String key = Signdate+Di+Ci+Mobilid+Svcid.substring(0, 8)+Svcid.substring(0, 8);
+    	String key = Signdate+Di+Ci+Mobilid+secretSvcId+secretSvcId;
     	MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
     	sha256.update(key.getBytes());
     	byte[] byteData = sha256.digest();
     	
     	String sha = Hex.encodeHexString(byteData);
-    	String result = "정상 데이터";
+    	String resultMsg = "정상 데이터";
     	
     	if( !Mac.equals(sha)){
-    		result = "데이터가 위·변조되었습니다.";
+    		resultMsg = "데이터가 위·변조되었습니다.";
+    		Resultcd = "9999";
     	}
     	
+    	Map<String,Object> resultMap = new HashMap<String, Object>();
+    	resultMap.put("resultCode", Resultcd);
+    	resultMap.put("resultMsg", resultMsg);
+    	resultMap.put("userName", Name);
+    	resultMap.put("tel", No);
     	
-    	return "view/common/identityVerificationSueccess";
+    	model.addAttribute("result", resultMap);
+    	
+    	return "modal/common/identityVerificationSueccess";
     }
     
 }

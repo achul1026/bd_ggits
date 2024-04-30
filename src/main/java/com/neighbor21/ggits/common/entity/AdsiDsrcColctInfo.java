@@ -11,15 +11,15 @@ public class AdsiDsrcColctInfo extends AdsiDsrcSctnInfo {
   private String obuId; //obu 아이디
   private double speed; //속도
 
-
+  @Override
   public String getMngInstCd() {
     return mngInstCd;
   }
-
+  
+  @Override
   public void setMngInstCd(String mngInstCd) {
     this.mngInstCd = mngInstCd;
   }
-
 
   public Timestamp getClctDt() {
     return clctDt;
@@ -29,11 +29,12 @@ public class AdsiDsrcColctInfo extends AdsiDsrcSctnInfo {
     this.clctDt = clctDt;
   }
 
-
+  @Override
   public String getDsrcSctnId() {
     return dsrcSctnId;
   }
-
+  
+  @Override
   public void setDsrcSctnId(String dsrcSctnId) {
     this.dsrcSctnId = dsrcSctnId;
   }

@@ -5,12 +5,12 @@ import java.sql.Timestamp;
 //마스터 운영 운영자
 public class MOpOperator extends CommonEntity{
 
-	private long oprtrId; // 운영자 아이디
+	private Long oprtrId; // 운영자 아이디
 	private String grpId; // 그룹 아이디
 	private String systemCd; // 시스템 코드
 	private String oprtrPswd; // 운영자 비밀번호
 	private String oprtrNm; // 운영자 명
-	private long authId; // 권한 아이디
+	private Long authId; // 권한 아이디
 	private String oprtrJbttl; // 운영자 직책
 	private String oprtrDept; // 운영자 부서
 	private Timestamp updtDt; // 수정 일시
@@ -24,12 +24,16 @@ public class MOpOperator extends CommonEntity{
 	private String prvcMngPolcyAgre = "N"; // 개인정보 관리 방침 동의
 	private String oprtrSttsCd; // 운영자 상태 코드
 	private String oprtrRegistDd; // 운영자 등록일
-	private long layoutNo;		//레이아웃 번호
+	private String mngInstCd; // 관리 기관코드
+	private Long layoutNo;		//레이아웃 번호
 	
 	
 	//#MOpGrpInfo 테이블 컬럼 참조
     private String grpNm;        //그룹 명
     private String upperOprtrAuthGrpYn = "N"; // 상위 관리자 그룹 여부
+    
+    //#MOpAuthority 권한 관련 테이블
+    private String authCd;		//권한 코드
 	
     
     //비밀번호 확인 컬럼
@@ -37,12 +41,16 @@ public class MOpOperator extends CommonEntity{
     
     // common code
     private String cdNm;
+    private String mngInstNm;
     
-	public long getOprtrId() {
+    // no table
+    private String loginType;
+    
+	public Long getOprtrId() {
 		return oprtrId;
 	}
 
-	public void setOprtrId(long oprtrId) {
+	public void setOprtrId(Long oprtrId) {
 		this.oprtrId = oprtrId;
 	}
 	
@@ -78,11 +86,11 @@ public class MOpOperator extends CommonEntity{
 		this.oprtrNm = oprtrNm;
 	}
 
-	public long getAuthId() {
+	public Long getAuthId() {
 		return authId;
 	}
 
-	public void setAuthId(long authId) {
+	public void setAuthId(Long authId) {
 		this.authId = authId;
 	}
 
@@ -126,10 +134,12 @@ public class MOpOperator extends CommonEntity{
 		this.oprtrGrd = oprtrGrd;
 	}
 
+	@Override
 	public String getUseYn() {
 		return useYn;
 	}
 
+	@Override
 	public void setUseYn(String useYn) {
 		this.useYn = useYn;
 	}
@@ -189,12 +199,20 @@ public class MOpOperator extends CommonEntity{
 	public void setOprtrRegistDd(String oprtrRegistDd) {
 		this.oprtrRegistDd = oprtrRegistDd;
 	}
+	
+	public String getMngInstCd() {
+		return mngInstCd;
+	}
 
-	public long getLayoutNo() {
+	public void setMngInstCd(String mngInstCd) {
+		this.mngInstCd = mngInstCd;
+	}
+
+	public Long getLayoutNo() {
 		return layoutNo;
 	}
 
-	public void setLayoutNo(long layoutNo) {
+	public void setLayoutNo(Long layoutNo) {
 		this.layoutNo = layoutNo;
 	}
 
@@ -229,5 +247,28 @@ public class MOpOperator extends CommonEntity{
 	public void setCdNm(String cdNm) {
 		this.cdNm = cdNm;
 	}
-	
+
+	public String getMngInstNm() {
+		return mngInstNm;
+	}
+
+	public void setMngInstNm(String mngInstNm) {
+		this.mngInstNm = mngInstNm;
+	}
+
+	public String getLoginType() {
+		return loginType;
+	}
+
+	public void setLoginType(String loginType) {
+		this.loginType = loginType;
+	}
+
+	public String getAuthCd() {
+		return authCd;
+	}
+
+	public void setAuthCd(String authCd) {
+		this.authCd = authCd;
+	}
 }

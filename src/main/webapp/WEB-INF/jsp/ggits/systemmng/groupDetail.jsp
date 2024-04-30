@@ -11,16 +11,16 @@
             <section class="main_section">
                 <h2 class="blind">사용자 그룹 등록</h2>
                 <form id="groupUserUpdateForm">
-                	<input type="hidden" id="grpId" name="grpId" value="${groupDetail.grpId}"/>
+                	<input type="hidden" id="grpId" name="grpId" value="<c:out value='${groupDetail.grpId}'/>"/>
 	                <div class="contents_wrap mt24">
 	                    <div class="group">
-	                        <div class="group_text">그룹명</div>
-	                        <input type="text"  class="input_same group_box data-validate" name="grpNm" value="${groupDetail.grpNm}"
+	                        <div class="group_text">그룹명<span class="required-alert">*</span></div>
+	                        <input type="text"  class="input_same group_box data-validate" name="grpNm" value="<c:out value='${groupDetail.grpNm}'/>"
 	                        	data-valid-name="그룹명" data-valid-maximum="50" data-valid-required/>
 	                    </div>
 	                    <div class="group">
 	                        <div class="group_text">그룹 설명</div>
-	                        <input type="text"  class="input_same group_box data-validate" data-valid-name="그룹 설명" data-valid-maximum="400" name="grpDescr" value="${groupDetail.grpDescr}">
+	                        <input type="text"  class="input_same group_box data-validate" data-valid-name="그룹 설명" data-valid-maximum="400" name="grpDescr" value="<c:out value='${groupDetail.grpDescr}'/>">
 	                    </div>
 	                    <div class="group">
 	                        <div class="group_text">그룹 사용자</div>
@@ -54,11 +54,11 @@
                                 		<c:when test="${fn:length(groupUserList) > 0}">
 											<c:forEach var="groupUserList" items="${groupUserList}">
 			                                    <tr>
-			                                        <td class="rownum">${groupUserList.rownum}</td>
-			                                        <td><input type="hidden" name="oprtrId" value="${groupUserList.oprtrId}"/>${groupUserList.oprtrEmail}</td>
-			                                        <td>${groupUserList.oprtrNm}</td>
+			                                        <td class="rownum"><c:out value="${groupUserList.rownum}"/></td>
+			                                        <td><input type="hidden" name="oprtrId" value="<c:out value="${groupUserList.oprtrId}"/>"/><c:out value="${groupUserList.oprtrEmail}"/></td>
+			                                        <td><c:out value="${groupUserList.oprtrNm}"/></td>
 			                                        <c:if test="${groupDetail.bscGrpYn eq 'N'}">
-			                                        <td class="selectCancelBtn pointer" data-oprtr-name="${groupUserList.oprtrNm}">
+			                                        <td class="selectCancelBtn pointer" data-oprtr-name="<c:out value="${groupUserList.oprtrNm}"/>">
 			                                        	선택취소
 			                                        </td>
 			                                        </c:if>
@@ -79,7 +79,7 @@
 	                        <select class="selectBox" name="authId">
 	                            <option value="">권한설정</option>
 							<c:forEach var="authList" items="${authList}">
-	                            <option <c:if test="${groupDetail.authId eq authList.authId}">selected="selected"</c:if> value="${authList.authId}">${authList.authNm}</option>
+	                            <option <c:if test="${groupDetail.authId eq authList.authId}">selected="selected"</c:if> value="<c:out value="${authList.authId}"/>"><c:out value="${authList.authNm}"/></option>
 	                        </c:forEach>
 	                        </select>
 	                    </div>
@@ -101,10 +101,10 @@
 		                </c:if>
 	                    <div class="group group_search">
 	                        <a href="${pageContext.request.contextPath}/system/user/group/list.do" class="is-dark-btn">이전 페이지</a>
-	                        <input type="button" class="is-darkgreen-btn" id="groupUserUpdateBtn"  value="수정">
 	                        <c:if test="${groupDetail.bscGrpYn eq 'N'}">
-	                        <input type="button" class="is-dark-btn" id="groupUserDeleteBtn" value="삭제" >
+	                        <a href="javascript:void(0);" class="is-dark-btn" id="groupUserDeleteBtn">삭제</a>
 	                        </c:if>
+	                        <a href="javascript:void(0);" class="is-darkgreen-btn" id="groupUserUpdateBtn">수정</a>
 	                    </div>
 	                </div>
                 </form>
@@ -219,7 +219,7 @@
 	    	$("#oprtrIdArr").val(oprtrIdArr);
 	    	var groupUserUpdateForm = $("#groupUserUpdateForm").serializeObject();
 	    	
-			new ModalBuilder().init().alertBoby("해당 그룹 삭제 시 그룹원은 일반사용자 그룹으로 이전됩니다.").footer(5,'삭제하기',function(button, modal){
+			new ModalBuilder().init().alertBoby("해당 그룹 삭제 시 그룹원은<br>일반사용자 그룹으로 이전됩니다.").footer(5,'삭제하기',function(button, modal){
 		    	$.ajax({
 					type : "get",
 					data : groupUserUpdateForm,
@@ -240,7 +240,9 @@
 	    				}
 					}
 				});
-			 },'취소하기',function(button, modal){}).open();
+			 },'취소하기',function(button, modal){
+				 modal.close();
+			 }).open();
 	    })
 	    
 	    $("#tbody").on("click",".selectCancelBtn",function(){

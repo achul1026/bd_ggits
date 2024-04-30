@@ -17,7 +17,11 @@ public class MOpCode extends CommonEntity{
   private Timestamp crtDt; //등록 일시
   private String uptusrId; // 수정자 아이디
   private Timestamp updtDt; //수정 일시
-
+  
+  
+  //LIMIT 체크 값 (default = 10)
+  private int limit = 10;
+  
   public MOpCode(String cdId) {
 		super();
 		this.cdId = cdId;
@@ -80,11 +84,12 @@ public class MOpCode extends CommonEntity{
     this.cdCond2Val = cdCond2Val;
   }
 
-
+  @Override
   public String getUseYn() {
     return useYn;
   }
 
+  @Override
   public void setUseYn(String useYn) {
     this.useYn = useYn;
   }
@@ -128,6 +133,14 @@ public String getUptusrId() {
 
 public void setUptusrId(String uptusrId) {
 	this.uptusrId = uptusrId;
+}
+
+public int getLimit() {
+	return limit;
+}
+
+public void setLimit(int limit) {
+	this.limit = limit;
 }
   
 

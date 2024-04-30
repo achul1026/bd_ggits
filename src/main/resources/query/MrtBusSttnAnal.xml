@@ -5,8 +5,8 @@
 	<sql id="mrtBusSttnAnal-Where">
 		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
 			AND mbsa.ANLS_DT 
-			BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
-		    	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			BETWEEN TO_TIMESTAMP(#{strDt}|| ' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}|| ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
 		</if>
 		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
 			<![CDATA[
@@ -17,6 +17,12 @@
 			<![CDATA[
 			AND mbsa.ANLS_DT <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
 			]]>
+		</if>
+		<if test="sigunCdId != null and sigunCdId != '' and sigunCdId != 'searchAllLocation'">
+			AND gbr.SIDO_CD LIKE #{sigunCdId} || '%'
+		</if>
+		<if test="routeTp != null and routeTp != '' and routeTp != 'all'">
+			AND gbr.ROUTE_TP = #{routeTp}
 		</if>
 		<if test="searchContent != null and searchContent != ''">
 			AND mbsa.BSTP_NM LIKE '%' || #{searchContent} || '%'	
@@ -30,85 +36,51 @@
 	</sql>
 	
 	<select id="countBusSttnAnalList" parameterType="commonEntity" resultType="int">
-		SELECT
+		SELECT 
 			COUNT(*)
-		FROM MRT_BUS_STTN_ANAL mbsa
-		LEFT JOIN GGBIS_BUS_ROUTE gbr
-			ON mbsa.BUS_ROUTE_ID = gbr.ROUTE_ID
-		WHERE	
-			1=1
+		FROM (
+			SELECT
+				mbsa.BSTP_NM
+			FROM MRT_BUS_STTN_ANAL mbsa
+			INNER JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE gbr
+				ON mbsa.BUS_ROUTE_ID = gbr.ROUTE_ID
+			WHERE	
+				1=1
 			<include refid="mrtBusSttnAnal-Where"/>
+			GROUP BY mbsa.BSTP_NM, gbr.ROUTE_NM, ROUTE_TP, gbr.ROUTE_INTERVAL, gbr.ST_STA_NM, gbr.ED_STA_NM		
+		)A
 	</select>
 	
 	<select id="findAllBusSttnInfoList" parameterType="commonEntity" resultType="mrtBusSttnAnal">
 		SELECT
 			mbsa.BSTP_NM
+			, gbr.ROUTE_NM  
+			, CASE WHEN gbr.ROUTE_TP ='11' THEN '직행좌석형시내버스'
+				WHEN gbr.ROUTE_TP ='12' THEN '좌석형시내버스'
+				WHEN gbr.ROUTE_TP ='13' THEN '일반형시내버스'
+				WHEN gbr.ROUTE_TP ='21' THEN '직행좌석형농어촌버스'
+				WHEN gbr.ROUTE_TP ='22' THEN '좌석형농어촌버스'
+				WHEN gbr.ROUTE_TP ='23' THEN '일반형농어촌버스'
+				WHEN gbr.ROUTE_TP ='30' THEN '마을버스'
+				WHEN gbr.ROUTE_TP ='41' THEN '고속형시외버스'
+				WHEN gbr.ROUTE_TP ='42' THEN '좌석형시외버스'
+				WHEN gbr.ROUTE_TP ='43' THEN '일반형시외버스'
+				WHEN gbr.ROUTE_TP ='51' THEN '리무진형공항버스'
+				WHEN gbr.ROUTE_TP ='52' THEN '좌석형공항버스'
+				WHEN gbr.ROUTE_TP ='53' THEN '일반형공항버스'
+				END AS ROUTE_TP
 			, gbr.ROUTE_INTERVAL
 			, gbr.ST_STA_NM
 			, gbr.ED_STA_NM
 		FROM MRT_BUS_STTN_ANAL mbsa
-		LEFT JOIN GGBIS_BUS_ROUTE gbr
+		INNER JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE gbr
 			ON mbsa.BUS_ROUTE_ID = gbr.ROUTE_ID
 		WHERE
 			1=1
 			<include refid="mrtBusSttnAnal-Where"/>
-		ORDER BY mbsa.ANLS_DT DESC
-	</select>
-	
-	<select id="countAllBusUseStatAnal" parameterType="mapBigdataSearchDTO" resultType="int">
-		SELECT
-			COUNT(*)
-		FROM MRT_BUS_STTN_ANAL mbsa
-		LEFT JOIN GGBIS_BUS_ROUTE gnr
-		  ON mbsa.BUS_ROUTE_ID = gnr.ROUTE_ID 
-		WHERE
-			1=1
-		<if test="searchPeriod != '' and searchPeriod != null">
-			AND EXTRACT (ISODOW from mbsa.ANLS_DT)::varchar(1) IN 
-			<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
-            	#{item}
-            </foreach>
-		</if>
-		<if test="(startDate != null and startDate != '') and (endDate != null and endDate != '')">
-			AND mbsa.ANLS_DT
-		    	BETWEEN TO_TIMESTAMP(#{startDate}, 'YYYY-MM-DD HH24:MI:SS') 
-		    	AND TO_TIMESTAMP(#{endDate}, 'YYYY-MM-DD HH24:MI:SS')
-		</if>
-		<if test="searchContent != null and searchContent != ''">
-			AND (mbsa.BSTP_NM LIKE '%' || #{searchContent} || '%' 
-				OR mbsa.BSTP_ID LIKE '%' || #{searchContent} || '%')
-		</if>
-	</select>
-	
-	<select id="findAllBusUseStatsAnal" parameterType="mapBigdataSearchDTO" resultType="mrtBusSttnAnal">
-		SELECT
-			mbsa.ROUTE_NM
-			, gnr.ST_STA_NM
-			, gnr.ED_STA_NM
-			, gnr.ROUTE_INTERVAL
-		FROM MRT_BUS_STTN_ANAL mbsa
-		LEFT JOIN GGBIS_BUS_ROUTE gnr
-		  ON mbsa.BUS_ROUTE_ID = gnr.ROUTE_ID 
-		WHERE
-			1=1
-		<if test="searchPeriod != '' and searchPeriod != null">
-			AND EXTRACT (ISODOW from mbsa.ANLS_DT)::varchar(1) IN 
-			<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
-            	#{item}
-            </foreach>
-		</if>
-		<if test="(startDate != null and startDate != '') and (endDate != null and endDate != '')">
-			AND mbsa.ANLS_DT
-		    	BETWEEN TO_TIMESTAMP(#{startDate}, 'YYYY-MM-DD HH24:MI:SS') 
-		    	AND TO_TIMESTAMP(#{endDate}, 'YYYY-MM-DD HH24:MI:SS')
-		</if>
-		<if test="searchContent != null and searchContent != ''">
-			AND (mbsa.BSTP_NM LIKE '%' || #{searchContent} || '%' 
-				OR mbsa.BSTP_ID LIKE '%' || #{searchContent} || '%')
-		</if>
-		<if test="page != null and page != '' and page != 0 ">
-            LIMIT 5 OFFSET (#{page} - 1) * 5
-        </if>
+		GROUP BY mbsa.BSTP_NM, gbr.ROUTE_NM, ROUTE_TP, gbr.ROUTE_INTERVAL, gbr.ST_STA_NM, gbr.ED_STA_NM
+		ORDER BY mbsa.BSTP_NM
+		LIMIT 10 OFFSET (#{page} - 1) * 10;
 	</select>
 	
 	<select id="findAllDataYears" resultType="map">
@@ -118,5 +90,133 @@
 			MRT_BUS_STTN_ANAL
 		GROUP BY TO_CHAR(ANLS_DT,'YYYY')
 		ORDER BY TO_CHAR(ANLS_DT,'YYYY') DESC  
+	</select>
+
+	<select id="findAllByStationId" resultType="mrtBusSttnAnal">
+		SELECT
+		MBSA.BSTP_ID
+		,MBSA.BUS_ROUTE_ID
+		,sum(MBSA.RIDE_USER_CNT) as RIDE_USER_CNT
+		,sum(MBSA.LNDI_USER_CNT) as LNDI_USER_CNT
+		,sum(MBSA.TRNSIT_USER_CNT) as TRNSIT_USER_CNT
+		,MBSA.USE_YN
+		,GBR.ROUTE_NM
+		,GBR.ROUTE_TP
+		,GBS.STATION_NM as BSTP_NM
+		,GBS.MOBILE_NO
+		FROM
+			MRT_BUS_STTN_ANAL MBSA
+				INNER JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE GBR ON MBSA.BUS_ROUTE_ID = GBR.ROUTE_ID
+				INNER JOIN BIGDATA.EXT_GGBIS_BUS_STATION GBS ON MBSA.BSTP_ID = GBS.STATION_ID
+		WHERE
+			MBSA.BSTP_ID = #{stationId}
+		<if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+			AND TO_CHAR(MBSA.ANLS_DT, 'YYYY') = #{searchYear}
+		</if>
+		<!-- 기간 검색 -->
+		<if test="searchPeriod != null and searchPeriod != ''">
+			<choose>
+				<when test="searchPeriod == 'weekday' ">
+					AND TO_CHAR(MBSA.ANLS_DT,'D') BETWEEN '2' AND '6'
+				</when>
+				<when test="searchPeriod == 'weekend' ">
+					AND (TO_CHAR(MBSA.ANLS_DT,'D') = '1' OR TO_CHAR(MBSA.ANLS_DT,'D') =  '7')
+				</when>
+				<otherwise>
+					AND TO_CHAR(MBSA.ANLS_DT, 'YYYY-MM-DD') BETWEEN #{startDate} AND #{endDate}
+				</otherwise>
+			</choose>
+		</if>
+		<!-- 시간 검색 -->
+		<if test="searchTime != null and searchTime != ''">
+			<choose>
+				<when test="searchTime == 'workingTime' ">
+					AND TO_CHAR(MBSA.ANLS_DT, 'HH24') BETWEEN '06' AND '10'
+				</when>
+				<when test="searchTime == 'workingEndTime' ">
+					AND TO_CHAR(MBSA.ANLS_DT, 'HH24') BETWEEN '17' AND '20'
+				</when>
+				<otherwise>
+					AND TO_CHAR(MBSA.ANLS_DT, 'HH24') BETWEEN #{startTime} AND #{endTime}
+				</otherwise>
+			</choose>
+		</if>
+		group by
+		MBSA.BSTP_ID ,
+		MBSA.BUS_ROUTE_ID ,
+		MBSA.USE_YN ,
+		GBR.ROUTE_NM ,
+		GBR.ROUTE_TP ,
+		GBS.STATION_NM ,
+		GBS.MOBILE_NO
+	</select>
+	
+	<select id="findAllBusStatsList" parameterType="commonEntity" resultType="map">
+		WITH ROUTE_STATS_INFO_LIST AS (
+									SELECT
+										ROUND(100.0*COUNT(A.ROUTE_TP) / (SELECT COUNT(gbr.route_tp) FROM MRT_BUS_STTN_ANAL mbsa INNER JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE gbr
+													ON mbsa.BUS_ROUTE_ID = gbr.ROUTE_ID)::numeric,2) as RATEVALUE
+										, A.ROUTE_TP
+									FROM
+										(
+												SELECT
+													CASE WHEN gbr.ROUTE_TP ='11' THEN '직행좌석형시내버스'
+														WHEN gbr.ROUTE_TP ='12' THEN '좌석형시내버스'
+														WHEN gbr.ROUTE_TP ='13' THEN '일반형시내버스'
+														WHEN gbr.ROUTE_TP ='21' THEN '직행좌석형농어촌버스'
+														WHEN gbr.ROUTE_TP ='22' THEN '좌석형농어촌버스'
+														WHEN gbr.ROUTE_TP ='23' THEN '일반형농어촌버스'
+														WHEN gbr.ROUTE_TP ='30' THEN '마을버스'
+														WHEN gbr.ROUTE_TP ='41' THEN '고속형시외버스'
+														WHEN gbr.ROUTE_TP ='42' THEN '좌석형시외버스'
+														WHEN gbr.ROUTE_TP ='43' THEN '일반형시외버스'
+														WHEN gbr.ROUTE_TP ='51' THEN '리무진형공항버스'
+														WHEN gbr.ROUTE_TP ='52' THEN '좌석형공항버스'
+														WHEN gbr.ROUTE_TP ='53' THEN '일반형공항버스'
+														END AS ROUTE_TP 
+												FROM MRT_BUS_STTN_ANAL mbsa
+												INNER JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE gbr
+													ON mbsa.BUS_ROUTE_ID = gbr.ROUTE_ID
+												WHERE
+													1=1
+												<include refid="mrtBusSttnAnal-Where"/>	
+												GROUP BY mbsa.BSTP_NM, gbr.ROUTE_NM, ROUTE_TP, gbr.ROUTE_INTERVAL, gbr.ST_STA_NM, gbr.ED_STA_NM
+								)A
+							GROUP BY A.ROUTE_TP
+			)
+			SELECT
+				ARRAY_TO_STRING(ARRAY_AGG(RATEVALUE), ',') AS "busRouteRateArr"
+				,ARRAY_TO_STRING(ARRAY_AGG(ROUTE_TP), ',') AS "busRouteTpArr"
+			FROM
+				ROUTE_STATS_INFO_LIST
+	</select>
+	
+	<select id="findMaxRideYmd" resultType="String">
+		SELECT MAX(RIDE_YMD) AS RIDE_YMD FROM MRT_BUS_STTN_PASNG_ANAL
+	</select>
+	
+	
+	<select id="findBusStationUsageInit" parameterType="String" resultType="mrtBusSttnAnal">
+		SELECT
+			BSTP_ID,
+			egbs.mobile_no,
+			EGBS.STATION_NM ,
+			REPLACE (EGBS.ADMIN_NM,'경기도 ','') AS ADMIN_NM,
+			SUM(RIDE_USER_CNT) AS RIDE_USER_CNT,
+			SUM(LNDI_USER_CNT) AS LNDI_USER_CNT,
+			SUM(TRNSIT_USER_CNT) AS TRNSIT_USER_CNT,
+			SUM(RIDE_USER_CNT)+SUM(LNDI_USER_CNT)+SUM(TRNSIT_USER_CNT) AS TOTAL
+		FROM
+			MRT_BUS_STTN_PASNG_ANAL MBSPA
+		INNER JOIN BIGDATA.EXT_GGBIS_BUS_STATION EGBS ON MBSPA.BSTP_ID = EGBS.STATION_ID
+		WHERE 
+			RIDE_YMD = #{rideYmd}
+			AND EGBS.ADMIN_NM LIKE '경기%'
+		GROUP BY
+			RIDE_YMD,BSTP_ID ,egbs.mobile_no,
+			EGBS.STATION_NM,
+			ADMIN_NM
+		ORDER BY TOTAL DESC
+		LIMIT 10
 	</select>
 </mapper>

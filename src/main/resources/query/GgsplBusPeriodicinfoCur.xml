@@ -1,0 +1,51 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.GgsplBusPeriodicinfoCurMapper'>
+
+    <select id="countAllRealTimeBusMoveInfo" resultType="int">
+        SELECT
+        COUNT(*)
+        FROM GGSPL_BUS_PERIODICINFO_CUR EGBP
+        INNER JOIN (
+        SELECT
+        MAX(COLLECT_DATE) AS RCT_COLLECT_DATE,
+        ROUTE_ID ,
+        VEH_ID
+        FROM
+        GGSPL_BUS_PERIODICINFO_CUR
+        WHERE COLLECT_DATE > NOW() - INTERVAL'5 MINUTE'
+        GROUP BY ROUTE_ID, VEH_ID
+        ) RCT_BUS ON EGBP.ROUTE_ID = RCT_BUS.ROUTE_ID AND EGBP.VEH_ID = RCT_BUS.VEH_ID AND EGBP.COLLECT_DATE  = RCT_BUS.RCT_COLLECT_DATE
+        LEFT JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE EGBR ON EGBP.ROUTE_ID = EGBR.ROUTE_ID
+        LEFT JOIN BIGDATA.EXT_GGBIS_VEHICLE GV ON EGBP.VEH_ID = GV.VEH_ID
+    </select>
+    
+    <select id="findRealTimeBusMoveInfoByCity" resultType="map">
+		SELECT
+			COUNT(*) AS "cnt",
+			SPLIT_PART(EGBR.ADMIN_NM,' ',2) AS "adminNm",
+			MOC.SORT_NO as "sortNo",
+			MOC.CD_ID as "cdId"
+		FROM GGSPL_BUS_PERIODICINFO_CUR EGBP
+		INNER JOIN (
+			SELECT
+			MAX(COLLECT_DATE) AS RCT_COLLECT_DATE,
+			ROUTE_ID ,
+			VEH_ID
+			FROM
+			GGSPL_BUS_PERIODICINFO_CUR
+			WHERE COLLECT_DATE > NOW() - INTERVAL'5 MINUTE'
+			GROUP BY ROUTE_ID, VEH_ID
+		) RCT_BUS ON EGBP.ROUTE_ID = RCT_BUS.ROUTE_ID AND EGBP.VEH_ID =
+		RCT_BUS.VEH_ID AND EGBP.COLLECT_DATE = RCT_BUS.RCT_COLLECT_DATE
+		LEFT JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE EGBR ON EGBP.ROUTE_ID = EGBR.ROUTE_ID
+		LEFT JOIN BIGDATA.EXT_GGBIS_VEHICLE GV ON EGBP.VEH_ID = GV.VEH_ID
+		LEFT JOIN M_OP_CODE MOC ON MOC.CD_NM = SPLIT_PART(EGBR.ADMIN_NM,' ',2) and
+		moc.grp_cd_id = 'SGG_CD'
+		WHERE EGBR.ADMIN_NM LIKE '경기도%' AND SPLIT_PART(EGBR.ADMIN_NM,' ',2) != ''
+		GROUP BY "adminNm","sortNo","cdId"
+		ORDER BY "sortNo"
+    </select>
+    
+</mapper>

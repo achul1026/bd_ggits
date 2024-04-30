@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+<mapper namespace='com.neighbor21.ggits.common.mapper.MOpUserCntnSystemMenuMapper'>
+	<select id="findAllMOpCntnSystemMenuByOprtrIdAndUseYn" parameterType="mOpUserCntnSystemMenu" resultType="mOpUserCntnSystemMenu">
+		SELECT 
+			 OPRTR_ID,
+			 CNTN_SYSTEM_CD,
+			 USE_YN
+		FROM M_OP_USER_CNTN_SYSTEM_MENU
+		WHERE OPRTR_ID = #{oprtrId}
+		<if test="useYn != null and useYn != ''">
+			AND USE_YN = #{useYn}
+		</if>
+		ORDER BY CNTN_SYSTEM_CD
+	</select>
+
+	<select id="countByMOpCntnSystemMenuByOprtrId" parameterType="Long" resultType="int">
+		SELECT 
+			COUNT(*)
+		FROM M_OP_USER_CNTN_SYSTEM_MENU
+		WHERE OPRTR_ID = #{oprtrId}
+	</select>
+	
+	<insert id="saveMOpUserCntnSystemMenu" parameterType="mOpUserCntnSystemMenu">
+		INSERT INTO M_OP_USER_CNTN_SYSTEM_MENU (
+			OPRTR_ID,
+			CNTN_SYSTEM_CD,
+			USE_YN
+		) VALUES (
+			#{oprtrId},
+			#{cntnSystemCd},
+			#{useYn}
+		)
+	</insert>
+
+	<delete id="deleteByOprtrId" parameterType="long">
+		delete from M_OP_USER_CNTN_SYSTEM_MENU
+		where oprtr_id = #{oprtrId}
+	</delete>
+	
+	<update id="updateMOpUserCntnSystemMenuUseYn" parameterType="mOpUserCntnSystemMenu">
+		UPDATE M_OP_USER_CNTN_SYSTEM_MENU SET
+		USE_YN = #{useYn}
+		WHERE OPRTR_ID = #{oprtrId}
+		<choose>
+			<when test="cntnSystemCdArr != null">
+				AND CNTN_SYSTEM_CD IN
+				<foreach collection="cntnSystemCdArr" item="cntnSystemCd" open="(" close=")" separator=",">
+					#{cntnSystemCd}
+				</foreach>
+			</when>
+			<otherwise>
+				AND CNTN_SYSTEM_CD = #{cntnSystemCd}
+			</otherwise>
+		</choose>
+	</update>
+</mapper>

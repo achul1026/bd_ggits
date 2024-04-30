@@ -11,20 +11,28 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.neighbor21.ggits.common.dto.MapLoginStatisticsDTO;
+import com.neighbor21.ggits.common.dto.MapMonitoringLinkDataDTO;
 import com.neighbor21.ggits.common.dto.MapMonitoringMenuDTO;
 import com.neighbor21.ggits.common.dto.MapTotalServiceInfoDTO;
 import com.neighbor21.ggits.common.dto.MapUseCaseInfoDTO;
+import com.neighbor21.ggits.common.dto.MonitoringTrafficCurDto;
 import com.neighbor21.ggits.common.entity.LOpPgmLogn;
 import com.neighbor21.ggits.common.entity.LOpUseMenu;
 import com.neighbor21.ggits.common.entity.MOpCode;
 import com.neighbor21.ggits.common.entity.MOpMenu;
 import com.neighbor21.ggits.common.entity.MOpOperator;
+import com.neighbor21.ggits.common.enums.MapMonitoringSubMenuCd;
 import com.neighbor21.ggits.common.mapper.AdsiVdsColctInfoMapper;
+import com.neighbor21.ggits.common.mapper.GgitsLinkStd1HMapper;
+import com.neighbor21.ggits.common.mapper.GimsMngInciDetailMapper;
 import com.neighbor21.ggits.common.mapper.LOpPgmLognMapper;
 import com.neighbor21.ggits.common.mapper.LOpUseMenuMapper;
 import com.neighbor21.ggits.common.mapper.MOpCodeMapper;
 import com.neighbor21.ggits.common.mapper.MOpMenuMapper;
 import com.neighbor21.ggits.common.mapper.MOpOperatorMapper;
+import com.neighbor21.ggits.common.mapper.MonitoringTrafficCurMapper;
+import com.neighbor21.ggits.common.mapper.MrtStdLinkSectnInfoMapper;
+import com.neighbor21.ggits.common.mapper.ScsEmrgVhclLogInfoMapper;
 import com.neighbor21.ggits.common.util.GgitsCommonUtils;
 
 @Service
@@ -47,6 +55,23 @@ public class MapMonitoringService{
     
     @Autowired
     MOpOperatorMapper mOpOperatorMapper;
+    
+    @Autowired
+    MrtStdLinkSectnInfoMapper mrtStdLinkSectnInfoMapper;
+    
+    @Autowired
+    GgitsLinkStd1HMapper ggitsLinkStd1HMapper;
+    
+    @Autowired
+    ScsEmrgVhclLogInfoMapper scsEmrgVhclLogInfoMapper;
+    
+    @Autowired
+    GimsMngInciDetailMapper gimsMngInciDetailMapper;
+
+	@Autowired
+	MonitoringTrafficCurMapper monitoringTrafficCurMapper;
+    
+    
     /**
       * @Method Name : findOneCumulativeTrafficVolumeByTimeZone
       * @작성일 : 2023. 9. 18.
@@ -60,7 +85,7 @@ public class MapMonitoringService{
     	MapMonitoringMenuDTO resultDto = new MapMonitoringMenuDTO();
     	
     	//시간 대별 누적 교통량 상단 데이트
-    	MapMonitoringMenuDTO trafficCntInfo = adsiVdsColctInfoMapper.findOneTrafficVolumeCntByTimeZone(mapMonitoringMenuDTO); 
+    	MapMonitoringMenuDTO trafficCntInfo = mrtStdLinkSectnInfoMapper.findOneTrafficVolumeCntByTimeZone(mapMonitoringMenuDTO); 
     	
     	if(trafficCntInfo != null) {
     		resultDto.setAverageCnt(trafficCntInfo.getAverageCnt());
@@ -68,7 +93,7 @@ public class MapMonitoringService{
     	}
     	
     	//시간 대별 누적 교통량 그래프 데이트
-    	MapMonitoringMenuDTO trafficGraphInfo = adsiVdsColctInfoMapper.findOneTrafficVolumeGraphByTimeZone(mapMonitoringMenuDTO);
+    	MapMonitoringMenuDTO trafficGraphInfo = mrtStdLinkSectnInfoMapper.findOneTrafficVolumeGraphByTimeZone(mapMonitoringMenuDTO);
     	if(trafficGraphInfo != null) {
         	resultDto.setGraphTime(trafficGraphInfo.getGraphTime());
         	resultDto.setGraphCnt(trafficGraphInfo.getGraphCnt());
@@ -90,7 +115,7 @@ public class MapMonitoringService{
     	MapMonitoringMenuDTO resultDto = new MapMonitoringMenuDTO();
     	
     	//시간대별 
-    	MapMonitoringMenuDTO trafficCntInfo = adsiVdsColctInfoMapper.findOneTrafficAvgSpeedByTimeZone(mapMonitoringMenuDTO); 
+    	MapMonitoringMenuDTO trafficCntInfo = mrtStdLinkSectnInfoMapper.findOneTrafficAvgSpeedByTimeZone(mapMonitoringMenuDTO); 
     	
     	if(trafficCntInfo != null) {
     		resultDto.setAverageCnt(trafficCntInfo.getAverageCnt());
@@ -98,7 +123,7 @@ public class MapMonitoringService{
     	}
     	
     	//시간 대별 누적 교통량 그래프 데이트
-    	MapMonitoringMenuDTO trafficGraphInfo = adsiVdsColctInfoMapper.findOneTrafficAvgSpeedGraphByTimeZone(mapMonitoringMenuDTO);
+    	MapMonitoringMenuDTO trafficGraphInfo = mrtStdLinkSectnInfoMapper.findOneTrafficAvgSpeedGraphByTimeZone(mapMonitoringMenuDTO);
     	if(trafficGraphInfo != null) {
     		resultDto.setGraphTime(trafficGraphInfo.getGraphTime());
     		resultDto.setGraphCnt(trafficGraphInfo.getGraphCnt());
@@ -119,9 +144,30 @@ public class MapMonitoringService{
     public MapMonitoringMenuDTO findOneCumulativeTrafficVolumeByRoad(MapMonitoringMenuDTO mapMonitoringMenuDTO){
     	
     	MapMonitoringMenuDTO resultDto = new MapMonitoringMenuDTO();
-    	
+
     	//누적 교통량 테이블 데이트
-    	List<MapMonitoringMenuDTO.TrafficInfo> trafficTableInfo = adsiVdsColctInfoMapper.findAllTrafficVolumeTableByTimeZone(mapMonitoringMenuDTO);
+    	List<MapMonitoringMenuDTO.TrafficInfo> trafficTableInfo = mrtStdLinkSectnInfoMapper.findAllTrafficVolumeTableByTimeZone(mapMonitoringMenuDTO);
+    	if(!trafficTableInfo.isEmpty()) {
+    		resultDto.setTrafficList(trafficTableInfo);
+    	}
+    	
+    	return resultDto;
+    }
+    
+    /**
+     * @Method Name : findOneCumulativeTrafficVolume
+     * @작성일 : 2023. 9. 18.
+     * @작성자 : NK.KIM
+     * @Method 설명 : 소통 정보
+     * @param mapMonitoringMenuDTO
+     * @return
+     */
+    public MapMonitoringMenuDTO findOneCumulativeTrafficVolumeByToday(MapMonitoringMenuDTO mapMonitoringMenuDTO){
+    	
+    	MapMonitoringMenuDTO resultDto = new MapMonitoringMenuDTO();
+
+    	//누적 교통량 테이블 데이트
+    	List<MapMonitoringMenuDTO.TrafficInfo> trafficTableInfo = mrtStdLinkSectnInfoMapper.findAllTrafficVolumeTableByToday(mapMonitoringMenuDTO);
     	if(!trafficTableInfo.isEmpty()) {
     		resultDto.setTrafficList(trafficTableInfo);
     	}
@@ -140,9 +186,8 @@ public class MapMonitoringService{
     public MapMonitoringMenuDTO findOneAverageEntrainmentSpeedByRoad(MapMonitoringMenuDTO mapMonitoringMenuDTO){
     	
     	MapMonitoringMenuDTO resultDto = new MapMonitoringMenuDTO();
-    	
     	//평균 동행 속도 테이블 데이트
-    	List<MapMonitoringMenuDTO.TrafficInfo> trafficTableInfo = adsiVdsColctInfoMapper.findAllTrafficAvgSpeedTableByTimeZone(mapMonitoringMenuDTO);
+    	List<MapMonitoringMenuDTO.TrafficInfo> trafficTableInfo = mrtStdLinkSectnInfoMapper.findAllTrafficAvgSpeedTableByTimeZone(mapMonitoringMenuDTO);
     	if(!trafficTableInfo.isEmpty()) {
     		resultDto.setTrafficList(trafficTableInfo);
     	}
@@ -163,9 +208,11 @@ public class MapMonitoringService{
     	MapMonitoringMenuDTO resultDto = new MapMonitoringMenuDTO();
     	
     	//평균 동행 속도 테이블 데이트
-    	List<MapMonitoringMenuDTO.TrafficInfo> trafficTableInfo = adsiVdsColctInfoMapper.findOneCumulativeTrafficVolumeByTimeZoneAndRoad(mapMonitoringMenuDTO);
+    	List<MapMonitoringMenuDTO.TrafficInfo> trafficTableInfo = mrtStdLinkSectnInfoMapper.findOneCumulativeTrafficVolumeByTimeZoneAndRoad(mapMonitoringMenuDTO);
     	if(!trafficTableInfo.isEmpty()) {
     		resultDto.setTrafficList(trafficTableInfo);
+    		int totalCnt = mrtStdLinkSectnInfoMapper.countCumulativeTrafficVolumeByTimeZoneAndRoad(mapMonitoringMenuDTO);
+    		resultDto.setTotalCnt(totalCnt);
     	}
     	
     	return resultDto;
@@ -184,9 +231,11 @@ public class MapMonitoringService{
     	MapMonitoringMenuDTO resultDto = new MapMonitoringMenuDTO();
     	
     	//평균 동행 속도 테이블 데이트
-    	List<MapMonitoringMenuDTO.TrafficInfo> trafficTableInfo = adsiVdsColctInfoMapper.findOneAverageEntrainmentSpeedByTimeZoneAndRoad(mapMonitoringMenuDTO);
+    	List<MapMonitoringMenuDTO.TrafficInfo> trafficTableInfo = mrtStdLinkSectnInfoMapper.findOneAverageEntrainmentSpeedByTimeZoneAndRoad(mapMonitoringMenuDTO);
     	if(!trafficTableInfo.isEmpty()) {
     		resultDto.setTrafficList(trafficTableInfo);
+    		int totalCnt = mrtStdLinkSectnInfoMapper.countAverageEntrainmentSpeedByTimeZoneAndRoad(mapMonitoringMenuDTO);
+    		resultDto.setTotalCnt(totalCnt);
     	}
     	
     	return resultDto;
@@ -219,9 +268,15 @@ public class MapMonitoringService{
     			
      			if(!resultList.isEmpty()) {
       				for(Map<String,Object> resultMap : resultList) {
+      					Boolean dataChk = false;
       					String hoursStr = String.valueOf(resultMap.get("hours"));
        					int hours = Integer.parseInt(hoursStr);
      					chartArr[hours] = Integer.parseInt(String.valueOf(resultMap.get("cnt")));
+     					
+     					if(Integer.parseInt(String.valueOf(resultMap.get("cnt"))) != 0) {
+     						dataChk = true;
+     					}
+     					mapUseCaseInfoDTO.setDataChk(dataChk);
      				}
      			}
     			mapUseCaseInfoDTO.setChartData(Arrays.toString(chartArr));
@@ -244,7 +299,7 @@ public class MapMonitoringService{
     public List<MapLoginStatisticsDTO> getUserLoginStats(){
     	List<MapLoginStatisticsDTO> mapLoginStatisticsDTOList = new ArrayList<MapLoginStatisticsDTO>();
 
-    	List<MOpCode> admAgencyList = mOpCodeMapper.findAllCodeListByGrpCdId("MNG_INST_CD");
+    	List<MOpCode> admAgencyList = mOpCodeMapper.findAllCodeListByGrpCdId("SGG_CD");
     	
     	if(!admAgencyList.isEmpty()) {
     		int colorCnt = 0;
@@ -295,6 +350,8 @@ public class MapMonitoringService{
     	mapTotalServiceInfoDTO.setRenuwalTime(GgitsCommonUtils.getCalculationDateToString(0, "HH시 mm분 ss초", Calendar.HOUR));
     	LOpPgmLogn lOpPgmLogn = new LOpPgmLogn();
 		lOpPgmLogn.setLogType("ULC001");
+		String today = GgitsCommonUtils.getCalculationDateToString(0, "yyyy-MM-dd", Calendar.HOUR);
+		lOpPgmLogn.setStrDt(today);
     	mapTotalServiceInfoDTO.setTotalLoginCnt(lOpPgmLognMapper.countAllByLogType(lOpPgmLogn));
     	MOpOperator mOpOperator = new MOpOperator();
     	mOpOperator.setOprtrSttsCd("OSC002");
@@ -314,7 +371,7 @@ public class MapMonitoringService{
     	monthArr = monthList.toArray(monthArr);
     	dayArr = dayList.toArray(dayArr);
 
-    	List<MOpCode> admAgencyList = mOpCodeMapper.findAllCodeListByGrpCdId("MNG_INST_CD");
+    	List<MOpCode> admAgencyList = mOpCodeMapper.findAllCodeListByGrpCdId("SGG_CD");
     	List<MapLoginStatisticsDTO> mapLoginStatisticsDTOList = new ArrayList<MapLoginStatisticsDTO>();
 		if(!admAgencyList.isEmpty()) {
 			int colorCnt = 0;
@@ -358,4 +415,81 @@ public class MapMonitoringService{
     	mapTotalServiceInfoDTO.setMonthArr(Arrays.toString(monthArr).replaceAll("[\\['\\]]",""));
     	return mapTotalServiceInfoDTO;
     }
+    
+    public List<MapMonitoringLinkDataDTO> getDataCollectHistory(){
+    	
+    	List<MapMonitoringLinkDataDTO> mapMonitoringLinkDataList = new ArrayList<MapMonitoringLinkDataDTO>(); 
+    	
+    	long totalCnt = 0;
+    	
+    	//소통 정보 쿼리 조회 추가
+    	MapMonitoringLinkDataDTO linkDataCntForMonitoring = ggitsLinkStd1HMapper.findOneDataCntForMonitoring();
+    	linkDataCntForMonitoring.setJobNm("소통정보");
+    	mapMonitoringLinkDataList.add(linkDataCntForMonitoring);
+    	long linkDataCnt = linkDataCntForMonitoring.getDataCnt();
+    	totalCnt += linkDataCnt;
+    	
+    	//긴급차량 이동 정보 쿼리 조회 추가
+    	MapMonitoringLinkDataDTO scsEmrgDataCntForMonitoring = scsEmrgVhclLogInfoMapper.findOneDataCntForMonitoring();
+    	scsEmrgDataCntForMonitoring.setJobNm("긴급차량 이동");
+    	mapMonitoringLinkDataList.add(scsEmrgDataCntForMonitoring);
+    	long scsDataCnt = scsEmrgDataCntForMonitoring.getDataCnt();
+    	totalCnt += scsDataCnt;
+    	
+    	//돌발현황 쿼리 조회 추가
+    	MapMonitoringLinkDataDTO inciDataCntForMonitoring = gimsMngInciDetailMapper.findOneDataCntForMonitoring();
+    	inciDataCntForMonitoring.setJobNm("돌발이력");
+    	mapMonitoringLinkDataList.add(inciDataCntForMonitoring);
+    	long inciDataCnt = inciDataCntForMonitoring.getDataCnt();
+    	totalCnt += inciDataCnt;
+    	
+    	if(mapMonitoringLinkDataList.size() > 0) {
+    		mapMonitoringLinkDataList.get(0).setDataTotalCnt(totalCnt);
+    	}
+    	
+    	return mapMonitoringLinkDataList;
+    }
+    public List<MonitoringTrafficCurDto> findOneCumulativeTrafficVolumeByVhclDiv(){
+		return monitoringTrafficCurMapper.findOneCumulativeTrafficVolumeByVhclDiv();
+    }
+    
+	public List<MonitoringTrafficCurDto> getMonitoringChartData(String type, String collectType, String collectTimeType){
+		List<MonitoringTrafficCurDto> list = new ArrayList<>();
+		switch (MapMonitoringSubMenuCd.getEnum(type)) {
+			case CUMULATIVE_TRAFFIC_VOLUME_BY_TIME_ZONE :
+				switch (collectType) {
+					case "vds" :
+						list = monitoringTrafficCurMapper.findAllTrafficVolumeByVDSForChart(collectTimeType);
+						break;
+					case "dsrc" :
+						list = monitoringTrafficCurMapper.findAllTrafficVolumeByDSRCForChart(collectTimeType);
+						break;
+					case "smc" :
+						list = monitoringTrafficCurMapper.findAllTrafficVolumeBySmartForChart(collectTimeType);
+						break;
+					case "smc-drct-mngcd" :
+						list = monitoringTrafficCurMapper.findAllTrafficVolumeBySmartDrctGroupByMngInstCdForChart(collectTimeType);
+						break;
+				}
+				break;
+			case AVERAGE_ENTRAINMENT_SPEED_BY_TIME_ZONE :
+				switch (collectType) {
+					case "vds" :
+						list = monitoringTrafficCurMapper.findAllAvgSpeedByVDSForChart(collectTimeType);
+						break;
+					case "smc" :
+						list = monitoringTrafficCurMapper.findAllAvgSpeedBySmartForChart(collectTimeType);
+						break;
+					case "dsrc" :
+						list = monitoringTrafficCurMapper.findAllAvgSpeedByDSRCForChart(collectTimeType);
+						break;
+					case "smc-drct-mngcd" :
+						list = monitoringTrafficCurMapper.findAllAvgSpeedBySmartDrctGroupByMngInstCdForChart(collectTimeType);
+						break;
+				}
+				break;
+		}
+		return list;
+	}
+    
 }

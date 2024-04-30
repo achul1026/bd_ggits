@@ -20,8 +20,8 @@
                             상세 검색 <i></i>
                         </div>
                     </div>
-                    <div class="search_detail_wrap">
-	                    <form>
+                    <form>
+	                    <div class="search_detail_wrap">
 	                        <div class="group2">
 	                            <div class="group_text2">시간 설정</div>
 	                            <div class="flex-center">
@@ -45,13 +45,12 @@
 	                                </div>
 	                            </div>
 	                        </div>
-		                     <div class="group2_btn">
-		                    	<!-- button id  name 바꿔서 사용하세요  -->
-		                        <button type="button" class="is-darkgreen-btn" id="search_test">찾기</button>
-		                        <input type="reset" class="is-dark-btn selected_reset" value="검색값 초기화">
-	                    	</div>
-		                </form>
-		            </div>
+		            	</div>
+	                     <div class="group2_btn">
+	                        <button type="button" class="is-darkgreen-btn" id="search_test">찾기</button>
+	                        <input type="reset" class="is-dark-btn selected_reset" value="검색값 초기화">
+                    	</div>
+	                </form>
                     <div class="search_container">
                         <div class="search_head">
                             <div class="search_number">
@@ -61,13 +60,7 @@
                     </div>
 					<table class="mt16">
 					       <colgroup>
-					           <col style="width:8%">
-					           <col style="width:20%">
-					           <col style="width:12%">
-					           <col style="width:14%">
-					           <col style="width:18%">
-					           <col style="width:12%">
-					           <col style="width:18%">
+					         
 					       </colgroup>
 					       <thead>
 					        <tr>

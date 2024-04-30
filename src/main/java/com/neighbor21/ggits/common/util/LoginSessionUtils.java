@@ -6,7 +6,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.neighbor21.ggits.common.entity.MOpOperator;
-import com.neighbor21.ggits.support.exception.CommonException;
 import com.neighbor21.ggits.support.exception.ErrorCode;
 import com.neighbor21.ggits.support.exception.NoLoginException;
 
@@ -129,6 +128,14 @@ public class LoginSessionUtils {
 		return isUserChk;
 	}
 	
+	
+	/**
+	 * @Method Name : getUserIpAddr
+	 * @작성일 : 2023. 9. 25.
+	 * @작성자 : KY.LEE
+	 * @Method 설명 : 현재 세션에 접속한 유저의 IP를 가져오는 메소드
+	 * @return String
+	 */
 	public static String getUserIpAddr() {
 		String ip = null;
 		HttpServletRequest request = getSessionRequest();

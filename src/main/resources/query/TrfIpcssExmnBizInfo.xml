@@ -1,0 +1,92 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.TrfIpcssExmnBizInfoMapper'>
+	<sql id="impactList-Where">
+		<if test="(strDt != null and strDt != '') and (endDt != null and endDt != '')">
+			AND TO_CHAR(TO_TIMESTAMP(tiebi.ETL_DT, 'YYYYMMDDHH24MISS'),'YYYY-MM-DD') BETWEEN #{strDt} and #{endDt}
+		</if>
+		<if test="(strDt != null and strDt != '') and (endDt == null or endDt == '')">
+			<![CDATA[
+				AND #{strDt} <= TO_CHAR(TO_TIMESTAMP(tiebi.ETL_DT, 'YYYYMMDDHH24MISS'),'YYYY-MM-DD')
+			]]>
+		</if>
+		<if test="(strDt == null or strDt == '') and (endDt != null and endDt != '')">
+			<![CDATA[
+				AND TO_CHAR(TO_TIMESTAMP(tiebi.ETL_DT, 'YYYYMMDDHH24MISS'),'YYYY-MM-DD') <= #{endDt}
+			]]>
+		</if>
+		<if test="searchContent != null and searchContent != ''">
+			AND tiebi.BIZ_NM LIKE '%' || #{searchContent} || '%'
+		</if>
+	</sql>
+	<select id="findAllTrafficImpactList" parameterType="trfIpcssExmnBizInfo" resultType="trfIpcssExmnBizInfo">
+		SELECT
+			tiebi.IPCSS_MNG_NO
+			, tiebi.EXMN_YY
+			, tiebi.BIZ_NM
+			, tiebi.BIZ_USG
+			, tiebi.EVAL_CO_NM
+			, tiebi.EVAL_PIC_NM
+			, tiebi.EXMN_DD
+			, TO_CHAR(TO_TIMESTAMP(tiebi.etl_dt, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD') as etl_dt
+		FROM TRF_IPCSS_EXMN_BIZ_INFO tiebi
+		WHERE 1=1
+		<include refid="impactList-Where"/>
+		ORDER BY TO_TIMESTAMP(ETL_DT, 'YYYYMMDDHH24MISS') DESC
+		LIMIT 10 OFFSET (#{page} - 1) * 10
+	</select>
+	
+	<select id="countTrafficImpact" parameterType="trfIpcssExmnBizInfo" resultType="int">
+		SELECT 
+			COUNT(*)
+		FROM TRF_IPCSS_EXMN_BIZ_INFO tiebi
+		WHERE 1=1
+			<include refid="impactList-Where"/>
+	</select>
+
+	<select id="findOneByMngNoNextVal" resultType="long">
+     	SELECT COALESCE(MAX(IPCSS_MNG_NO::INTEGER)+1,1) FROM TRF_IPCSS_EXMN_BIZ_INFO
+    </select>
+    
+    <select id="findOneExmnBizInfoByipcssMngNo" parameterType="String" resultType="trfIpcssExmnBizInfo">
+    	SELECT
+	    	EXMN_YY
+	    	, EVAL_CO_NM
+	    	, EVAL_PIC_NM
+	    	, BIZ_NM
+	    	, BIZ_USG
+	    	, EXMN_DD
+	    FROM TRF_IPCSS_EXMN_BIZ_INFO
+	    WHERE IPCSS_MNG_NO = #{ipcssMngNo}
+    </select>
+
+	<insert id="saveExmnBizInfo" parameterType="trfIpcssExmnBizInfo">
+		INSERT INTO TRF_IPCSS_EXMN_BIZ_INFO(
+			IPCSS_MNG_NO
+			, EXMN_YY
+			, EVAL_CO_NM
+			, EVAL_PIC_NM
+			, BIZ_NM
+			, BIZ_USG
+			, EXMN_DD
+			, ETL_DT
+			)VALUES(
+			#{ipcssMngNo}, 
+			#{exmnYy}, 
+			#{evalCoNm}, 
+			#{evalPicNm}, 
+			#{bizNm}, 
+			#{bizUsg}, 
+			#{exmnDd},
+			TO_CHAR(now(), 'YYYYMMDDHH24MISS'))
+	</insert>
+	
+	<delete id="deleteTrafficImpactReportByIpcssMngNo" parameterType="String">
+		DELETE 
+		FROM
+			TRF_IPCSS_EXMN_BIZ_INFO
+		WHERE
+			IPCSS_MNG_NO = #{ipcssMngNo}
+	</delete>
+</mapper>

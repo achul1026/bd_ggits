@@ -2,4 +2,85 @@
 <!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.GgbisBusrouteInfounitMapper'>
+
+    <select id="findAllByStStationIdAndEdStationId" parameterType="mapBigdataSearchDTO" resultType="ggbisBusrouteInfounit">
+        SELECT
+        DUPL_LINK_CNT
+        ,STRING_AGG(ROUTE_ID,',') as routeIds
+        ,LINK_ID
+        ,ST_ASGEOJSON(ST_LINEMERGE(GEOMETRY)) AS GEOJSON
+        FROM(
+        SELECT
+        DISTINCT
+        GBI.ROUTE_ID,
+        CGSLT.LINK_ID ,
+        COUNT(CGSLT.LINK_ID) OVER (PARTITION BY CGSLT.LINK_ID) AS DUPL_LINK_CNT,
+        CGSLT.GEOMETRY
+        FROM
+        BIGDATA.EXT_GGBIS_BUSROUTE_INFOUNIT GBI
+        INNER JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE EGBR ON EGBR.ROUTE_ID = GBI.ROUTE_ID
+        INNER JOIN BIGDATA.EXT_GGBIS_BUS_SECTION EGBS ON GBI.SECTION_ID = EGBS.SECTION_ID
+        INNER JOIN (
+        SELECT
+        EGBS.ROUTE_ID
+        ,EGBS.LINK_ID
+        ,EGBS.STATION_ID
+        ,LEAD(EGBS.STATION_ID) OVER (PARTITION BY EGBS.ROUTE_ID ORDER BY EGBS.ROUTE_ID, STA_ORDER ASC) AS NEXT_STATION_ID
+        ,EGBS.STA_ORDER
+        FROM
+        BIGDATA.EXT_GGBIS_BUSROUTE_STATION EGBS
+        INNER JOIN (
+        SELECT
+        EGBS.ROUTE_ID,
+        EGBS.STATION_ID AS END_STATION_ID,
+        MAX(EGBS.STA_ORDER) AS END_STA_ORDER,
+        ST_STATION.START_STATION_ID,
+        ST_STATION.START_STA_ORDER
+        FROM
+        BIGDATA.EXT_GGBIS_BUSROUTE_STATION EGBS
+        INNER JOIN (
+        SELECT
+        ROUTE_ID ,
+        STATION_ID AS START_STATION_ID,
+        STA_ORDER AS START_STA_ORDER
+        FROM
+        BIGDATA.EXT_GGBIS_BUSROUTE_STATION EGBS
+        WHERE
+        EGBS.STATION_ID = #{stStationId} -- 출발지 정류장
+        GROUP BY ROUTE_ID , STATION_ID, START_STA_ORDER)
+        ST_STATION ON EGBS.ROUTE_ID = ST_STATION.ROUTE_ID AND EGBS.STA_ORDER > ST_STATION.START_STA_ORDER
+        WHERE EGBS.STATION_ID = #{edStationId} -- 도착지 정류장
+        GROUP BY EGBS.ROUTE_ID, EGBS.STATION_ID, ST_STATION.START_STATION_ID, ST_STATION.START_STA_ORDER)
+        <![CDATA[
+        BUS_ROUTE ON BUS_ROUTE.ROUTE_ID = EGBS.ROUTE_ID AND (BUS_ROUTE.START_STA_ORDER <= EGBS.STA_ORDER AND BUS_ROUTE.END_STA_ORDER >= EGBS.STA_ORDER)
+        ]]>
+        GROUP BY EGBS.ROUTE_ID ,EGBS.LINK_ID ,EGBS.STATION_ID ,EGBS.STA_ORDER
+        ORDER BY EGBS.ROUTE_ID, EGBS.STA_ORDER ASC
+        ) SECTION_STATION ON SECTION_STATION.STATION_ID = EGBS.ST_STA_ID AND SECTION_STATION.NEXT_STATION_ID = EGBS.ED_STA_ID
+        INNER JOIN BIGDATA.EXT_GGBIS_LINK_MAPPING EGLM ON GBI.LINK_ID = EGLM.LINK_ID
+        INNER JOIN  C_GM_STD_LINK CGSLT ON CGSLT.LINK_ID = EGLM.ST_LINK_ID
+        INNER JOIN MRT_BUS_ROUTE_SECTN_ANAL MBRSA ON SECTION_STATION.ROUTE_ID = MBRSA.BUS_ROUTE_ID 
+<!--         WHERE EGBR.ROUTE_ID  = #{routeId} -->
+<!--         연도별 검색 -->
+<!-- 		<if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' "> -->
+<!-- 			AND TO_CHAR(MBRSA.ANLS_DT, "YYYY') = #{searchYear} -->
+<!-- 		</if> -->
+ 		<!-- 기간 검색 -->
+<!-- 		<if test="searchPeriod != null and searchPeriod != ''"> -->
+<!-- 			<choose> -->
+<!-- 				<when test="searchPeriod == 'weekday' "> -->
+<!-- 					AND TO_CHAR(MBRSA.ANLS_DT, 'D') BETWEEN '2' AND '6' -->
+<!-- 				</when> -->
+<!-- 				<when test="searchPeriod == 'weekend' "> -->
+<!-- 					AND TO_CHAR(MBRSA.ANLS_DT, 'D') = '1' OR TO_CHAR(MBRSA.ANLS_DT, 'D') = '7' -->
+<!-- 				</when> -->
+<!-- 				<otherwise> -->
+<!-- 					AND TO_CHAR(MBRSA.ANLS_DT, 'YYYY-MM-DD') BETWEEN #{startDate} AND #{endDate} -->
+<!-- 				</otherwise> -->
+<!-- 			</choose> -->
+<!-- 		</if> -->
+        GROUP BY GBI.ROUTE_ID,CGSLT.LINK_ID  ,CGSLT.GEOMETRY
+        ORDER BY CGSLT.LINK_ID ASC
+        ) DUPL_SECTION GROUP BY DUPL_LINK_CNT, LINK_ID, GEOMETRY ORDER BY LINK_ID ASC
+    </select>
 </mapper>

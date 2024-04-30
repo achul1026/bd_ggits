@@ -17,5 +17,7 @@
         <typeAlias type="java.util.HashMap" alias="hashMap" />
         <package name="com.neighbor21.ggits.common.entity"/>
         <package name="com.neighbor21.ggits.common.dto"/>
+        <package name="com.neighbor21.ggits.openapi.request"/>
+        <package name="com.neighbor21.ggits.openapi.response"/>
     </typeAliases>
 </configuration>

@@ -1,6 +1,7 @@
 package com.neighbor21.ggits.common.entity;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 //스마트교차로 교차로 접근 도로 정보
 public class AdsiSmcrsrdCrsrdAcsRoadInfo extends CommonEntity {
@@ -26,6 +27,18 @@ public class AdsiSmcrsrdCrsrdAcsRoadInfo extends CommonEntity {
     private Double avgPdstSpeed;
     private Long ctrlDelayTime;
     private Timestamp clctDt;
+
+    public AdsiSmcrsrdCrsrdAcsRoadInfo(){}
+    public AdsiSmcrsrdCrsrdAcsRoadInfo(List<String> row) {
+        this.mngInstCd = row.get(0);
+        this.crsrdId = row.get(1);
+        this.crsrdNm = row.get(2);
+        this.acsRoadId = row.get(9);
+        this.acsRoadNm = row.get(10);
+        this.linkId = row.get(11);
+        this.geojson = row.get(12);
+
+    }
 
     public String getMngInstCd() {
         return mngInstCd;

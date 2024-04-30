@@ -18,7 +18,7 @@
 						<p class="error_message"></p>
 					</div>
 					<div class="input_wrap admin_input_wrap">
-						<input type="password" class="input_item data-validate" name="oprtrPswd" onkeyup="isPwValidated(this)" data-valid-name="비밀번호" data-valid-required data-valid-password required> 
+						<input type="password" class="input_item data-validate input-admin-eye" name="oprtrPswd" onkeyup="isPwValidated(this)" data-valid-name="비밀번호" data-valid-required data-valid-password required> 
 						<label class="input_label">비밀번호 (필수)</label> <span class="input_line"></span>
 						<p class="error_message"></p>
 						<button type="button" class="eye_img">
@@ -109,7 +109,7 @@
     				var resultMessage = data.message;
     				
     				if(resultCode == '200'){
-    					new ModalBuilder().init().successBody("등록 신청이 완료되었습니다.<br>관리자의 등록 승인이 완료되면 입력하신 이메일 주소로 알림 메시지가 전달됩니다.").footer(5,'확인',function(button, modal){
+    					new ModalBuilder().init().successBody("등록 신청이 완료되었습니다.<br>관리자의 등록 승인이 완료되면 로그인이 가능합니다.").footer(5,'확인',function(button, modal){
     						window.location.href="${pageContext.request.contextPath}/login.do";
     					 },'취소',function(button, modal){}).open();	    	
     				}else{

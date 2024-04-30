@@ -3,96 +3,109 @@ package com.neighbor21.ggits.common.entity;
 import java.sql.Timestamp;
 
 //시설물 로그 정보
-public class LTcFcltsLogInfo extends CommonEntity{
+public class LTcFcltsLogInfo extends CommonEntity {
 
-    private String    logId;        //로그 아이디
-    private Timestamp    occurDt;        //발생 일시
-    private String    fcltsId;        //시설물 아이디
-    private String    sesnId;        //세션 아이디
-    private String    lgnIp;        //로그인 ip
-    private String    rqstrNm;        //요청자 명
-    private String    logType;        //로그 유형
-    
-    // no table
-    private String occurDtStr;
-    private String cdNm;
+	private String logId; // 로그 아이디
+	private Timestamp occurDt; // 발생 일시
+	private String fcltsId; // 시설물 아이디
+	private String sesnId; // 세션 아이디
+	private String lgnIp; // 로그인 ip
+	private String rqstrNm; // 요청자 명
+	private String logType; // 로그 유형
 
-  public String getLogId() {
-    return logId;
-  }
+	// no table
+	private String occurDtStr;
+	private String cdNm;
 
-  public void setLogId(String logId) {
-    this.logId = logId;
-  }
+	private String mngInstCd; // 관리 기관코드
+	private String oprtrGrd; // 운영자 등급
 
+	public String getLogId() {
+		return logId;
+	}
 
-  public Timestamp getOccurDt() {
-    return occurDt;
-  }
+	public void setLogId(String logId) {
+		this.logId = logId;
+	}
 
-  public void setOccurDt(Timestamp occurDt) {
-    this.occurDt = occurDt;
-  }
+	public Timestamp getOccurDt() {
+		return occurDt;
+	}
 
+	public void setOccurDt(Timestamp occurDt) {
+		this.occurDt = occurDt;
+	}
 
-  public String getFcltsId() {
-    return fcltsId;
-  }
+	public String getFcltsId() {
+		return fcltsId;
+	}
 
-  public void setFcltsId(String fcltsId) {
-    this.fcltsId = fcltsId;
-  }
+	public void setFcltsId(String fcltsId) {
+		this.fcltsId = fcltsId;
+	}
 
+	public String getSesnId() {
+		return sesnId;
+	}
 
-  public String getSesnId() {
-    return sesnId;
-  }
+	public void setSesnId(String sesnId) {
+		this.sesnId = sesnId;
+	}
 
-  public void setSesnId(String sesnId) {
-    this.sesnId = sesnId;
-  }
+	public String getLgnIp() {
+		return lgnIp;
+	}
 
+	public void setLgnIp(String lgnIp) {
+		this.lgnIp = lgnIp;
+	}
 
-  public String getLgnIp() {
-    return lgnIp;
-  }
+	public String getRqstrNm() {
+		return rqstrNm;
+	}
 
-  public void setLgnIp(String lgnIp) {
-    this.lgnIp = lgnIp;
-  }
+	public void setRqstrNm(String rqstrNm) {
+		this.rqstrNm = rqstrNm;
+	}
 
+	public String getLogType() {
+		return logType;
+	}
 
-  public String getRqstrNm() {
-    return rqstrNm;
-  }
+	public void setLogType(String logType) {
+		this.logType = logType;
+	}
 
-  public void setRqstrNm(String rqstrNm) {
-    this.rqstrNm = rqstrNm;
-  }
+	public String getOccurDtStr() {
+		return occurDtStr;
+	}
 
+	public void setOccurDtStr(String occurDtStr) {
+		this.occurDtStr = occurDtStr;
+	}
 
-  public String getLogType() {
-    return logType;
-  }
+	public String getCdNm() {
+		return cdNm;
+	}
 
-  public void setLogType(String logType) {
-    this.logType = logType;
-  }
+	public void setCdNm(String cdNm) {
+		this.cdNm = cdNm;
+	}
 
-public String getOccurDtStr() {
-	return occurDtStr;
-}
+	public String getMngInstCd() {
+		return mngInstCd;
+	}
 
-public void setOccurDtStr(String occurDtStr) {
-	this.occurDtStr = occurDtStr;
-}
+	public void setMngInstCd(String mngInstCd) {
+		this.mngInstCd = mngInstCd;
+	}
 
-public String getCdNm() {
-	return cdNm;
-}
+	public String getOprtrGrd() {
+		return oprtrGrd;
+	}
 
-public void setCdNm(String cdNm) {
-	this.cdNm = cdNm;
-}
-
+	public void setOprtrGrd(String oprtrGrd) {
+		this.oprtrGrd = oprtrGrd;
+	}
+	
 }

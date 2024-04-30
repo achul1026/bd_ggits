@@ -4,8 +4,14 @@
  * @returns {Promise<any>}
  * @constructor
  */
-const BD_Accident_By_SGG = async function(searchOption = ''){ // TODO :: 기본값 추후 제거
+const BD_Accident_By_SGG = async function(searchOption = ''){
     let list = await self.util.getJsonFormApi("/bigdata/getRoadAccidentInfoGroupBySGG.ajax?"+searchOption);
+    if(list?.noLogin){
+        return {
+            error : true,
+            noLogin : true
+        }
+    }
     /*
     dcsdCnt : 사망자수
     injpsnCnt : 부상자수
@@ -17,7 +23,6 @@ const BD_Accident_By_SGG = async function(searchOption = ''){ // TODO :: 기본�
      */
     let features = self.util.getSGGFeatures(self.env);
     // 행정구역별로 그룹
-    console.log("list", list);
     for(const point of list) {
         let feature = features.filter((obj) => obj.sggCode === point.occurAdsiCd)[0];
         if(feature) {

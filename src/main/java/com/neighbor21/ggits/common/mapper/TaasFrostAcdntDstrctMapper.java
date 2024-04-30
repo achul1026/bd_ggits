@@ -1,9 +1,9 @@
 package com.neighbor21.ggits.common.mapper;
-import com.neighbor21.ggits.common.entity.TaasDrnkgAcdntDstrct;
-import com.neighbor21.ggits.common.entity.TaasFrostAcdntDstrct;
+import java.util.List;
+
 import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
 
-import java.util.List;
+import com.neighbor21.ggits.common.entity.TaasFrostAcdntDstrct;
 
 @Mapper
 public interface TaasFrostAcdntDstrctMapper {

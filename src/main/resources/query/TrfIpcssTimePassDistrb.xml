@@ -1,0 +1,189 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.TrfIpcssTimePassDistrbMapper'>
+	<select id="findOneUsgCdNmList" parameterType="trfvlmStatisticsDTO" resultType="map">
+		WITH TIME_DISTRB_CD_NM_LIST AS(
+			SELECT 
+				TRFVLM_RESULT.CD_NM
+			FROM(
+				SELECT
+					CD_NM
+				FROM (
+					SELECT
+						moc.CD_NM 
+					FROM
+						TRF_IPCSS_TIME_PASS_DISTRB titpb
+					INNER JOIN M_OP_CODE moc
+						ON titpb.USG_CD = moc.CD_ID 
+							AND moc.GRP_CD_ID = 'USG_CD'
+					WHERE titpb.IPCSS_MNG_NO = #{ipcssMngNo} AND titpb.DYWK_DIV = #{dywkDiv}
+					GROUP BY titpb.TIME_SCTN_NM, titpb.USG_CD, titpb.TRF_USE_CD, titpb.INFL_RT, titpb.OUTFL_RT, moc.CD_NM
+				) TICTI
+				GROUP by TICTI.CD_NM
+				ORDER BY TICTI.CD_NM
+			) TRFVLM_RESULT
+			GROUP BY TRFVLM_RESULT.CD_NM
+			ORDER BY TRFVLM_RESULT.CD_NM
+		)
+		SELECT SUBSTRING(ARRAY_TO_STRING(ARRAY_AGG(CD_NM), ','), 4) AS cdNmArr FROM TIME_DISTRB_CD_NM_LIST
+	</select>
+
+	<select id="findAllTimePassDistrbList" parameterType="trfvlmStatisticsDTO" resultType="timePassDistrbDTO">
+		SELECT 
+				TRFVLM_RESULT.TIME_SCTN_NM,
+				JSON_AGG(TRFVLM_RESULT.FORMAT ORDER BY SUBSTRING(TRFVLM_RESULT.TRF_USE_CD::VARCHAR, 3,1), TRFVLM_RESULT.TRF_USE_CD) AS TRFVLM_STATISTICS_LIST_JSON
+			FROM(
+				SELECT
+					TIME_SCTN_NM,
+					TRF_USE_CD,
+						FORMAT('{%s}', STRING_AGG(FORMAT('"%s":"%s","%s":"%s"', 								
+														'inflRt', TICTI.INFL_RT,
+														'outflRt', TICTI.OUTFL_RT
+														), ', '))::JSON 
+				FROM (
+					SELECT
+						TIME_SCTN_NM,
+						TRF_USE_CD,
+						USG_CD,
+						INFL_RT,
+						OUTFL_RT
+					FROM
+						TRF_IPCSS_TIME_PASS_DISTRB
+					WHERE ipcss_mng_no = #{ipcssMngNo} AND DYWK_DIV = #{dywkDiv}
+					GROUP BY TIME_SCTN_NM,USG_CD,TRF_USE_CD,INFL_RT,OUTFL_RT
+				) TICTI
+				GROUP BY TICTI.TIME_SCTN_NM,TICTI.USG_CD,TICTI.TRF_USE_CD
+				ORDER BY TICTI.TIME_SCTN_NM,TICTI.USG_CD,TICTI.TRF_USE_CD
+			) TRFVLM_RESULT
+			GROUP BY 	TRFVLM_RESULT.TIME_SCTN_NM
+			ORDER BY 	TRFVLM_RESULT.TIME_SCTN_NM
+	</select>
+
+	<select id="findAllChartDataForDwell" parameterType="map" resultType="map">
+		WITH PASS_DISTRB_ARRAY_LIST AS (
+			SELECT
+				TIME_DATA.GRAPH_TIME
+				,COALESCE(GRAPH_DATA.INFL_RT,0) as INFL_RT
+				, COALESCE(GRAPH_DATA.OUTFL_RT,0) as OUTFL_RT
+			FROM(
+				SELECT
+					TO_CHAR(GENERATE_SERIES(TO_TIMESTAMP('2023-11-22 00','YYYY-MM-DD HH24'),TO_TIMESTAMP('2023-11-22 23','YYYY-MM-DD HH24'),'1 hours'),'HH24') as GRAPH_TIME         
+			) TIME_DATA
+		LEFT JOIN (
+					SELECT
+						INFL_RT,
+						OUTFL_RT,
+						SUBSTRING(time_sctn_nm,1,2) as timeSctnNm
+					FROM
+							TRF_IPCSS_TIME_PASS_DISTRB
+					WHERE 1=1
+						and IPCSS_MNG_NO = #{ipcssMngNo}
+						AND USG_CD = #{usgCd} 
+						AND TRF_USE_CD = #{trfUseCd}
+						and dywk_div = #{dywkDiv}
+					GROUP by 
+						SUBSTRING(TIME_SCTN_NM,1,2),INFL_RT, OUTFL_RT
+					ORDER BY timeSctnNm ASC	
+	  	) GRAPH_DATA on TIME_DATA.GRAPH_TIME = GRAPH_DATA.timeSctnNm
+			ORDER BY
+			TIME_DATA.GRAPH_TIME ASC
+			) 
+			SELECT 
+				 ARRAY_TO_STRING(ARRAY_AGG(INFL_RT),',') AS "inflRtDataArray",
+				 ARRAY_TO_STRING(ARRAY_AGG(OUTFL_RT),',') AS "outflRtDataArray",
+				 ARRAY_TO_STRING(ARRAY_AGG(GRAPH_TIME order by GRAPH_TIME),',') AS "timeDataArray"
+			FROM 
+				PASS_DISTRB_ARRAY_LIST
+	</select>
+	
+	<select id="findAllChartDataForNonDwell" parameterType="map" resultType="map">
+		WITH PASS_DISTRB_ARRAY_LIST AS (
+			SELECT
+				TIME_DATA.GRAPH_TIME
+				,COALESCE(GRAPH_DATA.INFL_RT,0) as INFL_RT
+				, COALESCE(GRAPH_DATA.OUTFL_RT,0) as OUTFL_RT
+			FROM(
+				SELECT
+					TO_CHAR(GENERATE_SERIES(TO_TIMESTAMP('2023-11-22 00','YYYY-MM-DD HH24'),TO_TIMESTAMP('2023-11-22 23','YYYY-MM-DD HH24'),'1 hours'),'HH24') as GRAPH_TIME         
+			) TIME_DATA
+		LEFT JOIN (
+					SELECT
+						sum(INFL_RT) as INFL_RT,
+						sum(OUTFL_RT) as OUTFL_RT,
+						SUBSTRING(time_sctn_nm,1,2) as timeSctnNm
+					FROM
+							TRF_IPCSS_TIME_PASS_DISTRB
+					WHERE 1=1
+						and IPCSS_MNG_NO = #{ipcssMngNo}
+						AND USG_CD = #{usgCd} 
+						AND TRF_USE_CD = #{trfUseCd}
+						and dywk_div = #{dywkDiv}
+					GROUP by 
+						SUBSTRING(TIME_SCTN_NM,1,2),INFL_RT, OUTFL_RT
+					ORDER BY timeSctnNm ASC	
+	  	) GRAPH_DATA on TIME_DATA.GRAPH_TIME = GRAPH_DATA.timeSctnNm
+			ORDER BY
+			TIME_DATA.GRAPH_TIME ASC
+			) 
+			SELECT 
+				 ARRAY_TO_STRING(ARRAY_AGG(INFL_RT),',') AS "inflRtDataArray",
+				 ARRAY_TO_STRING(ARRAY_AGG(OUTFL_RT),',') AS "outflRtDataArray",
+				 ARRAY_TO_STRING(ARRAY_AGG(GRAPH_TIME order by GRAPH_TIME),',') AS "timeDataArray"
+			FROM 
+				PASS_DISTRB_ARRAY_LIST	
+	</select>
+	
+	<select id="findOneUsgCdNmListForChart" parameterType="trfvlmStatisticsDTO" resultType="String">
+		SELECT
+			fitpd.USG_CD 
+		FROM TRF_IPCSS_TIME_PASS_DISTRB fitpd
+		WHERE fitpd.IPCSS_MNG_NO = #{ipcssMngNo} AND fitpd.DYWK_DIV = #{dywkDiv}
+		GROUP BY fitpd.USG_CD 
+	</select>
+	
+	<select id="findOneBizInfo" parameterType="trfvlmStatisticsDTO" resultType="trfIpcssTimePassDistrb">
+		SELECT
+			TITPB.BIZ_NM 
+			, TITPB.BIZ_USG 
+		FROM GGITS.TRF_IPCSS_TIME_PASS_DISTRB TITPB
+		WHERE TITPB.IPCSS_MNG_NO = #{ipcssMngNo} AND BIZ_NM IS NOT NULL AND BIZ_USG IS NOT NULL
+		GROUP BY TITPB.BIZ_NM, TITPB.BIZ_USG 
+	</select>
+
+	<insert id="saveTimePassDistrb" parameterType="trfIpcssTimePassDistrb">
+		INSERT INTO TRF_IPCSS_TIME_PASS_DISTRB(
+			IPCSS_MNG_NO, 
+			DYWK_DIV, 
+			USG_CD,
+			TRF_USE_CD, 
+			TIME_SCTN_NM, 
+			INFL_RT, 
+			OUTFL_RT, 
+			TOT_INFL_RT, 
+			TOT_OUTFL_RT,
+			USG_NO,
+		   ETL_DT
+			)VALUES(
+			#{ipcssMngNo}, 
+			#{dywkDiv}, 
+			#{usgCd}, 
+			#{trfUseCd}, 
+			#{timeSctnNm}, 
+			#{inflRt}, 
+			#{outflRt}, 
+			#{totInflRt},
+			#{totOutflRt},
+			#{usgNo},
+			TO_CHAR(now(),'YYYYMMDDHH24MISS')
+			)
+	</insert>
+	
+	<delete id="deleteTrafficImpactReportByIpcssMngNo" parameterType="String">
+		DELETE 
+		FROM
+			TRF_IPCSS_TIME_PASS_DISTRB
+		WHERE
+			IPCSS_MNG_NO = #{ipcssMngNo}
+	</delete>
+</mapper>

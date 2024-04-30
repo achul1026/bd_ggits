@@ -1,41 +1,16 @@
 package com.neighbor21.ggits.api.module.monitoring;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
-import com.neighbor21.ggits.common.entity.MrtSigCrsdTrfAnal;
-import com.neighbor21.ggits.common.mapper.AdsiSmcrsrdCrsrdInfoMapper;
-import com.neighbor21.ggits.common.mapper.MrtSigCrsdTrfAnalMapper;
-import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
+import com.neighbor21.ggits.common.dto.MonitoringTrafficCurDto;
+import com.neighbor21.ggits.common.mapper.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.neighbor21.ggits.api.module.BaseMapDataComponent;
-import com.neighbor21.ggits.api.module.monitoring.dto.Itemlist;
-import com.neighbor21.ggits.api.module.monitoring.dto.Serviceresult;
 import com.neighbor21.ggits.common.dto.MapMonitoringMenuDTO;
-import com.neighbor21.ggits.common.mapper.AdsiVdsColctInfoMapper;
-import com.neighbor21.ggits.common.mapper.MrtSmcTrfPatMapper;
+import com.neighbor21.ggits.common.entity.ExtGgitsLinkStd1m;
 
 /**
  * 모니터링 교통현황 데이터 컴포넌트
@@ -47,24 +22,79 @@ import com.neighbor21.ggits.common.mapper.MrtSmcTrfPatMapper;
 @Component
 public class MTrafficComponent extends BaseMapDataComponent {
 
-    private List<Itemlist> loadedTrafficInfoList = null;
 
     @Autowired
     MrtSmcTrfPatMapper mrtSmcTrfPatMapper;
+
+	@Autowired
+	ExtGgitsLinkStd1mMapper extGgitsLinkStd1mMapper;
 
     @Autowired
     MrtSigCrsdTrfAnalMapper mrtSigCrsdTrfAnalMapper;
     
     @Autowired
-    AdsiVdsColctInfoMapper adsiVdsColctInfoMapper;
+    MrtStdLinkSectnInfoMapper mrtStdLinkSectnInfoMapper;
     
+    @Autowired
+    AdsiVdsColctInfoMapper adsiVdsColctInfoMapper;
+
+	@Autowired
+	MonitoringTrafficCurMapper monitoringTrafficCurMapper;
+
+	static List<ExtGgitsLinkStd1m> savedTrafficInfo = new ArrayList<>();
+	static List<ExtGgitsLinkStd1m> savedTrafficInfoLowerRoadRank = new ArrayList<>();
+
     /**
      * 실시간 지/정체 도로 정보 조회
      * @return
      */
-    public List<MrtSigCrsdTrfAnal> getRealtimeTrafficInfo(){
-        return mrtSigCrsdTrfAnalMapper.findAllRecent();
+    public List<ExtGgitsLinkStd1m> getRealtimeTrafficInfo(String minimize){
+		List<ExtGgitsLinkStd1m> list = null;
+		if(minimize.equals("true")){
+			/*if(savedTrafficInfoLowerRoadRank == null || savedTrafficInfoLowerRoadRank.isEmpty()){
+				savedTrafficInfoLowerRoadRank = extGgitsLinkStd1mMapper.findAllByRecentLowerRoadRank();
+			}*/
+			list = savedTrafficInfoLowerRoadRank;
+		}else{
+			/*if(savedTrafficInfo == null || savedTrafficInfo.isEmpty()){
+				savedTrafficInfo = extGgitsLinkStd1mMapper.findAllByRecent();
+			}*/
+			list = savedTrafficInfo;
+		}
+		return list;
     }
+
+	/**
+	 * 실시간 스마트교차로 교통량 조회
+	 * @return
+	 */
+	public List<MonitoringTrafficCurDto> getRealtimeVolumeSmart(){
+		return monitoringTrafficCurMapper.getVolumeSmartForGIS();
+	}
+
+	/**
+	 * 실시간 스마트교차로 방향별 교통량 조회
+	 * @return
+	 */
+	public List<MonitoringTrafficCurDto> getRealtimeVolumeSmartDrct(){
+		return monitoringTrafficCurMapper.getVolumeSmartDcrtForGIS();
+	}
+
+	/**
+	 * 실시간 VDS 교통량 조회
+	 * @return
+	 */
+	public List<MonitoringTrafficCurDto> getRealtimeVolumeVDS(){
+		return monitoringTrafficCurMapper.getVolumeVDSForGIS();
+	}
+
+	public void setSavedTrafficInfo(List<ExtGgitsLinkStd1m> data) {
+		savedTrafficInfo = data;
+	}
+
+	public void setSavedTrafficInfoLowerRoadRank(List<ExtGgitsLinkStd1m> data) {
+		savedTrafficInfoLowerRoadRank = data;
+	}
     
     /**
      * @Method Name : findOneCumulativeTrafficVolumeByTimeZone
@@ -79,7 +109,7 @@ public class MTrafficComponent extends BaseMapDataComponent {
    	MapMonitoringMenuDTO resultDto = new MapMonitoringMenuDTO();
    	
    	//시간 대별 누적 교통량 상단 데이트
-   	MapMonitoringMenuDTO trafficCntInfo = adsiVdsColctInfoMapper.findOneTrafficVolumeCntByTimeZone(mapMonitoringMenuDTO); 
+   	MapMonitoringMenuDTO trafficCntInfo = mrtStdLinkSectnInfoMapper.findOneTrafficVolumeCntByTimeZone(mapMonitoringMenuDTO); 
    	
    	if(trafficCntInfo != null) {
    		resultDto.setAverageCnt(trafficCntInfo.getAverageCnt());
@@ -87,7 +117,7 @@ public class MTrafficComponent extends BaseMapDataComponent {
    	}
    	
    	//시간 대별 누적 교통량 그래프 데이트
-   	MapMonitoringMenuDTO trafficGraphInfo = adsiVdsColctInfoMapper.findOneTrafficVolumeGraphByTimeZone(mapMonitoringMenuDTO);
+   	MapMonitoringMenuDTO trafficGraphInfo = mrtStdLinkSectnInfoMapper.findOneTrafficVolumeGraphByTimeZone(mapMonitoringMenuDTO);
    	if(trafficGraphInfo != null) {
        	resultDto.setGraphTime(trafficGraphInfo.getGraphTime());
        	resultDto.setGraphCnt(trafficGraphInfo.getGraphCnt());
@@ -109,7 +139,7 @@ public class MTrafficComponent extends BaseMapDataComponent {
    	MapMonitoringMenuDTO resultDto = new MapMonitoringMenuDTO();
    	
    	//시간대별 
-   	MapMonitoringMenuDTO trafficCntInfo = adsiVdsColctInfoMapper.findOneTrafficAvgSpeedByTimeZone(mapMonitoringMenuDTO); 
+   	MapMonitoringMenuDTO trafficCntInfo = mrtStdLinkSectnInfoMapper.findOneTrafficAvgSpeedByTimeZone(mapMonitoringMenuDTO); 
    	
    	if(trafficCntInfo != null) {
    		resultDto.setAverageCnt(trafficCntInfo.getAverageCnt());
@@ -117,7 +147,7 @@ public class MTrafficComponent extends BaseMapDataComponent {
    	}
    	
    	//시간 대별 누적 교통량 그래프 데이트
-   	MapMonitoringMenuDTO trafficGraphInfo = adsiVdsColctInfoMapper.findOneTrafficAvgSpeedGraphByTimeZone(mapMonitoringMenuDTO);
+   	MapMonitoringMenuDTO trafficGraphInfo = mrtStdLinkSectnInfoMapper.findOneTrafficAvgSpeedGraphByTimeZone(mapMonitoringMenuDTO);
    	if(trafficGraphInfo != null) {
    		resultDto.setGraphTime(trafficGraphInfo.getGraphTime());
    		resultDto.setGraphCnt(trafficGraphInfo.getGraphCnt());
@@ -140,7 +170,7 @@ public class MTrafficComponent extends BaseMapDataComponent {
    	MapMonitoringMenuDTO resultDto = new MapMonitoringMenuDTO();
    	
    	//누적 교통량 테이블 데이트
-   	List<MapMonitoringMenuDTO.TrafficInfo> trafficTableInfo = adsiVdsColctInfoMapper.findAllTrafficVolumeTableByTimeZone(mapMonitoringMenuDTO);
+   	List<MapMonitoringMenuDTO.TrafficInfo> trafficTableInfo = mrtStdLinkSectnInfoMapper.findAllTrafficVolumeTableByTimeZone(mapMonitoringMenuDTO);
    	if(!trafficTableInfo.isEmpty()) {
    		resultDto.setTrafficList(trafficTableInfo);
    	}
@@ -161,7 +191,7 @@ public class MTrafficComponent extends BaseMapDataComponent {
    	MapMonitoringMenuDTO resultDto = new MapMonitoringMenuDTO();
    	
    	//평균 동행 속도 테이블 데이트
-   	List<MapMonitoringMenuDTO.TrafficInfo> trafficTableInfo = adsiVdsColctInfoMapper.findAllTrafficAvgSpeedTableByTimeZone(mapMonitoringMenuDTO);
+   	List<MapMonitoringMenuDTO.TrafficInfo> trafficTableInfo = mrtStdLinkSectnInfoMapper.findAllTrafficAvgSpeedTableByTimeZone(mapMonitoringMenuDTO);
    	if(!trafficTableInfo.isEmpty()) {
    		resultDto.setTrafficList(trafficTableInfo);
    	}
@@ -182,7 +212,7 @@ public class MTrafficComponent extends BaseMapDataComponent {
    	MapMonitoringMenuDTO resultDto = new MapMonitoringMenuDTO();
    	
    	//평균 동행 속도 테이블 데이트
-   	List<MapMonitoringMenuDTO.TrafficInfo> trafficTableInfo = adsiVdsColctInfoMapper.findOneCumulativeTrafficVolumeByTimeZoneAndRoad(mapMonitoringMenuDTO);
+   	List<MapMonitoringMenuDTO.TrafficInfo> trafficTableInfo = mrtStdLinkSectnInfoMapper.findOneCumulativeTrafficVolumeByTimeZoneAndRoad(mapMonitoringMenuDTO);
    	if(!trafficTableInfo.isEmpty()) {
    		resultDto.setTrafficList(trafficTableInfo);
    	}
@@ -203,7 +233,7 @@ public class MTrafficComponent extends BaseMapDataComponent {
    	MapMonitoringMenuDTO resultDto = new MapMonitoringMenuDTO();
    	
    	//평균 동행 속도 테이블 데이트
-   	List<MapMonitoringMenuDTO.TrafficInfo> trafficTableInfo = adsiVdsColctInfoMapper.findOneAverageEntrainmentSpeedByTimeZoneAndRoad(mapMonitoringMenuDTO);
+   	List<MapMonitoringMenuDTO.TrafficInfo> trafficTableInfo = mrtStdLinkSectnInfoMapper.findOneAverageEntrainmentSpeedByTimeZoneAndRoad(mapMonitoringMenuDTO);
    	if(!trafficTableInfo.isEmpty()) {
    		resultDto.setTrafficList(trafficTableInfo);
    	}

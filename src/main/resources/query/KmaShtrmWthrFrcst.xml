@@ -13,7 +13,7 @@
             ,FRCST_POINT_YCORD
             ,FRCST_DIV_CD
             ,FRCST_VAL
-        FROM KMA_SHTRM_WTHR_FRCST
+        FROM BIGDATA.EXT_KMA_SHTRM_WTHR_FRCST
     </select>
 
     <select id="findAllWeatherListByFrcstDivCdAndPrdctnYmdAndprdctnTime" resultType="kmaShtrmWthrFrcst">
@@ -25,10 +25,10 @@
              ,FRCST_POINT_YCORD
              ,FRCST_DIV_CD
              ,FRCST_VAL
-        FROM KMA_SHTRM_WTHR_FRCST EKSWF,
+        FROM BIGDATA.EXT_KMA_SHTRM_WTHR_FRCST EKSWF,
              (SELECT MAX(PRSNTN_YMD) RECENT_YMD
                    , MAX(PRSNTN_TIME) AS RECENT_TIME
-              FROM KMA_SHTRM_WTHR_FRCST EKSWF
+              FROM BIGDATA.EXT_KMA_SHTRM_WTHR_FRCST EKSWF
               GROUP BY PRSNTN_YMD , PRSNTN_TIME
               ORDER BY PRSNTN_YMD DESC, PRSNTN_TIME DESC LIMIT 1) RCT
         WHERE FRCST_DIV_CD = 'PTY'
@@ -47,10 +47,10 @@
              ,FRCST_POINT_YCORD
              ,FRCST_DIV_CD
              ,FRCST_VAL
-        FROM KMA_SHTRM_WTHR_FRCST EKSWF,
+        FROM BIGDATA.EXT_KMA_SHTRM_WTHR_FRCST EKSWF,
             (SELECT MAX(PRSNTN_YMD) RECENT_YMD
                   , MAX(PRSNTN_TIME) AS RECENT_TIME
-            FROM KMA_SHTRM_WTHR_FRCST EKSWF
+            FROM BIGDATA.EXT_KMA_SHTRM_WTHR_FRCST EKSWF
             GROUP BY PRSNTN_YMD , PRSNTN_TIME
             ORDER BY PRSNTN_YMD DESC, PRSNTN_TIME DESC LIMIT 1)
                 RCT

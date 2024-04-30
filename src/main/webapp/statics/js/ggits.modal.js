@@ -7,13 +7,16 @@ function isNull(value){
 		return false;
 	}
 }
+
 function randomString(num) {
-	const char = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-	let result = '';
-	for(let i = 0; i < num; i++){
-		result += char.charAt(Math.floor(Math.random() * char.length));
-	}
-	return result;
+    const char = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const values = new Uint8Array(num);
+    window.crypto.getRandomValues(values);
+    let result = '';
+    for (let i = 0; i < num; i++) {
+        result += char[values[i] % char.length];
+    }
+    return result;
 }
 
  /*
@@ -33,7 +36,7 @@ let ModalBuilder = function(){
     let containerId, modalId;
     let promise = null;
 
-    let $headerCloseBtn = $(`<button type="button" class="is-close"><img src="/statics/images/close.png" alt="닫기"></button>`);
+    let $headerCloseBtn = $(`<button type="button" class="is-close"><img src="/statics/images/white_close.png" alt="닫기"></button>`);
     _self.$body = null;
 
     const UI = {
@@ -105,8 +108,19 @@ let ModalBuilder = function(){
 			$footerWrap.append($footerButton);
 			return $footerWrap; 
 		},
+		FOOTER_ONE_BUTTON : function(buttonText, callback){
+			let $footerWrap = $(`<div class="modal_footer"></div>`);
+			let $footerButton = $(`<button class="modal_footer_btn">${buttonText}</button>`);
+			$footerButton.on("click", function(){
+				if(!isNull(callback)){
+					callback($(this), _self);
+				}
+			});
+			$footerWrap.append($footerButton);
+			return $footerWrap;
+		},
 		FOOTER_TWO_BUTTON : function(buttonText, callback){
-			let $footerWrap = $(`<div class="modal_footer flex-between none"></div>`);
+			let $footerWrap = $(`<div class="modal_footer"></div>`);
 			let $footerButton = $(`<button class="modal_footer_remove_btn">${buttonText}</button>`);
 			let $footerCloseButton = $(`<button class="modal_footer_btn">닫기</button>`);
 			$footerButton.on("click", function(){
@@ -117,6 +131,7 @@ let ModalBuilder = function(){
 			
 			$footerCloseButton.on("click", function(){
 				_self.close();
+				modalAlertClose()
 			});
 			
 			$footerWrap.append($footerButton);
@@ -137,7 +152,8 @@ let ModalBuilder = function(){
 				if(!isNull(callback2)){
 					callback2($(this), _self);
 				}else{
-					_self.close();	
+					_self.close();
+					modalAlertClose();	
 				}
 			});
 			
@@ -147,8 +163,8 @@ let ModalBuilder = function(){
 		},
 		FOOTER_ALERT_TWO_BUTTON : function(buttonText, callback, buttonText2, callback2){
 			let $footerWrap = $(`<div class="modal_footer"></div>`);
-			let $footerButton = $(`<button class="modal_footer_remove_btn is-key-color-700">${buttonText}</button>`);
-			let $footerCloseButton = $(`<button class="modal_footer_btn is-black-color modal_alret_close" onclick="modalAlertClose()">${buttonText2 ? buttonText2 : "닫기"}</button>`);
+			let $footerButton = $(`<button class="modal_footer_remove_btn is-key-color-700 mr8">${buttonText}</button>`);
+			let $footerCloseButton = $(`<button class="modal_footer_btn is-black-color modal_alret_close mj0">${buttonText2 ? buttonText2 : "닫기"}</button>`);
 			$footerButton.on("click", function(){
 				if(!isNull(callback)){
 					 callback($(this), _self);
@@ -159,7 +175,8 @@ let ModalBuilder = function(){
 				if(!isNull(callback2)){
 					callback2($(this), _self);
 				}else{
-					_self.close();	
+					_self.close();
+					modalAlertClose()
 				}
 			});
 			
@@ -183,7 +200,6 @@ let ModalBuilder = function(){
         containerId = "modal-container-"+id;
         modalId = "modal-"+id;
         $wrap = UI.WRAP(containerId,modalId,width);
-
         titleText = title;
         if(isHeader == null || isHeader){
             $header = UI.HEADER(title);
@@ -268,6 +284,8 @@ let ModalBuilder = function(){
 		if(parseInt(type) == 3) footerButtonType = "FOOTER_CUSTOM_TWO_BUTTON";
 		if(parseInt(type) == 4) footerButtonType = "FOOTER_ALERT";
 		if(parseInt(type) == 5) footerButtonType = "FOOTER_ALERT_TWO_BUTTON";
+		if(type == 'FOOTER_ONE_BUTTON') footerButtonType = "FOOTER_ONE_BUTTON";
+
 		if(footerButtonType == "FOOTER_TWO_BUTTON"){
 			$footer = UI[footerButtonType](buttonText, callback, cancelCallback);
 		} else if(footerButtonType == "FOOTER_CUSTOM_TWO_BUTTON", "FOOTER_ALERT_TWO_BUTTON"){
@@ -307,6 +325,7 @@ let ModalBuilder = function(){
             $container.show();
             opening = false;
         })
+		$("body").addClass('hidden');
    }
 
    return _self;

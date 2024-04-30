@@ -65,6 +65,7 @@ public interface MetaTabInfoMapper {
 	  * @return Map<String,Object>
 	  */
 	public Map<String,Object> findOneSearchOptionForArrayList();
+	
 	/**
 	 * @Method Name : deleteMetaTabInfo
 	 * @작성일 : 2023. 9. 15.
@@ -73,5 +74,27 @@ public interface MetaTabInfoMapper {
 	 */
 	public void deleteMetaTabInfo(MetaTabInfo metaTabInfo);
 	
+	/**
+	 * @Method Name : findTblNmByDsetId
+	 * @작성일 : 2023. 01. 03.
+	 * @작성자 : KY.LEE
+	 * @Method 설명 : 메타데이터 테이블 이름 조회
+	 */
+	public MetaTabInfo findTblIdAndTblNmAndTblTypeByDsetId(String dsetId);
 	
+	/**
+	 * @Method Name : findAllCsvInfo
+	 * @작성일 : 2023. 01. 03.
+	 * @작성자 : KY.LEE
+	 * @Method 설명 : 메타데이터 조회
+	 */
+	public List<Map<String,String>> findAllCsvInfo(MetaTabInfo metaTabInfo);
+
+	/**
+	 * @Method Name : findDataTypeList
+	 * @작성일 : 2023. 02. 01.
+	 * @작성자 : KY.LEE
+	 * @Method 설명 : 데이터타입 목록 조회
+	 */
+	public List<String> findDataTypeList();
 }

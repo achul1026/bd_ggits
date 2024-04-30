@@ -6,11 +6,18 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.neighbor21.ggits.support.exception.CommonException;
+import com.neighbor21.ggits.support.exception.ErrorCode;
+
 public class PasswordUtils {
 	
 	private PasswordUtils() {};
 	
 	private static final int SALT_LENGTH = 16;
+	
 
     public static String hashPassword(String password) {
         String salt = generateSalt();
@@ -25,7 +32,7 @@ public class PasswordUtils {
             byte[] hashedPasswordBytes = md.digest(password.getBytes(StandardCharsets.UTF_8));
             hashedPassword = Base64.getEncoder().encodeToString(hashedPasswordBytes);
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+        	throw new CommonException(ErrorCode.DEFAULT_ERROR);
         }
         return salt + "$" + hashedPassword;
     }

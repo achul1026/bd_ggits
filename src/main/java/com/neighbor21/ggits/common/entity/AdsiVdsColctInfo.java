@@ -12,7 +12,8 @@ public class AdsiVdsColctInfo extends CommonEntity{
   private long avgSpeed; //평균 속도
   private long trfvlm; //교통량
   private long occpRt; //점유 비율
-
+  
+  private String vdsNm;
 
   public String getMngInstCd() {
     return mngInstCd;
@@ -75,5 +76,13 @@ public class AdsiVdsColctInfo extends CommonEntity{
   public void setOccpRt(long occpRt) {
     this.occpRt = occpRt;
   }
+
+public String getVdsNm() {
+	return vdsNm;
+}
+
+public void setVdsNm(String vdsNm) {
+	this.vdsNm = vdsNm;
+}
 
 }

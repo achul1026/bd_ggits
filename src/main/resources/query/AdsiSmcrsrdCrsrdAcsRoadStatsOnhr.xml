@@ -3,92 +3,254 @@
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.AdsiSmcrsrdCrsrdAcsRoadStatsOnhrMapper'>
 	<sql id="comunicationList-Where">
-		<if test="(searchType != null and searchType != '') 
-					and (strDt != null and strDt != '') and (endDt != null and endDt != '')">
-			AND ASCARSO.CLCT_DT
-		    	BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
-		    	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+		<if test="(strDt != null and strDt != '') and (endDt != null and endDt != '')">
+			AND ASCARSO.ANLS_DT
+		    	BETWEEN TO_TIMESTAMP(#{strDt}|| ' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}|| ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
 		</if>
-		<if test="(searchType != null and searchType != '') 
-				and (strDt == null or strDt == '') and (endDt != null and endDt != '')">
+		<if test="(strDt == null or strDt == '') and (endDt != null and endDt != '')">
 			<![CDATA[
-				AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS')  <= ASCARSO.CLCT_DT
+				AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS')  <= ASCARSO.ANLS_DT
 			]]>
 		</if>
-		<if test="(searchType != null and searchType != '') 
-				and (strDt != null and strDt != '') and (endDt == null or endDt == '')">
+		<if test="(strDt != null and strDt != '') and (endDt == null or endDt == '')">
 			<![CDATA[
-			AND ASCARSO.CLCT_DT <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			AND ASCARSO.ANLS_DT <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
 			]]>
+		</if>
+		<if test="strSearchYear != null and strSearchYear != '' and strSearchYear != 'searchAllYear'">
+			<![CDATA[
+				AND TO_CHAR(ASCARSO.ANLS_DT, 'YYYY') >= #{strSearchYear}
+			]]>
+		</if>
+		<if test="endSearchYear != null and endSearchYear != '' and endSearchYear != 'endSearchYear'">
+			<![CDATA[
+				AND TO_CHAR(ASCARSO.ANLS_DT, 'YYYY') <= #{endSearchYear}
+			]]>
+		</if>
+		<if test="strSearchMonth != null and strSearchMonth != '' and strSearchYear != 'searchAllMonth'">
+			<![CDATA[
+				AND TO_CHAR(ASCARSO.ANLS_DT, 'MM') >= #{strSearchMonth}
+			]]>
+		</if>
+		<if test="endSearchMonth != null and endSearchMonth != '' and endSearchYear != 'searchAllMonth'">
+			<![CDATA[
+				AND TO_CHAR(ASCARSO.ANLS_DT, 'MM') <= #{endSearchMonth}
+			]]>
+		</if>
+		<if test="(sigunCdId != null and sigunCdId != '') and sigunCdId != 'searchAllLocation'">
+			AND cgslam.ADSTDG_CD LIKE #{sigunCdId} || '%'
 		</if>
 		<if test="searchContent != null and searchContent != ''">
-			AND ascari.ACS_ROAD_NM LIKE '%' ||  #{searchContent} || '%'
+			AND cgslam.ROAD_NAME LIKE '%' ||  #{searchContent} || '%'
 		</if>
 		<if test="dayOfTheWeek != null">
-			AND EXTRACT (ISODOW from ASCARSO.CLCT_DT)::varchar(1) IN 
+			AND EXTRACT (ISODOW from ASCARSO.ANLS_DT)::varchar(1) IN 
 				<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
                     #{item}
                 </foreach>
 		</if>
 	</sql>
 	<select id="countcomunicationList" parameterType="adsiSmcrsrdCrsrdAcsRoadStatsOnhr" resultType="int">
-		SELECT
-			COUNT(*)
-		FROM
-			ADSI_SMCRSRD_CRSRD_ACS_ROAD_STATS_ONHR ascarso
-		LEFT JOIN ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO ascari
-			ON ascari.MNG_INST_CD = ascarso.MNG_INST_CD
-				AND ascari.CRSRD_ID = ascarso.CRSRD_ID
-				AND ascari.ACS_ROAD_ID = ascarso.ACS_ROAD_ID
-		WHERE 
-			1=1
-		<include refid="comunicationList-Where"/>
+		SELECT  
+    		COUNT(A.ROAD_NAME)
+		FROM (
+    			SELECT  
+        			CGSLAM.ROAD_NAME    
+    			FROM GGITS.MRT_SMC_SPOT_ABN ASCARSO
+    			INNER JOIN BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO ascari
+        			ON (ASCARSO.MNG_INST_CD = ASCARI.MNG_INST_CD 
+        				AND ASCARI.CRSRD_ID = ASCARSO.CRSRD_ID 
+        				AND ASCARI.ACS_ROAD_ID = ASCARSO.ACS_ROAD_ID)
+    			INNER JOIN GGITS.C_GM_STD_LINK_ADSTDG_MPPG CGSLAM
+        			ON CGSLAM.LINK_ID = ASCARI.LINK_ID
+    			WHERE 1=1
+        			AND CGSLAM.ROAD_NAME <![CDATA[<>]]> '-'
+        			<include refid="comunicationList-Where"/>
+    			GROUP BY CGSLAM.ROAD_NAME
+    	)A;
      </select>
      
      <select id="findAllComunicationList" parameterType="adsiSmcrsrdCrsrdAcsRoadStatsOnhr" resultType="adsiSmcrsrdCrsrdAcsRoadStatsOnhr">
 		SELECT
-			ROW_NUMBER() OVER(ORDER BY ascarso.CLCT_DT) AS rownum
-			, ascarso.MNG_INST_CD
-			, ascarso.CLCT_DT
-			, ascarso.CRSRD_ID
-			, ascarso.ACS_ROAD_ID
-			, ascarso.VHCL_TRFVLM
-			, ascarso.AVG_VHCL_SPEED
-			, ascarso.CTRL_DELAY_TIME
-			, ascari.ACS_ROAD_NM
-		FROM
-			ADSI_SMCRSRD_CRSRD_ACS_ROAD_STATS_ONHR ascarso
-		LEFT JOIN ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO ascari
-			ON ascari.MNG_INST_CD = ascarso.MNG_INST_CD
-				AND ascari.CRSRD_ID = ascarso.CRSRD_ID
-				AND ascari.ACS_ROAD_ID = ascarso.ACS_ROAD_ID
-		WHERE
-			1=1
+			CGSLAM.ROAD_NAME,
+			SUM(ASCARSO.VHCL_TRFVLM) AS sumTrfvlm,
+			ROUND(SUM(COALESCE(ASCARSO.VHCL_TRFVLM,0)) / COUNT(ASCARI.ACS_ROAD_NM)::NUMERIC,2) AS avgTrfvlm,
+			ROUND(SUM(CASE WHEN COALESCE(ASCARSO.AVG_VHCL_SPEED,0) > 100 THEN 100 ELSE COALESCE(ASCARSO.AVG_VHCL_SPEED,0) end) / COUNT(ASCARI.ACS_ROAD_NM)::NUMERIC,0) AS avgSpd
+		FROM GGITS.MRT_SMC_SPOT_ABN ASCARSO
+		INNER JOIN BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO ascari
+			ON (ASCARSO.MNG_INST_CD = ASCARI.MNG_INST_CD 
+				AND ASCARI.CRSRD_ID = ASCARSO.CRSRD_ID 
+				AND ASCARI.ACS_ROAD_ID = ascarso.ACS_ROAD_ID)
+		INNER JOIN GGITS.C_GM_STD_LINK_ADSTDG_MPPG CGSLAM
+			ON CGSLAM.LINK_ID = ASCARI.LINK_ID
+		WHERE 1=1
+			AND CGSLAM.ROAD_NAME <![CDATA[<>]]> '-'
 			<include refid="comunicationList-Where"/>
-     	ORDER BY ROWNUM DESC 
+		GROUP BY CGSLAM.ROAD_NAME
+		ORDER BY CGSLAM.ROAD_NAME
 		LIMIT 10 OFFSET (#{page} - 1) * 10
     </select>
     
     <select id="findAllComunicationListWithoutPaging" parameterType="adsiSmcrsrdCrsrdAcsRoadStatsOnhr" resultType="adsiSmcrsrdCrsrdAcsRoadStatsOnhr">
 		SELECT
-			ROW_NUMBER() OVER(ORDER BY ascarso.CLCT_DT) AS rownum
-			, ascarso.MNG_INST_CD
-			, ascarso.CLCT_DT
-			, ascarso.CRSRD_ID
-			, ascarso.ACS_ROAD_ID
-			, ascarso.VHCL_TRFVLM
-			, ascarso.AVG_VHCL_SPEED
-			, ascarso.CTRL_DELAY_TIME
-			, ascari.ACS_ROAD_NM
-		FROM
-			ADSI_SMCRSRD_CRSRD_ACS_ROAD_STATS_ONHR ascarso
-		LEFT JOIN ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO ascari
-			ON ascari.MNG_INST_CD = ascarso.MNG_INST_CD
-				AND ascari.CRSRD_ID = ascarso.CRSRD_ID
-				AND ascari.ACS_ROAD_ID = ascarso.ACS_ROAD_ID
-		WHERE
-			1=1
+			CGSLAM.ROAD_NAME,
+			SUM(ASCARSO.VHCL_TRFVLM) AS sumTrfvlm,
+			ROUND(SUM(COALESCE(ASCARSO.VHCL_TRFVLM,0)) / COUNT(ASCARI.ACS_ROAD_NM)::NUMERIC,2) AS avgTrfvlm,
+			ROUND(SUM(CASE WHEN COALESCE(ASCARSO.AVG_VHCL_SPEED,0) > 100 THEN 100 ELSE COALESCE(ASCARSO.AVG_VHCL_SPEED,0) end) / COUNT(ASCARI.ACS_ROAD_NM)::NUMERIC,0) AS avgSpd
+		FROM GGITS.MRT_SMC_SPOT_ABN ASCARSO
+		INNER JOIN BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO ascari
+			ON (ASCARSO.MNG_INST_CD = ASCARI.MNG_INST_CD 
+				AND ASCARI.CRSRD_ID = ASCARSO.CRSRD_ID 
+				AND ASCARI.ACS_ROAD_ID = ascarso.ACS_ROAD_ID)
+		INNER JOIN GGITS.C_GM_STD_LINK_ADSTDG_MPPG CGSLAM
+			ON CGSLAM.LINK_ID = ASCARI.LINK_ID
+		WHERE 1=1
+			AND CGSLAM.ROAD_NAME <![CDATA[<>]]> '-'
 			<include refid="comunicationList-Where"/>
-     	ORDER BY ROWNUM DESC 
+		GROUP BY CGSLAM.ROAD_NAME
+		ORDER BY CGSLAM.ROAD_NAME
+    </select>
+    
+    <select id="findAllDataYears" resultType="map">
+    	SELECT
+			TO_CHAR(ANLS_DT,'YYYY') AS "year"
+		FROM
+			MRT_SMC_SPOT_ABN
+		GROUP BY TO_CHAR(ANLS_DT,'YYYY')
+		ORDER BY TO_CHAR(ANLS_DT,'YYYY') DESC
+    </select>
+    
+    <select id="countVhclDivInfo" parameterType="adsiSmcrsrdCrsrdAcsRoadStatsOnhr" resultType="int">
+		SELECT
+        	COUNT(A.VHCL_DIV)
+      	FROM (
+        	SELECT ASCDSO.VHCL_DIV 
+			FROM GGITS.MRT_SMC_VHCL_ANLS ASCDSO
+			INNER JOIN BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO ASCARI
+				ON (ASCARI.MNG_INST_CD = ASCDSO.MNG_INST_CD AND ASCARI.CRSRD_ID = ASCDSO.CRSRD_ID)
+			INNER JOIN GGITS.C_GM_STD_LINK_ADSTDG_MPPG cgslam
+				ON CGSLAM.LINK_ID = ASCARI.LINK_ID
+         	WHERE 1=1
+            	AND ASCDSO.VHCL_DIV IS NOT NULL
+	            <if test="(strDt != null and strDt != '') and (endDt != null and endDt != '')">
+					AND TO_DATE(ASCDSO.ANLS_DT, 'YYYYMMDD') 
+						BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYYMMDD') 
+						AND TO_TIMESTAMP(#{endDt}, 'YYYYMMDD')
+				</if>
+				<if test="(strDt == null or strDt == '') and (endDt != null and endDt != '')">
+					<![CDATA[
+						AND TO_TIMESTAMP(#{strDt}, 'YYYYMMDD')  <= TO_DATE(ASCDSO.ANLS_DT, 'YYYYMMDD')
+					]]>
+				</if>
+				<if test="(strDt != null and strDt != '') and (endDt == null or endDt == '')">
+					<![CDATA[
+					AND TO_DATE(ASCDSO.ANLS_DT, 'YYYYMMDD') <= TO_TIMESTAMP(#{endDt}, 'YYYYMMDD')
+					]]>
+				</if>
+				<if test="strSearchYear != null and strSearchYear != '' and strSearchYear != 'searchAllYear'">
+					<![CDATA[
+						AND TO_CHAR(ASCDSO.ANLS_DT::DATE, 'YYYY') >= #{strSearchYear}
+					]]>
+				</if>
+				<if test="endSearchYear != null and endSearchYear != '' and endSearchYear != 'endSearchYear'">
+					<![CDATA[
+						AND TO_CHAR(ASCDSO.ANLS_DT::DATE, 'YYYY') <= #{endSearchYear}
+					]]>
+				</if>
+				<if test="strSearchMonth != null and strSearchMonth != '' and strSearchYear != 'searchAllMonth'">
+					<![CDATA[
+						AND TO_CHAR(ASCDSO.ANLS_DT::DATE, 'MM') >= #{strSearchMonth}
+					]]>
+				</if>
+				<if test="endSearchMonth != null and endSearchMonth != '' and endSearchYear != 'searchAllMonth'">
+					<![CDATA[
+						AND TO_CHAR(ASCDSO.ANLS_DT::DATE, 'MM') <= #{endSearchMonth}
+					]]>
+				</if>
+				<if test="(sigunCdId != null and sigunCdId != '') and sigunCdId != 'searchAllLocation'">
+					AND cgslam.ADSTDG_CD LIKE #{sigunCdId} || '%'
+				</if>
+				<if test="searchContent != null and searchContent != ''">
+					AND ascari.ACS_ROAD_NM LIKE '%' ||  #{searchContent} || '%'
+				</if>
+				<if test="dayOfTheWeek != null">
+					AND EXTRACT (ISODOW from ASCARSO.ANLS_DT::DATE)::varchar(1) IN 
+						<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+		                    #{item}
+		                </foreach>
+				</if>
+      		GROUP BY ASCDSO.VHCL_DIV
+    	)A
+    </select>
+    
+    <select id="findOneVhclDivInfo" parameterType="adsiSmcrsrdCrsrdAcsRoadStatsOnhr" resultType="map">
+    	WITH ADSI_SMCRSRD_CRSRD_DRCT_STATS_ONHR_ARRAY_LIST AS (
+        			SELECT CASE WHEN ASCDSO.VHCL_DIV = '0' THEN '해당사항없음/확인불가'
+	        					WHEN ASCDSO.VHCL_DIV = '1' THEN '소형(15인이하)'
+	        					WHEN ASCDSO.VHCL_DIV = '2' THEN '버스'
+	        					WHEN ASCDSO.VHCL_DIV = '3' THEN '화물'	        
+	   							END as VHCL_DIV,     
+       						SUM(ASCDSO.vhcl_trfvlm) AS DIV_CNT
+					FROM GGITS.MRT_SMC_VHCL_ANLS ASCDSO
+ 					INNER JOIN BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO ASCARI
+   						ON (ASCARI.MNG_INST_CD = ASCDSO.MNG_INST_CD AND ASCARI.CRSRD_ID = ASCDSO.CRSRD_ID)
+ 					INNER JOIN GGITS.C_GM_STD_LINK_ADSTDG_MPPG cgslam
+   						ON CGSLAM.LINK_ID = ASCARI.LINK_ID
+ 					WHERE 1=1
+ 						AND ASCDSO.VHCL_DIV IS NOT NULL
+   						<if test="(strDt != null and strDt != '') and (endDt != null and endDt != '')">
+   							AND TO_DATE(ASCDSO.ANLS_DT, 'YYYYMMDD') 
+   								BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYYMMDD') 
+   								AND TO_TIMESTAMP(#{endDt}, 'YYYYMMDD')
+						</if>
+						<if test="(strDt == null or strDt == '') and (endDt != null and endDt != '')">
+							<![CDATA[
+								AND TO_TIMESTAMP(#{strDt}, 'YYYYMMDD')  <= TO_DATE(ASCDSO.ANLS_DT, 'YYYYMMDD')
+							]]>
+						</if>
+						<if test="(strDt != null and strDt != '') and (endDt == null or endDt == '')">
+							<![CDATA[
+							AND TO_DATE(ASCDSO.ANLS_DT, 'YYYYMMDD') <= TO_TIMESTAMP(#{endDt}, 'YYYYMMDD')
+							]]>
+						</if>
+						<if test="strSearchYear != null and strSearchYear != '' and strSearchYear != 'searchAllYear'">
+							<![CDATA[
+								AND TO_CHAR(ASCDSO.ANLS_DT::DATE, 'YYYY') >= #{strSearchYear}
+							]]>
+						</if>
+						<if test="endSearchYear != null and endSearchYear != '' and endSearchYear != 'endSearchYear'">
+							<![CDATA[
+								AND TO_CHAR(ASCDSO.ANLS_DT::DATE, 'YYYY') <= #{endSearchYear}
+							]]>
+						</if>
+						<if test="strSearchMonth != null and strSearchMonth != '' and strSearchYear != 'searchAllMonth'">
+							<![CDATA[
+								AND TO_CHAR(ASCDSO.ANLS_DT::DATE, 'MM') >= #{strSearchMonth}
+							]]>
+						</if>
+						<if test="endSearchMonth != null and endSearchMonth != '' and endSearchYear != 'searchAllMonth'">
+							<![CDATA[
+								AND TO_CHAR(ASCDSO.ANLS_DT::DATE, 'MM') <= #{endSearchMonth}
+							]]>
+						</if>
+						<if test="(sigunCdId != null and sigunCdId != '') and sigunCdId != 'searchAllLocation'">
+							AND cgslam.ADSTDG_CD LIKE #{sigunCdId} || '%'
+						</if>
+						<if test="searchContent != null and searchContent != ''">
+							AND ascari.ACS_ROAD_NM LIKE '%' ||  #{searchContent} || '%'
+						</if>
+						<if test="dayOfTheWeek != null">
+							AND EXTRACT (ISODOW from ASCARSO.ANLS_DT::DATE)::varchar(1) IN 
+								<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+				                    #{item}
+				                </foreach>
+						</if>
+  					GROUP BY ASCDSO.VHCL_DIV
+      	)
+      	SELECT
+        	ARRAY_TO_STRING(ARRAY_AGG(VHCL_DIV ORDER BY VHCL_DIV), ',') AS "vhclDivLabelArray"
+            , ARRAY_TO_STRING(ARRAY_AGG(DIV_CNT ORDER BY VHCL_DIV), ',') AS "vhclDivCntArray"
+      	FROM ADSI_SMCRSRD_CRSRD_DRCT_STATS_ONHR_ARRAY_LIST
     </select>
 </mapper>

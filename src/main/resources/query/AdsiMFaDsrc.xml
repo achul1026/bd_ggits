@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.AdsiMFaDsrcMapper'>
-	<select id="findAllDSRCInfoForMap" resultType="adsiMFaDsrc">
+	<!--<select id="findAllDSRCInfoForMap" resultType="adsiMFaDsrc">
 		SELECT
 			AMFD.MNG_INST_CD
 			,AMFD.RSE_ID
@@ -13,89 +13,96 @@
 			,AMFD.DESCR
 		    ,ARSI.RSE_STTS
 		FROM
-			ADSI_M_FA_DSRC AMFD
-				INNER JOIN ADSI_RSE_STTS_INFO ARSI ON AMFD.RSE_ID = ARSI.RSE_ID
+			BIGDATA.EXT_ADSI_M_FA_DSRC AMFD
+			INNER JOIN (
+				SELECT MAX(AMFD.ETL_DT) AS RCT_ETL_DT
+					 , AMFD.DSRC_ID
+				FROM BIGDATA.EXT_ADSI_M_FA_DSRC AMFD
+				GROUP BY DSRC_ID
+			) RCT_AMFD ON RCT_AMFD.DSRC_ID = AMFD.DSRC_ID AND RCT_AMFD.RCT_ETL_DT = AMFD.ETL_DT
+				INNER JOIN BIGDATA.EXT_ADSI_RSE_STTS_INFO ARSI ON AMFD.RSE_ID = ARSI.RSE_ID
 				INNER JOIN (
 				SELECT
 					MAX(ARSI.CLCT_DT) AS RCT_CLCT_DT
 					 ,ARSI.RSE_ID
-				FROM ADSI_RSE_STTS_INFO ARSI
+				FROM BIGDATA.EXT_ADSI_RSE_STTS_INFO ARSI
 				GROUP BY ARSI.RSE_ID
 			) RCT ON RCT.RSE_ID = ARSI.RSE_ID AND RCT.RCT_CLCT_DT = ARSI.CLCT_DT
+	</select>-->
+
+	<select id="findAllDSRCInfoForMap" resultType="adsiMFaDsrc">
+		SELECT
+			AMFD.MNG_INST_CD ,
+			AMFD.RSE_ID ,
+			AMFD.RSE_NM ,
+			AMFD.DSRC_ID ,
+			AMFD.LON_CRDN ,
+			AMFD.LAT_CRDN ,
+			AMFD.DESCR /*,RCT_STTS.RSE_STTS*/
+		FROM
+			BIGDATA.EXT_ADSI_M_FA_DSRC AMFD
+		INNER JOIN (
+			SELECT
+				MAX(AMFD.ETL_DT) AS RCT_ETL_DT ,
+				AMFD.RSE_ID,
+				AMFD.MNG_INST_CD -- 수정 박원배
+			FROM
+				BIGDATA.EXT_ADSI_M_FA_DSRC AMFD
+			GROUP BY RSE_ID, MNG_INST_CD /*수정 박원배*/) RCT_AMFD ON RCT_AMFD.RSE_ID = AMFD.RSE_ID /*수정 박원배*/AND RCT_AMFD.RCT_ETL_DT = AMFD.ETL_DT
+
 	</select>
 	
 	<select id="findAllDSRCForFacility" parameterType="mapFacilityMenuDTO" resultType="mapFacilityMenuDTO">
 		SELECT
-				AMFD.DSRC_ID 		AS "id",
-				ADSSM.STD_LINK_ID 	AS "nodeId",
-				AMFD.RSE_NM 		AS "name",
-				AMFD.DESCR 			AS "descr",
-				MOC.CD_NM 			AS "mngInstNm",
-				ARSI.RSE_STTS 		AS "stts",
-				COALESCE (ST_X(ST_ASTEXT(ST_CENTROID(GCIN.GEOM))),0) AS "lon",
-				COALESCE (ST_Y(ST_ASTEXT(ST_CENTROID(GCIN.GEOM))),0) AS "lat"
+				AMFD.MNG_INST_CD
+				,AMFD.RSE_ID
+				,AMFD.RSE_NM		AS "name"
+				,AMFD.DSRC_ID		AS "id"
+				,AMFD.LON_CRDN		AS "lon"
+				,AMFD.LAT_CRDN		AS "lat"
+				,AMFD.DESCR
 		FROM
-				ADSI_M_FA_DSRC AMFD 
-		LEFT JOIN ADSI_RSE_STTS_INFO ARSI ON AMFD.MNG_INST_CD = ARSI.MNG_INST_CD AND AMFD.RSE_ID = ARSI.RSE_ID  
-		LEFT JOIN ADSI_DSRC_SCTN_INFO ADSI ON AMFD.MNG_INST_CD = ADSI.MNG_INST_CD AND AMFD.RSE_ID = ADSI.START_RSE_ID  
-		LEFT JOIN ADSI_DSRC_SCTN_STLINK_MPPG ADSSM ON ADSI.DSRC_SCTN_ID = ADSSM.DSRC_SCTN_ID 
-		LEFT JOIN GY_COMM_INFO_NODE GCIN ON ADSSM.STD_LINK_ID = GCIN.NODE_ID 
-		LEFT JOIN M_OP_CODE MOC ON AMFD.MNG_INST_CD = MOC.CD_ID
+			BIGDATA.EXT_ADSI_M_FA_DSRC AMFD
+		INNER JOIN (
+		SELECT MAX(AMFD.ETL_DT) AS RCT_ETL_DT
+		, AMFD.DSRC_ID
+		FROM BIGDATA.EXT_ADSI_M_FA_DSRC AMFD
+		GROUP BY DSRC_ID
+		) RCT_AMFD ON RCT_AMFD.DSRC_ID = AMFD.DSRC_ID AND RCT_AMFD.RCT_ETL_DT = AMFD.ETL_DT
 		WHERE 
 				1=1
-			<if test="nodeName != null and nodeName != ''">
-				AND GCIN.NODE_NAME LIKE '%' 		|| #{nodeName} || '%'
-			</if>
+			<if test="name != null and name != ''">
+	            AND AMFD.RSE_NM LIKE '%' || #{name} || '%'
+	        </if>
 			<if test="id != null and id!= ''">
 				AND AMFD.DSRC_ID = #{id}
 			</if>
-		GROUP BY
-				AMFD.DSRC_ID,
-				ADSSM.STD_LINK_ID,
-				AMFD.RSE_NM,
-				AMFD.DESCR,
-				MOC.CD_NM,
-				ARSI.RSE_STTS,
-				GCIN.GEOM,
-				ARSI.CLCT_DT
 		ORDER BY
-				ARSI.CLCT_DT DESC
+				AMFD.DSRC_ID DESC
 		<if test="page != null and page != '' and page != 0 ">
 		LIMIT 5 OFFSET (#{page} - 1) * 5  	
 		</if> 				
 	</select>
 	
 	<select id="countDSRCForFacility" parameterType="mapFacilityMenuDTO" resultType="int">
-		SELECT 
-				COUNT(A.DSRC_ID) 
-		FROM(
-				SELECT
-						AMFD.DSRC_ID
-				FROM
-						ADSI_M_FA_DSRC AMFD 
-				LEFT JOIN ADSI_RSE_STTS_INFO ARSI ON AMFD.MNG_INST_CD = ARSI.MNG_INST_CD AND AMFD.RSE_ID = ARSI.RSE_ID  
-				LEFT JOIN ADSI_DSRC_SCTN_INFO ADSI ON AMFD.MNG_INST_CD = ADSI.MNG_INST_CD AND AMFD.RSE_ID = ADSI.START_RSE_ID  
-				LEFT JOIN ADSI_DSRC_SCTN_STLINK_MPPG ADSSM ON ADSI.DSRC_SCTN_ID = ADSSM.DSRC_SCTN_ID 
-				LEFT JOIN GY_COMM_INFO_NODE GCIN ON ADSSM.STD_LINK_ID = GCIN.NODE_ID 
-				LEFT JOIN M_OP_CODE MOC ON AMFD.MNG_INST_CD = MOC.CD_ID
-				WHERE 
-						1=1
-					<if test="nodeName != null and nodeName != ''">
-						AND GCIN.NODE_NAME LIKE '%' 		|| #{nodeName} || '%'
-					</if>
-					<if test="id != null and id!= ''">
-						AND AMFD.DSRC_ID = #{id}
-					</if>
-				GROUP BY
-						AMFD.DSRC_ID,
-						ADSSM.STD_LINK_ID,
-						AMFD.RSE_NM,
-						AMFD.DESCR,
-						MOC.CD_NM,
-						ARSI.RSE_STTS,
-						GCIN.GEOM,
-						ARSI.CLCT_DT
-		)A
+		SELECT
+				COUNT(AMFD.MNG_INST_CD)
+		FROM
+			BIGDATA.EXT_ADSI_M_FA_DSRC AMFD
+		INNER JOIN (
+		SELECT MAX(AMFD.ETL_DT) AS RCT_ETL_DT
+		, AMFD.DSRC_ID
+		FROM BIGDATA.EXT_ADSI_M_FA_DSRC AMFD
+		GROUP BY DSRC_ID
+		) RCT_AMFD ON RCT_AMFD.DSRC_ID = AMFD.DSRC_ID AND RCT_AMFD.RCT_ETL_DT = AMFD.ETL_DT
+		WHERE 
+				1=1
+			<if test="name != null and name != ''">
+	            AND AMFD.RSE_NM LIKE '%' || #{name} || '%'
+	        </if>
+			<if test="id != null and id!= ''">
+				AND AMFD.DSRC_ID = #{id}
+			</if>
 	</select>
 	
 </mapper>

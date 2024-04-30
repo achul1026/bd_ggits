@@ -2,8 +2,7 @@
 <!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.AdsiMFaVdsMapper'>
-
-    <select id="findAllVdsInfoForMap" resultType="adsiMFaVds">
+    <!--<select id="findAllVdsInfoForMap" resultType="adsiMFaVds">
         SELECT AMFV.MNG_INST_CD
              , AMFV.VDS_ID
              , AMFV.VDS_NM
@@ -20,12 +19,18 @@
              , AVSI.MIN_LIMIT_SPEED
              , AVSI.MAX_LIMIT_SPEED
              , AVSI.ETL_DT
-        FROM ADSI_M_FA_VDS AMFV
+        FROM BIGDATA.EXT_ADSI_M_FA_VDS AMFV
+         INNER JOIN (
+            SELECT MAX(AMFV.ETL_DT) AS RCT_ETL_DT
+                 , AMFV.VDS_ID
+            FROM BIGDATA.EXT_ADSI_M_FA_VDS AMFV
+            GROUP BY VDS_ID
+        ) RCT_AMFV ON RCT_AMFV.VDS_ID = AMFV.VDS_ID AND RCT_AMFV.RCT_ETL_DT = AMFV.ETL_DT
                  INNER JOIN (
             SELECT MAX(RCT_AVSI.CLCT_DT) AS CLCT_DT
                  , RCT_AVSI.VDS_ID
                  , RCT_AVSI.VDS_STTS
-            FROM ADSI_VDS_STTS_INFO RCT_AVSI
+            FROM BIGDATA.EXT_ADSI_VDS_STTS_INFO RCT_AVSI
             GROUP BY VDS_ID, VDS_STTS
         ) RCT_AVSI ON AMFV.VDS_ID = RCT_AVSI.VDS_ID
                  INNER JOIN (
@@ -36,84 +41,111 @@
                  , ROAD_GRD
                  , MIN_LIMIT_SPEED
                  , MAX_LIMIT_SPEED
-                 , MAX(TO_TIMESTAMP(ETL_DT, 'YYYYMMDDHH24MISS')) AS ETL_DT
-            FROM ADSI_VDS_SCTN_INFO
+                 , MAX(TO_TIMESTAMP(ETL_DT, 'YYYYMMDDHH24MISSMS')) AS ETL_DT
+            FROM BIGDATA.EXT_ADSI_VDS_SCTN_INFO
             GROUP BY VDS_SCTN_ID, VDS_ID, VDS_SCTN_NM, VDS_SCTN_LEN, ROAD_GRD, MIN_LIMIT_SPEED, MAX_LIMIT_SPEED
         ) AVSI ON AVSI.VDS_ID = AMFV.VDS_ID
+    </select>-->
+
+    <select id="findAllVdsInfoForMap" resultType="adsiMFaVds">
+		SELECT
+			AMFV.MNG_INST_CD ,
+			AMFV.VDS_ID ,
+			AMFV.VDS_NM ,
+			AMFV.VDS_TYPE ,
+			AMFV.LANE_CNT ,
+			AMFV.LON ,
+			AMFV.LAT ,
+			AMFV.DESCR ,
+			AVSI.VDS_SCTN_ID ,
+			AVSI.VDS_SCTN_NM ,
+			AVSI.VDS_SCTN_LEN ,
+			AVSI.ROAD_GRD ,
+			AVSI.MIN_LIMIT_SPEED ,
+			AVSI.MAX_LIMIT_SPEED
+		FROM
+			BIGDATA.EXT_ADSI_M_FA_VDS AMFV
+		INNER JOIN (
+			SELECT
+				MAX(AMFV.ETL_DT) AS RCT_ETL_DT ,
+				AMFV.VDS_ID,
+				AMFV.MNG_INST_CD -- 추가_박원배
+			FROM
+				BIGDATA.EXT_ADSI_M_FA_VDS AMFV
+			GROUP BY
+				VDS_ID, AMFV.MNG_INST_CD /*추가 박원배*/) RCT_AMFV ON
+			RCT_AMFV.VDS_ID = AMFV.VDS_ID
+			AND RCT_AMFV.RCT_ETL_DT = AMFV.ETL_DT
+		LEFT JOIN (
+			SELECT
+				MNG_INST_CD, -- 추가 박원배
+				VDS_SCTN_ID ,
+				VDS_ID ,
+				VDS_SCTN_NM ,
+				VDS_SCTN_LEN ,
+				ROAD_GRD ,
+				MIN_LIMIT_SPEED ,
+				MAX_LIMIT_SPEED ,
+				MAX(TO_TIMESTAMP(ETL_DT, 'YYYYMMDDHH24MISSMS')) AS ETL_DT
+			FROM
+				BIGDATA.EXT_ADSI_VDS_SCTN_INFO
+			GROUP BY
+				VDS_SCTN_ID,
+				VDS_ID,
+				VDS_SCTN_NM,
+				VDS_SCTN_LEN,
+				ROAD_GRD,
+				MIN_LIMIT_SPEED,
+				MAX_LIMIT_SPEED,
+				MNG_INST_CD /*추가 박원배*/) AVSI ON
+			AVSI.VDS_ID = AMFV.VDS_ID AND AMFV.MNG_INST_CD = AVSI.MNG_INST_CD
+		ORDER BY VDS_ID
     </select>
 
     <select id="findAllVDSForFacility" parameterType="mapFacilityMenuDTO" resultType="mapFacilityMenuDTO">
-        SELECT
-        AMFV.VDS_ID AS "id",
-        AVSSM.STD_LINK_ID AS "nodeId",
-        AMFV.VDS_NM AS "name",
-        AMFV.DESCR AS "descr",
-        MOC.CD_NM AS "mngInstNm",
-        AVSI.VDS_STTS AS "stts",
-        COALESCE (ST_X(ST_ASTEXT(ST_CENTROID(GCIN.GEOM))),0) AS "lon",
-        COALESCE (ST_Y(ST_ASTEXT(ST_CENTROID(GCIN.GEOM))),0) AS "lat"
-        FROM
-        ADSI_M_FA_VDS AMFV
-        LEFT JOIN ADSI_VDS_STTS_INFO AVSI ON AMFV.MNG_INST_CD = AVSI.MNG_INST_CD AND AMFV.VDS_ID = AVSI.VDS_ID
-        LEFT JOIN ADSI_VDS_SCTN_INFO AVSSI ON AVSI.MNG_INST_CD = AVSSI.MNG_INST_CD AND AVSI.VDS_ID = AVSSI.VDS_ID
-        LEFT JOIN ADSI_VDS_SCTN_STLINK_MPPG AVSSM ON AVSSI.MNG_INST_CD = AVSSM.MNG_INST_CD AND AVSSI.VDS_SCTN_ID =
-        AVSSM.VDS_SCTN_ID
-        LEFT JOIN GY_COMM_INFO_NODE GCIN ON AVSSM.STD_LINK_ID = GCIN.NODE_ID
-        LEFT JOIN M_OP_CODE MOC ON AMFV.MNG_INST_CD = MOC.CD_ID
-        WHERE
-        1=1
-        <if test="nodeName != null and nodeName != ''">
-            AND GCIN.NODE_NAME LIKE '%' || #{nodeName} || '%'
-        </if>
-        <if test="id != null and id != ''">
+    	SELECT 
+    			AMFV.MNG_INST_CD
+	             , AMFV.VDS_ID		AS "id"
+	             , AMFV.VDS_NM		AS "name"
+	             , AMFV.LON			AS "lon"
+	             , AMFV.LAT			AS "lat"
+    	FROM	BIGDATA.EXT_ADSI_M_FA_VDS AMFV
+        INNER JOIN (
+        SELECT MAX(AMFV.ETL_DT) AS RCT_ETL_DT
+        , AMFV.VDS_ID
+        FROM BIGDATA.EXT_ADSI_M_FA_VDS AMFV
+        GROUP BY VDS_ID
+        ) RCT_AMFV ON RCT_AMFV.VDS_ID = AMFV.VDS_ID AND RCT_AMFV.RCT_ETL_DT = AMFV.ETL_DT
+    	WHERE 	1=1
+    	<if test="id != null and id != ''"> -->
             AND AMFV.VDS_ID = #{id}
         </if>
-        GROUP BY AMFV.VDS_ID,
-        AVSSM.STD_LINK_ID,
-        AVSSI.VDS_SCTN_ID,
-        AMFV.VDS_NM,
-        MOC.CD_NM,
-        GCIN.GEOM,
-        AMFV.DESCR,
-        AVSI.VDS_STTS,
-        AVSI.CLCT_DT
-        ORDER BY AVSI.CLCT_DT DESC
+    	<if test="name != null and name != ''"> -->
+            AND AMFV.VDS_NM LIKE '%' || #{name} || '%'
+        </if>
+        ORDER BY
+				AMFV.VDS_ID DESC
         <if test="page != null and page != '' and page != 0 ">
             LIMIT 5 OFFSET (#{page} - 1) * 5
         </if>
     </select>
 
     <select id="countVDSForFacility" parameterType="mapFacilityMenuDTO" resultType="int">
-        SELECT
-        COUNT(A.VDS_ID)
-        FROM(
-        SELECT
-        AMFV.VDS_ID
-        FROM
-        ADSI_M_FA_VDS AMFV
-        LEFT JOIN ADSI_VDS_STTS_INFO AVSI ON AMFV.MNG_INST_CD = AVSI.MNG_INST_CD AND AMFV.VDS_ID = AVSI.VDS_ID
-        LEFT JOIN ADSI_VDS_SCTN_INFO AVSSI ON AVSI.MNG_INST_CD = AVSSI.MNG_INST_CD AND AVSI.VDS_ID = AVSSI.VDS_ID
-        LEFT JOIN ADSI_VDS_SCTN_STLINK_MPPG AVSSM ON AVSSI.MNG_INST_CD = AVSSM.MNG_INST_CD AND AVSSI.VDS_SCTN_ID =
-        AVSSM.VDS_SCTN_ID
-        LEFT JOIN GY_COMM_INFO_NODE GCIN ON AVSSM.STD_LINK_ID = GCIN.NODE_ID
-        LEFT JOIN M_OP_CODE MOC ON AMFV.MNG_INST_CD = MOC.CD_ID
-        WHERE
-        1=1
-        <if test="nodeName != null and nodeName != ''">
-            AND GCIN.NODE_NAME LIKE '%' || #{nodeName} || '%'
-        </if>
-        <if test="id != null and id != ''">
+        SELECT 
+    			COUNT(AMFV.MNG_INST_CD) 
+    	FROM	BIGDATA.EXT_ADSI_M_FA_VDS AMFV
+        INNER JOIN (
+        SELECT MAX(AMFV.ETL_DT) AS RCT_ETL_DT
+        , AMFV.VDS_ID
+        FROM BIGDATA.EXT_ADSI_M_FA_VDS AMFV
+        GROUP BY VDS_ID
+        ) RCT_AMFV ON RCT_AMFV.VDS_ID = AMFV.VDS_ID AND RCT_AMFV.RCT_ETL_DT = AMFV.ETL_DT
+    	WHERE 	1=1
+    	<if test="id != null and id != ''"> -->
             AND AMFV.VDS_ID = #{id}
         </if>
-        GROUP BY AMFV.VDS_ID,
-        AVSSM.STD_LINK_ID,
-        AVSSI.VDS_SCTN_ID,
-        AMFV.VDS_NM,
-        MOC.CD_NM,
-        GCIN.GEOM,
-        AMFV.DESCR,
-        AVSI.VDS_STTS,
-        AVSI.CLCT_DT
-        )A
+    	<if test="name != null and name != ''"> -->
+            AND AMFV.VDS_NM LIKE '%' || #{name} || '%'
+        </if>
     </select>
 </mapper>

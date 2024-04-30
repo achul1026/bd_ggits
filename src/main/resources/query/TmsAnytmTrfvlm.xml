@@ -1,0 +1,147 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.TmsAnytmTrfvlmMapper'>
+    <select id="findAllNlrdTimeByYmd" parameterType="mapBigdataSearchDTO" resultType="extTmsNlrdVhcclsAnytmTrfvlm">
+        select
+            exmn_point_id ,
+            div_cd,
+            lane_no ,
+            "admin" ,
+            turnpoint ,
+            up_section ,
+            down_section ,
+            section_nm ,
+            ST_ASGEOJSON(point) as geojson,
+            string_agg(road_drct_cd||'='||tot_trfvlm, ',' order by road_drct_cd) as trfvlm_info
+        from
+            (
+                select
+                    etntepi.exmn_point_id ,
+                    etntepi.div_cd,
+                    etntepi.lane_no ,
+                    etntepi."admin" ,
+                    etntepi.turnpoint ,
+                    etntepi.up_section ,
+                    etntepi.down_section ,
+                    etntepi.section_nm ,
+                    st_point(zone_y::numeric , zone_x::numeric) as point,
+                    sum(etnvat.tot_trfvlm) as tot_trfvlm,
+                    etnvat.road_drct_cd
+                from
+                    bigdata.ext_tms_nrld_vhccls_anytm_trfvlm etnvat
+                        inner join bigdata.ext_tms_nlrd_trfvlm_exmn_point_info etntepi on etnvat.exmn_point_id = etntepi.exmn_point_id
+                <where>
+                    <if test="searchYear != null and searchYear != '' ">
+                        and etnvat.exmn_yy = #{searchYear}
+                    </if>
+                    <if test="searchMonth != null and searchMonth != '' ">
+                        and etnvat.exmn_mm = #{searchMonth}
+                    </if>
+                    <if test="searchDay != null and searchDay != '' ">
+                        and etnvat.exmn_dd = #{searchDay}
+                    </if>
+                    <if test="searchHour != null and searchHour != '' ">
+                        and etnvat.exmn_time = #{searchHour}
+                    </if>
+                </where>
+                group by
+                    etntepi.exmn_point_id ,
+                    etntepi.div_cd,
+                    etntepi.lane_no ,
+                    etntepi."admin" ,
+                    etntepi.turnpoint ,
+                    etntepi.up_section ,
+                    etntepi.down_section ,
+                    etntepi.section_nm ,
+                    zone_y, zone_x,
+                    etnvat.road_drct_cd
+                order by 6
+            ) agg
+        group by
+            exmn_point_id ,
+            div_cd,
+            lane_no ,
+            "admin" ,
+            turnpoint ,
+            up_section ,
+            down_section ,
+            section_nm ,
+            point
+    </select>
+
+    <select id="findAllHghwTimeByYmd" parameterType="mapBigdataSearchDTO" resultType="extTmsHghwVhcclsAnytmTrfvlm">
+        select
+            exmn_point_id ,
+            div_cd,
+            lane_no ,
+            "admin" ,
+            line_no ,
+            line_no_nm,
+            section,
+            sectlength,
+            up_section ,
+            down_section ,
+            ST_ASGEOJSON(point) as geojson,
+            string_agg(road_drct_cd||'='||tot_trfvlm, ',' order by road_drct_cd) as trfvlm_info
+        from
+            (
+            select
+            etntepi.exmn_point_id ,
+            etntepi.div_cd,
+            etntepi.lane_no ,
+            etntepi."admin" ,
+            etntepi.line_no ,
+            etntepi.line_no_nm,
+            etntepi.section,
+            etntepi.sectlength,
+            etntepi.up_section ,
+            etntepi.down_section ,
+            st_point(zone_y::numeric , zone_x::numeric) as point,
+            sum(etnvat.tot_trfvlm) as tot_trfvlm,
+            etnvat.road_drct_cd
+            from
+            bigdata.ext_tms_hghw_vhccls_anytm_trfvlm etnvat
+            inner join bigdata.ext_tms_hghw_trfvlm_exmn_point_info etntepi on etnvat.exmn_point_id = etntepi.exmn_point_id
+            <where>
+                <if test="searchYear != null and searchYear != '' ">
+                    and etnvat.exmn_yy = #{searchYear}
+                </if>
+                <if test="searchMonth != null and searchMonth != '' ">
+                    and etnvat.exmn_mm = #{searchMonth}
+                </if>
+                <if test="searchDay != null and searchDay != '' ">
+                    and etnvat.exmn_dd = #{searchDay}
+                </if>
+                <if test="searchHour != null and searchHour != '' ">
+                    and etnvat.exmn_time = #{searchHour}
+                </if>
+            </where>
+            group by
+            etntepi.exmn_point_id ,
+            etntepi.div_cd,
+            etntepi.lane_no ,
+            etntepi."admin" ,
+            etntepi.line_no ,
+            etntepi.line_no_nm,
+            etntepi.section,
+            etntepi.sectlength,
+            etntepi.up_section ,
+            etntepi.down_section ,
+            zone_y, zone_x,
+            etnvat.road_drct_cd
+            ) agg
+        group by
+            exmn_point_id ,
+            div_cd,
+            lane_no ,
+            "admin" ,
+            line_no ,
+            line_no_nm,
+            section,
+            sectlength,
+            up_section ,
+            down_section ,
+            point
+    </select>
+</mapper>

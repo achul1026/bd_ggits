@@ -13,8 +13,8 @@
         ,CENTER_YN
         ,GPS_X
         ,GPS_Y
-        ,MAP_X
-        ,MAP_Y
+        ,CAST ( LEFT (CAST(GPS_X AS VARCHAR), 3 ) AS INT) + CAST( SUBSTRING(CAST(GPS_X AS VARCHAR), 4 ) AS DECIMAL(5,3))/ 60 AS MAP_X
+        ,CAST ( LEFT (CAST(GPS_Y AS VARCHAR), 2 ) AS INT) + CAST( SUBSTRING(CAST(GPS_Y AS VARCHAR), 3 ) AS DECIMAL(5,3))/ 60 AS MAP_Y
         ,LINK_ID
         ,USE_YN
         ,SIDO_CD
@@ -35,6 +35,248 @@
         ,MOBILE_NO_SI
         ,DONG_CD
         FROM
-        GGBIS_BUS_STATION
+        BIGDATA.EXT_GGBIS_BUS_STATION
+    </select>
+
+    <select id="findAllByRouteId" resultType="ggbisBusStation">
+        select
+            distinct
+            EGBS.STATION_ID
+          ,EGBS.STATION_NM
+          ,EGBS.STATION_ENG_NM
+          ,EGBS.ROAD_NM
+          ,EGBS.STATION_TP
+          ,EGBS.CENTER_YN
+          ,EGBS.GPS_X
+          ,EGBS.GPS_Y
+          ,CAST ( LEFT (CAST(EGBS.GPS_X AS VARCHAR), 3 ) AS INT) + CAST( SUBSTRING(CAST(EGBS.GPS_X AS VARCHAR), 4 ) AS DECIMAL(5,3))/ 60 AS MAP_X
+	      ,CAST ( LEFT (CAST(EGBS.GPS_Y AS VARCHAR), 2 ) AS INT) + CAST( SUBSTRING(CAST(EGBS.GPS_Y AS VARCHAR), 3 ) AS DECIMAL(5,3))/ 60 AS MAP_Y
+          ,EGBS.LINK_ID
+          ,EGBS.USE_YN
+          ,EGBS.SIDO_CD
+          ,EGBS.KEY_STATION_ID
+          ,EGBS.ADMIN_NM
+          ,EGBS.MOBILE_NO
+          ,EGBS.USER_CODE
+          ,EGBS.REMARK
+          ,EGBS.AREA_CD
+          ,EGBS.LINK_X
+          ,EGBS.LINK_Y
+          ,EGBS.ST_LINK_X
+          ,EGBS.ST_LINK_Y
+          ,EGBS.BIT_YN
+          ,EGBS.BIT_COUNT
+          ,EGBS.BIT_TP
+          ,EGBS.WBIS_YN
+          ,EGBS.MOBILE_NO_SI
+          ,EGBS.DONG_CD
+          ,EGBRS.sta_order
+        FROM
+            BIGDATA.EXT_GGBIS_BUS_STATION EGBS
+            INNER JOIN BIGDATA.EXT_GGBIS_BUSROUTE_STATION EGBRS  ON EGBS.STATION_ID = EGBRS.STATION_ID
+        WHERE EGBRS.ROUTE_ID = #{routeId}
+    </select>
+
+    <select id="findAllByRouteIds" resultType="ggbisBusStation">
+        select
+            distinct
+            EGBS.STATION_ID
+           ,EGBS.STATION_NM
+           ,EGBS.STATION_ENG_NM
+           ,EGBS.ROAD_NM
+           ,EGBS.STATION_TP
+           ,EGBS.CENTER_YN
+           ,EGBS.GPS_X
+           ,EGBS.GPS_Y
+            ,CAST ( LEFT (CAST(EGBS.GPS_X AS VARCHAR), 3 ) AS INT) + CAST( SUBSTRING(CAST(EGBS.GPS_X AS VARCHAR), 4 ) AS DECIMAL(5,3))/ 60 AS MAP_X
+            ,CAST ( LEFT (CAST(EGBS.GPS_Y AS VARCHAR), 2 ) AS INT) + CAST( SUBSTRING(CAST(EGBS.GPS_Y AS VARCHAR), 3 ) AS DECIMAL(5,3))/ 60 AS MAP_Y
+           ,EGBS.LINK_ID
+           ,EGBS.USE_YN
+           ,EGBS.SIDO_CD
+           ,EGBS.KEY_STATION_ID
+           ,EGBS.ADMIN_NM
+           ,EGBS.MOBILE_NO
+           ,EGBS.USER_CODE
+           ,EGBS.REMARK
+           ,EGBS.AREA_CD
+           ,EGBS.LINK_X
+           ,EGBS.LINK_Y
+           ,EGBS.ST_LINK_X
+           ,EGBS.ST_LINK_Y
+           ,EGBS.BIT_YN
+           ,EGBS.BIT_COUNT
+           ,EGBS.BIT_TP
+           ,EGBS.WBIS_YN
+           ,EGBS.MOBILE_NO_SI
+           ,EGBS.DONG_CD
+        FROM
+            BIGDATA.EXT_GGBIS_BUS_STATION EGBS
+                INNER JOIN BIGDATA.EXT_GGBIS_BUSROUTE_STATION EGBRS  ON EGBS.STATION_ID = EGBRS.STATION_ID
+        WHERE EGBRS.ROUTE_ID IN
+        <foreach collection="routeIds" item="routeId" open="(" close=")" separator=",">
+            #{routeId}
+        </foreach>
+    </select>
+    
+    <select id="countAllBusSttnRouteInfo" parameterType="mapBigdataSearchDTO" resultType="int">
+    	SELECT
+    		count(A.*)
+    	FROM (
+    		SELECT
+    		gbr.ROUTE_NM 
+			, gbr.ST_STA_NM 
+			, gbr.ED_STA_NM 
+			, gbr.ROUTE_INTERVAL 
+			, CASE WHEN GBR.ROUTE_TP ='11' THEN '직행좌석형시내버스'
+				WHEN GBR.ROUTE_TP ='12' THEN '좌석형시내버스'
+				WHEN GBR.ROUTE_TP ='13' THEN '일반형시내버스'
+				WHEN GBR.ROUTE_TP ='21' THEN '직행좌석형농어촌버스'
+				WHEN GBR.ROUTE_TP ='22' THEN '좌석형농어촌버스'
+				WHEN GBR.ROUTE_TP ='23' THEN '일반형농어촌버스'
+				WHEN GBR.ROUTE_TP ='30' THEN '마을버스'
+				WHEN GBR.ROUTE_TP ='41' THEN '고속형시외버스'
+				WHEN GBR.ROUTE_TP ='42' THEN '좌석형시외버스'
+				WHEN GBR.ROUTE_TP ='43' THEN '일반형시외버스'
+				WHEN GBR.ROUTE_TP ='51' THEN '리무진형공항버스'
+				WHEN GBR.ROUTE_TP ='52' THEN '좌석형공항버스'
+				WHEN GBR.ROUTE_TP ='53' THEN '일반형공항버스'
+				END AS ROUTE_TP
+    	FROM BIGDATA.EXT_GGBIS_BUS_STATION gbs
+    	INNER JOIN BIGDATA.EXT_GGBIS_BUSROUTE_STATION gbrs
+    		ON gbs.STATION_ID = gbrs.STATION_ID
+    	INNER JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE gbr
+    		on gbrs.ROUTE_ID = gbr.ROUTE_ID
+    	INNER JOIN MRT_BUS_ARVL_TIME_PRDCTN_RSLT mbatpr
+    		on gbr.ROUTE_ID = mbatpr.ROUTE_ID
+    	<if test="startDate != null and startDate !='' ">
+    		and TO_CHAR(TO_DATE(mbatpr.baseymd,'YYYYMMDD'),'YYYY-MM-DD 00:00:00')  = #{startDate}
+    	</if>
+    	WHERE	1=1
+		AND (gbrs.ROUTE_NM LIKE '%' || UPPER(#{searchContent}) || '%' or gbrs.STATION_NM LIKE '%' || UPPER(#{searchContent}) || '%')
+		GROUP BY gbr.ROUTE_NM, gbr.ST_STA_NM, gbr.ED_STA_NM, gbr.ROUTE_INTERVAL, ROUTE_TP,gbr.ROUTE_ID
+    	)A
+    </select>
+    
+    <select id="findAllBusSttnRouteInfo" parameterType="mapBigdataSearchDTO" resultType="ggbisBusStation">
+    	SELECT
+    		gbr.ROUTE_NM 
+    		, gbr.ROUTE_ID
+			, gbr.ST_STA_NM 
+			, gbr.ED_STA_NM 
+			, gbr.ROUTE_INTERVAL 
+			, CASE WHEN GBR.ROUTE_TP ='11' THEN '직행좌석형시내버스'
+				WHEN GBR.ROUTE_TP ='12' THEN '좌석형시내버스'
+				WHEN GBR.ROUTE_TP ='13' THEN '일반형시내버스'
+				WHEN GBR.ROUTE_TP ='21' THEN '직행좌석형농어촌버스'
+				WHEN GBR.ROUTE_TP ='22' THEN '좌석형농어촌버스'
+				WHEN GBR.ROUTE_TP ='23' THEN '일반형농어촌버스'
+				WHEN GBR.ROUTE_TP ='30' THEN '마을버스'
+				WHEN GBR.ROUTE_TP ='41' THEN '고속형시외버스'
+				WHEN GBR.ROUTE_TP ='42' THEN '좌석형시외버스'
+				WHEN GBR.ROUTE_TP ='43' THEN '일반형시외버스'
+				WHEN GBR.ROUTE_TP ='51' THEN '리무진형공항버스'
+				WHEN GBR.ROUTE_TP ='52' THEN '좌석형공항버스'
+				WHEN GBR.ROUTE_TP ='53' THEN '일반형공항버스'
+				END AS ROUTE_TP
+    	FROM BIGDATA.EXT_GGBIS_BUS_STATION gbs
+    	INNER JOIN BIGDATA.EXT_GGBIS_BUSROUTE_STATION gbrs
+    		ON gbs.STATION_ID = gbrs.STATION_ID
+    	INNER JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE gbr
+    		on gbrs.ROUTE_ID = gbr.ROUTE_ID
+    	INNER JOIN MRT_BUS_ARVL_TIME_PRDCTN_RSLT mbatpr
+    		on gbr.ROUTE_ID = mbatpr.ROUTE_ID
+    	<if test="startDate != null and startDate !='' ">
+    		and TO_CHAR(TO_DATE(mbatpr.baseymd,'YYYYMMDD'),'YYYY-MM-DD 00:00:00')  = #{startDate}
+    	</if>
+    	WHERE	1=1
+		AND (gbrs.ROUTE_NM LIKE '%' || UPPER(#{searchContent}) || '%' or gbrs.STATION_NM LIKE '%' || UPPER(#{searchContent}) || '%')
+		GROUP BY gbr.ROUTE_NM, gbr.ST_STA_NM, gbr.ED_STA_NM, gbr.ROUTE_INTERVAL, gbr.ROUTE_TP,gbr.ROUTE_ID
+		ORDER BY gbr.ROUTE_NM ASC
+		LIMIT 5 OFFSET (#{page}- 1) * 5
+    </select>
+    
+    <select id="countAllBusSttnFcltInfo" parameterType="mapBigdataSearchDTO" resultType="int">
+    	SELECT 
+    		COUNT(*)
+    	FROM BIGDATA.EXT_GGBIS_BUS_STATION gbs
+    	WHERE	1=1
+    	AND (gbs.STATION_NM LIKE '%' || #{searchContent} || '%' OR gbs.STATION_ID LIKE '%' || #{searchContent} || '%')
+    </select>
+    
+    <select id="findAllBusSttnFcltInfo" parameterType="mapBigdataSearchDTO" resultType="ggbisBusStation">
+    	SELECT 
+    		STATION_NM
+    		, BIT_TP
+    		, BIT_COUNT
+    		,CAST ( LEFT (CAST(GPS_X AS VARCHAR), 3 ) AS INT) + CAST( SUBSTRING(CAST(GPS_X AS VARCHAR), 4 ) AS DECIMAL(5,3))/ 60 AS MAP_X
+            ,CAST ( LEFT (CAST(GPS_Y AS VARCHAR), 2 ) AS INT) + CAST( SUBSTRING(CAST(GPS_Y AS VARCHAR), 3 ) AS DECIMAL(5,3))/ 60 AS MAP_Y
+    	FROM BIGDATA.EXT_GGBIS_BUS_STATION gbs
+    	WHERE	1=1
+        <if test="searchLocation != null and searchLocation != '' ">
+            AND SUBSTRING(gbs.sido_cd,0,5) = SUBSTRING(#{searchLocation},0,5)
+        </if>
+    	AND (gbs.STATION_NM LIKE '%' || #{searchContent} || '%' OR gbs.STATION_ID LIKE '%' || #{searchContent} || '%')
+        order by (case when gbs.STATION_NM = #{searchContent} then 1 else 2 end, gbs.STATION_NM)
+		LIMIT 5 OFFSET (#{page}- 1) * 5
+    </select>
+    
+    <select id="countAllBusSttnInfo" resultType="int">
+    	SELECT COUNT(BUS_STATION_INFO.*) FROM (
+	    	SELECT
+	            EGBS.STATION_ID
+	           ,COUNT(EGBRS.ROUTE_ID) AS ROUTE_CNT
+	           ,EGBS.STATION_NM
+	           ,CAST ( LEFT (CAST(EGBS.GPS_X AS VARCHAR), 3 ) AS INT) + CAST( SUBSTRING(CAST(EGBS.GPS_X AS VARCHAR), 4 ) AS DECIMAL(5,3))/ 60 AS MAP_X
+	           ,CAST ( LEFT (CAST(EGBS.GPS_Y AS VARCHAR), 2 ) AS INT) + CAST( SUBSTRING(CAST(EGBS.GPS_Y AS VARCHAR), 3 ) AS DECIMAL(5,3))/ 60 AS MAP_Y
+	        FROM
+	            BIGDATA.EXT_GGBIS_BUS_STATION EGBS
+			INNER JOIN BIGDATA.EXT_GGBIS_BUSROUTE_STATION EGBRS  ON EGBS.STATION_ID = EGBRS.STATION_ID
+	    	<where>
+			AND EGBS.STATION_NM LIKE '%' || #{searchContent} || '%'
+                <if test="searchLocation != null and searchLocation != '' ">
+                    AND SUBSTRING(EGBS.sido_cd,0,5) = SUBSTRING(#{searchLocation},0,5)
+                </if>
+            </where>
+	        GROUP BY EGBS.STATION_ID, EGBS.STATION_NM,EGBS.GPS_X,EGBS.GPS_Y
+        )BUS_STATION_INFO
+    </select>
+    <select id="findAllBusSttnInfo" resultType="ggbisBusStation">
+    	SELECT
+            EGBS.STATION_ID
+    	    ,EGBS.MOBILE_NO
+           ,COUNT(EGBRS.ROUTE_ID) AS ROUTE_CNT
+           ,EGBS.STATION_NM
+           ,CAST ( LEFT (CAST(EGBS.GPS_X AS VARCHAR), 3 ) AS INT) + CAST( SUBSTRING(CAST(EGBS.GPS_X AS VARCHAR), 4 ) AS DECIMAL(5,3))/ 60 AS MAP_X
+           ,CAST ( LEFT (CAST(EGBS.GPS_Y AS VARCHAR), 2 ) AS INT) + CAST( SUBSTRING(CAST(EGBS.GPS_Y AS VARCHAR), 3 ) AS DECIMAL(5,3))/ 60 AS MAP_Y
+        FROM
+            BIGDATA.EXT_GGBIS_BUS_STATION EGBS
+		INNER JOIN BIGDATA.EXT_GGBIS_BUSROUTE_STATION EGBRS  ON EGBS.STATION_ID = EGBRS.STATION_ID
+    	<where>
+            AND EGBS.STATION_NM LIKE '%' || #{searchContent} || '%'
+            <if test="searchLocation != null and searchLocation != '' ">
+                AND SUBSTRING(EGBS.sido_cd,0,5) = SUBSTRING(#{searchLocation},0,5)
+            </if>
+        </where>
+        GROUP BY EGBS.STATION_ID,EGBS.MOBILE_NO, EGBS.STATION_NM,EGBS.GPS_X,EGBS.GPS_Y
+        ORDER BY (case when EGBS.STATION_NM = #{searchContent} then 1 else 2 end, EGBS.STATION_NM)
+        LIMIT 5 OFFSET (#{page}- 1) * 5
+    </select>
+
+    <select id="findOneStartEndStationInfoByRouteId" resultType="ggbisBusStation">
+        select
+            st_station.station_nm as st_station_nm
+             ,st_station.station_id as st_station_id
+             ,st_station.mobile_no as ed_mobile_no
+             ,CAST ( LEFT (CAST(st_station.GPS_X AS VARCHAR), 3 ) AS INT) + CAST( SUBSTRING(CAST(st_station.GPS_X AS VARCHAR), 4 ) AS DECIMAL(5,3))/ 60 AS ST_MAP_X
+             ,CAST ( LEFT (CAST(st_station.GPS_Y AS VARCHAR), 2 ) AS INT) + CAST( SUBSTRING(CAST(st_station.GPS_Y AS VARCHAR), 3 ) AS DECIMAL(5,3))/ 60 AS ST_MAP_Y
+             ,ed_station.station_nm as ed_station_nm
+             ,ed_station.mobile_no as ed_mobile_no
+             ,CAST ( LEFT (CAST(ed_station.GPS_X AS VARCHAR), 3 ) AS INT) + CAST( SUBSTRING(CAST(ed_station.GPS_X AS VARCHAR), 4 ) AS DECIMAL(5,3))/ 60 AS ED_MAP_X
+             ,CAST ( LEFT (CAST(ed_station.GPS_Y AS VARCHAR), 2 ) AS INT) + CAST( SUBSTRING(CAST(ed_station.GPS_Y AS VARCHAR), 3 ) AS DECIMAL(5,3))/ 60 AS ED_MAP_Y
+        from
+            bigdata.ext_ggbis_bus_route egbr
+                left outer join bigdata.ext_ggbis_bus_station st_station on egbr.st_sta_id  = st_station.station_id
+                left outer join bigdata.ext_ggbis_bus_station ed_station on egbr.ed_sta_id  = ed_station.station_id
+        where egbr.route_id = #{routeId}
     </select>
 </mapper>

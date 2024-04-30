@@ -24,9 +24,13 @@ public class MapChartDataDTO {
 	
 	String chartLabel; //ArrayToString
 	String chartData; //ArrayToString
+	String chartData2; //ArrayToString
+	
 	
 	String startDt;			//테이블형 데이터 시작 시간조건
 	String endDt;			//테이블형 데이터 끝 시간조건
+	
+	Map<String,Object> objectData;//객체형 데이터
 	
 	List<Map<String,Object>> tableData; //리스트 데이터 MAP
 	String tableOption; //테이블 데이터 파라미터 
@@ -142,5 +146,21 @@ public class MapChartDataDTO {
 	public void setTableOption(String tableOption) {
 		this.tableOption = tableOption;
 	}
-	
+
+	public String getChartData2() {
+		return chartData2;
+	}
+
+	public void setChartData2(String chartData2) {
+		this.chartData2 = chartData2;
+	}
+
+	public Map<String, Object> getObjectData() {
+		return objectData;
+	}
+
+	public void setObjectData(Map<String, Object> objectData) {
+		this.objectData = objectData;
+	}
+
 }

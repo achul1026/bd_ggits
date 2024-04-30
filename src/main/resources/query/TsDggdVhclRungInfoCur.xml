@@ -4,34 +4,111 @@
 <mapper namespace='com.neighbor21.ggits.common.mapper.TsDggdVhclRungInfoCurMapper'>
 
     <select id="findAll" resultType="tsDggdVhclRungInfoCur">
-        SELECT
-            VHCL_LC_LON
-             ,VHCL_LC_LAT
-             ,VHCL_REGIST_NO
-             ,OCCUR_DT
-             ,SPEED
-             ,STRTG_CD
-             ,RUNG_PLAN_YN
-             ,DGGD_CD
-             ,DGGD_NM
+ /*       SELECT
+            TDVRIC.VHCL_LC_LON
+             ,TDVRIC.VHCL_LC_LAT
+             ,TDVRIC.VHCL_REGIST_NO
+             ,TDVRIC.OCCUR_DT
+             ,TO_CHAR(TO_TIMESTAMP(TDVRIC.OCCUR_DT,'YYMMDDHH24MISSSS'),'YYYY년 MM월 DD일 HH24시 MI분') AS MAP_OCCUR_DT_FORMAT
+             ,TDVRIC.SPEED
+             ,TDVRIC.STRTG_CD
+             ,TDVRIC.RUNG_PLAN_YN
+             ,TDVRIC.DGGD_CD
+             ,TDVRIC.DGGD_NM
         FROM
-            TS_DGGD_VHCL_RUNG_INFO_CUR
+            TS_DGGD_VHCL_RUNG_INFO_CUR TDVRIC
+        WHERE
+            TDVRIC.RUNG_PLAN_YN = 'Y'
+*/
+        SELECT
+            TDVRIC.VHCL_LC_LON
+             ,TDVRIC.VHCL_LC_LAT
+             ,TDVRIC.VHCL_REGIST_NO
+             ,TDVRIC.OCCUR_DT
+             ,TO_CHAR(TO_TIMESTAMP(TDVRIC.OCCUR_DT,'YYMMDDHH24MISSSS'),'YYYY년 MM월 DD일 HH24시 MI분') AS MAP_OCCUR_DT_FORMAT
+             ,TDVRIC.SPEED
+             ,TDVRIC.STRTG_CD
+             ,TDVRIC.RUNG_PLAN_YN
+             ,TDVRIC.DGGD_CD
+             ,TDVRIC.DGGD_NM
+             ,case when acdn > 0 then 'Y' else 'N' end as acdnt_yn
+        FROM
+            TS_DGGD_VHCL_RUNG_INFO_CUR TDVRIC
+            left join (
+                select
+                    count(1) as acdn,
+                    etdvril.vhcl_regist_no
+                from
+                    bigdata.ext_ts_dggd_vhcl_rung_info_log  etdvril
+                        inner join m_op_code moc on grp_cd_id = 'ACDNT_CD' and etdvril.acdnt_cd = moc.cd_id
+                where acdnt_cd is not null and acdnt_cd != '' and acdnt_cd != '--'
+                group by etdvril.vhcl_regist_no
+            ) etdvril on tdvric.vhcl_regist_no = etdvril.vhcl_regist_no
+        WHERE
+            TDVRIC.RUNG_PLAN_YN = 'Y'
     </select>
 
     <select id="findAllByRungPlanYnIsY" resultType="tsDggdVhclRungInfoCur">
         SELECT
-            VHCL_LC_LON
-            ,VHCL_LC_LAT
-            ,VHCL_REGIST_NO
-            ,OCCUR_DT
-            ,SPEED
-            ,STRTG_CD
-            ,RUNG_PLAN_YN
-            ,DGGD_CD
-            ,DGGD_NM
-            FROM
-             TS_DGGD_VHCL_RUNG_INFO_CUR
-            WHERE
-            RUNG_PLAN_YN = 'Y'
+        DISTINCT
+        TDVRIC.VHCL_LC_LON
+        ,TDVRIC.VHCL_LC_LAT
+        ,TDVRIC.VHCL_REGIST_NO
+        ,TDVRIC.OCCUR_DT
+        ,TO_CHAR(TO_TIMESTAMP(TDVRIC.OCCUR_DT,'YYMMDDHH24MISSSS'),'YYYY년 MM월 DD일 HH24시 MI분') AS MAP_OCCUR_DT_FORMAT
+        ,TDVRIC.SPEED
+        ,TDVRIC.STRTG_CD
+        ,TDVRIC.RUNG_PLAN_YN
+        ,TDVRIC.DGGD_CD
+        ,TDVRIC.DGGD_NM
+        ,SEVCI.CURRENTLNG as target_lon
+        ,SEVCI.CURRENTLAT as target_lat
+        FROM
+        TS_DGGD_VHCL_RUNG_INFO_CUR TDVRIC,
+        SCS_EMRG_VHCL_CUR_INFO SEVCI
+        WHERE
+        TDVRIC.RUNG_PLAN_YN = 'Y'
+        AND
+        ST_DISTANCE(
+        ST_TRANSFORM(ST_SETSRID(ST_MAKEPOINT(SEVCI.CURRENTLNG, SEVCI.CURRENTLAT) ,'4326')::GEOMETRY, 2097),
+        ST_TRANSFORM(ST_SETSRID(ST_MAKEPOINT(TDVRIC.VHCL_LC_LON ,TDVRIC.VHCL_LC_LAT),'4326')::GEOMETRY, 2097)
+        ) <![CDATA[<= 3000 ]]> /*3km*/
+    </select>
+
+
+    <select id="findAllByRungPlanYnIsYByWarning" resultType="tsDggdVhclRungInfoCur">
+        select
+        distinct
+        TDVRIC.VHCL_LC_LON
+        ,TDVRIC.VHCL_LC_LAT
+        ,TDVRIC.VHCL_REGIST_NO
+        ,TDVRIC.OCCUR_DT
+        ,TO_CHAR(TO_TIMESTAMP(TDVRIC.OCCUR_DT,'YYMMDDHH24MISSSS'),'YYYY년 MM월 DD일 HH24시 MI분') AS MAP_OCCUR_DT_FORMAT
+        ,TDVRIC.SPEED
+        ,TDVRIC.STRTG_CD
+        ,TDVRIC.RUNG_PLAN_YN
+        ,TDVRIC.DGGD_CD
+        ,TDVRIC.DGGD_NM
+        ,GMID.GPS_X AS TARGET_LON
+        ,GMID.GPS_Y AS TARGET_LAT
+        from
+        bigdata.ext_gims_mng_inci_detail GMID,
+        (SELECT MAX(GMID.DETAIL_SEQ) as RECENT_DETAIL_SEQ
+      ,MAX(GMID.etl_dt) as RECENT_ETL_DT
+        , GMID.mng_id
+        FROM bigdata.ext_gims_mng_inci_detail GMID
+        GROUP BY MNG_ID) RCT,
+        (SELECT MNG_ID,CUR_STATUS FROM BIGDATA.EXT_gims_mng_inci_master WHERE CUR_STATUS != '3' ) GMIM,
+        ts_dggd_vhcl_rung_info_cur tdvric
+        where
+        GMID.MNG_ID = GMIM.MNG_ID
+        and GMID.mng_id  = RCT.MNG_ID
+        and GMID.detail_seq  = RCT.RECENT_detail_seq
+      and GMID.etl_dt = RCT.RECENT_ETL_DT
+        and GMID.update_cate  != 'TERM'
+        and ST_Distance(
+        st_transform(ST_SETSRID(ST_MakePoint(GMID.gps_x , GMID.gps_y) ,'4326')::geometry, 2097),
+        st_transform(ST_SETSRID(ST_MakePoint(tdvric.vhcl_lc_lon ,tdvric.vhcl_lc_lat),'4326')::geometry, 2097)
+        ) <![CDATA[<= 3000 ]]> /*3km*/
     </select>
 </mapper>

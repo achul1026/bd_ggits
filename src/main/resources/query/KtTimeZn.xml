@@ -34,12 +34,13 @@
             ,TZ_22
             ,TZ_23
         FROM
-            KT_TIMEZN,
+            BIGDATA.EXT_KT_TIMEZN,
             (SELECT MAX(ETL_YM) RECENT_YM
-             FROM KT_TIMEZN
+             FROM BIGDATA.EXT_KT_TIMEZN
              GROUP BY ETL_YM
              ORDER BY ETL_YM DESC LIMIT 1) RCT
         WHERE
         ETL_YM = RCT.RECENT_YM
     </select>
+
 </mapper>

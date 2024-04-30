@@ -2,4 +2,229 @@
 <!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.TrfIpcssCrsrdTrfvlmMapper'>
+	<insert id="saveCrsrdTrfvlm" parameterType="trfIpcssCrsrdTrfvlm">
+		INSERT INTO TRF_IPCSS_CRSRD_TRFVLM(
+			IPCSS_MNG_NO,        
+		    CRSRD_NM,       
+		    CRSRD_DRCT_CD,      
+		    TIME_SCTN_NM,        
+		    PSGVHCL_TRFVLM,
+			bus_smlsz_trfvlm,
+		    BUS_LRGSZ_TRFVLM,       
+		    FRGHT_SMLSZ_TRFVLM,        
+		    FRGHT_MDMSZ_TRFVLM,        
+		    FRGHT_LRGSZ_TRFVLM,
+		    DYWK_DIV,
+		    CRSRD_NO,
+		    EXMN_YMD,
+		    POINT_LON,
+		    POINT_LAT
+			)VALUES(
+			#{ipcssMngNo}, 
+			#{crsrdNm}, 
+			#{crsrdDrctCd}, 
+			#{timeSctnNm}, 
+			#{psgvhclTrfvlm}, 
+			#{busTrfvlm}, 
+			#{busLrgszTrfvlm}, 
+			#{frghtSmlszTrfvlm}, 
+			#{frghtMdmszTrfvlm}, 
+			#{frghtLrgszTrfvlm},
+			#{dywkDiv},
+			#{crsrdNo},
+			#{exmnYmd},
+			#{pointLon},
+			#{pointLat})
+	</insert>
+	
+	<delete id="deleteTrafficImpactReportByIpcssMngNo" parameterType="String">
+		DELETE 
+			FROM
+				TRF_IPCSS_CRSRD_TRFVLM
+		WHERE
+			IPCSS_MNG_NO = #{ipcssMngNo}
+	</delete>
+	
+	<delete id="deleteTrafficImpactReportForDywkDiv" parameterType="trfvlmStatisticsDTO">
+		DELETE 
+			FROM
+				TRF_IPCSS_CRSRD_TRFVLM
+		WHERE
+			IPCSS_MNG_NO = #{ipcssMngNo}
+			AND DYWK_DIV = #{dywkDiv}
+	</delete>
+	
+	<select id="findAllCrsrdTrfvlmStatisticsList" parameterType="trfvlmStatisticsDTO" resultType="trfvlmStatisticsDTO">
+		SELECT 
+			TRFVLM_RESULT.CRSRD_NM AS NAME,
+			TRFVLM_RESULT.POINT_LON AS LON,
+			TRFVLM_RESULT.POINT_LAT AS LAT,
+			TRFVLM_RESULT.HEADER_LIST,
+			TRFVLM_RESULT.EXMN_YMD,
+			TRFVLM_RESULT.CRSRD_NO AS DATA_NO,
+			JSON_AGG(JSON_BUILD_OBJECT('timeSctnNm',TRFVLM_RESULT.TIME_SCTN_NM,
+										'timeTrfvlmDataList',TRFVLM_RESULT.TIME_TRFVLM_DATA_LIST
+										) ORDER BY TRFVLM_RESULT.TIME_SCTN_NM
+					) AS TIME_TRFVLM_RESULT_LIST
+		FROM(
+			SELECT
+				TICTI.CRSRD_NM,
+				TICTI.CRSRD_NO,
+				TICTI.POINT_LON,
+				TICTI.POINT_LAT,
+				TICTI.EXMN_YMD,
+				TICTI.TIME_SCTN_NM,
+				ARRAY_AGG(TICTI.CRSRD_DRCT_CD ORDER BY CAST(TICTI.CRSRD_DRCT_CD AS INTEGER)) AS HEADER_LIST,
+				JSON_AGG(JSON_BUILD_OBJECT(
+											'psgvhclTrfvlm', TICTI.PSGVHCL_TRFVLM,
+											'busTrfvlm', TICTI.bus_smlsz_trfvlm,
+											'busLrgszTrfvlm', TICTI.BUS_LRGSZ_TRFVLM,
+											'frghtSmlszTrfvlm', TICTI.FRGHT_SMLSZ_TRFVLM,
+											'frghtMdmszTrfvlm', TICTI.FRGHT_MDMSZ_TRFVLM,
+											'frghtLrgszTrfvlm', TICTI.FRGHT_LRGSZ_TRFVLM,
+											'crsrDdrctCd', TICTI.CRSRD_DRCT_CD,
+											'totalCnt', TICTI.TOTAL_CNT
+											)ORDER BY CAST(TICTI.CRSRD_DRCT_CD AS INTEGER)
+							) AS TIME_TRFVLM_DATA_LIST
+			FROM (
+				SELECT
+					CRSRD_NM ,
+					CRSRD_NO ,
+					POINT_LON,
+					POINT_LAT,
+					EXMN_YMD ,
+					CRSRD_DRCT_CD ,
+					TIME_SCTN_NM,
+					COALESCE(SUM(PSGVHCL_TRFVLM+
+						bus_smlsz_trfvlm+
+						BUS_LRGSZ_TRFVLM+
+						FRGHT_SMLSZ_TRFVLM+
+						FRGHT_MDMSZ_TRFVLM+
+						FRGHT_LRGSZ_TRFVLM),0) AS TOTAL_CNT,
+					SUM(COALESCE(PSGVHCL_TRFVLM,0)) AS PSGVHCL_TRFVLM,
+					SUM(COALESCE(bus_smlsz_trfvlm,0)) AS bus_smlsz_trfvlm,
+					SUM(COALESCE(BUS_LRGSZ_TRFVLM,0)) AS BUS_LRGSZ_TRFVLM,
+					SUM(COALESCE(FRGHT_SMLSZ_TRFVLM,0)) AS FRGHT_SMLSZ_TRFVLM,
+					SUM(COALESCE(FRGHT_MDMSZ_TRFVLM,0)) AS FRGHT_MDMSZ_TRFVLM,
+					SUM(COALESCE(FRGHT_LRGSZ_TRFVLM,0)) AS FRGHT_LRGSZ_TRFVLM
+				FROM
+					TRF_IPCSS_CRSRD_TRFVLM
+				WHERE IPCSS_MNG_NO = #{ipcssMngNo}
+				AND DYWK_DIV =
+				<choose>
+					<when test="dywkDiv != null and dywkDiv != ''">
+						#{dywkDiv}
+					</when>
+					<otherwise>
+						'평일'
+					</otherwise>
+				</choose>
+				<if test="dataNo != null and dataNo !='' and dataNo !='' ">
+				AND CRSRD_NO = #{dataNo}
+				</if>
+				GROUP BY TIME_SCTN_NM,CRSRD_NM,CRSRD_NO,CRSRD_DRCT_CD,EXMN_YMD,POINT_LON,POINT_LAT
+			) TICTI
+			GROUP BY TICTI.TIME_SCTN_NM,TICTI.CRSRD_NM,TICTI.CRSRD_NO,TICTI.EXMN_YMD,TICTI.POINT_LON,TICTI.POINT_LAT
+		) TRFVLM_RESULT
+		GROUP BY 	TRFVLM_RESULT.HEADER_LIST,
+					TRFVLM_RESULT.CRSRD_NO,
+					TRFVLM_RESULT.CRSRD_NM,
+					TRFVLM_RESULT.EXMN_YMD,
+					TRFVLM_RESULT.POINT_LON,
+					TRFVLM_RESULT.POINT_LAT
+		ORDER BY 	CAST(TRFVLM_RESULT.CRSRD_NO AS INTEGER) 
+	</select>
+	
+	<select id="findAllCrsrdTrfvlmStatisticsGraphList" parameterType="trfvlmStatisticsDTO" resultType="trfvlmStatisticsGraphDTO">
+		SELECT 	GRAPH_RESULT_DATA.CRSRD_DRCT_CD,
+				CONCAT(GRAPH_RESULT_DATA.TOTAL_SUM_CNT,',',
+						GRAPH_RESULT_DATA.TOTAL_AM_SUM_CNT,',',
+						GRAPH_RESULT_DATA.TOTAL_PM_SUM_CNT,',',
+						GRAPH_RESULT_DATA.TOTAL_07_SUM_CNT,',',
+						GRAPH_RESULT_DATA.TOTAL_08_SUM_CNT,',',
+						GRAPH_RESULT_DATA.TOTAL_17_SUM_CNT,',',
+						GRAPH_RESULT_DATA.TOTAL_18_SUM_CNT,',',
+						GRAPH_RESULT_DATA.TIME_DATA_ARRAY_STRING
+						) AS ALL_DATA_LIST 
+		FROM (
+		SELECT 
+				GRAPH_DATA.CRSRD_DRCT_CD,
+				SUM(GRAPH_DATA.TOTAL_SUM_CNT) AS TOTAL_SUM_CNT,
+				SUM(GRAPH_DATA.TOTAL_SUM_CNT) FILTER (WHERE GRAPH_DATA.TIME_AM_OR_PM = '오전') AS TOTAL_AM_SUM_CNT,
+				SUM(GRAPH_DATA.TOTAL_SUM_CNT) FILTER (WHERE GRAPH_DATA.TIME_AM_OR_PM = '오후') AS TOTAL_PM_SUM_CNT,
+				<![CDATA[
+				SUM(GRAPH_DATA.TOTAL_SUM_CNT) FILTER (WHERE POSITION('07' IN GRAPH_DATA.TIME_SCTN_NM) > 0 ) AS TOTAL_07_SUM_CNT,
+				SUM(GRAPH_DATA.TOTAL_SUM_CNT) FILTER (WHERE POSITION('08' IN GRAPH_DATA.TIME_SCTN_NM) > 0 AND POSITION('08' IN GRAPH_DATA.TIME_SCTN_NM) = 1) AS TOTAL_08_SUM_CNT,
+				SUM(GRAPH_DATA.TOTAL_SUM_CNT) FILTER (WHERE POSITION('17' IN GRAPH_DATA.TIME_SCTN_NM) > 0) AS TOTAL_17_SUM_CNT,
+				SUM(GRAPH_DATA.TOTAL_SUM_CNT) FILTER (WHERE POSITION('18' IN GRAPH_DATA.TIME_SCTN_NM) > 0 AND POSITION('18' IN GRAPH_DATA.TIME_SCTN_NM) = 1) AS TOTAL_18_SUM_CNT,
+				]]>
+				ARRAY_TO_STRING(ARRAY_AGG(GRAPH_DATA.DATA_CNT_LIST ORDER BY GRAPH_DATA.TIME_SCTN_NM),',' ) AS TIME_DATA_ARRAY_STRING
+		FROM (
+			SELECT 
+				TICT.CRSRD_DRCT_CD,
+				TICT.TIME_SCTN_NM,
+				TICT.TIME_AM_OR_PM ,
+				SUM(TICT.PSGVHCL_TRFVLM+TICT.bus_smlsz_trfvlm+TICT.BUS_LRGSZ_TRFVLM+TICT.FRGHT_SMLSZ_TRFVLM+TICT.FRGHT_MDMSZ_TRFVLM+TICT.FRGHT_LRGSZ_TRFVLM) AS TOTAL_SUM_CNT,
+				ARRAY_TO_STRING(ARRAY[SUM(TICT.PSGVHCL_TRFVLM),SUM(TICT.bus_smlsz_trfvlm),SUM(TICT.BUS_LRGSZ_TRFVLM),SUM(TICT.FRGHT_SMLSZ_TRFVLM),SUM(TICT.FRGHT_MDMSZ_TRFVLM),SUM(TICT.FRGHT_LRGSZ_TRFVLM)],',')
+				AS DATA_CNT_LIST
+			FROM (
+				SELECT
+					CRSRD_DRCT_CD ,
+					COALESCE (PSGVHCL_TRFVLM,0) AS PSGVHCL_TRFVLM,
+					COALESCE (bus_smlsz_trfvlm,0) AS bus_smlsz_trfvlm,
+					COALESCE (BUS_LRGSZ_TRFVLM,0) AS BUS_LRGSZ_TRFVLM,
+					COALESCE (FRGHT_SMLSZ_TRFVLM,0) AS FRGHT_SMLSZ_TRFVLM,
+					COALESCE (FRGHT_MDMSZ_TRFVLM,0) AS FRGHT_MDMSZ_TRFVLM,
+					COALESCE (FRGHT_LRGSZ_TRFVLM,0) AS FRGHT_LRGSZ_TRFVLM,
+					<![CDATA[
+					CASE WHEN POSITION('07' IN TIME_SCTN_NM) > 0  THEN '07:00~08:00'
+						 WHEN POSITION('08' IN TIME_SCTN_NM) > 0  AND POSITION('08' IN TIME_SCTN_NM) = 1 THEN '08:00~09:00'	
+						 WHEN POSITION('17' IN TIME_SCTN_NM) > 0  THEN '17:00~18:00'	
+						 WHEN POSITION('18' IN TIME_SCTN_NM) > 0  AND POSITION('18' IN TIME_SCTN_NM) = 1  THEN '18:00~19:00'	
+						 END AS TIME_SCTN_NM,
+					]]>
+					CASE WHEN POSITION('07' IN TIME_SCTN_NM) > 0 OR POSITION('08' IN TIME_SCTN_NM) > 0 THEN '오전'
+						 ELSE '오후'
+					END AS TIME_AM_OR_PM
+				FROM
+					TRF_IPCSS_CRSRD_TRFVLM
+				WHERE
+					IPCSS_MNG_NO = #{ipcssMngNo}
+				AND DYWK_DIV = <choose>
+									<when test="dywkDiv != null and dywkDiv != ''">
+										#{dywkDiv}
+									</when>
+									<otherwise>
+										'평일'
+									</otherwise>
+								</choose>
+				AND POSITION('~' IN TIME_SCTN_NM) > 0 
+			) TICT
+			GROUP BY TICT.CRSRD_DRCT_CD,TICT.TIME_SCTN_NM,TICT.TIME_AM_OR_PM
+		)GRAPH_DATA
+		GROUP BY GRAPH_DATA.CRSRD_DRCT_CD
+		ORDER BY CAST(GRAPH_DATA.CRSRD_DRCT_CD AS INTEGER) 
+		)GRAPH_RESULT_DATA
+		ORDER BY CAST(GRAPH_RESULT_DATA.CRSRD_DRCT_CD AS INTEGER) 
+	</select>
+	
+	<select id="findAllCrsrdNmAndCrsrdNo" parameterType="trfvlmStatisticsDTO" resultType="trfIpcssCrsrdTrfvlm">
+		SELECT
+			CRSRD_NM ,
+			CRSRD_NO
+		FROM
+			TRF_IPCSS_CRSRD_TRFVLM
+		WHERE IPCSS_MNG_NO = #{ipcssMngNo}
+		AND DYWK_DIV =
+			<choose>
+				<when test="dywkDiv != null and dywkDiv != ''">
+					#{dywkDiv}
+				</when>
+				<otherwise>
+					'평일'
+				</otherwise>
+			</choose>
+		GROUP BY IPCSS_MNG_NO,CRSRD_NM ,CRSRD_NO 
+		ORDER BY CAST(CRSRD_NO AS INTEGER)
+	</select>
 </mapper>

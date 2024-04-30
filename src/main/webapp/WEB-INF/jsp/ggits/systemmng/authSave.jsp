@@ -13,7 +13,7 @@
             <form id="authSaveFrm">
 	            <div class="contents_wrap mt24">
 	                <div class="group">
-	                    <div class="group_text">권한 이름 (필수)</div>
+	                    <div class="group_text">권한 이름 (필수)<span class="required-alert">*</span></div>
 	                    <input type="text" placeholder="권한 이름을 입력해 주세요." id="authNm" class="input_same group_box data-validate" 
 	                    	data-valid-name="권한 이름" data-valid-required maxlength="50">
 	                </div>
@@ -21,39 +21,52 @@
 	                    <div class="group_text">권한 설명</div>
 	                    <input type="text" placeholder="권한 설명을 입력해 주세요." id="descr" class="input_same group_box"
 	                    	maxlength="400">
-	                    <div class="flex-center gap8 ml16">
+	                </div>
+					
+	                <div class="group">
+	                    <div class="group_text">권한 상세<span class="required-alert">*</span></div>
+   	                    <div class="flex-center gap8">
+				            <select id="authCd" class="authority_selectbox">
+				            	<option value="" selected>선택</option>
+				            	<option value="AUC000">상위 권한</option>
+				            	<option value="AUC001">일반 권한</option>
+				            	<option value="AUC002">VIP 권한</option>
+				            </select>
+	                    </div>
+						 <div class="flex-center gap8 ml16">
 			            	<span>권한 사용 여부</span>
 				            <select id="authUseYn" class="authority_selectbox">
-				            	<option value="Y" ${mOpAuthority.authUseYn eq 'Y' ? 'selected':''}>사용</option>
-				            	<option value="N" ${mOpAuthority.authUseYn eq 'N' ? 'selected':''}>미사용</option>
+				            	<option value="Y">사용</option>
+				            	<option value="N">미사용</option>
 				            </select>
 	                    </div>
 	                </div>
-	                
-	                <div class="group">
-	                    <div class="group_text">권한 설정</div>
-	                    <div class="group_btn">
-	                    	<div class="flex-center flex-wrap">
-	                        	<label class="is-dark-btn mt8 inpd" for="all_selector_main">
-		                        	<input type="checkbox" id="all_selector_main" class="none">전체선택/해제
-		                        </label>
-			                    <c:forEach var="menuList" items="${menuList}" varStatus="upprStatus">
-			                        <label class="is-dark-btn mt8 inpd">
-			                        	<input type="checkbox" class="none mainMenu" value="${menuList.menuId}" data-value="${menuList.menuNm}">${menuList.menuNm}
+	                <div id="nomalwrap">
+		                <div class="group">
+		                    <div class="group_text">권한 설정<span class="required-alert">*</span></div>
+		                    <div class="group_btn">
+		                    	<div class="flex-center flex-wrap">
+		                        	<label class="is-dark-btn mt8 inpd" for="all_selector_main">
+			                        	<input type="checkbox" id="all_selector_main" class="none">전체선택/해제
 			                        </label>
-			                    </c:forEach>
-	                    	</div>
-	                    </div> 
-	                </div>
-	                <div class="group">
-	                    <div class="group_btn auth_setting">
-	                    	상세 설정
-	                    	<div id="subMenuWrap"></div>
-	                    </div>
+				                    <c:forEach var="menuList" items="${menuList}" varStatus="upprStatus">
+				                        <label class="is-dark-btn mt8 inpd">
+				                        	<input type="checkbox" class="none mainMenu" value="<c:out value='${menuList.menuId}'/>" data-value="<c:out value='${menuList.menuNm}'/>"><c:out value="${menuList.menuNm}"/>
+				                        </label>
+				                    </c:forEach>
+		                    	</div>
+		                    </div> 
+		                </div>
+		                <div class="group">
+		                    <div class="group_btn auth_setting">
+		                    	상세 설정
+		                    	<div id="subMenuWrap"></div>
+		                    </div>
+		                </div>
 	                </div>
 	                <div class="group group_search">
 	                    <button type="button" id="saveBtn" class="is-darkgreen-btn">등록</button>
-	                    <a href="auth.html" class="is-dark-btn">취소</a>
+	                    <a href="${pageContext.request.contextPath}/system/auth/list.do" class="is-dark-btn">취소</a>
 	                </div>
 	            </div>
             </form>
@@ -61,6 +74,18 @@
     </div>
 </main>
 <script>
+
+
+	$("#authCd").on("change",function(){
+		var authCd = $(this).val();
+		if(authCd == 'AUC002'){
+			$("#nomalwrap").hide();
+			$("#authUseYn").val("Y");
+			$("#authUseYn").addClass("is-disabled");
+		} else {
+			$("#nomalwrap").show();
+		}
+	});
 
 	$("#all_selector_main").on("click",function(){
 		var isChk = $(this).is(":checked");
@@ -114,7 +139,7 @@
 	              html += "<div class='group_btn mt16' id='sub_menu_div_"+menuId+"'>";
 	              html += 	   "<div class='mb8'>"+menuNm+"</div>";
                   html +=	   "<div class='flex-center flex-wrap'>"
-	              html +=      	   "<button type='button' id='subMenuAllChk_"+menuId+"' class='is-dark-btn all_selector mt8' onclick='fnSubMenuAllChk("+menuId+")'>전체선택/해제</button>"
+	              html +=      	   "<button type='button' id='subMenuAllChk_"+menuId+"' class='is-dark-btn all_selector mt8 mr8' onclick='fnSubMenuAllChk("+menuId+")'>전체선택/해제</button>"
 	              
 	              for(var i = 0; i < data.length; i++){
 					  html +=       "<label class='group_btn_item is-dark-btn mt8 inpd'>";
@@ -139,10 +164,20 @@
 		var authNm = $("#authNm").val();
 		var descr = $("#descr").val();
 		var authUseYn = $("#authUseYn option:selected").val();
+		var authCd = $("#authCd option:selected").val();
 
+		if(authCd == "" || authCd == null){
+			new ModalBuilder().init().alertBoby("권한 상세를 선택해주세요.").footer(4,'확인',function(button, modal){
+				modal.close();
+				$("#authCd").focus();
+			}).open();
+			return false;
+		}
+		
 		if(!$("#authSaveFrm").soValid()){
 			return false;
 		}
+		
 		
 		var mainMenu = $(".mainMenu");
 		var menuIdArr = new Array();		
@@ -161,7 +196,7 @@
 				menuIdArr.push(menuId);
 			}
 		}
-		if(menuIdArr.length == 0){
+		if(authCd != 'AUC002' && menuIdArr.length == 0){
 			new ModalBuilder().init().alertBoby("메뉴 권한은 한개 이상 메뉴를 선택해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
 			modalAlertWrap();			
 			return false;
@@ -172,6 +207,8 @@
 		obj.descr = descr;
 		obj.authUseYn = authUseYn;
 		obj.menuIdArr = menuIdArr;
+		obj.authCd = authCd;
+
 		
 		$.ajax({
 			type : "post",
@@ -187,7 +224,7 @@
 					}).open();
 					modalAlertWrap();					
 				} else {
-					new ModalBuilder().init().alertBoby("권한 등록을 실패하였습니다.").footer(4,'확인',function(button, modal){modal.close();}).open();
+					new ModalBuilder().init().alertBoby(data.message).footer(4,'확인',function(button, modal){modal.close();}).open();
 					modalAlertWrap();
 				}
 			}

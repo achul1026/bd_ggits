@@ -4,30 +4,23 @@ import java.util.List;
 
 import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
 
-import com.neighbor21.ggits.common.entity.CommonEntity;
 import com.neighbor21.ggits.common.entity.ExtGgitsLinkStd1m;
 
 @Mapper
 public interface ExtGgitsLinkStd1mMapper {
+	/**
+	 * 실시간 모니터링용 최근 소통정보 조회
+	 * @return
+	 */
+	List<ExtGgitsLinkStd1m> findAllByRecent();
+	List<ExtGgitsLinkStd1m> findAllByRecent2();
+
 
 	/**
-	  * @Method Name : countTrafficInfoStats
-	  * @작성일 : 2023. 10. 29.
-	  * @작성자 : KC.KIM
-	  * @Method 설명 : 수집 이력 목록 조회
-	  * @param commonEntity
-	  * @return
-	  */
-	int countTrafficInfoStats(CommonEntity commonEntity);
-
-	/**
-	  * @Method Name : findAllTrafficInfoStats
-	  * @작성일 : 2023. 10. 29.
-	  * @작성자 : KC.KIM
-	  * @Method 설명 : 수집 이력 목록 조회
-	  * @param commonEntity
-	  * @return
-	  */
-	List<ExtGgitsLinkStd1m> findAllTrafficInfoStats(CommonEntity commonEntity);
-
+	 * 초기 소통정보 조회 (ROADRANK = 101, 102, 103)
+	 * @return
+	 */
+	List<ExtGgitsLinkStd1m> findAllByRecentLowerRoadRank();
+	List<ExtGgitsLinkStd1m> findAllByRecentLowerRoadRank2();
+	
 }

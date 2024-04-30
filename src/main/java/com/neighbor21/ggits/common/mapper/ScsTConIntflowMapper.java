@@ -3,6 +3,8 @@ package com.neighbor21.ggits.common.mapper;
 import java.util.List;
 import java.util.Map;
 
+import com.neighbor21.ggits.common.entity.ScsTConIntflow;
+import org.apache.ibatis.annotations.Param;
 import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
 
 import com.neighbor21.ggits.common.dto.MapFacilityMenuDTO;
@@ -41,4 +43,6 @@ public interface ScsTConIntflowMapper {
 	  * @return
 	  */
 	public List<Map<String,Object>> findAllSignalNodeList(GyCommInfoNode gyCommInfoNode);
+
+    List<ScsTConIntflow> findByIntLcno(@Param("intLcno") Long intLcno);
 }

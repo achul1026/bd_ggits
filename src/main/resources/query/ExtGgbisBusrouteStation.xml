@@ -1,0 +1,90 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.ExtGgbisBusrouteStationMapper'>
+	<select id="countAllSttnPbTrfUseStatsAnal" parameterType="mapBigdataSearchDTO" resultType="Integer">
+		SELECT
+			COUNT(DISTINCT egbs.ROUTE_ID)
+		FROM bigdata.EXT_GGBIS_BUSROUTE_STATION egbs
+		INNER JOIN (
+					SELECT
+						egbs.ROUTE_ID
+						, egbs.STATION_ID as END_STATION_ID
+						, MAX(egbs.STA_ORDER) as END_STA_ORDER
+						, st_station.START_STATION_ID
+						, st_station.START_STA_ORDER
+					FROM bigdata.EXT_GGBIS_BUSROUTE_STATION egbs
+					INNER JOIN (
+								SELECT
+								ROUTE_ID 
+								, STATION_ID as START_STATION_ID
+								, STA_ORDER as START_STA_ORDER
+								FROM bigdata.EXT_GGBIS_BUSROUTE_STATION egbs
+								<if test="startStationNm != null and startStationNm != ''">
+								WHERE (egbs.STATION_NM LIKE '%' || #{startStationNm} || '%' or egbs.STATION_ID LIKE '%' || #{startStationNm} || '%')
+								</if>
+								GROUP BY ROUTE_ID , STATION_ID, START_STA_ORDER
+								) 
+								<![CDATA[
+								st_station on egbs.ROUTE_ID = st_station.ROUTE_ID and egbs.STA_ORDER > st_station.START_STA_ORDER
+								]]>
+					<if test="endStationNm != null and endStationNm != ''">
+					WHERE (egbs.STATION_NM LIKE '%' || #{endStationNm} || '%' or egbs.STATION_ID LIKE '%' || #{endStationNm} || '%')
+					</if>
+					GROUP BY egbs.ROUTE_ID, egbs.STATION_ID, st_station.START_STATION_ID, st_station.START_STA_ORDER
+					)
+					<![CDATA[
+					bus_route on bus_route.ROUTE_ID = egbs.ROUTE_ID and (bus_route.START_STA_ORDER <= egbs.STA_ORDER and bus_route.END_STA_ORDER >= egbs.STA_ORDER)
+					]]>
+	</select>
+	
+	<select id="findAllSttnPbTrfUseStatsAnsl" parameterType="mapBigdataSearchDTO" resultType="extGgbisBusrouteStation">
+		SELECT
+			egbs.ROUTE_NM
+			,egbs.ROUTE_ID
+			,bus_route.START_STATION_ID
+			,bus_route.END_STATION_ID
+		FROM bigdata.EXT_GGBIS_BUSROUTE_STATION egbs
+		INNER JOIN (
+					SELECT
+						egbs.ROUTE_ID
+						, egbs.STATION_ID as END_STATION_ID
+						, MAX(egbs.STA_ORDER) as END_STA_ORDER
+						, st_station.START_STATION_ID
+						, st_station.START_STA_ORDER
+					FROM bigdata.EXT_GGBIS_BUSROUTE_STATION egbs
+					INNER JOIN (
+								SELECT
+								ROUTE_ID 
+								, STATION_ID as START_STATION_ID
+								, STA_ORDER as START_STA_ORDER
+								FROM bigdata.EXT_GGBIS_BUSROUTE_STATION egbs
+								<if test="startStationNm != null and startStationNm != ''">
+								WHERE (egbs.STATION_NM LIKE '%' || #{startStationNm} || '%' or egbs.STATION_ID LIKE '%' || #{startStationNm} || '%')
+								</if>
+								GROUP BY ROUTE_ID , STATION_ID, START_STA_ORDER
+								) 
+								<![CDATA[
+								st_station on egbs.ROUTE_ID = st_station.ROUTE_ID and egbs.STA_ORDER > st_station.START_STA_ORDER
+								]]>
+					<if test="endStationNm != null and endStationNm != ''">
+					WHERE (egbs.STATION_NM LIKE '%' || #{endStationNm} || '%' or egbs.STATION_ID LIKE '%' || #{endStationNm} || '%')
+					</if>
+					GROUP BY egbs.ROUTE_ID, egbs.STATION_ID, st_station.START_STATION_ID, st_station.START_STA_ORDER
+					)
+					<![CDATA[
+					bus_route on bus_route.ROUTE_ID = egbs.ROUTE_ID and (bus_route.START_STA_ORDER <= egbs.STA_ORDER and bus_route.END_STA_ORDER >= egbs.STA_ORDER)
+					]]>
+		GROUP BY egbs.ROUTE_NM, egbs.ROUTE_ID, bus_route.START_STATION_ID, bus_route.END_STATION_ID
+		ORDER BY EGBS.ROUTE_NM DESC
+		LIMIT 5 OFFSET (#{page} - 1) * 5
+	</select>
+	
+	<select id="findAllStationNmListBySearchContent" parameterType="map" resultType="map">
+		SELECT
+			 station_id as SEQ 
+			,station_nm as SEARCH_WORD
+		FROM bigdata.EXT_GGBIS_BUSROUTE_STATION egbs
+		WHERE egbs.STATION_NM LIKE '%' || #{value} || '%'
+	</select>
+</mapper>

@@ -15,4 +15,22 @@ public interface DsetInfoMapper {
 	 */
 	DsetInfo findOneDsetInfo(DsetInfo dsetInfo);
 
+	/**
+	 * @Method Name : saveDsetInfo
+	 * @작성일 : 2023. 11. 3.
+	 * @작성자 : KY.LEE
+	 * @Method 설명 : 데이터셋 생성
+	 * @return
+	 */
+	public void saveDsetInfo(DsetInfo dsetInfo);
+	
+	/**
+	 * @Method Name : updateDsetInfo
+	 * @작성일 : 2023. 11. 3.
+	 * @작성자 : KY.LEE
+	 * @Method 설명 : 데이터셋 수정
+	 * @return
+	 */
+	public void updateDsetInfo(DsetInfo dsetInfo);
+
 }

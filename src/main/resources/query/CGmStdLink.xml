@@ -2,4 +2,116 @@
 <!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.CGmStdLinkMapper'>
+	<select id="findAllGyCommInfoLink" resultType="gyCommInfoLink">
+		SELECT
+			ROW_NUMBER() OVER(ORDER BY LINK_ID) AS ROWNUM,
+			LINK_ID,
+			F_NODE,
+			T_NODE,
+			LANES,
+			ROAD_RANK,
+			ROAD_TYPE,
+			ROAD_NO,
+			ROAD_NAME,
+			ROAD_USE,
+			MULTI_LINK,
+			CONNECT,
+			MAX_SPD,
+			REST_VEH,
+			REST_W,
+			REST_H,
+			LENGTH,
+			REMARK,
+			GEOMETRY,
+			ST_X(ST_ASTEXT(ST_CENTROID(GEOMETRY))) AS "X",
+			ST_Y(ST_ASTEXT(ST_CENTROID(GEOMETRY))) AS "Y"
+		FROM
+			C_GM_STD_LINK GCIL
+		ORDER BY ROWNUM DESC
+		LIMIT 5
+		</select>
+		
+	<select id="countAll" resultType="int">
+		SELECT COUNT(1)
+		FROM C_GM_STD_LINK GCIL
+	</select>
+	
+	<select id="countByLinkId" resultType="int" parameterType="gyCommInfoLink">
+		SELECT COUNT(1)
+		FROM C_GM_STD_LINK GCIL
+		WHERE 1=1
+		<if test="linkId != null and linkId != ''">
+			AND LINK_ID LIKE CONCAT('%',#{linkId},'%')
+		</if>
+		<if test="roadName != null and roadName != ''">
+			AND ROAD_NAME LIKE CONCAT('%',#{roadName},'%')
+		</if>
+	</select>
+	<select id="findLinkListByLinkId" parameterType="gyCommInfoLink" resultType="gyCommInfoLink">
+		SELECT
+			ROW_NUMBER() OVER(ORDER BY LINK_ID) AS ROWNUM,
+			LINK_ID,
+			F_NODE,
+			T_NODE,
+			LANES,
+			ROAD_RANK,
+			ROAD_TYPE,
+			ROAD_NO,
+			ROAD_NAME,
+			ROAD_USE,
+			MULTI_LINK,
+			CONNECT,
+			MAX_SPD,
+			REST_VEH,
+			REST_W,
+			REST_H,
+			LENGTH,
+			REMARK,
+			GEOMETRY,
+			ST_X(ST_ASTEXT(ST_CENTROID(GEOMETRY))) AS "X",
+			ST_Y(ST_ASTEXT(ST_CENTROID(GEOMETRY))) AS "Y"
+		FROM
+		C_GM_STD_LINK  GCIL
+		WHERE 1=1
+		<if test="linkId != null and linkId != ''">
+			AND LINK_ID LIKE CONCAT('%',#{linkId},'%')
+		</if>
+		<if test="roadName != null and roadName != ''">
+			AND ROAD_NAME LIKE CONCAT('%',#{roadName},'%')
+		</if>
+		ORDER BY ROWNUM DESC
+		LIMIT 5 OFFSET (#{page} - 1) * 5
+	</select>
+
+	<select id="findOneByLinkIdForCrsrdPrediction" resultType="cGmStdLink">
+		select
+			ST_Azimuth(
+					ST_PointN(st_linemerge(cgsl.geometry) , ST_NPoints(st_linemerge(cgsl.geometry))-1)
+				, ST_PointN(st_linemerge(cgsl.geometry) , ST_NPoints(st_linemerge(cgsl.geometry)))
+				)/(2*pi())*360 as angle,
+			st_asgeojson(ST_PointN(st_linemerge(cgsl.geometry) , ST_NPoints(st_linemerge(cgsl.geometry)))) as st,
+			st_asgeojson(ST_PointN(st_linemerge(cgsl.geometry) , ST_NPoints(st_linemerge(cgsl.geometry))-1)) as ed
+		from
+		C_GM_STD_LINK  cgsl
+		where cgsl.link_id = #{linkId}
+	</select>
+
+	<select id="findOneWithNodeByLinkInfo" resultType="cGmStdLink">
+		SELECT
+			CGSL.LINK_ID ,
+			CGSL.F_NODE ,
+			CGSL.T_NODE,
+			CGSL.LANES ,
+		   	CGSL.ROAD_NAME,
+			CGSL.ROAD_RANK ,
+			CGSL.ROAD_TYPE ,
+			CGSL.MAX_SPD,
+			F_CGSN.NODE_NAME AS F_NODE_NM,
+			T_CGSN.NODE_NAME AS T_NODE_NM
+		FROM
+			C_GM_STD_LINK CGSL
+				LEFT OUTER JOIN C_GM_STD_NODE F_CGSN ON CGSL.F_NODE = F_CGSN.NODE_ID
+				LEFT OUTER JOIN C_GM_STD_NODE T_CGSN ON CGSL.T_NODE = T_CGSN.NODE_ID
+		WHERE LINK_ID = #{linkId}
+	</select>
 </mapper>

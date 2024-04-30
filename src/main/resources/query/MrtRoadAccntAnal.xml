@@ -5,8 +5,8 @@
 	<sql id="mrtRoadAccntAnal-where">
 		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
 			AND mraa.INFO_OCCUR_DT 
-			BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
-		    	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			BETWEEN TO_TIMESTAMP(#{strDt}|| ' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}|| ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
 		</if>
 		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
 			<![CDATA[
@@ -21,6 +21,9 @@
 		<if test="searchContent != '' and searchContent != null">
 			AND gcil.ROAD_NAME LIKE '%' || #{searchContent} || '%'
 		</if>
+		<if test="sigunCdId != null and sigunCdId != '' and sigunCdId != 'searchAllLocation'">
+			AND cgslam.ADSTDG_CD LIKE SUBSTRING(#{sigunCdId}, 0, 5) || '%'
+		</if>
 		<if test="dayOfTheWeek != null">
 			AND EXTRACT (ISODOW from mraa.INFO_OCCUR_DT)::varchar(1) IN 
 				<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
@@ -29,57 +32,196 @@
 		</if>
 	</sql>
 	
-	<select id="countAcdntCatgLogColt" parameterType="commonEntity" resultType="int">
-	WITH MRT_ROAD_ACCNT_ANAL_CNT AS (
-		SELECT
-			COUNT(*)
-		FROM MRT_ROAD_ACCNT_ANAL mraa
-		LEFT JOIN GY_COMM_INFO_LINK gcil
-			ON mraa.ACDNT_DSTRCT_IDENTIFIER = gcil.LINK_ID 
-		WHERE
-			1=1
-			<include refid="mrtRoadAccntAnal-where"/>
-		GROUP BY gcil.ROAD_NAME,  mraa.TOT_CASLT_CNT, mraa.DCSD_CNT, mraa.ACDNT_OCCUR_CNT, mraa.DCSD_CNT , mraa.TOT_CASLT_CNT, mraa.INFO_OCCUR_DT
-	)
-	SELECT 
-		COUNT(*)
-	FROM MRT_ROAD_ACCNT_ANAL_CNT
-	</select>
-	
 	<select id="findAllAcdntCatgLogColt" parameterType="commonEntity" resultType="mrtRoadAccntAnal">
 	SELECT 
-		moc.cd_nm as cdNm
-		, mraa.ACDNT_OCCUR_CNT as acdntOccurCnt
-		, mraa.DCSD_CNT as dcsdCnt
-		, mraa.tot_caslt_cnt as totCasltCnt
-		, gcil.ROAD_NAME as roadName
-		, ROUND((mraa.DCSD_CNT / mraa.TOT_CASLT_CNT * 100)::Decimal,2) as ftltyRate
-	FROM MRT_ROAD_ACCNT_ANAL mraa
-	INNER JOIN M_OP_CODE moc 
-		ON mraa.ACDNT_TYPE_CD = moc.CD_ID 
-	INNER JOIN GY_COMM_INFO_LINK gcil
-		ON mraa.ACDNT_DSTRCT_IDENTIFIER = gcil.LINK_ID 
+		 SUM(mraa.ACDNT_OCCUR_CNT) as acdntOccurCnt
+		, SUM(mraa.DCSD_CNT) as dcsdCnt
+		, SUM(mraa.TOT_CASLT_CNT) as totCasltCnt
+		, cgslam.ROAD_NAME as roadName
+		, CASE WHEN mraa.ACDNT_TYPE_CD ='BCYCL' THEN '자전거 사고'
+				WHEN mraa.ACDNT_TYPE_CD ='JAYWK' THEN '무단횡단 보행자 사고'
+				WHEN mraa.ACDNT_TYPE_CD ='LAWVLTN' THEN '법위반 보행자 사고'
+				WHEN mraa.ACDNT_TYPE_CD ='HLDY' THEN '휴일기간 보행자 사고'
+				WHEN mraa.ACDNT_TYPE_CD ='FROST' THEN '결빙사고'
+				WHEN mraa.ACDNT_TYPE_CD ='TWHLVH' THEN '이륜차 사고'
+				WHEN mraa.ACDNT_TYPE_CD ='PDSN' THEN '보행자 사고'
+				WHEN mraa.ACDNT_TYPE_CD ='DRNKG' THEN '음주 사고'
+				WHEN mraa.ACDNT_TYPE_CD ='TRUCK' THEN '화물차 사고'
+				WHEN mraa.ACDNT_TYPE_CD ='OLMAN' THEN '노인 보행자 사고'
+				END AS ACDNT_TYPE_CD
+		,CASE WHEN gcil.ROAD_RANK ='101' THEN '고속국도'
+				WHEN gcil.ROAD_RANK ='102' THEN '도시고속국도'
+				WHEN gcil.ROAD_RANK ='103' THEN '일반국도'
+				WHEN gcil.ROAD_RANK ='104' THEN '특별광역시도'
+				WHEN gcil.ROAD_RANK ='105' THEN '국가지원지방도'
+				WHEN gcil.ROAD_RANK ='106' THEN '지방도'
+				WHEN gcil.ROAD_RANK ='107' THEN '시군도'
+				WHEN gcil.ROAD_RANK ='108' THEN '기타'
+				END AS ROAD_RANK
+		, ROUND((SUM(mraa.DCSD_CNT) / SUM(mraa.TOT_CASLT_CNT) * 100)::Decimal,2) as ftltyRate
+	FROM MRT_ROAD_ACCNT_ANAL mraa 
+	INNER JOIN C_GM_STD_LINK gcil
+		ON mraa.ACDNT_DSTRCT_IDENTIFIER = gcil.LINK_ID
+	INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam
+		ON gcil.LINK_ID = cgslam.LINK_ID
 	WHERE
 		1=1
 		<include refid="mrtRoadAccntAnal-where"/>
-	GROUP BY gcil.ROAD_NAME, moc.CD_NM,  mraa.TOT_CASLT_CNT, mraa.DCSD_CNT, mraa.ACDNT_OCCUR_CNT, mraa.DCSD_CNT , mraa.TOT_CASLT_CNT, mraa.INFO_OCCUR_DT
-	ORDER by mraa.INFO_OCCUR_DT DESC
+	GROUP BY cgslam.ROAD_NAME, mraa.ACDNT_TYPE_CD, gcil.ROAD_RANK
+	ORDER by cgslam.ROAD_NAME
+	<if test="page != null and page !='' and page != 0">
+		LIMIT 10 OFFSET (#{page} - 1) * 10;
+	</if>
+	</select>
+	
+	<select id="countRiskZnPrdt" parameterType="commonEntity" resultType="int">
+		SELECT
+			COUNT(A.ROAD_NAME)
+		FROM (
+			SELECT 
+				gcil.ROAD_NAME
+			FROM MRT_ROAD_ACCNT_ANAL mraa
+			INNER JOIN C_GM_STD_LINK gcil
+				ON mraa.ACDNT_DSTRCT_IDENTIFIER = gcil.LINK_ID
+			INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam
+				ON gcil.LINK_ID = cgslam.LINK_ID
+			WHERE
+				1=1
+				<include refid="mrtRoadAccntAnal-where"/>
+			GROUP BY gcil.ROAD_NAME
+			ORDER BY gcil.ROAD_NAME
+		)A
 	</select>
 
 	<select id="findAllRiskZnPrdtList" parameterType="commonEntity" resultType="mrtRoadAccntAnal">
-	SELECT 
-		gcin1.NODE_NAME  as strRoadName
-		, gcin2.NODE_NAME  as endRoadName
-		, mraa.ACDNT_OCCUR_CNT as acdntOccurCnt
-	FROM MRT_ROAD_ACCNT_ANAL mraa
-	LEFT JOIN GY_COMM_INFO_LINK gcil
-		ON mraa.ACDNT_DSTRCT_IDENTIFIER = gcil.LINK_ID
-	LEFT JOIN GY_COMM_INFO_NODE gcin1
-		ON gcil.F_NODE = gcin1.NODE_ID 
-	LEFT JOIN GY_COMM_INFO_NODE gcin2
-		ON gcil.T_NODE = gcin2.NODE_ID 
-	WHERE
-		1=1
-		<include refid="mrtRoadAccntAnal-where"/>
+		SELECT
+			gcil.ROAD_NAME
+			, MAX(mraa.ACDNT_OCCUR_CNT) as MAX_ACDNT_CNT
+			, SUM(mraa.ACDNT_OCCUR_CNT) as ACDNT_OCCUR_CNT
+			, SUM(mraa.TOT_CASLT_CNT) as TOT_CASLT_CNT
+			, SUM(mraa.DCSD_CNT) as DCSD_CNT
+			, CASE WHEN MAX(mraa.acdnt_type_cd) ='BCYCL' THEN '자전거 사고'
+				WHEN MAX(mraa.acdnt_type_cd) ='JAYWK' THEN '무단횡단 보행자 사고'
+				WHEN MAX(mraa.acdnt_type_cd) ='LAWVLTN' THEN '법위반 보행자 사고'
+				WHEN MAX(mraa.acdnt_type_cd) ='HLDY' THEN '휴일기간 보행자 사고'
+				WHEN MAX(mraa.acdnt_type_cd) ='FROST' THEN '결빙사고'
+				WHEN MAX(mraa.acdnt_type_cd) ='TWHLVH' THEN '이륜차 사고'
+				WHEN MAX(mraa.acdnt_type_cd) ='PDSN' THEN '보행자 사고'
+				WHEN MAX(mraa.acdnt_type_cd) ='DRNKG' THEN '음주 사고'
+				WHEN MAX(mraa.acdnt_type_cd) ='TRUCK' THEN '화물차 사고'
+				WHEN MAX(mraa.acdnt_type_cd) ='OLMAN' THEN '노인 보행자 사고'
+				END AS ACDNT_TYPE_CD
+		FROM MRT_ROAD_ACCNT_ANAL mraa
+		INNER JOIN C_GM_STD_LINK gcil
+			ON mraa.ACDNT_DSTRCT_IDENTIFIER = gcil.LINK_ID
+		INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam
+			ON gcil.LINK_ID = cgslam.LINK_ID
+		WHERE
+			1=1
+			<include refid="mrtRoadAccntAnal-where"/>
+		GROUP BY gcil.ROAD_NAME
+		ORDER BY gcil.ROAD_NAME
+		LIMIT 10 OFFSET (#{page} - 1) * 10;
+	</select>
+	
+	<select id="countAcdntCatgLog" parameterType="commonEntity" resultType="int">
+		SELECT
+			COUNT(A.roadName)
+		FROM (
+			SELECT 
+				cgslam.ROAD_NAME as roadName
+			FROM MRT_ROAD_ACCNT_ANAL mraa 
+			INNER JOIN C_GM_STD_LINK gcil
+				ON mraa.ACDNT_DSTRCT_IDENTIFIER = gcil.LINK_ID
+			INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam
+				ON gcil.LINK_ID = cgslam.LINK_ID
+			WHERE
+				1=1
+				<include refid="mrtRoadAccntAnal-where"/>
+			GROUP BY cgslam.ROAD_NAME, mraa.ACDNT_TYPE_CD, gcil.ROAD_RANK
+		)A
+	</select>
+	
+	<select id="findAllTrafficAcdntLogMapByType" parameterType="commonEntity" resultType="map">
+		WITH ACDNT_TYPE_LOG_LIST AS (
+									SELECT
+										A.ACDNT_TYPE_CD
+										, A.ACDNT_OCCUR_CNT
+										, A.TOT_CASLT_CNT
+										, A.DCSD_CNT
+										, A.FTLTY_RATE
+									FROM
+										(
+										SELECT
+											CASE WHEN mraa.ACDNT_TYPE_CD ='BCYCL' THEN '자전거 사고'
+												WHEN mraa.ACDNT_TYPE_CD ='JAYWK' THEN '무단횡단 보행자 사고'
+												WHEN mraa.ACDNT_TYPE_CD ='LAWVLTN' THEN '법위반 보행자 사고'
+												WHEN mraa.ACDNT_TYPE_CD ='HLDY' THEN '휴일기간 보행자 사고'
+												WHEN mraa.ACDNT_TYPE_CD ='FROST' THEN '결빙사고'
+												WHEN mraa.ACDNT_TYPE_CD ='TWHLVH' THEN '이륜차 사고'
+												WHEN mraa.ACDNT_TYPE_CD ='PDSN' THEN '보행자 사고'
+												WHEN mraa.ACDNT_TYPE_CD ='DRNKG' THEN '음주 사고'
+												WHEN mraa.ACDNT_TYPE_CD ='TRUCK' THEN '화물차 사고'
+												WHEN mraa.ACDNT_TYPE_CD ='OLMAN' THEN '노인 보행자 사고'
+												END AS ACDNT_TYPE_CD
+											, SUM(mraa.ACDNT_OCCUR_CNT) as acdnt_occur_cnt
+											, SUM(mraa.TOT_CASLT_CNT) as tot_caslt_cnt
+											, SUM(mraa.DCSD_CNT) as dcsd_cnt
+											, ROUND((SUM(mraa.DCSD_CNT) / SUM(mraa.TOT_CASLT_CNT) * 100)::Decimal,2) as ftlty_rate
+										FROM MRT_ROAD_ACCNT_ANAL mraa
+										INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam
+											ON mraa.ACDNT_DSTRCT_IDENTIFIER = cgslam.LINK_ID
+									WHERE 1=1
+									<include refid="mrtRoadAccntAnal-where"/>
+									GROUP BY mraa.ACDNT_TYPE_CD
+								)A
+							GROUP BY A.ACDNT_TYPE_CD, A.ACDNT_OCCUR_CNT, A.TOT_CASLT_CNT, A.DCSD_CNT, A.FTLTY_RATE
+			)
+			SELECT
+				ARRAY_TO_STRING(ARRAY_AGG(acdnt_type_cd), ',') AS "acdntTypeCdArr"
+				,ARRAY_TO_STRING(ARRAY_AGG(acdnt_occur_cnt), ',') AS "acdntOccurCntArr"
+				,ARRAY_TO_STRING(ARRAY_AGG(tot_caslt_cnt), ',') AS "totCasltCntArr"
+				,ARRAY_TO_STRING(ARRAY_AGG(dcsd_cnt), ',') AS "dcsdCntArr"
+				,ARRAY_TO_STRING(ARRAY_AGG(ftlty_rate), ',') AS "ftltyRateArr"
+			FROM
+				ACDNT_TYPE_LOG_LIST
+	</select>
+	
+	<select id="findAllRiskPrdnStatsMap" parameterType="commonEntity" resultType="map">
+	WITH RISK_PRDN_LIST AS (
+			SELECT 
+				A.ACDNT_TYPE_CD
+				,A.ACDNT_OCCUR_CNT
+			FROM
+				(
+				SELECT 
+					CASE WHEN mraa.ACDNT_TYPE_CD ='BCYCL' THEN '자전거 사고'
+						WHEN mraa.ACDNT_TYPE_CD ='JAYWK' THEN '무단횡단 보행자 사고'
+						WHEN mraa.ACDNT_TYPE_CD ='LAWVLTN' THEN '법위반 보행자 사고'
+						WHEN mraa.ACDNT_TYPE_CD ='HLDY' THEN '휴일기간 보행자 사고'
+						WHEN mraa.ACDNT_TYPE_CD ='FROST' THEN '결빙사고'
+						WHEN mraa.ACDNT_TYPE_CD ='TWHLVH' THEN '이륜차 사고'
+						WHEN mraa.ACDNT_TYPE_CD ='PDSN' THEN '보행자 사고'
+						WHEN mraa.ACDNT_TYPE_CD ='DRNKG' THEN '음주 사고'
+						WHEN mraa.ACDNT_TYPE_CD ='TRUCK' THEN '화물차 사고'
+						WHEN mraa.ACDNT_TYPE_CD ='OLMAN' THEN '노인 보행자 사고'
+						END AS ACDNT_TYPE_CD
+					, SUM(mraa.ACDNT_OCCUR_CNT) as ACDNT_OCCUR_CNT
+					FROM MRT_ROAD_ACCNT_ANAL mraa
+					INNER JOIN C_GM_STD_LINK gcil
+						ON mraa.ACDNT_DSTRCT_IDENTIFIER = gcil.LINK_ID
+					INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam
+						ON gcil.LINK_ID = cgslam.LINK_ID
+					WHERE 1=1
+					<include refid="mrtRoadAccntAnal-where"/>
+				GROUP BY mraa.ACDNT_TYPE_CD
+				)A
+			GROUP BY A.ACDNT_TYPE_CD, A.ACDNT_OCCUR_CNT
+		) 
+		SELECT 	
+				ARRAY_TO_STRING(ARRAY_AGG(ACDNT_TYPE_CD ORDER BY ACDNT_OCCUR_CNT DESC), ',') AS "acdntTypeCdArr"
+				,ARRAY_TO_STRING(ARRAY_AGG(ACDNT_OCCUR_CNT ORDER BY ACDNT_OCCUR_CNT DESC), ',') AS "acdntCntArr"
+		FROM 
+			RISK_PRDN_LIST
 	</select>
 </mapper>

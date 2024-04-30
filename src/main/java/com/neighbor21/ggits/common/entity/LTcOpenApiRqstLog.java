@@ -12,15 +12,19 @@ public class LTcOpenApiRqstLog extends CommonEntity{
     private String apiRqstLog;      		// api 요청 로그
     private long srchCnt;					// 조회 수
     private long dwnldCnt;					// 다운로드 수
+    private String parameterValue;			// 파라미터 값
+    private String apiCallUrl;				// API 호출 URL
+    private String resultStatus;    		// 호출 결과
+    private int responseCnt = 0; 			// 결과 데이터 수
+    private String openApiLogId;			// 오픈API 로그 ID
     
     private String oprtrIdStr;
     
     //#MOpOperator
 	private String oprtrNm; // 운영자 명
 	private String oprtrEmail; // 운영자 이메일
-    
 
-  public Timestamp getClctDt() {
+	public Timestamp getClctDt() {
     return clctDt;
   }
 
@@ -31,13 +35,13 @@ public class LTcOpenApiRqstLog extends CommonEntity{
 
   public String getOprtrIdStr() {
 	return oprtrIdStr;
-}
+  }
 
-public void setOprtrIdStr(String oprtrIdStr) {
+  public void setOprtrIdStr(String oprtrIdStr) {
 	this.oprtrIdStr = oprtrIdStr;
-}
+  }
 
-public String getApiId() {
+  public String getApiId() {
     return apiId;
   }
 
@@ -90,36 +94,76 @@ public String getApiId() {
     this.apiRqstLog = apiRqstLog;
   }
 
-public long getSrchCnt() {
+  public long getSrchCnt() {
 	return srchCnt;
-}
+  }
 
-public void setSrchCnt(long srchCnt) {
+  public void setSrchCnt(long srchCnt) {
 	this.srchCnt = srchCnt;
-}
+  }
 
-public long getDwnldCnt() {
+  public long getDwnldCnt() {
 	return dwnldCnt;
-}
+  }
 
-public void setDwnldCnt(long dwnldCnt) {
+  public void setDwnldCnt(long dwnldCnt) {
 	this.dwnldCnt = dwnldCnt;
-}
+  }
 
-public String getOprtrNm() {
+  public String getOprtrNm() {
 	return oprtrNm;
-}
+  }
 
-public void setOprtrNm(String oprtrNm) {
+  public void setOprtrNm(String oprtrNm) {
 	this.oprtrNm = oprtrNm;
-}
+  }
 
-public String getOprtrEmail() {
+  public String getOprtrEmail() {
 	return oprtrEmail;
-}
+  }
 
-public void setOprtrEmail(String oprtrEmail) {
+  public void setOprtrEmail(String oprtrEmail) {
 	this.oprtrEmail = oprtrEmail;
-}
+  }
 
+  public String getParameterValue() {
+	return parameterValue;
+  }
+
+  public void setParameterValue(String parameterValue) {
+	this.parameterValue = parameterValue;
+  }
+
+  public String getApiCallUrl() {
+	return apiCallUrl;
+  }
+
+  public void setApiCallUrl(String apiCallUrl) {
+	this.apiCallUrl = apiCallUrl;
+  }
+
+  public String getResultStatus() {
+	return resultStatus;
+  }
+
+  public void setResultStatus(String resultStatus) {
+	this.resultStatus = resultStatus;
+  }
+
+  public int getResponseCnt() {
+	return responseCnt;
+  }
+
+  public void setResponseCnt(int responseCnt) {
+	this.responseCnt = responseCnt;
+  }
+
+  public String getOpenApiLogId() {
+		return openApiLogId;
+  }
+  
+  public void setOpenApiLogId(String openApiLogId) {
+	this.openApiLogId = openApiLogId;
+  }
+  
 }

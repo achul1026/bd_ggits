@@ -1,8 +1,9 @@
 package com.neighbor21.ggits.web.controller.systemmng;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -17,6 +18,7 @@ import com.neighbor21.ggits.common.entity.LTcAcdntLogInfo;
 import com.neighbor21.ggits.common.entity.LTcFcltsLogInfo;
 import com.neighbor21.ggits.common.entity.LTcSrvrLogInfo;
 import com.neighbor21.ggits.common.entity.MOpCodeGrp;
+import com.neighbor21.ggits.common.entity.MOpOperator;
 import com.neighbor21.ggits.common.entity.Paging;
 import com.neighbor21.ggits.common.mapper.LOpPgmLognMapper;
 import com.neighbor21.ggits.common.mapper.LTcAcdntLogInfoMapper;
@@ -62,7 +64,8 @@ public class OperateMngController {
      * @return 
      */
     @GetMapping(value={"/oprtr/{logType}/list.do", "/oprtr/list.do"})
-    public String oprtrMngUserList(@PathVariable(required = false) String logType
+    public String oprtrMngUserList(HttpSession session
+    		, @PathVariable(required = false) String logType
     		, @RequestParam(required = false, defaultValue = "1") int page
     		, @RequestParam(required = false) String searchType
     		, @RequestParam(required = false) String searchContent
@@ -71,6 +74,7 @@ public class OperateMngController {
     		, Model model){
     	
     	MOpCodeGrp codeGrp = new MOpCodeGrp();
+    	MOpOperator mOpOperatorInfo = (MOpOperator) session.getAttribute("mOpOperatorInfo");
     	
     	String strDatetime = null;
     	String endDatetime = null;
@@ -93,6 +97,8 @@ public class OperateMngController {
 			lOpPgmLogn.setEndDt(endDatetime);
 
 			lOpPgmLogn.setPage(page);
+			lOpPgmLogn.setOprtrGrd(mOpOperatorInfo.getOprtrGrd());
+			lOpPgmLogn.setMngInstCd(mOpOperatorInfo.getMngInstCd());
 			
 			List<LOpPgmLogn> userLogList = new ArrayList<LOpPgmLogn>();
 			totalCnt = lOpPgmLognMapper.countUserLogBySearchInfo(lOpPgmLogn);
@@ -116,6 +122,8 @@ public class OperateMngController {
 			lTcSrvrLogInfo.setEndDt(endDatetime);
 			
 			lTcSrvrLogInfo.setPage(page);
+			lTcSrvrLogInfo.setOprtrGrd(mOpOperatorInfo.getOprtrGrd());
+			lTcSrvrLogInfo.setMngInstCd(mOpOperatorInfo.getMngInstCd());
 			
 			List<LTcSrvrLogInfo> srvrLogList = new ArrayList<LTcSrvrLogInfo>();
 			totalCnt = lTcSrvrLogInfoMapper.countSrvrLogBySearchInfo(lTcSrvrLogInfo);
@@ -139,6 +147,8 @@ public class OperateMngController {
 			lTcFcltsLogInfo.setEndDt(endDatetime);
 			
 			lTcFcltsLogInfo.setPage(page);
+			lTcFcltsLogInfo.setOprtrGrd(mOpOperatorInfo.getOprtrGrd());
+			lTcFcltsLogInfo.setMngInstCd(mOpOperatorInfo.getMngInstCd());
 			
 			List<LTcFcltsLogInfo> fcltsLogList = new ArrayList<LTcFcltsLogInfo>();
 			totalCnt = lTcFcltsLogInfoMapper.countFcltsLogBySearchInfo(lTcFcltsLogInfo);
@@ -162,6 +172,8 @@ public class OperateMngController {
 			lTcAcdntLogInfo.setEndDt(endDatetime);
 			
 			lTcAcdntLogInfo.setPage(page);
+			lTcAcdntLogInfo.setOprtrGrd(mOpOperatorInfo.getOprtrGrd());
+			lTcAcdntLogInfo.setMngInstCd(mOpOperatorInfo.getMngInstCd());
 			
 			List<LTcAcdntLogInfo> acdntLogList = new ArrayList<LTcAcdntLogInfo>();
 			totalCnt = lTcAcdntLogInfoMapper.countAcdntLogBySearchInfo(lTcAcdntLogInfo);
@@ -185,6 +197,8 @@ public class OperateMngController {
 			lOpPgmLognDft.setEndDt(endDatetime);
 			
 			lOpPgmLognDft.setPage(page);
+			lOpPgmLognDft.setOprtrGrd(mOpOperatorInfo.getOprtrGrd());
+			lOpPgmLognDft.setMngInstCd(mOpOperatorInfo.getMngInstCd());
 			
 			totalCnt = lOpPgmLognMapper.countUserLogBySearchInfo(lOpPgmLognDft);
 			

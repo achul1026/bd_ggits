@@ -2,4 +2,118 @@
 <!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.UticRoadDngrSttsFrcstMapper'>
+
+    <select id="findAllBySearchOptionForMapGroupSGG" parameterType="mapFacilityMenuDTO" resultType="uticRoadDngrSttsFrcst">
+
+    </select>
+
+    <select id="findAllBySearchOptionForMap" parameterType="mapFacilityMenuDTO" resultType="uticRoadDngrSttsFrcst">
+        SELECT
+        EURDSF.ETL_DT
+            ,EURDSF.SAFE_DATA_ID
+             ,EURDSF.DNGR_STTS_NM
+             ,EURDSF.DNGR_STTS_GRD
+             ,EURDSF.DATA_TYPE
+             ,EURDSF.PCTT_TYPE
+             ,EURDSF.TIME_PCTT
+             ,EURDSF.TMPRT
+             ,EURDSF.LINK_ID
+             ,EURDSF.LON_CRDN
+             ,EURDSF.LAT_CRDN
+             ,EURDSF.LOTNO_ADDR
+             ,EURDSF.ROAD_NM_ADDR
+             ,EURDSF.TOT_CRDN_DATA
+        FROM
+            BIGDATA.EXT_UTIC_ROAD_DNGR_STTS_FRCST EURDSF
+        WHERE
+            1=1
+        <if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+            AND TO_CHAR(TO_TIMESTAMP(EURDSF.ETL_DT, 'YYYYMMDDHH24MISSMS'), 'YYYY') = #{searchYear}
+        </if>
+        <!-- 기간 검색 -->
+        <if test="searchPeriod != null and searchPeriod != ''">
+            <choose>
+                <when test="searchPeriod == 'weekday' ">
+                    AND TO_CHAR(TO_TIMESTAMP(EURDSF.ETL_DT, 'YYYYMMDDHH24MISSMS'),'D') BETWEEN '2' AND '6'
+                </when>
+                <when test="searchPeriod == 'weekend' ">
+                    AND (TO_CHAR(TO_TIMESTAMP(EURDSF.ETL_DT, 'YYYYMMDDHH24MISSMS'),'D') = '1' OR TO_CHAR(TO_TIMESTAMP(EURDSF.ETL_DT, 'YYYYMMDDHH24MISSMS'),'D') =  '7')
+                </when>
+                <otherwise>
+                    AND TO_CHAR(TO_TIMESTAMP(EURDSF.ETL_DT, 'YYYYMMDDHH24MISSMS'), 'YYYY-MM-DD') BETWEEN #{startDate} AND #{endDate}
+                </otherwise>
+            </choose>
+        </if>
+        <!-- 시간 검색 -->
+        <if test="searchTime != null and searchTime != ''">
+            <choose>
+                <when test="searchTime == 'workingTime' ">
+                    AND TO_CHAR(TO_TIMESTAMP(EURDSF.ETL_DT, 'YYYYMMDDHH24MISSMS'), 'HH24') BETWEEN '06' AND '10'
+                </when>
+                <when test="searchTime == 'workingEndTime' ">
+                    AND TO_CHAR(TO_TIMESTAMP(EURDSF.ETL_DT, 'YYYYMMDDHH24MISSMS'), 'HH24') BETWEEN '17' AND '20'
+                </when>
+                <otherwise>
+                    AND TO_CHAR(TO_TIMESTAMP(EURDSF.ETL_DT, 'YYYYMMDDHH24MISSMS'), 'HH24') BETWEEN #{startTime} AND #{endTime}
+                </otherwise>
+            </choose>
+        </if>
+        <if test="searchLocation != null and searchLocation != '' and searchLocation != 'searchAllLocation'">
+            AND EURDSF.ROAD_NM_ADDR LIKE '경기도 '||CONCAT(#{searchLocation},'%')
+        </if>
+        <choose>
+        	<when test="dangerTypeList != null">
+				 AND EURDSF.DNGR_STTS_NM IN 
+					<foreach collection="dangerTypeList" item="dangerType" index="index" separator="," open="(" close=")">
+	                    #{dangerType}
+	                </foreach>
+        	</when>
+        	<otherwise>
+		        <if test="dangerType != null and dangerType != ''">
+		            AND EURDSF.DNGR_STTS_NM = #{dangerType}
+		        </if>
+        	</otherwise>
+        </choose>
+    </select>
+    
+    <select id="findTop4DangerZoneStatisticsCity" parameterType="String" resultType="map">
+		SELECT 
+			SUM(CASE WHEN A.DNGR_STTS_NM = 'SF20202' THEN 1 ELSE 0 END) AS "notSafetyCnt",
+			SUM(CASE WHEN A.DNGR_STTS_NM = 'SF20204' THEN 1 ELSE 0 END) AS "speedingCnt",
+			SUM(CASE WHEN A.DNGR_STTS_NM = 'SF20302' THEN 1 ELSE 0 END) AS "sharpCurveCnt",
+			SUM(CASE WHEN A.DNGR_STTS_NM = 'SF20304' THEN 1 ELSE 0 END) AS "scarpCnt",
+			SUM(CASE WHEN A.DNGR_STTS_NM = 'SF20306' THEN 1 ELSE 0 END) AS "slipperyCnt",
+			SUM(CASE WHEN A.DNGR_STTS_NM = 'SF20309' THEN 1 ELSE 0 END) AS "floodingCnt",
+			SUM(CASE WHEN A.DNGR_STTS_NM = 'SF20310' THEN 1 ELSE 0 END) AS "rainCnt",
+			SUM(CASE WHEN A.DNGR_STTS_NM = 'SF20311' THEN 1 ELSE 0 END) AS "snowCnt",
+			SUM(CASE WHEN A.DNGR_STTS_NM = 'SF20313' THEN 1 ELSE 0 END) AS "frostRoadCnt",
+			COUNT(DNGR_STTS_NM) as "totalCnt",
+			A.LOTNO_ADDR AS "lotnoAddr",
+			A.ROAD_NM_ADDR as "roadNmAddr"
+		FROM
+			(
+			SELECT
+				DNGR_STTS_NM AS DNGR_STTS_NM,
+				SPLIT_PART(LOTNO_ADDR,' ',2) AS LOTNO_ADDR,
+				SPLIT_PART(ROAD_NM_ADDR,' ',2) AS ROAD_NM_ADDR
+			FROM
+				BIGDATA.EXT_UTIC_ROAD_DNGR_STTS_FRCST
+			WHERE
+				1 = 1
+				AND LOTNO_ADDR LIKE #{city}||'%'
+				AND ROAD_NM_ADDR LIKE #{city}||'%'
+			) A
+		GROUP BY "lotnoAddr","roadNmAddr"
+		ORDER BY "totalCnt" DESC
+		limit 4
+	</select>
+	
+	<select id="findAllDataYears" resultType="map">
+		SELECT 
+			SUBSTRING(EURDSF.ETL_DT, 0, 5) AS "year"
+		FROM BIGDATA.EXT_UTIC_ROAD_DNGR_STTS_FRCST EURDSF 
+		GROUP BY SUBSTRING(EURDSF.ETL_DT, 0, 5)
+		ORDER BY SUBSTRING(EURDSF.ETL_DT, 0, 5) DESC
+	</select>
+	
 </mapper>

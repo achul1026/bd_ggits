@@ -1,0 +1,114 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.hivesql.mapper.TrfIpcssNboplMapper'>
+	
+	<select id="findAllNboplList" parameterType="trfvlmStatisticsDTO" resultType="trfIpcssNbopl">
+		SELECT 
+			IPCSS_MNG_NO
+			, SMLFACT_NM
+			, SMLFACT_ADDR
+			, SCALE
+			, TOTFRAR
+			, EXMN_DIV_NM
+			, EXMN_YMD
+			, EXMN_DOC_NM
+		FROM GGITS.TRF_IPCSS_NBOPL
+		WHERE IPCSS_MNG_NO = #{ipcssMngNo}
+			<if test="dwellYn != '' and dwellYn != null">
+				<if test='"Y".equals(dwellYn)'>
+					AND USG_CD IN ('001','101','103','106','109','111','112')
+				</if>
+				<if test='"N".equals(dwellYn)'>
+					AND USG_CD NOT IN ('001','101','103','106','109','111','112')
+				</if>				
+			</if>
+		GROUP BY IPCSS_MNG_NO, SMLFACT_NM, SMLFACT_ADDR, SCALE, TOTFRAR, EXMN_DIV_NM, EXMN_YMD, EXMN_DOC_NM, NBOPL_NO 
+		ORDER BY CAST(NBOPL_NO AS INT) 
+	</select>
+	
+	<select id="findOneNboplInfoForDwell" parameterType="trfIpcssNbopl" resultType="trfIpcssNbopl">
+		SELECT 
+			tin.USG_CD 
+			, tin.USG_NO
+			, tin.TRF_USE_CD
+			, tin.TRF_MEAN_VHCCLS
+			, ROUND(tin.NBOPL_CNT, 2) AS NBOPL_CNT
+		FROM GGITS.TRF_IPCSS_NBOPL tin
+		WHERE tin.SMLFACT_NM = #{smlfactNm} AND tin.SMLFACT_ADDR = #{smlfactAddr} AND tin.IPCSS_MNG_NO = #{ipcssMngNo} 
+			AND tin.TRF_USE_CD in ('1','2','3','4') AND tin.TRF_MEAN_VHCCLS in ('1','2')
+		GROUP BY tin.TRF_USE_CD, tin.TRF_MEAN_VHCCLS, tin.NBOPL_CNT, tin.USG_NO, tin.USG_CD
+		ORDER BY CAST(USG_NO AS INT) 
+	</select>
+	
+	<select id="findOneNboplInfoForNonDwell" parameterType="trfIpcssNbopl" resultType="trfIpcssNbopl">
+		SELECT 
+			tin.USG_CD
+			, tin.USG_NO
+			, tin.TRF_USE_CD
+			, tin.TRF_MEAN_VHCCLS
+			, ROUND(tin.NBOPL_CNT, 2) AS NBOPL_CNT
+		FROM GGITS.TRF_IPCSS_NBOPL tin
+		WHERE tin.SMLFACT_NM = #{smlfactNm} AND tin.SMLFACT_ADDR = #{smlfactAddr} and tin.IPCSS_MNG_NO = #{ipcssMngNo}
+			AND tin.TRF_USE_CD IN ('5','6') AND tin.TRF_MEAN_VHCCLS in ('1','2')
+		GROUP BY tin.TRF_USE_CD, tin.TRF_MEAN_VHCCLS, tin.NBOPL_CNT, tin.USG_NO, tin.USG_CD
+		ORDER BY CAST(USG_NO AS INT)
+	</select>
+	
+	<select id="findAllChartData" parameterType="map" resultType="map">
+		SELECT 
+			COLLECT_LIST(A.NBOPL_CNT) as nboplCntArr
+		FROM (
+			SELECT 
+				tin.TRF_MEAN_VHCCLS
+				, SUM(tin.NBOPL_CNT) as NBOPL_CNT 
+			FROM GGITS.TRF_IPCSS_NBOPL tin 
+			WHERE tin.IPCSS_MNG_NO = #{ipcssMngNo} AND tin.TRF_USE_CD = #{trfUseCd}
+			GROUP BY tin.TRF_MEAN_VHCCLS
+			ORDER BY tin.TRF_MEAN_VHCCLS
+		)A
+	</select>
+	
+	<insert id="saveNbopl" parameterType="trfIpcssNbopl">
+		INSERT INTO GGITS.TRF_IPCSS_NBOPL
+			VALUES(
+			#{ipcssMngNo}, 
+			#{smlfactNm}, 
+			#{smlfactAddr}, 
+			#{scale}, 
+			#{totfrar}, 
+			#{exmnDivNm},
+			#{exmnYmd}, 
+			#{exmnDocNm}, 
+			#{usgCd}, 
+			#{trfUseCd}, 
+			#{trfMeanVhccls}, 
+			#{nboplCnt},
+			FROM_UNIXTIME(UNIX_TIMESTAMP(), 'yyyyMMddHHmmss'),
+			CAST(#{usgNo} as int),
+			CAST(#{nboplNo}as int))
+	</insert>
+
+	<delete id="deleteTrafficImpactReportByIpcssMngNo" parameterType="String">
+		DELETE 
+		FROM 
+			GGITS.TRF_IPCSS_NBOPL 
+		WHERE
+			IPCSS_MNG_NO = #{ipcssMngNo}
+	</delete>
+	
+	<delete id="deleteTrafficImpactReportForUsg" parameterType="trfvlmStatisticsDTO">
+		DELETE
+			FROM GGITS.TRF_IPCSS_NBOPL
+		WHERE
+			IPCSS_MNG_NO = #{ipcssMngNo}
+		<if test="dwellYn != '' and dwellYn != null">
+			<if test='"Y".equals(dwellYn)'>
+				AND USG_CD IN ('001','101','103','106','109','111','112')
+			</if>
+			<if test='"N".equals(dwellYn)'>
+				AND USG_CD NOT IN ('001','101','103','106','109','111','112')
+			</if>				
+		</if>
+	</delete>
+</mapper>

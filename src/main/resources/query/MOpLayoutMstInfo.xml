@@ -51,6 +51,12 @@
 		WHERE MOLMI.LAYOUT_ID = #{layoutId}
 	</select>
 	
+	<select id="countByOprtrId" parameterType="Long" resultType="int">
+		SELECT COUNT(*)
+		FROM M_OP_LAYOUT_MST_INFO
+		WHERE OPRTR_ID = #{oprtrId}
+	</select>
+	
 	<update id="updateMOpLayoutMstInfo" parameterType="mOpLayoutMstInfo">
 		UPDATE M_OP_LAYOUT_MST_INFO SET
 			LAYOUT_MENU_NM = #{layoutMenuNm},
@@ -68,4 +74,35 @@
 			AND OPRTR_ID = #{oprtrId}
 			</if>
 	</update>
+	
+	<insert id="saveMOpLayoutMstInfo" parameterType="mOpLayoutMstInfo">
+		INSERT INTO M_OP_LAYOUT_MST_INFO (
+			LAYOUT_ID,
+			OPRTR_ID,
+			MENU_ID,
+			LAYOUT_MENU_NM,
+			LAYOUT_STTS_CD,
+			LAYOUT_1_USE_YN,
+			LAYOUT_2_USE_YN,
+			LAYOUT_3_USE_YN,
+			FNCT_TYPE,
+			DATA_TYPE_CD
+		) VALUES ( 
+			#{layoutId},
+			#{oprtrId},
+			#{menuId},
+			#{layoutMenuNm},
+			#{layoutSttsCd},
+			#{layout1UseYn},
+			#{layout2UseYn},
+			#{layout3UseYn},
+			#{fnctType},
+			#{dataTypeCd}
+		)
+	</insert>
+	
+	<delete id="deleteByOprtrId" parameterType="long">
+		DELETE FROM M_OP_LAYOUT_MST_INFO
+		WHERE OPRTR_ID = #{oprtrId}
+	</delete>
 </mapper>

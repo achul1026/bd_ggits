@@ -7,10 +7,30 @@
     <!-- PostgresSQL -->
     <!-- DB 계정 정보 입력 -->
 	<bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
-		<property name="driverClassName" value="org.postgresql.Driver"/>
-		<property name="url" value="jdbc:postgresql://211.189.132.19:9080/ggits" />
-		<property name="username" value="gpadmin"/>
-		<property name="password" value="gpadmin"/>
-    </bean> 
-    
+		<property name="driverClassName" value="#{databaseProperties['greenplum.db.driver']}"/>
+		<property name="url" value="#{databaseProperties['greenplum.db.url']}" />
+		<property name="username" value="#{databaseProperties['greenplum.db.username']}"/>
+		<property name="password" value="#{databaseProperties['greenplum.db.password']}"/>
+		<property name="initialSize" value="10"/>
+		<property name="maxTotal" value="50"/>
+		<property name="maxIdle" value="50"/>
+    </bean>
+
+	<bean id="dataSource-hci" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="#{databaseProperties['hci.db.driver']}"/>
+		<property name="url" value="#{databaseProperties['hci.db.url']}" />
+		<property name="username" value="#{databaseProperties['hci.db.username']}"/>
+		<property name="password" value="#{databaseProperties['hci.db.password']}"/>
+		<property name="initialSize" value="10"/>
+		<property name="maxTotal" value="10"/>
+		<property name="maxIdle" value="10"/>
+	</bean>
+
+
+	<bean id="hiveDataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="#{databaseProperties['hive.db.driver']}"/>
+		<property name="url" value="#{databaseProperties['hive.db.url']}" />
+		<property name="username" value="#{databaseProperties['hive.db.username']}"/>
+		<property name="password" value="#{databaseProperties['hive.db.password']}"/>
+    </bean>
 </beans>

@@ -1,0 +1,94 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.TmsOrdtmTrfvlmMapper'>
+    <select id="findAllNlrdTimeByYmd" parameterType="mapBigdataSearchDTO" resultType="extTmsNlrdTimeOrdtmTrfvlm">
+        select
+            exmn_point_id ,
+            div_cd,
+            lane_no ,
+            "admin" ,
+            turnpoint ,
+            up_section ,
+            down_section ,
+            section_nm ,
+            ST_ASGEOJSON(point) as geojson,
+            /*string_agg(road_drct_cd||'='||time_1_trfvlm, ',' order by road_drct_cd) as time_1_trfvlm,*/
+            string_agg(road_drct_cd||'='||tot_trfvlm, ',' order by road_drct_cd) as trfvlm_info
+        from
+            (
+                select
+                    etntepi.exmn_point_id ,
+                    etntepi.div_cd,
+                    etntepi.lane_no ,
+                    etntepi."admin" ,
+                    etntepi.turnpoint ,
+                    etntepi.up_section ,
+                    etntepi.down_section ,
+                    etntepi.section_nm ,
+                    st_point(zone_y::numeric , zone_x::numeric) as point,
+                    sum(etntot.time_1_trfvlm) as time_1_trfvlm,
+                    sum(etntot.time_2_trfvlm) as time_2_trfvlm,
+                    sum(etntot.time_3_trfvlm) as time_3_trfvlm,
+                    sum(etntot.time_4_trfvlm) as time_4_trfvlm,
+                    sum(etntot.time_5_trfvlm) as time_5_trfvlm,
+                    sum(etntot.time_6_trfvlm) as time_6_trfvlm,
+                    sum(etntot.time_7_trfvlm) as time_7_trfvlm,
+                    sum(etntot.time_8_trfvlm) as time_8_trfvlm,
+                    sum(etntot.time_9_trfvlm) as time_9_trfvlm,
+                    sum(etntot.time_10_trfvlm) as time_10_trfvlm,
+                    sum(etntot.time_11_trfvlm) as time_11_trfvlm,
+                    sum(etntot.time_12_trfvlm) as time_12_trfvlm,
+                    sum(etntot.time_13_trfvlm) as time_13_trfvlm,
+                    sum(etntot.time_14_trfvlm) as time_14_trfvlm,
+                    sum(etntot.time_15_trfvlm) as time_15_trfvlm,
+                    sum(etntot.time_16_trfvlm) as time_16_trfvlm,
+                    sum(etntot.time_17_trfvlm) as time_17_trfvlm,
+                    sum(etntot.time_18_trfvlm) as time_18_trfvlm,
+                    sum(etntot.time_19_trfvlm) as time_19_trfvlm,
+                    sum(etntot.time_20_trfvlm) as time_20_trfvlm,
+                    sum(etntot.time_21_trfvlm) as time_21_trfvlm,
+                    sum(etntot.time_22_trfvlm) as time_22_trfvlm,
+                    sum(etntot.time_23_trfvlm) as time_23_trfvlm,
+                    sum(etntot.time_24_trfvlm) as time_24_trfvlm,
+                    sum(etntot.tot_trfvlm) as tot_trfvlm,
+                    etntot.road_drct_cd
+                from
+                    bigdata.ext_tms_nlrd_time_ordtm_trfvlm etntot
+                        inner join bigdata.ext_tms_nlrd_trfvlm_exmn_point_info etntepi on etntot.exmn_point_id = etntepi.exmn_point_id
+                <where>
+                    <if test="searchYear != null and searchYear != '' ">
+                        and etntot.exmn_yy = #{searchYear}
+                    </if>
+                    <if test="searchMonth != null and searchMonth != '' ">
+                        and etntot.exmn_mm = #{searchMonth}
+                    </if>
+                    <if test="searchDay != null and searchDay != '' ">
+                        and etntot.exmn_dd = #{searchDay}
+                    </if>
+                </where>
+                group by
+                    etntepi.exmn_point_id ,
+                    etntepi.div_cd,
+                    etntepi.lane_no ,
+                    etntepi."admin" ,
+                    etntepi.turnpoint ,
+                    etntepi.up_section ,
+                    etntepi.down_section ,
+                    etntepi.section_nm ,
+                    zone_y, zone_x,
+                    etntot.road_drct_cd
+                order by 1
+            ) agg
+        group by
+            exmn_point_id ,
+            div_cd,
+            lane_no ,
+            "admin" ,
+            turnpoint ,
+            up_section ,
+            down_section ,
+            section_nm ,
+            point
+    </select>
+</mapper>

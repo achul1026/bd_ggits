@@ -1,0 +1,94 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MOpInqryAnsMapper'>
+	<select id="findAllByInqryId" parameterType="String" resultType="mOpInqryAns">
+		SELECT
+			MOIA.INQRY_ID,
+			MOIA.INQRY_ANS_ID,
+			MOIA.OPRTR_ID,
+			MOIA.ANS_CNTS,
+			MOIA.ANS_CRT_DT,
+		    MOIA.ANS_UPDT_DT,
+		    MOIA.ATCH_FILE_YN,
+		    MOIA.ATCH_FILE_NM,
+		    MOIA.ATCH_FILE_ORG_NM,
+			MOIA.ATCH_FILE_PATH,
+			MOIA.ATCH_FILE_SIZE,
+			MOO.OPRTR_NM
+		FROM M_OP_INQRY_ANS MOIA
+		INNER JOIN M_OP_OPERATOR MOO ON MOIA.OPRTR_ID = MOO.OPRTR_ID
+		WHERE 
+			MOIA.INQRY_ID = #{inqryId}
+	</select>
+
+	<select id="findOneByInqryAnsId" parameterType="String" resultType="mOpInqryAns">
+		SELECT
+			MOIA.INQRY_ID,
+			MOIA.INQRY_ANS_ID,
+			MOIA.OPRTR_ID,
+			MOIA.ANS_CNTS,
+			MOIA.ANS_CRT_DT,
+		    MOIA.ANS_UPDT_DT,
+		    MOIA.ATCH_FILE_YN,
+		    MOIA.ATCH_FILE_NM,
+		    MOIA.ATCH_FILE_ORG_NM,
+			MOIA.ATCH_FILE_PATH,
+			MOIA.ATCH_FILE_SIZE,
+			MOO.OPRTR_NM
+		FROM M_OP_INQRY_ANS MOIA
+		INNER JOIN M_OP_OPERATOR MOO ON MOIA.OPRTR_ID = MOO.OPRTR_ID
+		WHERE 
+			MOIA.INQRY_ANS_ID = #{inqryAnsId}
+	</select>
+	
+	<delete id="deleteMOpInqryAnsByInqryId" parameterType="String">
+		DELETE FROM M_OP_INQRY_ANS
+		WHERE INQRY_ID = #{inqryId}
+	</delete>
+
+	<delete id="deleteMOpInqryAnsByInqryAnsId" parameterType="String">
+		DELETE FROM M_OP_INQRY_ANS
+		WHERE INQRY_ANS_ID = #{inqryAnsId}
+	</delete>
+
+	<insert id="saveMOpInqryAns" parameterType="mOpInqryAns">
+		INSERT INTO M_OP_INQRY_ANS (
+			INQRY_ID,
+			INQRY_ANS_ID,
+			OPRTR_ID,
+			ANS_CNTS,
+			ANS_CRT_DT,
+			ANS_UPDT_DT,
+			ATCH_FILE_YN,
+			ATCH_FILE_NM,
+			ATCH_FILE_ORG_NM,
+			ATCH_FILE_PATH,
+			ATCH_FILE_SIZE
+		) VALUES (
+			#{inqryId},
+			#{inqryAnsId},
+			#{oprtrId},
+			#{ansCnts},
+			NOW(),
+			NOW(),
+			#{atchFileYn},
+			#{atchFileNm},
+			#{atchFileOrgNm},
+			#{atchFilePath},
+			#{atchFileSize}
+		)
+	</insert>
+	
+	<update id="updateMOpInqryAns" parameterType="mOpInqryAns">
+		UPDATE M_OP_INQRY_ANS SET
+			ANS_CNTS = #{ansCnts},
+			ANS_UPDT_DT = NOW(),
+			ATCH_FILE_YN = #{atchFileYn},
+			ATCH_FILE_NM = #{atchFileNm},
+			ATCH_FILE_ORG_NM = #{atchFileOrgNm},
+			ATCH_FILE_PATH = #{atchFilePath},
+			ATCH_FILE_SIZE = #{atchFileSize}
+		WHERE INQRY_ANS_ID = #{inqryAnsId}
+	</update>
+</mapper>

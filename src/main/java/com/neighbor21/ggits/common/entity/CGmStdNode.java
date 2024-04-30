@@ -1,14 +1,14 @@
 package com.neighbor21.ggits.common.entity;
-public class CGmStdNode {
+public class CGmStdNode extends CommonEntity {
     private String    nodeId;        
     private String    nodeType;        
     private String    nodeName;        
     private String    turnP;        
     private String    remark;        
-    private String    aplcnYmd;        
     private String    geometry;        
-    private String    etlDt;        
 
+    private double  x;	//미보유 컬럼 geometry lag값
+    private double  y;	//미보유 컬럼 geometry lng 값
 
   public String getNodeId() {
     return nodeId;
@@ -54,16 +54,6 @@ public class CGmStdNode {
     this.remark = remark;
   }
 
-
-  public String getAplcnYmd() {
-    return aplcnYmd;
-  }
-
-  public void setAplcnYmd(String aplcnYmd) {
-    this.aplcnYmd = aplcnYmd;
-  }
-
-
   public String getGeometry() {
     return geometry;
   }
@@ -72,13 +62,20 @@ public class CGmStdNode {
     this.geometry = geometry;
   }
 
-
-  public String getEtlDt() {
-    return etlDt;
+  public double getX() {
+	return x;
   }
 
-  public void setEtlDt(String etlDt) {
-    this.etlDt = etlDt;
+  public void setX(double x) {
+	this.x = x;
+  }
+
+  public double getY() {
+	return y;
+  }
+
+  public void setY(double y) {
+	this.y = y;
   }
 
 }

@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.AdsiSrvrCntnSttsInfoMapper'>
+
+	<select id="findAllServerInfoList" parameterType="adsiSrvrCntnSttsInfo" resultType="adsiSrvrCntnSttsInfo">
+		SELECT 
+				RESULT_LIST.ASCTN_SRVR_ID ,
+				RESULT_LIST.MNG_INST_CD ,
+				(	SELECT 
+							CNTN_STTS_CD 
+					FROM 	ADSI_SRVR_CNTN_STTS_INFO 	
+					WHERE 	MNG_INST_CD = RESULT_LIST.MNG_INST_CD 
+					AND 	CLCT_DT = RESULT_LIST.CLCT_DT
+					AND 	ASCTN_SRVR_ID = RESULT_LIST.ASCTN_SRVR_ID
+				) AS CNTN_STTS_CD 
+		FROM (		
+				SELECT
+					MAX(CLCT_DT) AS CLCT_DT,
+					ASCTN_SRVR_ID,
+					MNG_INST_CD
+				FROM
+					ADSI_SRVR_CNTN_STTS_INFO
+				WHERE MNG_INST_CD = #{mngInstCd}
+				GROUP BY ASCTN_SRVR_ID , MNG_INST_CD
+		) RESULT_LIST
+		ORDER BY  RESULT_LIST.ASCTN_SRVR_ID
+	</select>
+</mapper>

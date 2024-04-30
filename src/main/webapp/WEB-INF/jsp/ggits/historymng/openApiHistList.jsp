@@ -14,78 +14,60 @@
 		</aside>
 		<section class="main_section">
 			<h2 class="blind">Open API 사용 이력</h2>
-			<!--             <div class="table_btn_wrap clearfix tab_fc"> -->
-			<!--                 <div class="btn_search_wrap float-left"> -->
-			<!--                     <button type="button" class="tab_btn_item is-dark-btn is-darkgreen-btn" data-index="1">지자체 연계</button> -->
-			<!--                     <button type="button" class="tab_btn_item is-dark-btn" data-index="2">외부기관 연계</button> -->
-			<!--                     <button type="button" class="tab_btn_item is-dark-btn" data-index="3">신호 연계</button> -->
-			<!--                     <button type="button" class="tab_btn_item is-dark-btn" data-index="4">빅데이터 저장 플랫폼</button> -->
-			<!--                 </div> -->
-			<!--             </div> -->
 			<div class="contents_wrap">
 				<div class="tab1">
-					<div class="group2">
+					<div class="group2 pt0">
 						<div class="group_text2">검색</div>
-						<input type="text" id="searchContent" name="searchContent" placeholder="검색어를 입력해주세요" class="input_same group_box" value="${searchOption.searchContent}">
+						<input type="text" id="searchContent" name="searchContent" placeholder="검색어를 입력해주세요" class="input_same group_box" value="<c:out value='${searchOption.searchContent}'/>">
 						<div class="search_detail_btn">
 							상세 검색 <i></i>
 						</div>
 					</div>
-					<div class="search_detail_wrap">
-						<form id="searchForm" name="searchForm">
-							<input type="hidden" name="page" value="${paging ne null ? paging.pageNo : '1'}"/>
+					<form id="searchForm" name="searchForm">
+						<div class="search_detail_wrap">
+							<input type="hidden" name="page" value="<c:out value='${paging ne null ? paging.pageNo : "1"}'/>"/>
 							<div class="group2">
 								<div class="group_text2">시간 설정</div>
-								<div class="flex-center">
-									<div class="calendar">
-										<input type="text" class="date_picker input_same mr8 input_picker" id="strDt" name="strDt" placeholder="날짜를 선택해주세요.">
-										<select class="selectBox selectTime" id="startTime" name="startTime"></select>
-	                                    ~
-	                                    <input type="text" class="end_date_picker input_same mr8 ml8 input_picker" id="endDt" name="endDt" placeholder="날짜를 선택해주세요.">
-										<select class="selectBox selectTime" id="endTime" name="endTime"></select>
-									</div>
-<!-- 									<div class="flex-center"> -->
-<!-- 										<div class="select_tltie">집계 시간</div> -->
-<!-- 										<select class="selectBox"> -->
-<!-- 											<option selected="selected">10분</option> -->
-<!-- 											<option>test1</option> -->
-<!-- 											<option>test2</option> -->
-<!-- 											<option>test3</option> -->
-<!-- 											<option>test4</option> -->
-<!-- 											<option>test5</option> -->
-<!-- 										</select> -->
-<!-- 									</div> -->
+								<div class="btn_search_wrap">
+									<ul>
+										<li>
+											<input type="text" class="date_picker input_same input_picker" id="strDt" name="strDt" placeholder="날짜를 선택해주세요." autocomplete="off">
+										</li>
+										<li>
+											~
+										</li>
+										<li>
+											<input type="text" class="end_date_picker input_same input_picker" id="endDt" name="endDt" placeholder="날짜를 선택해주세요." autocomplete="off">
+										</li>
+									</ul>
 								</div>
 							</div>
-							<div class="group2_btn">
-								<!-- button id  name 바꿔서 사용하세요  -->
-								<button type="button" class="is-darkgreen-btn" id="searchBtn">찾기</button>
-								<input type="reset" class="is-dark-btn selected_reset"
-									value="검색값 초기화">
-							</div>
-						</form>
-					</div>
+						</div>
+						<div class="btn_search_wrap btn_search_wrap_center">
+	                    	<ul>
+	                    		<li>
+	                    			<button type="button" class="is-darkgreen-btn" id="searchBtn">찾기</button>
+	                    		</li>
+	                    		<li>
+	                    			<input type="button" id="resetSchOption" class="is-dark-btn selected_reset" value="검색값 초기화">
+	                    		</li>
+	                    	</ul>
+						</div>
+					</form>
 					<div class="search_container">
 						<div class="search_head">
 							<div class="search_number">
-								<span>"${paging.totalCount}개"</span>의 검색결과를 찾았습니다.
+								<span id="totalCnt"><c:out value='${paging.totalCount}'/></span>개의 검색결과를 찾았습니다.
 							</div>
 						</div>
 					</div>
 					<table class="mt16">
-						<colgroup>
-							<col style="width: 8%">
-							<col style="width: 30%">
-							<col style="width: 10%">
-							<col style="width: 27%">
-							<col style="width: 20%">
-						</colgroup>
 						<thead>
 							<tr>
 								<th>번호</th>
-								<th>제목</th>
-								<th>사용자 이름</th>
-								<th>사용자 ID</th>
+								<th>API명</th>
+								<th>호출 URL</th>
+								<th>호출 결과</th>
 								<th>사용일시</th>
 							</tr>
 						</thead>
@@ -93,11 +75,11 @@
 						 <c:choose>
                         	<c:when test="${not empty openApiList}">
 							<c:forEach var="openApiList" items="${openApiList}">
-		                        <tr>
-		                            <td>${openApiList.rownum}</td>
-		                            <td>${openApiList.apiRqstLog}</td>
-		                            <td>${openApiList.oprtrNm}</td>
-		                            <td>${openApiList.oprtrEmail}</td>
+		                        <tr class="pointer" onclick="openApiLogDetail('<c:out value='${openApiList.dsetId}'/>')">
+		                            <td><c:out value='${openApiList.rownum}'/></td>
+		                            <td><c:out value='${openApiList.apiNm}'/></td>
+		                            <td><c:out value='${openApiList.apiCallUrl}'/></td>
+		                            <td><c:out value="${openApiList.resultStatus eq 'RSC000'?'성공':'실패'}"/></td>
 		                            <td>
                             		  <fmt:formatDate value="${openApiList.clctDt}" pattern="yyyy-MM-dd HH:mm"/>
                             		</td>
@@ -120,14 +102,12 @@
 </main>
 
 <script>
-
+	var dataTotalCnt = '<c:out value="${paging.totalCount}"/>';
+	$("#totalCnt").text(numberComma(dataTotalCnt))
+	
 	$(document).ready(function(){
-		//<![CDATA[
-			var strDt = '${searchOption.strDt}';
-			var endDt = '${searchOption.endDt}';
-			var strTime = '${searchOption.startTime}';
-			var endTime = '${searchOption.endTime}';
-		//]]>
+		var strDt = '<c:out value="${searchOption.strDt}"/>';
+		var endDt = '<c:out value="${searchOption.endDt}"/>';
 		
 		//searchOption dataInit
 		if(strDt != null && strDt != ''){
@@ -135,12 +115,6 @@
 		}
 		if(endDt != null && endDt != ''){
 			$("#endDt").val(endDt.substring(0,10));
-		}
-		if(strTime != null && strTime != ''){
-			$("#startTime").val(strTime).prop("selected",true);
-		}
-		if(endTime != null && endTime != ''){
-			$("#endTime").val(endTime).prop("selected",true);
 		}
 	})
 	
@@ -152,8 +126,17 @@
 	
 	function fnSearchList(){
 		var searchContent = $("#searchContent").val();
+		$("input[name='page']").val("1");
 		var formData = $("#searchForm").serialize();
 		formData += '&searchContent='+searchContent;
 		location.href="${pageContext.request.contextPath}/historymng/open/api/list.do?"+formData;
+	}
+	
+	$("#resetSchOption").on('click',function(){
+		$("#searchContent").val("");
+	});
+	
+	function openApiLogDetail(dsetId){
+	    new ModalBuilder().init('API 호출 결과').ajaxBody("${pageContext.request.contextPath}/common/modal/historymng/openapi/result.do?dsetId="+dsetId).footer(1,'닫기',function(button, modal){modal.close();}).open();
 	}
 </script>

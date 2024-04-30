@@ -2,4 +2,60 @@
 <!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.AdsiVdsSttsInfoMapper'>
+	<sql id="eqpLogList-Where">
+		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
+			AND CLCT_DT
+			BETWEEN TO_TIMESTAMP(#{strDt}|| ' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}|| ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
+			<![CDATA[
+			AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS')  <= CLCT_DT
+			]]>
+		</if>
+		<if test="(strDt == '' or strDt == null) and (endDt != '' and endDt != null)">
+			<![CDATA[
+			AND CLCT_DT <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			]]>
+		</if>
+		<if test="mngCdId != null and mngCdId != '' and mngCdId != 'searchAllLocation'">
+			AND avsi.MNG_INST_CD = #{mngCdId}
+		</if>
+		<if test="searchContent != '' and searchContent != null">
+			AND (avsi.VDS_ID LIKE '%' || #{searchContent} || '%' or amfv.VDS_NM LIKE '%' || #{searchContent} || '%')
+		</if>
+		<if test="dayOfTheWeek != null">
+			AND EXTRACT (ISODOW from avsi.MNG_INST_CD)::varchar(1) IN 
+				<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+		</if>
+	</sql>
+	
+	<select id="countVdsInfoList" parameterType="commonEntity" resultType="int">
+			SELECT 	
+				count(1)
+			FROM bigdata.EXT_ADSI_VDS_STTS_INFO avsi
+			INNER JOIN bigdata.EXT_ADSI_M_FA_VDS amfv
+				ON avsi.VDS_ID = amfv.VDS_ID
+			WHERE 1=1
+			<include refid="eqpLogList-Where"/>
+	</select>
+	
+	<select id="findAllVdsInfoList" parameterType="commonEntity" resultType="eqpLogDTO">
+		SELECT 	
+			avsi.CLCT_DT as clctDt
+			, avsi.VDS_ID as id
+			, amfv.VDS_NM  as name
+			, avsi.VDS_STTS as stts
+		FROM bigdata.EXT_ADSI_VDS_STTS_INFO avsi
+		INNER JOIN bigdata.EXT_ADSI_M_FA_VDS amfv
+			ON avsi.VDS_ID = amfv.VDS_ID
+		WHERE 1=1
+		<include refid="eqpLogList-Where"/>
+		ORDER BY avsi.CLCT_DT DESC
+		<if test="page != null and page != '' and page != 0">
+		LIMIT 10 OFFSET (#{page} - 1) * 10
+		</if>
+	</select>
 </mapper>

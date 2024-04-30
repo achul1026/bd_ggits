@@ -2,6 +2,36 @@
 <!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.TaasAdsiAcdntDstrctMapper'>
+	<sql id="taasAdsiAcdntDstrct-where">
+		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
+			<![CDATA[
+			AND	TAAD.CLCT_DT  >= TO_TIMESTAMP(#{strDt}|| ' 00:00:00','YYYY-MM-DD HH24:mi:ss') 
+				AND TAAD.CLCT_DT <= TO_TIMESTAMP(#{endDt}|| ' 23:59:59' ,'YYYY-MM-DD HH24:mi:ss')
+			]]>
+		</if>
+		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
+			<![CDATA[
+			AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS')  <= TAAD.CLCT_DT
+			]]>
+		</if>
+		<if test="(strDt == '' or strDt == null) and (endDt != '' and endDt != null)">
+			<![CDATA[
+			AND TAAD.CLCT_DT <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			]]>
+		</if>
+		<if test="sigunCdId != null and sigunCdId != '' and sigunCdId != 'searchAllLocation'">
+			AND SUBSTRING(TAAD.ADSTDG_CD,0,5) = SUBSTRING(#{sigunCdId},0,5)
+		</if>
+		<if test="searchContent != '' and searchContent != null">
+			AND MOC.CD_NM LIKE '%' || #{searchContent} || '%'
+		</if>
+		<if test="dayOfTheWeek != null">
+			AND EXTRACT (ISODOW from TAAD.CLCT_DT)::varchar(1) IN 
+				<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+		</if>
+	</sql>
 
     <select id="findAll" resultType="taasAdsiAcdntDstrct" parameterType="String">
         SELECT
@@ -21,6 +51,87 @@
              ,LON_CRDN
              ,LAT_CRDN
              ,ACDNT_DSTRCT_PYN
-        FROM TAAS_ADSI_ACDNT_DSTRCT TAAD
+        FROM BIGDATA.EXT_TAAS_ADSI_ACDNT_DSTRCT TAAD
     </select>
+    
+    <select id="findAllAcdntGenLogInfo" parameterType="commonEntity" resultType="taasAdsiAcdntDstrct">
+		SELECT 
+			MOC.CD_NM as cdNm
+			, SUM(TAAD.ACDNT_CNT) as acdntCnt
+			, SUM(TAAD.CASLT_CNT) as casltCnt
+			, SUM(TAAD.DCSD_CNT) as dcsdCnt
+			, SUM(TAAD.SWPSN_CNT) as swpsnCnt
+			, SUM(TAAD.SINJPSN_CNT) as sinjpsnCnt
+			, SUM(TAAD.INJ_DCLR_CNT) as injDclrCnt
+		FROM BIGDATA.EXT_TAAS_ADSI_ACDNT_DSTRCT TAAD
+		INNER JOIN M_OP_CODE MOC
+			ON (GRP_CD_ID = 'SGG_CD' AND SUBSTRING(MOC.CD_ID,0,5) =  SUBSTRING(TAAD.ADSTDG_CD, 0, 5))
+		WHERE  1=1
+			<include refid="taasAdsiAcdntDstrct-where"/>
+		GROUP BY MOC.CD_NM
+		<if test="page != null and page !='' and page != 0">
+			LIMIT 10 OFFSET (#{page} - 1) * 10;
+		</if>
+	</select>
+	
+	<select id="countAcdntGenLog" parameterType="commonEntity" resultType="int">
+		SELECT
+			COUNT(A.CD_NM)
+		FROM(
+			SELECT
+				MOC.CD_NM
+			FROM BIGDATA.EXT_TAAS_ADSI_ACDNT_DSTRCT TAAD
+			INNER JOIN M_OP_CODE MOC
+			ON (GRP_CD_ID = 'SGG_CD' AND SUBSTRING(MOC.CD_ID,0,5) =  SUBSTRING(TAAD.ADSTDG_CD, 0, 5))
+			WHERE  1=1
+				<include refid="taasAdsiAcdntDstrct-where"/>
+			GROUP BY MOC.CD_NM
+		)A
+	</select>
+	
+	<select id="findAllAcdntGenLogMap" parameterType="commonEntity" resultType="map">
+		WITH ACDNT_GEN_LOG_LIST AS (
+							SELECT
+								COMM_CD.CD_NM
+								, COMM_CD.SORT_NO
+								,COALESCE(SUM(GRAPH_DATA.acdntCnt),'0') as acdntCnt
+								,COALESCE(SUM(GRAPH_DATA.casltCnt),'0') as casltCnt
+								,COALESCE(SUM(GRAPH_DATA.dcsdCnt),'0') as dcsdCnt
+								,COALESCE(SUM(GRAPH_DATA.swpsnCnt),'0') as swpsnCnt
+								,COALESCE(SUM(GRAPH_DATA.sinjpsnCnt),'0') as sinjpsnCnt
+								,COALESCE(SUM(GRAPH_DATA.injDclrCnt),'0') as injDclrCnt
+							FROM(
+								SELECT CD_ID, CD_NM, SORT_NO FROM M_OP_CODE MOC WHERE GRP_CD_ID = 'SGG_CD' ORDER BY SORT_NO 
+								) COMM_CD
+							LEFT JOIN (
+										SELECT
+											MOC.CD_NM as cdNm
+											, SUM(TAAD.ACDNT_CNT) as acdntCnt
+											, SUM(TAAD.CASLT_CNT) as casltCnt
+											, SUM(TAAD.DCSD_CNT) as dcsdCnt
+											, SUM(TAAD.SWPSN_CNT) as swpsnCnt
+											, SUM(TAAD.SINJPSN_CNT) as sinjpsnCnt
+											, SUM(TAAD.INJ_DCLR_CNT) as injDclrCnt
+										FROM BIGDATA.EXT_TAAS_ADSI_ACDNT_DSTRCT TAAD
+										INNER JOIN M_OP_CODE MOC
+											ON (GRP_CD_ID = 'SGG_CD' AND SUBSTRING(MOC.CD_ID,0,5) =  SUBSTRING(TAAD.ADSTDG_CD, 0, 5))
+										WHERE 1=1
+										<include refid="taasAdsiAcdntDstrct-where"/>
+										GROUP BY MOC.CD_NM
+  									) GRAPH_DATA 
+  							ON SUBSTRING(GRAPH_DATA.cdNm,0,5) = SUBSTRING(comm_cd.CD_ID,0,5)
+  							GROUP BY COMM_CD.CD_NM, COMM_CD.SORT_NO
+							ORDER BY COMM_CD.SORT_NO ASC
+						) 
+		SELECT 	
+			ARRAY_TO_STRING(ARRAY_AGG(cd_nm ORDER BY SORT_NO), ',') AS "cdNmArr"
+			,ARRAY_TO_STRING(ARRAY_AGG(acdntCnt order by SORT_NO), ',') AS "acdntCntArr"
+			,ARRAY_TO_STRING(ARRAY_AGG(casltCnt ORDER BY SORT_NO), ',') AS "casltCntArr"
+			,ARRAY_TO_STRING(ARRAY_AGG(dcsdCnt ORDER BY SORT_NO), ',') AS "dcsdCntArr"
+			,ARRAY_TO_STRING(ARRAY_AGG(swpsnCnt ORDER BY SORT_NO), ',') AS "swpsnCntArr"
+			,ARRAY_TO_STRING(ARRAY_AGG(sinjpsnCnt ORDER BY SORT_NO), ',') AS "sinjpsnCntArr"
+			,ARRAY_TO_STRING(ARRAY_AGG(injDclrCnt ORDER BY SORT_NO), ',') AS "injDclrCntArr"
+		FROM 
+			ACDNT_GEN_LOG_LIST
+	</select>
 </mapper>

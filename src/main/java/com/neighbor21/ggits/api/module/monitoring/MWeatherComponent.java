@@ -1,16 +1,16 @@
 package com.neighbor21.ggits.api.module.monitoring;
 
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.neighbor21.ggits.api.module.BaseMapDataComponent;
 import com.neighbor21.ggits.common.entity.KmaShtrmWthrFrcst;
 import com.neighbor21.ggits.common.mapper.KmaShtrmWthrFrcstMapper;
 import com.neighbor21.ggits.common.util.BDDateFormatUtil;
 import com.neighbor21.ggits.common.util.BDStringUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.List;
 
 /**
  * 기상현황 데이터 컴포넌트
@@ -38,10 +38,6 @@ public class MWeatherComponent extends BaseMapDataComponent {
             date = BDDateFormatUtil.format(now, "yyyyMMdd");
             time = BDDateFormatUtil.format(now, "HH")+"00";
         }
-
-        // TODO :: 데이터 실시간 으로 들어오면 수정
-        date = "20230915";
-        time = "1600";
         return kmaShtrmWthrFrcstMapper.findAllWeatherListByFrcstDivCdAndPrdctnYmdAndprdctnTime("PTY", date, time);
     }
 }

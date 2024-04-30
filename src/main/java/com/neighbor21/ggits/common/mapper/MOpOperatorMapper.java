@@ -36,6 +36,16 @@ public interface MOpOperatorMapper {
 	 * @param mOpOperator
 	 */
 	public MOpOperator findOneMOpOperatorByEmail(MOpOperator mOpOperator);
+
+	/**
+	  * @Method Name : findOneMOpOperatorByEmailAndNameAndTel
+	  * @작성일 : 2023. 11. 14.
+	  * @작성자 : NK.KIM
+	  * @Method 설명 : 유저 정보 조회 (이메일 , 이름, 전화번호)
+	  * @param mOpOperator
+	  * @return
+	  */
+	public MOpOperator findOneMOpOperatorByEmailAndNameAndTel(MOpOperator mOpOperator);
 	
 	/**
 	 * @Method Name : findOneMOpOperatorByEmailAndName
@@ -153,4 +163,13 @@ public interface MOpOperatorMapper {
 	  * @return
 	  */
 	public long findLayoutNoByOprtrId(long oprtrId);
+	
+	/**
+	  * @Method Name : findOneByOprtrIdNextVal
+	  * @작성일 : 2023. 11. 02.
+	  * @작성자 : KY.LEE
+	  * @Method 설명 : 관리자 신규 PK값 조회
+	  * @return long OprtrId
+	  */
+	public long findOneByOprtrIdNextVal();
 }

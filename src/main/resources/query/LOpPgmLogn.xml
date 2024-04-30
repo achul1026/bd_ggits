@@ -55,6 +55,10 @@
 				]]>
 			</if>		 	 
 		 </if>
+		 <!-- 2023-11-11 기관별 로그 조회 조건 추가 -->
+		 <if test="oprtrGrd != null and oprtrGrd != '' and oprtrGrd != 'SUPER' ">
+		 	AND MOO.MNG_INST_CD = #{mngInstCd}
+		 </if>
 	</sql>
 	
 	
@@ -62,7 +66,7 @@
 		SELECT
 			ROW_NUMBER() OVER(ORDER BY lopl.OCCUR_DT) AS rownum,
 			lopl.LOG_ID,
-			TO_CHAR(lopl.OCCUR_DT,'YYYY-MM-DD') AS OCCUR_DT_STR,
+			TO_CHAR(lopl.OCCUR_DT,'YYYY-MM-DD HH24:MI:SS') AS OCCUR_DT_STR,
 			lopl.OPRTR_ID,
 			lopl.GRP_ID,
 			lopl.LGN_IP,
@@ -73,6 +77,7 @@
 			lopl.LOG_TYPE,
 			moc.CD_NM
 		FROM L_OP_PGM_LOGN lopl
+		INNER JOIN M_OP_OPERATOR MOO ON lopl.OPRTR_ID = MOO.OPRTR_ID
 		LEFT JOIN M_OP_CODE moc ON lopl.LOG_TYPE = moc.CD_ID
 		WHERE 1=1
 		<include refid="lOpPgmLogn-Where"/>
@@ -94,12 +99,16 @@
    		<if test="logType != null and logType != ''">
    			AND LOG_TYPE = #{logType}
    		</if>
+   		<if test="strDt != null and strDt != ''">
+   			AND TO_CHAR(OCCUR_DT,'YYYY-MM-DD') = #{strDt}
+   		</if>
      </select>
 
      <select id="countUserLogBySearchInfo" parameterType="lOpPgmLogn" resultType="int">
      	SELECT
      		COUNT(*)
      	FROM L_OP_PGM_LOGN lopl
+     	INNER JOIN M_OP_OPERATOR MOO ON lopl.OPRTR_ID = MOO.OPRTR_ID
      	WHERE 1=1
 		<include refid="lOpPgmLogn-Where"/>
      </select>
@@ -107,7 +116,7 @@
      <select id="findOneLOpPgmLognByLogId" parameterType="String" resultType="lOpPgmLogn">
      	SELECT
      		lopl.LOG_ID
-     		, TO_CHAR(lopl.OCCUR_DT,'YYYY-MM-DD') AS OCCUR_DT_STR
+     		, TO_CHAR(lopl.OCCUR_DT,'YYYY-MM-DD HH24:MI:SS') AS OCCUR_DT_STR
      		, lopl.LOG_TYPE
      		, lopl.PRGRM_SESN_ID
      		, lopl.RQSTR_NM

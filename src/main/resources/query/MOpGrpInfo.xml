@@ -20,6 +20,9 @@
 					M_OP_GRP_INFO MOGI
 				INNER JOIN M_OP_AUTHORITY MOA ON MOGI.AUTH_ID = MOA.AUTH_ID 
 				LEFT JOIN M_OP_OPERATOR MOO ON MOGI.GRP_ID = MOO.GRP_ID 
+				<if test="oprtrGrd != null and oprtrGrd != '' and oprtrGrd != 'SUPER' ">
+				 	AND MOO.MNG_INST_CD = #{mngInstCd}
+				</if>
 				WHERE 1=1
 				<if test="searchContent != null and searchContent != '' ">
 				AND MOGI.GRP_NM LIKE '%' || #{searchContent} || '%'	

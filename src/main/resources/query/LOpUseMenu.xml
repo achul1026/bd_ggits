@@ -59,4 +59,20 @@
 		ORDER BY hours ASC
      </select>
      
+     <select id="findUseCaseChartInfoLabelList" parameterType="lOpUseMenu" resultType="java.util.HashMap">
+		SELECT
+			LOUM.GRP_ID AS grpId,
+			MOGI.GRP_NM AS grpNm
+		FROM
+			L_OP_USE_MENU LOUM
+		INNER JOIN M_OP_GRP_INFO MOGI ON
+			LOUM.GRP_ID = MOGI.GRP_ID
+		WHERE
+		 MENU_ID = #{menuId}
+		 AND LOUM.OCCUR_DT BETWEEN TO_TIMESTAMP(#{strDt},'YYYY-MM-DD HH24:mi:ss')  AND TO_TIMESTAMP(#{endDt},'YYYY-MM-DD HH24:mi:ss')
+		GROUP BY
+			grpId , grpNm
+		ORDER BY MOGI.GRP_NM
+     </select>
+     
 </mapper>

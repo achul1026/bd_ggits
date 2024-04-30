@@ -13,6 +13,14 @@ public class MrtStdLinkSectnInfo extends CommonEntity {
 	private String roadName;	// 도로명
 	private String safeGrd;		// 안전등급
 	
+	
+	//맵용
+    private double avgVhclSpeedAvg; // 시간대 평균속도
+    private long vhclTrfvlmTotal; // 누적통행량
+    private String geojson;
+    private String roadRank;
+    private String roadType;
+    
 	public Timestamp getAnlsDt() {
 		return anlsDt;
 	}
@@ -54,6 +62,36 @@ public class MrtStdLinkSectnInfo extends CommonEntity {
 	}
 	public void setSafeGrd(String safeGrd) {
 		this.safeGrd = safeGrd;
+	}
+	public double getAvgVhclSpeedAvg() {
+		return avgVhclSpeedAvg;
+	}
+	public void setAvgVhclSpeedAvg(double avgVhclSpeedAvg) {
+		this.avgVhclSpeedAvg = avgVhclSpeedAvg;
+	}
+	public long getVhclTrfvlmTotal() {
+		return vhclTrfvlmTotal;
+	}
+	public void setVhclTrfvlmTotal(long vhclTrfvlmTotal) {
+		this.vhclTrfvlmTotal = vhclTrfvlmTotal;
+	}
+	public String getGeojson() {
+		return geojson;
+	}
+	public void setGeojson(String geojson) {
+		this.geojson = geojson;
+	}
+	public String getRoadRank() {
+		return roadRank;
+	}
+	public void setRoadRank(String roadRank) {
+		this.roadRank = roadRank;
+	}
+	public String getRoadType() {
+		return roadType;
+	}
+	public void setRoadType(String roadType) {
+		this.roadType = roadType;
 	}
 
 	

@@ -9,27 +9,33 @@
 			STD_INFO_NM,
 			APLCN_YMD,
 			SAVE_INFO,
-			RMRK,
-			ETL_DT
+			STD_APLCN_TYPE,
+			RMRK
 		) VALUES (
 			#{stdInfoId},
 			#{stdInfoNm},
 			#{aplcnYmd},
 			#{saveInfo},
-			#{rmrk},
-			#{etlDt}
+			#{stdAplcnType},
+			#{rmrk}
 		)
 	</insert>
 	
 	<select id="countByStdInfoNm" parameterType="mGmStdLinkNodeMngInfo" resultType="int">
-		SELECT COUNT(*)
+		SELECT COUNT(1)
 		FROM M_GM_STD_LINK_NODE_MNG_INFO
 		WHERE 1=1
+		<if test="searchType != null and searchType != '' ">
+			and STD_APLCN_TYPE = #{searchType}
+		</if>
 		<if test="stdInfoNm != null and stdInfoNm != ''">
 			AND STD_INFO_NM LIKE CONCAT('%', #{stdInfoNm}, '%')
 		</if>
 		<if test="searchContent != null and searchContent != ''">
 			AND STD_INFO_NM LIKE CONCAT('%', #{searchContent}, '%')
+		</if>
+		<if test="aplcnYmd != null and aplcnYmd != '' ">
+			AND TO_CHAR(TO_DATE(APLCN_YMD ,'YYYYMMDD'),'YYYY') = #{aplcnYmd}
 		</if>
 	</select>
 	
@@ -40,18 +46,33 @@
 			STD_INFO_NM,
 			APLCN_YMD,
 			SAVE_INFO,
-			RMRK,
-			ETL_DT
+			STD_APLCN_TYPE,
+			RMRK
 		FROM
 			M_GM_STD_LINK_NODE_MNG_INFO
 		WHERE 1=1
+		<if test="searchType != null and searchType != '' ">
+		  	and STD_APLCN_TYPE = #{searchType}
+		</if>
 		<if test="stdInfoNm != null and stdInfoNm != ''">
 			AND STD_INFO_NM LIKE CONCAT('%', #{stdInfoNm}, '%')
 		</if>
 		<if test="searchContent != null and searchContent != ''">
 			AND STD_INFO_NM LIKE CONCAT('%', #{searchContent}, '%')
 		</if>
-		ORDER BY rownum DESC
+		<if test="aplcnYmd != null and aplcnYmd != '' ">
+			AND TO_CHAR(TO_DATE(APLCN_YMD ,'YYYYMMDD'),'YYYY') = #{aplcnYmd}
+		</if>
+		ORDER BY
+			<if test="searchType != null and searchType != '' ">
+				<if test="searchType == 'LINK' ">
+					STD_APLCN_TYPE ASC,
+				</if> 
+				<if test="searchType == 'NODE' ">
+					STD_APLCN_TYPE DESC,
+				</if> 
+			</if>
+				rownum DESC
 		LIMIT 10 OFFSET (#{page} - 1) * 10
 	</select>
 	
@@ -61,8 +82,8 @@
 			STD_INFO_NM,
 			APLCN_YMD,
 			SAVE_INFO,
-			RMRK,
-			ETL_DT
+			STD_APLCN_TYPE,
+			RMRK
 		FROM
 			M_GM_STD_LINK_NODE_MNG_INFO
 		WHERE
@@ -81,8 +102,18 @@
 				APLCN_YMD = #{aplcnYmd},
 			</if>
 			SAVE_INFO = #{saveInfo},
-			RMRK = #{rmrk},
-			ETL_DT = #{etlDt}
+			STD_APLCN_TYPE = #{stdAplcnType},
+			RMRK = #{rmrk}
 		WHERE STD_INFO_ID = #{stdInfoId}
 	</update>
+	
+	
+	<select id="findAllDataYears" resultType="map">
+        SELECT
+				TO_CHAR(TO_DATE(APLCN_YMD ,'YYYYMMDD'),'YYYY') AS "year"
+		FROM
+				M_GM_STD_LINK_NODE_MNG_INFO MGSLNMI
+		GROUP BY TO_CHAR(TO_DATE(APLCN_YMD ,'YYYYMMDD'),'YYYY')
+		ORDER BY TO_CHAR(TO_DATE(APLCN_YMD ,'YYYYMMDD'),'YYYY') DESC
+    </select>
 </mapper>

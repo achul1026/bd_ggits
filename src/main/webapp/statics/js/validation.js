@@ -63,7 +63,7 @@ $.fn.soValid = function(){
 			return false;
 		}
 		if(typeof $validElement.attr("data-valid-email") !== "undefined" && !checkEmail(value)) {
-			new ModalBuilder().init().alertBoby("이메일 양식이 아닙니다.").footer(4,'확인',function(button, modal){
+			new ModalBuilder().init().alertBoby("이메일 형식이 아닙니다.").footer(4,'확인',function(button, modal){
 				modal.close();
 				$validElement.focus();			
 			}).open();

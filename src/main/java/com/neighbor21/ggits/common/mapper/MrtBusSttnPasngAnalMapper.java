@@ -32,26 +32,6 @@ public interface MrtBusSttnPasngAnalMapper {
      */
 	List<MrtBusSttnPasngAnal> findAllBusSttnPasngList(CommonEntity commonEntity);
 
-    /**
-     * @Method Name : countAllRegionTransStats
-     * @작성일 : 2023. 10. 27.
-     * @작성자 : KC.KIM
-     * @Method 설명 : 교통정보 통계 분석 > 대중교통 위험운영 구간 분석 > 권역별 환승현황 분석 개수 조회
-     * @param : mapBigdataSearchDTO
-     * @return
-     */
-	int countAllRegionTransStats(MapBigdataSearchDTO mapBigdataSearchDTO);
-
-    /**
-     * @Method Name : findAllRegionTransStats
-     * @작성일 : 2023. 10. 27.
-     * @작성자 : KC.KIM
-     * @Method 설명 : 교통정보 통계 분석 > 대중교통 위험운영 구간 분석 > 권역별 환승현황 분석 리스트 조회
-     * @param : mapBigdataSearchDTO
-     * @return
-     */
-	List<MrtBusSttnPasngAnal> findAllRegionTransStats(MapBigdataSearchDTO mapBigdataSearchDTO);
-
 	/**
      * @Method Name : findAllDataYears
      * @작성일 : 2023. 10. 25.
@@ -62,4 +42,11 @@ public interface MrtBusSttnPasngAnalMapper {
      */
 	List<Map<String, Object>> findAllDataYears();
 
+
+	/**
+	 * 권역별 대중교통 이용현황
+	 * @param mapBigdataSearchDTO
+	 * @return
+	 */
+	List<MrtBusSttnPasngAnal> findAllGroupBySGG(MapBigdataSearchDTO mapBigdataSearchDTO);
 }

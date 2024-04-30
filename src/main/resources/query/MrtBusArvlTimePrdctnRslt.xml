@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MrtBusArvlTimePrdctnRsltMapper'>
+
+	<select id="findAllDataYears" resultType="map">
+		SELECT
+			TO_CHAR(TO_DATE(BASEYMD ,'YYYYMMDD'),'YYYY') AS "year"
+		FROM
+			MRT_BUS_ARVL_TIME_PRDCTN_RSLT
+		GROUP BY TO_CHAR(TO_DATE(BASEYMD ,'YYYYMMDD'),'YYYY')
+		ORDER BY TO_CHAR(TO_DATE(BASEYMD ,'YYYYMMDD'),'YYYY') DESC
+	</select>
+
+    <select id="findAllByRouteIdAndStationId" parameterType="mapBigdataSearchDTO" resultType="mrtBusArvlTimePrdctnRslt">
+        select
+            mbatpr.baseymd
+             ,mbatpr.update_tm
+             ,mbatpr.route_id
+             ,mbatpr.oper_seq
+             ,mbatpr.st_sta_id
+             ,mbatpr.arr_sta_id
+             ,mbatpr.st_tm
+             ,mbatpr.arr_tm
+             ,mibatci.arr_tm as real_arr_tm
+             ,mbatpr.el_tm
+        from
+            mrt_bus_arvl_time_prdctn_rslt mbatpr
+                left outer join mrt_inlay_bus_arvl_time_clct_info mibatci
+                on mbatpr.baseymd = mibatci.baseymd
+                    and mbatpr.route_id = mibatci.route_id
+                    and mbatpr.oper_seq = mibatci.oper_seq
+                    and mbatpr.st_sta_id = mibatci.st_sta_id
+                    and mbatpr.arr_sta_id = mibatci.arr_sta_id
+                inner join (
+                select
+                    MAX(mbatpr.update_tm) as rct_update_tm  ,
+                    mbatpr.baseymd ,
+                    mbatpr.route_id,
+                    mbatpr.st_sta_id ,
+                    mbatpr.arr_sta_id ,
+                    mbatpr.oper_seq
+                from
+                    mrt_bus_arvl_time_prdctn_rslt mbatpr
+                group by
+                    mbatpr.baseymd ,mbatpr.route_id,mbatpr.st_sta_id ,mbatpr.arr_sta_id,mbatpr.oper_seq   ) RCT on
+                        RCT.baseymd = mbatpr.baseymd
+                    and  RCT.ROUTE_ID = mbatpr.route_id
+                    and RCT.ST_STA_ID = mbatpr.st_sta_id
+                    and RCT.ARR_STA_ID = mbatpr.arr_sta_id
+                    and RCT.oper_seq = mbatpr.oper_seq
+                    and RCT.rct_update_tm = mbatpr.update_tm
+        where mbatpr.route_id = #{routeId}
+          and mbatpr.arr_sta_id = #{edStationId}
+            AND TO_CHAR(TO_DATE(mbatpr.baseymd,'YYYYMMDD'), 'YYYY-MM-DD') = #{startDate}
+    </select>
+</mapper>

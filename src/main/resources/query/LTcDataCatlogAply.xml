@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.LTcDataCatlogAplyMapper'>
+
+	<select id="countBySearchOption" parameterType="lTcDataCatlogAply" resultType="int">
+		SELECT
+			COUNT(LTDCA.*)
+		FROM L_TC_DATA_CATLOG_APLY LTDCA
+		INNER JOIN M_OP_OPERATOR MOO ON
+		LTDCA.OPRTR_ID = MOO.OPRTR_ID
+		INNER JOIN M_OP_CODE MOC ON MOC.GRP_CD_ID = 'MNG_INST_CD'
+		AND LTDCA.MNG_INST_CD = MOC.CD_ID
+		INNER JOIN DSET_INFO DI ON DI.DSET_ID = LTDCA.APLY_DSET_ID
+		INNER JOIN META_TAB_INFO MTI ON MTI.DSET_ID = DI.DSET_ID AND LTDCA.APLY_DSET_ID = MTI.DSET_ID 
+		<where>
+			<if test="mngCdId != null and mngCdId != ''">
+				AND LTDCA.MNG_INST_CD = #{mngCdId}
+			</if>
+			<if test="searchContent != null and searchContent != ''">
+				AND (MTI.TBL_ENG_NM LIKE '%' || #{searchContent} || '%' OR MOC.CD_NM LIKE '%' || #{searchContent} || '%')
+			</if>
+			<if test="strDt != null and strDt != ''">
+			<![CDATA[
+			   AND LTDCA.APLY_DT >= TO_TIMESTAMP(#{strDt},'YYYY-MM-DD HH24:mi:ss') 
+			]]>
+			</if>
+			<if test="endDt != null and endDt != ''">
+			<![CDATA[
+			   AND LTDCA.APLY_DT <= TO_TIMESTAMP(#{endDt},'YYYY-MM-DD HH24:mi:ss')
+			]]>
+			</if>
+			<if test="oprtrId != null">
+				AND LTDCA.OPRTR_ID = #{oprtrId}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findAllBySearchOption" parameterType="lTcDataCatlogAply" resultType="lTcDataCatlogAply">
+		SELECT
+			ROW_NUMBER() OVER(
+			ORDER BY LTDCA.APLY_DT) AS ROWNUM,
+			LTDCA.APLY_DT,
+			LTDCA.APLY_DSET_ID,
+			LTDCA.OPRTR_ID,
+			LTDCA.MNG_INST_CD,
+			LTDCA.APLY_CMPTN_YN,
+			MOO.OPRTR_NM,
+			MOC.CD_NM,
+			MTI.TBL_ENG_NM
+		FROM
+			L_TC_DATA_CATLOG_APLY LTDCA
+		INNER JOIN M_OP_OPERATOR MOO ON
+			LTDCA.OPRTR_ID = MOO.OPRTR_ID
+		INNER JOIN M_OP_CODE MOC ON MOC.GRP_CD_ID = 'MNG_INST_CD'
+		AND LTDCA.MNG_INST_CD = MOC.CD_ID
+		INNER JOIN DSET_INFO DI ON DI.DSET_ID = LTDCA.APLY_DSET_ID
+		INNER JOIN META_TAB_INFO MTI ON MTI.DSET_ID = DI.DSET_ID AND LTDCA.APLY_DSET_ID = MTI.DSET_ID 
+		<where>
+			<if test="mngCdId != null and mngCdId != ''">
+				AND LTDCA.MNG_INST_CD = #{mngCdId}
+			</if>
+			<if test="searchContent != null and searchContent != ''">
+				AND (MTI.TBL_ENG_NM LIKE '%' || #{searchContent} || '%' OR MOC.CD_NM LIKE '%' || #{searchContent} || '%')
+			</if>
+			<if test="strDt != null and strDt != ''">
+			<![CDATA[
+			   AND LTDCA.APLY_DT >= TO_TIMESTAMP(#{strDt},'YYYY-MM-DD HH24:mi:ss') 
+			]]>
+			</if>
+			<if test="endDt != null and endDt != ''">
+			<![CDATA[
+			   AND LTDCA.APLY_DT <= TO_TIMESTAMP(#{endDt},'YYYY-MM-DD HH24:mi:ss')
+			]]>
+			</if>
+			<if test="oprtrId != null">
+				AND LTDCA.OPRTR_ID = #{oprtrId}
+			</if>
+		</where>
+		ORDER BY ROWNUM DESC 
+		LIMIT 10 OFFSET (#{page} - 1) * 10
+	</select>
+	
+	<insert id="saveLTcDataCatlogAply" parameterType="lTcDataCatlogAply">
+		INSERT INTO L_TC_DATA_CATLOG_APLY (
+			APLY_DT,
+			APLY_DSET_ID,
+			OPRTR_ID,
+			MNG_INST_CD,
+			APLY_CMPTN_YN
+		) VALUES ( 
+			NOW(),
+			#{aplyDsetId},
+			#{oprtrId},
+			#{mngInstCd},
+			#{aplyCmptnYn}			
+		)
+	</insert>
+	
+	<update id="updateAplyCmptnYnByAplyDsetIdAndOprtrId" parameterType="lTcDataCatlogAply">
+		UPDATE L_TC_DATA_CATLOG_APLY
+		SET APLY_CMPTN_YN = #{aplyCmptnYn}
+		WHERE APLY_DSET_ID = #{aplyDsetId}
+			 AND OPRTR_ID = #{oprtrId}
+	</update>
+</mapper>

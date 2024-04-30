@@ -1,13 +1,13 @@
 package com.neighbor21.ggits.api.module.bigdata;
 
 import com.neighbor21.ggits.api.module.BaseMapDataComponent;
-import com.neighbor21.ggits.common.entity.KtTimeZn;
-import com.neighbor21.ggits.common.entity.KtWeekdays;
-import com.neighbor21.ggits.common.mapper.KtTimeZnMapper;
-import com.neighbor21.ggits.common.mapper.KtWeekDaysMapper;
+import com.neighbor21.ggits.common.dto.MapBigdataSearchDTO;
+import com.neighbor21.ggits.common.entity.*;
+import com.neighbor21.ggits.common.mapper.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,25 +21,56 @@ import java.util.List;
 public class BDPublicTransferPredictionComponent extends BaseMapDataComponent {
 
     @Autowired
-    KtWeekDaysMapper ktWeekDaysMapper;
+    MrtDynmcPopltnCell500RsltMapper mrtDynmcPopltnCell500RsltMapper;
 
     @Autowired
-    KtTimeZnMapper ktTimeZnMapper;
+    MrtCndcyPathLinkInfoMapper mrtCndcyPathLinkInfoMapper;
 
+    @Autowired
+    MrtCndcyPathRouteBstpInfoMapper mrtCndcyPathRouteBstpInfoMapper;
 
     /**
-     * 요일별 최근값 조회
+     * 기간별 유동인구 예측 조회
      * @return
      */
-    public List<KtWeekdays> getPopulationInfoByWeekDaysRecent(){
-        return ktWeekDaysMapper.findAllByRecent();
+    public List<MrtDynmcPopltnCell500Rslt> getPopulationInfoBySearchDto(MapBigdataSearchDTO mapBigdataSearchDTO){
+        List<MrtDynmcPopltnCell500Rslt> searchedList = new ArrayList<>();
+        searchedList = mrtDynmcPopltnCell500RsltMapper.findAllBySearchDto(mapBigdataSearchDTO);
+        if(searchedList.isEmpty()){
+            searchedList = mrtDynmcPopltnCell500RsltMapper.findAllBySearchDtoMax(mapBigdataSearchDTO);
+        }
+        return searchedList;
     }
 
     /**
-     * 시간별 최근값 조회
+     * 기간별 유동인구 예측 조회(차트 플레이어용)
+     * @param mapBigdataSearchDTO
      * @return
      */
-    public List<KtTimeZn> getPopulationInfoByTimeZnRecent(){
-        return ktTimeZnMapper.findAllByRecent();
+    public List<MrtDynmcPopltnCell500Rslt> getPopulationInfoBySearchDtoForChart(MapBigdataSearchDTO mapBigdataSearchDTO){
+        List<MrtDynmcPopltnCell500Rslt> searchedList = new ArrayList<>();
+        searchedList = mrtDynmcPopltnCell500RsltMapper.findAllBySearchDtoForChart(mapBigdataSearchDTO);
+        if(searchedList.isEmpty()) {
+            searchedList = mrtDynmcPopltnCell500RsltMapper.findAllBySearchDtoForChartMax(mapBigdataSearchDTO);
+        }
+        return searchedList;
     }
+
+    /**
+     * 최적화 후보경로의 링크정보 조회
+     * @param candRouteId
+     */
+    public List<MrtCndcyPathLinkInfo> getPublicTransferCndcyPathLinkInfo(String btcId, String baseym, String candRouteId) {
+        return mrtCndcyPathLinkInfoMapper.findAllByCandRouteId(btcId, baseym, candRouteId);
+    }
+
+    /**
+     * 최적화 후보경로의 정류장 조회
+     * @param candRouteId
+     * @return
+     */
+    public List<MrtCndcyPathRouteBstpInfo> getPublicTransferCndcyStationInfo(String btcId, String baseym,String candRouteId) {
+        return mrtCndcyPathRouteBstpInfoMapper.findAllByCandRouteId(btcId, baseym, candRouteId);
+    }
+
 }

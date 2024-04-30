@@ -21,7 +21,7 @@ public class TaasAdsiAcdntDstrct {
   private float lonCrdn; //경도 좌표
   private float latCrdn; //위도 좌표
   private String acdntDstrctPyn; //사고 구역 폴리곤
-
+  private String cdNm;
 
   public Timestamp getClctDt() {
     return clctDt;
@@ -164,6 +164,14 @@ public class TaasAdsiAcdntDstrct {
 
   public void setAcdntDstrctPyn(String acdntDstrctPyn) {
     this.acdntDstrctPyn = acdntDstrctPyn;
+  }
+
+  public String getCdNm() {
+	return cdNm;
+  }
+
+  public void setCdNm(String cdNm) {
+	this.cdNm = cdNm;
   }
 
 }

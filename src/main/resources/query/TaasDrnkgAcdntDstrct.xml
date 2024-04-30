@@ -20,6 +20,6 @@
              ,LON_CRDN
              ,LAT_CRDN
              ,ACDNT_DSTRCT_PYN
-        FROM taas_bcycl_acdnt_dstrct
+        FROM BIGDATA.EXT_taas_bcycl_acdnt_dstrct
     </select>
 </mapper>

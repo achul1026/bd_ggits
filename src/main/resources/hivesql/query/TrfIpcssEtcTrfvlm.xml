@@ -1,0 +1,124 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.hivesql.mapper.TrfIpcssEtcTrfvlmMapper'>
+	<select id="findAllPointNmList" parameterType="trfvlmStatisticsDTO" resultType="trfIpcssEtcTrfvlm">
+		SELECT 
+			EXMN_YMD
+			,POINT_NM
+			,POINT_SQNO
+		FROM GGITS.TRF_IPCSS_ETC_TRFVLM
+		WHERE IPCSS_MNG_NO = #{ipcssMngNo} AND DYWK_DIV = #{dywkDiv}
+		GROUP BY POINT_NM, EXMN_YMD, POINT_SQNO
+		ORDER BY cast(POINT_NM AS STRING) ASC
+	</select>
+	
+	<select id="findOneEtcTrfvlmInfo" parameterType="trfIpcssEtcTrfvlm" resultType="trfIpcssEtcTrfvlm">
+		SELECT 
+			tiet.TIME_SCTN_NM
+			, tiet.POINT_SQNO
+			, tiet.PDST_CNT
+			, tiet.BCYCL_CNT
+			, tiet.INDVSL_MVMN_EQPMNT_CNT
+		FROM GGITS.TRF_IPCSS_ETC_TRFVLM tiet 
+		WHERE 	
+			tiet.IPCSS_MNG_NO = #{ipcssMngNo} AND tiet.TIME_SCTN_NM = #{timeSctnNm} AND tiet.DYWK_DIV = #{dywkDiv}
+		GROUP BY POINT_SQNO, TIME_SCTN_NM, tiet.PDST_CNT, tiet.BCYCL_CNT, tiet.INDVSL_MVMN_EQPMNT_CNT
+		ORDER BY tiet.TIME_SCTN_NM , tiet.POINT_SQNO
+	</select>
+	
+	<select id="findallChartData" parameterType="trfIpcssEtcTrfvlm" resultType="map">
+		SELECT
+		    GRAPH_RESULT_DATA.POINT_NM,
+		    CONCAT(
+		        CAST(GRAPH_RESULT_DATA.TOTAL_SUM_CNT AS STRING), ',',
+		        CAST(GRAPH_RESULT_DATA.TOTAL_AM_SUM_CNT AS STRING), ',',
+		        CAST(GRAPH_RESULT_DATA.TOTAL_PM_SUM_CNT AS STRING), ',',
+		        CAST(GRAPH_RESULT_DATA.TOTAL_07_SUM_CNT AS STRING), ',',
+		        CAST(GRAPH_RESULT_DATA.TOTAL_08_SUM_CNT AS STRING), ',',
+		        CAST(GRAPH_RESULT_DATA.TOTAL_17_SUM_CNT AS STRING), ',',
+		        CAST(GRAPH_RESULT_DATA.TOTAL_18_SUM_CNT AS STRING), ',',
+		        CAST(TIME_DATA_ARRAY_STRING AS STRING)
+		    ) AS ALL_DATA_LIST
+		FROM (
+		    SELECT
+		        GRAPH_DATA.POINT_NM,
+		        SUM(GRAPH_DATA.TOTAL_SUM_CNT) AS TOTAL_SUM_CNT,
+		        SUM(CASE WHEN GRAPH_DATA.TIME_AM_OR_PM = '오전' THEN GRAPH_DATA.TOTAL_SUM_CNT ELSE 0 END) AS TOTAL_AM_SUM_CNT,
+		        SUM(CASE WHEN GRAPH_DATA.TIME_AM_OR_PM = '오후' THEN GRAPH_DATA.TOTAL_SUM_CNT ELSE 0 END) AS TOTAL_PM_SUM_CNT,
+		        SUM(CASE WHEN POSITION('07' IN GRAPH_DATA.TIME_SCTN_NM) > 0 THEN GRAPH_DATA.TOTAL_SUM_CNT ELSE 0 END) AS TOTAL_07_SUM_CNT,
+		        SUM(CASE WHEN POSITION('08' IN GRAPH_DATA.TIME_SCTN_NM) > 0 AND POSITION('08' IN GRAPH_DATA.TIME_SCTN_NM) = 1 THEN GRAPH_DATA.TOTAL_SUM_CNT ELSE 0 END) AS TOTAL_08_SUM_CNT,
+		        SUM(CASE WHEN POSITION('17' IN GRAPH_DATA.TIME_SCTN_NM) > 0 THEN GRAPH_DATA.TOTAL_SUM_CNT ELSE 0 END) AS TOTAL_17_SUM_CNT,
+		        SUM(CASE WHEN POSITION('18' IN GRAPH_DATA.TIME_SCTN_NM) > 0 AND POSITION('18' IN GRAPH_DATA.TIME_SCTN_NM) = 1 THEN GRAPH_DATA.TOTAL_SUM_CNT ELSE 0 END) AS TOTAL_18_SUM_CNT,
+		        CONCAT_WS(',', COLLECT_LIST(GRAPH_DATA.DATA_CNT_LIST)) AS TIME_DATA_ARRAY_STRING
+		    FROM (
+		        SELECT
+		            TICT.POINT_NM,
+		            TICT.TIME_SCTN_NM,
+		            TICT.POINT_SQNO,
+		            TICT.TIME_AM_OR_PM,
+		            SUM(TICT.PDST_CNT + TICT.BCYCL_CNT + TICT.INDVSL_MVMN_EQPMNT_CNT) AS TOTAL_SUM_CNT,
+		            CONCAT_WS(',',CAST(SUM(TICT.PDST_CNT) AS STRING), CAST(SUM(TICT.BCYCL_CNT) AS STRING), CAST(SUM(TICT.INDVSL_MVMN_EQPMNT_CNT) AS STRING)) AS DATA_CNT_LIST
+		        FROM (
+		            SELECT
+		               	POINT_NM,
+		               	POINT_SQNO,
+						COALESCE (PDST_CNT,0) AS PDST_CNT,
+						COALESCE (BCYCL_CNT,0) AS BCYCL_CNT,
+						COALESCE (INDVSL_MVMN_EQPMNT_CNT,0) AS INDVSL_MVMN_EQPMNT_CNT,
+		                CASE
+		                    WHEN POSITION('07' IN TIME_SCTN_NM) > 0 THEN '07:00~08:00'
+		                    WHEN POSITION('08' IN TIME_SCTN_NM) > 0 AND POSITION('08' IN TIME_SCTN_NM) = 1 THEN '08:00~09:00'
+		                    WHEN POSITION('17' IN TIME_SCTN_NM) > 0 THEN '17:00~18:00'
+		                    WHEN POSITION('18' IN TIME_SCTN_NM) > 0 AND POSITION('18' IN TIME_SCTN_NM) = 1 THEN '18:00~19:00'
+		                END AS TIME_SCTN_NM,
+		                CASE
+		                    WHEN POSITION('07' IN TIME_SCTN_NM) > 0 OR POSITION('08' IN TIME_SCTN_NM) > 0 THEN '오전'
+		                    ELSE '오후'
+		                END AS TIME_AM_OR_PM
+		            FROM
+						GGITS.TRF_IPCSS_ETC_TRFVLM TIET 
+					WHERE
+						IPCSS_MNG_NO = #{ipcssMngNo} AND DYWK_DIV = #{dywkDiv} and POINT_SQNO = #{pointSqno} AND POSITION('~' IN TIME_SCTN_NM) > 0 
+		        ) TICT
+		        GROUP BY TICT.POINT_NM, TICT.TIME_SCTN_NM, TICT.TIME_AM_OR_PM, TICT.POINT_SQNO
+		        ORDER BY TICT.TIME_SCTN_NM
+		    ) GRAPH_DATA
+		    GROUP BY  GRAPH_DATA.POINT_NM
+		) GRAPH_RESULT_DATA
+		ORDER BY
+			CAST(GRAPH_RESULT_DATA.POINT_NM AS INT);
+	</select>
+	
+	<select id="findExmnYmd" parameterType="trfvlmStatisticsDTO" resultType="String">
+		SELECT 
+			EXMN_YMD 
+		FROM GGITS.TRF_IPCSS_ETC_TRFVLM 
+		WHERE IPCSS_MNG_NO = #{ipcssMngNo} AND DYWK_DIV = #{dywkDiv}
+		GROUP BY EXMN_YMD 
+	</select>
+	
+	<insert id="saveEtcTrfvlm" parameterType="trfIpcssEtcTrfvlm">
+		INSERT INTO GGITS.TRF_IPCSS_ETC_TRFVLM
+			VALUES(
+			#{ipcssMngNo}, 
+			#{dywkDiv},
+			#{exmnYmd}, 
+			CAST(#{pointSqno} as int),
+			#{pointNm}, 
+			#{timeSctnNm}, 
+			#{pdstCnt}, 
+			#{bcyclCnt}, 
+			#{indvslMvmnEqpmntCnt},
+			FROM_UNIXTIME(UNIX_TIMESTAMP(), 'yyyyMMddHHmmss')
+			)
+	</insert>
+	
+	<delete id="deleteTrafficImpactReportByIpcssMngNo" parameterType="String">
+		DELETE 
+			FROM
+				GGITS.TRF_IPCSS_ETC_TRFVLM
+		WHERE
+			IPCSS_MNG_NO = #{ipcssMngNo}
+	</delete>
+</mapper>

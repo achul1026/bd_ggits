@@ -1,6 +1,5 @@
 package com.neighbor21.ggits.common.mapper;
 import java.util.List;
-import java.util.Map;
 
 import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
 
@@ -28,6 +27,14 @@ public interface MOpCodeMapper {
      * @return
      */
 	public List<MOpCode> findAllCodeListByGrpCdId(String grpCdId);
+	
+	/**
+	 * @Method Name : findAllCodeListByGrpCdIdForMonitoring
+	 * @작성일 : 2023. 12. 27.
+	 * @작성자 : KY.LEE
+	 * @Method 설명 : 모니터링 리스트 조회
+	 */
+	public List<MOpCode> findAllCodeListByGrpCdIdForMonitoring(Long authId);
 
     /**
      * @Method Name : countCodeBygrpCdIdAndCdId
@@ -108,4 +115,24 @@ public interface MOpCodeMapper {
      * @return
      */
 	public int countCodeListByGrpCdIdAndSearchOption(MOpCode mOpCode);
+
+	/**
+	 * @Method Name : findOneMOpCodeLikeCdIdAndGrpCdId
+	 * @작성일 : 2023. 11. 07.
+	 * @작성자 : KY.LEE
+	 * @Method 설명 : CDID LIKE검색
+	 * @param : mOpCode
+	 * @return
+	 */
+	public MOpCode findOneMOpCodeLikeCdIdAndGrpCdId(MOpCode mOpCode);
+	
+	/**
+	 * @Method Name : findOndeMOpCodeCdNmAndGrpCdId
+	 * @작성일 : 2023. 11. 15.
+	 * @작성자 : KC.KIM
+	 * @Method 설명 : 그룹 코드 아이디와 코드이름으로 코드 아이디 조회
+	 * @param : mOpCode
+	 * @return
+	 */
+	public MOpCode findOndeMOpCodeCdNmAndGrpCdId(MOpCode mOpCode);
 }

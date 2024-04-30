@@ -12,4 +12,6 @@ public interface TsDggdVhclRungInfoCurMapper {
     List<TsDggdVhclRungInfoCur> findAll();
 
     List<TsDggdVhclRungInfoCur> findAllByRungPlanYnIsY();
+
+    List<TsDggdVhclRungInfoCur> findAllByRungPlanYnIsYByWarning();
 }

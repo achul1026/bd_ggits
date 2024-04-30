@@ -1,0 +1,94 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.ExtGgitsLinkStd1dMapper'>
+	<sql id="extGgitsLinkStd1m-Where">
+		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
+			AND exgls1.PROC_DATE 
+			BETWEEN TO_TIMESTAMP(#{strDt}|| ' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}|| ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
+			<![CDATA[
+			AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS')  <= exgls1.PROC_DATE
+			]]>
+		</if>
+		<if test="(strDt == '' or strDt == null) and (endDt != '' and endDt != null)">
+			<![CDATA[
+			AND exgls1.PROC_DATE <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			]]>
+		</if>
+		<if test="(sigunCdId != null and sigunCdId != '') and sigunCdId != 'searchAllLocation'">
+			AND cgslam.ADSTDG_CD LIKE #{sigunCdId} || '%'
+		</if>
+		<if test="searchContent != null and searchContent != ''">
+			AND cgslam.ROAD_NAME LIKE '%' || #{searchContent} || '%'
+		</if>
+		<if test="dayOfTheWeek != null">
+			 AND EXTRACT (ISODOW from exgls1.PROC_DATE)::varchar(1) IN 
+				<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+		</if>
+	</sql>
+
+	<select id="findAllTrafficInfoStats" parameterType="commonEntity" resultType="extGgitsLinkStd1d">
+		SELECT 
+			cgslam.ROAD_NAME
+			, ROUND(SUM(exgls1.SPD) / COUNT(cgslam.ROAD_NAME)::NUMERIC,2) as avgSpd
+			, MIN(exgls1.SPD) as minSpd
+			, MAX(exgls1.SPD) as maxSpd
+			, ROUND(SUM(exgls1.VOL) / COUNT(cgslam.ROAD_NAME)::NUMERIC,2) as avgVol
+			, CASE WHEN gcil.ROAD_RANK ='101' THEN '고속국도'
+				WHEN gcil.ROAD_RANK ='102' THEN '도시고속국도'
+				WHEN gcil.ROAD_RANK ='103' THEN '일반국도'
+				WHEN gcil.ROAD_RANK ='104' THEN '특별광역시도'
+				WHEN gcil.ROAD_RANK ='105' THEN '국가지원지방도'
+				WHEN gcil.ROAD_RANK ='106' THEN '지방도'
+				WHEN gcil.ROAD_RANK ='107' THEN '시군도'
+				WHEN gcil.ROAD_RANK ='108' THEN '기타'
+				END AS ROAD_RANK
+		FROM BIGDATA.EXT_GGITS_LINK_STD_1D exgls1
+		INNER JOIN C_GM_STD_LINK GCIL
+			ON exgls1.LINK_ID = GCIL.LINK_ID
+		INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam
+			ON GCIL.LINK_ID  = cgslam.LINK_ID 
+		WHERE 1=1
+		<include refid="extGgitsLinkStd1m-Where"/>
+		GROUP BY cgslam.ROAD_NAME, gcil.ROAD_RANK
+		<if test="page != null and page != ''">
+		LIMIT 10 OFFSET (#{page} - 1) * 10;
+		</if>
+	</select>
+	
+	<select id="countTrafficInfoStats" parameterType="commonEntity" resultType="int">
+		SELECT
+			COUNT(A.ROAD_NAME)
+		FROM (
+			SELECT 
+				cgslam.ROAD_NAME
+			FROM BIGDATA.EXT_GGITS_LINK_STD_1D exgls1
+			INNER JOIN C_GM_STD_LINK GCIL
+				ON exgls1.LINK_ID = GCIL.LINK_ID
+			INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam
+				ON GCIL.LINK_ID  = cgslam.LINK_ID 
+			WHERE 1=1
+			<include refid="extGgitsLinkStd1m-Where"/>
+			GROUP BY cgslam.ROAD_NAME, gcil.ROAD_RANK
+		)A
+	</select>
+	
+	<select id="findAllTraffcAnalList" parameterType="commonEntity" resultType="extGgitsLinkStd1d">
+		SELECT 
+			cgslam.ROAD_NAME
+			, ROUND(SUM(exgls1.spd) / COUNT(cgslam.ROAD_NAME)::NUMERIC,2) as avgSpd
+			, ROUND(SUM(exgls1.VOL) / COUNT(cgslam.ROAD_NAME)::NUMERIC,2) as avgVol
+			, max(exgls1.CONG_GRADE)
+		FROM BIGDATA.EXT_GGITS_LINK_STD_1D exgls1
+		INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam
+			ON exgls1.LINK_ID  = cgslam.LINK_ID 
+		WHERE 1=1
+		<include refid="extGgitsLinkStd1m-Where"/>
+		GROUP by cgslam.ROAD_NAME
+	</select>
+</mapper>

@@ -13,7 +13,7 @@
                 <form id="groupUserSaveForm">
 	                <div class="contents_wrap mt24">
 	                    <div class="group">
-	                        <div class="group_text">그룹명</div>
+	                        <div class="group_text">그룹명<span class="required-alert">*</span></div>
 	                        <input type="text" placeholder="그룹명을 입력해 주세요." class="input_same group_box data-validate" name="grpNm"
 	                        	data-valid-name="그룹명" data-valid-maximum="50" data-valid-required/>
 	                    </div>
@@ -49,11 +49,11 @@
                             </table>
                         </div>
 	                    <div class="group">
-		                        <div class="group_text">권한설정</div>
-		                        <select class="selectBox data-validate" name="authId" data-valid-name="권한" data-valid-required>
+		                        <div class="group_text">권한설정<span class="required-alert">*</span></div>
+		                        <select class="selectBox data-validate mj0" name="authId" data-valid-name="권한" data-valid-required>
 		                            <option value="">권한설정</option>
 								<c:forEach var="authList" items="${authList}">
-		                            <option <c:if test="${groupDetail.authId eq authList.authId}">selected="selected"</c:if> value="${authList.authId}">${authList.authNm}</option>
+		                            <option <c:if test="${groupDetail.authId eq authList.authId}">selected="selected"</c:if> value="<c:out value='${authList.authId}'/>"><c:out value="${authList.authNm}"/></option>
 		                        </c:forEach>
 		                        </select>
 		                </div>
@@ -150,9 +150,11 @@
 						var resultMessage = data.message;
 						
 						if(resultCode == '200'){
-							new ModalBuilder().init().alertBoby("그룹 정보가 등록되었습니다.").footer(5,'확인',function(button, modal){
+							new ModalBuilder().init().successBody("그룹 정보가 등록되었습니다.").footer(4,'확인',function(button, modal){
 								window.location.href="${pageContext.request.contextPath}/system/user/group/list.do";
-							 },'취소',function(button, modal){}).open();							
+								modal.close();
+							}).open();
+							modalAlertWrap();
 						}else{
 							new ModalBuilder().init().alertBoby("그룹정보 등록을 실패하였습니다.").footer(4,'확인',function(button, modal){modal.close();}).open();
 							modalAlertWrap();

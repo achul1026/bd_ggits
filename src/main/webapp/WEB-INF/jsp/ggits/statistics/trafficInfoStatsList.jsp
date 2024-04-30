@@ -5,41 +5,62 @@
 <div class="main_container">
 	<aside class="snb_container">
 	    <div class="snb_wrap">
-	        <h3 class="side_title">교통 정보 통계 분석</h3>
+	        <h3 class="side_title">교통정보 통계분석</h3>
 	        <div class="side_txt">
-	            교통 정보 통계 분석 자료입니다.
+	            교통정보 통계분석 자료입니다.
 	        </div>
 	        <div class="side_btn">
-	            <a href="${pageContext.request.contextPath}/statistics/traffic/analysis/traffic_info_stats/list.do" class="on">교통 지표 총괄 통계</a>
-	            <a href="${pageContext.request.contextPath}/statistics/traffic/analysis/communication/list.do">소통정보 통계</a>
-	            <a href="${pageContext.request.contextPath}/statistics/traffic/analysis/crowded/traffic_crowded_stats/list.do">혼잡도 통계</a>
-	            <a href="${pageContext.request.contextPath}/statistics/traffic/analysis/public/bus_dtg_info/list.do">대중교통 지표 총괄 통계</a>
-	            <a href="${pageContext.request.contextPath}/statistics/traffic/analysis/safety/traffic_acndt_gen_log/list.do">도로안전</a>
-	            <a href="${pageContext.request.contextPath}/statistics/traffic/analysis/facilities/traffic_facility_obtc_colt/list.do">교통시설물 통계</a>
+	            <a href="${pageContext.request.contextPath}/statistics/traffic/analysis/traffic_info_stats/list.do" class="on" onclick="startLoading()">교통 지표 총괄 통계</a>
+	            <a href="${pageContext.request.contextPath}/statistics/traffic/analysis/communication/list.do?initAppchYn=Y" onclick="startLoading()">소통정보 통계</a>
+	            <a href="${pageContext.request.contextPath}/statistics/traffic/analysis/crowded/traffic_crowded_stats/list.do" onclick="startLoading()">혼잡도 통계</a>
+	            <a href="${pageContext.request.contextPath}/statistics/traffic/analysis/public/bus_dtg_info/list.do" onclick="startLoading()">대중교통 지표 총괄 통계</a>
+	            <a href="${pageContext.request.contextPath}/statistics/traffic/analysis/safety/traffic_acndt_gen_log/list.do" onclick="startLoading()">도로안전</a>
+<%-- 	            <a href="${pageContext.request.contextPath}/statistics/traffic/analysis/facilities/traffic_facility_obtc_colt/list.do" onclick="startLoading()">교통시설물 통계</a> --%>
 	        </div>
 	    </div>
 	</aside>
 	<section class="main_section tab_set">
 	    <h2 class="blind">교통정보 통계분석</h2>
 	    <div class="group_btn_wrap tab_fc">
-	        <div class="table_btn_left">
-	            <button type="button" class="tab_btn_item is-dark-btn tabMenu <c:if test="${tabNum eq 1}">is-darkgreen-btn</c:if>" data-index="1">교통현황 통계</button>
-	            <button type="button" class="tab_btn_item is-dark-btn tabMenu <c:if test="${tabNum eq 2}">is-darkgreen-btn</c:if>" data-index="2">돌발현황 통계</button>
-	            <button type="button" class="tab_btn_item is-dark-btn tabMenu <c:if test="${tabNum eq 3}">is-darkgreen-btn</c:if>" data-index="3">기상현황 / 별 교통량 / 돌발대기오염현황 통계</button>
-	            <button type="button" class="tab_btn_item is-dark-btn tabMenu <c:if test="${tabNum eq 4}">is-darkgreen-btn</c:if>" data-index="4">긴급차량 이동 현황통계</button>
-	            <button type="button" class="tab_btn_item is-dark-btn tabMenu <c:if test="${tabNum eq 5}">is-darkgreen-btn</c:if>" data-index="5">시내버스 이동 현황통계</button>
-	            <button type="button" class="tab_btn_item is-dark-btn tabMenu <c:if test="${tabNum eq 6}">is-darkgreen-btn</c:if>" data-index="6">위험예측구간 현황통계</button>
+	        <div class="btn_search_wrap table_btn_left">
+	        	<ul>
+	        		<li>
+	        			 <button type="button" class="tab_btn_item is-dark-btn tabMenu <c:if test="${tabNum eq 1}">is-darkgreen-btn</c:if>" data-index="1">교통현황 통계</button>
+	        		</li>
+	        		<li>
+	        			  <button type="button" class="tab_btn_item is-dark-btn tabMenu <c:if test="${tabNum eq 2}">is-darkgreen-btn</c:if>" data-index="2">돌발현황 통계</button>
+	        		</li>
+	        		<li>
+	        			 <button type="button" class="tab_btn_item is-dark-btn tabMenu <c:if test="${tabNum eq 3}">is-darkgreen-btn</c:if>" data-index="3">지역별 대기질 통계</button>
+	        		</li>
+	        		<li>
+	        			 <button type="button" class="tab_btn_item is-dark-btn tabMenu <c:if test="${tabNum eq 4}">is-darkgreen-btn</c:if>" data-index="4">광역 긴급차량 이동 현황통계</button>
+	        		</li>
+	        		<li>
+	        			 <button type="button" class="tab_btn_item is-dark-btn tabMenu <c:if test="${tabNum eq 5}">is-darkgreen-btn</c:if>" data-index="5">시내버스 이동 현황통계</button>
+	        		</li>
+	        		<li>
+	        			 <button type="button" class="tab_btn_item is-dark-btn tabMenu <c:if test="${tabNum eq 6}">is-darkgreen-btn</c:if>" data-index="6">위험예측구간 현황통계</button>
+	        		</li>
+	        	</ul>
 	        </div>
 	    </div>
 	    <div class="contents_wrap tab_area">
 	    	<c:if test="${tabNum eq 1}">
 		        <div class="">
 		        	<form id="searchForm" method="get">
-		        		<input type="hidden" id="tabNum" name="tabNum" value="${tabNum}">
+		        		<input type="hidden" id="tabNum" name="tabNum" value="<c:out value='${tabNum}'/>">
 		        		<input type="hidden" id="page" name="page"  value="1"/>
 			            <div class="group2">
 			                <div class="group_text2">주소 검색</div>
-			                <input type="text" placeholder="시/군/구/도로명을 입력해 주세요." name="searchContent" id="searchContent" class="input_same group_box" value="${searchContent}">
+			                 <div class="btn_search_wrap flex-center">
+			                 	<ul>
+			                 		<li>
+			                 			 <input type="text" placeholder="시/군/구/도로명을 입력해 주세요." name="searchContent" id="searchContent" class="input_same group_box" value="<c:out value='${searchContent}'/>">
+			                 		</li>
+			                 	</ul>
+			                 </div>
+			              
 			                <div class="search_detail_btn">
 			                    상세 검색 <i></i>
 			                </div>
@@ -47,70 +68,76 @@
 			            <div class="search_detail_wrap">
 	                        <div class="group2">
 	                            <div class="group_text2">기간 설정</div>
-	                            <div class="flex-center">
-	                                <div class="calendar">
-			                            <input type="text" class="date_picker input_same mr8 input_picker" name="strDt" id="strDt" placeholder="날짜를 선택해주세요." data-value="${strDt}" autocomplete="off">
-			                            ~
-			                            <input type="text" class="end_date_picker input_same ml8 input_picker" name="endDt" id="endDt" placeholder="날짜를 선택해주세요." data-value="${endDt}" autocomplete="off">
-	                                </div>
+	                            <div class="btn_search_wrap">
+	                            	<ul>
+	                            		<li>
+	                            			<input type="text" class="date_picker input_same input_picker" name="strDt" id="strDt" placeholder="날짜를 선택해주세요." data-value="<c:out value='${strDt}'/>" autocomplete="off">
+	                            		</li>
+	                            		<li>
+	                            			~
+	                            		</li>
+	                            		<li>
+	                            			<input type="text" class="end_date_picker input_same input_picker" name="endDt" id="endDt" placeholder="날짜를 선택해주세요." data-value="<c:out value='${endDt}'/>" autocomplete="off">
+	                            		</li>
+	                            	</ul> 
 	                            </div>
 	                        </div>
 	                        <div class="group2">
 	                            <div class="group_text2">요일 설정</div>
-	                            <div class="flex-center gap24">
-	                                <div>
-	                                    <label class="group_btn_item is-dark-btn"><input type="checkbox" class="none">일</label>
-	                                    <label class="group_btn_item is-dark-btn"><input type="checkbox" class="none">월</label>
-	                                    <label class="group_btn_item is-dark-btn"><input type="checkbox" class="none">화</label>
-	                                    <label class="group_btn_item is-dark-btn"><input type="checkbox" class="none">수</label>
-	                                    <label class="group_btn_item is-dark-btn"><input type="checkbox" class="none">목</label>
-	                                    <label class="group_btn_item is-dark-btn"><input type="checkbox" class="none">금</label>
-	                                    <label class="group_btn_item is-dark-btn"><input type="checkbox" class="none">토</label>
-	                                </div>
+	                            <div class="btn_search_wrap">
+	                            	<ul>
+	                            		<li>
+	                            			<label class="group_btn_item is-dark-btn"><input type="checkbox" class="none">일</label>
+	                            		</li>
+	                            		<li>
+	                            			<label class="group_btn_item is-dark-btn"><input type="checkbox" class="none">월</label>
+	                            		</li>
+	                            		<li>
+	                            			<label class="group_btn_item is-dark-btn"><input type="checkbox" class="none">화</label>
+	                            		</li>
+	                            		<li>
+	                            			<label class="group_btn_item is-dark-btn"><input type="checkbox" class="none">수</label>
+	                            		</li>
+	                            		<li>
+	                            			<label class="group_btn_item is-dark-btn"><input type="checkbox" class="none">목</label>
+	                            		</li>
+	                            		<li>
+	                            			 <label class="group_btn_item is-dark-btn"><input type="checkbox" class="none">금</label>
+	                            		</li>
+	                            		<li>
+	                            			<label class="group_btn_item is-dark-btn"><input type="checkbox" class="none">토</label>
+	                            		</li>
+	                            	</ul>
 	                            </div>
 	                        </div>
 			            </div>
-		                <div class="group2_btn">
-							<!-- button id  name 바꿔서 사용하세요  -->
-							<button type="button" class="is-darkgreen-btn" id="search_test" onclick="fnSearchList();">찾기</button>
-							<input type="reset" class="is-dark-btn selected_reset" value="검색값 초기화">
+		                <div class="btn_search_wrap btn_search_wrap_center">
+							<ul>
+								<li>
+									<button type="button" class="is-darkgreen-btn" id="search_test" onclick="fnSearchList();">찾기</button>
+								</li>
+								<li>
+									<input type="reset" class="is-dark-btn selected_reset" value="검색값 초기화">
+								</li>
+							</ul>
 		              	</div>
 		        	</form>
 		            <div class="search_container">
 		                <div class="search_head">
 		                    <div class="search_number">
-		                        <span>${totalCnt}개</span>의 검색결과를 찾았습니다.
-		                    </div>
-		                    <div class="table_right_btn">
-		                        <button type="button" class="is-darkgreen-btn">통계분석 바로보기</button>
+		                        <span id="totalCnt1"><c:out value='${totalCnt}'/></span>개의 검색결과를 찾았습니다.
 		                    </div>
 		                </div>
 		            </div>
 		            <table class="mt16">
-		                <colgroup>
-		                    <col style="width:14%">
-		                    <col style="width:14%">
-		                    <col style="width:14%">
-		                    <col style="width:14%">
-		                    <col style="width:14%">
-		                    <col style="width:14%">
-		                    <col style="width:14%">
-		                </colgroup>
 		                <thead>
 			                <tr>
-			                    <th scope="col" class="left">도로명</th>
+			                    <th scope="col" class="">도로명</th>
 			                    <th scope="col">전체 차량 수</th>
 			                    <th scope="col">평균속도</th>
 			                    <th scope="col">최고속도</th>
 			                    <th scope="col">최저속도</th>
-			                    <th scope="col">
-		                            <select class="table-filter">
-			                            <option selected="selected">차로</option>
-			                            <option>전체</option>
-			                            <option>일반</option>
-			                            <option>버스전용</option>
-			                        </select>		                    
-			                    </th>
+			                    <th scope="col">차로</th>
 			                    <th scope="col">
 		                            <select class="table-filter">
 			                            <option selected="selected">기상</option>
@@ -124,7 +151,7 @@
 		                </thead>
 		                <tbody>
 			                <tr>
-			                    <td class="left">안양1로</td>
+			                    <td class="">안양1로</td>
 			                    <td>22,500</td>
 			                    <td>25km/h</td>
 			                    <td>30km/h</td>
@@ -133,7 +160,7 @@
 			                    <td>비</td>
 			                </tr>
 			                <tr>
-			                    <td class="left">안양2로</td>
+			                    <td class="">안양2로</td>
 			                    <td>22,500</td>
 			                    <td>50km/h</td>
 			                    <td>60km/h</td>
@@ -478,10 +505,7 @@
 		            <div class="search_container">
 		                <div class="search_head">
 		                    <div class="search_number">
-		                        <span>${totalCnt}개</span>의 검색결과를 찾았습니다.
-		                    </div>
-		                    <div class="table_right_btn">
-		                        <button type="button" class="is-darkgreen-btn">통계분석 바로보기</button>
+		                        <span id="totalCnt2">${totalCnt}</span>개의 검색결과를 찾았습니다.
 		                    </div>
 		                </div>
 		            </div>
@@ -502,14 +526,7 @@
 			                    <th scope="col">도로명</th>
 			                    <th scope="col">발생시간</th>
 			                    <th scope="col">종료시간</th>
-			                    <th scope="col">
-		                            <select class="table-filter">
-			                            <option selected="selected">차로</option>
-			                            <option>전체</option>
-			                            <option>일반</option>
-			                            <option>버스전용</option>
-			                        </select>    
-			                    </th>
+			                    <th scope="col">차로</th>
 			                    <th scope="col">수집원</th>
 			                </tr>
 		                </thead>
@@ -585,9 +602,9 @@
 	                            <div class="group_text2">기간 설정</div>
 	                            <div class="flex-center">
 	                                <div class="calendar">
-			                            <input type="text" class="date_picker input_same mr8 input_picker" placeholder="날짜를 선택해주세요.">
+			                            <input type="text" class="date_picker input_same mr8 input_picker" placeholder="날짜를 선택해주세요." autocomplete="off">
 			                            ~
-			                            <input type="text" class="end_date_picker input_same ml8 input_picker" placeholder="날짜를 선택해주세요.">
+			                            <input type="text" class="end_date_picker input_same ml8 input_picker" placeholder="날짜를 선택해주세요." autocomplete="off">
 	                                </div>
 	                            </div>
 	                        </div>
@@ -615,10 +632,7 @@
 		            <div class="search_container">
 		                <div class="search_head">
 		                    <div class="search_number">
-		                        <span>${totalCnt}개</span>의 검색결과를 찾았습니다.
-		                    </div>
-		                    <div class="table_right_btn">
-		                        <button type="button" class="is-darkgreen-btn">통계분석 바로보기</button>
+		                        <span id="totalCnt3">${totalCnt}</span>개의 검색결과를 찾았습니다.
 		                    </div>
 		                </div>
 		            </div>
@@ -718,9 +732,9 @@
 	                            <div class="group_text2">기간 설정</div>
 	                            <div class="flex-center">
 	                                <div class="calendar">
-			                            <input type="text" class="date_picker input_same mr8 input_picker" placeholder="날짜를 선택해주세요.">
+			                            <input type="text" class="date_picker input_same mr8 input_picker" placeholder="날짜를 선택해주세요." autocomplete="off">
 			                            ~
-			                            <input type="text" class="end_date_picker input_same ml8 input_picker" placeholder="날짜를 선택해주세요.">
+			                            <input type="text" class="end_date_picker input_same ml8 input_picker" placeholder="날짜를 선택해주세요." autocomplete="off">
 	                                </div>
 	                            </div>
 	                        </div>
@@ -748,10 +762,7 @@
 		            <div class="search_container">
 		                <div class="search_head">
 		                    <div class="search_number">
-		                        <span>${totalCnt}개</span>의 검색결과를 찾았습니다.
-		                    </div>
-		                    <div class="table_right_btn">
-		                        <button type="button" class="is-darkgreen-btn">통계분석 바로보기</button>
+		                        <span id="totalCnt4">${totalCnt}</span>개의 검색결과를 찾았습니다.
 		                    </div>
 		                </div>
 		            </div>
@@ -810,13 +821,13 @@
 			            </div>
 			            <div class="table_chart_list">
 	                       	<div class="chart">
-	                       		<div class="tab_box_title left mb16">긴급차량 이동 건수 <span>총 400건</span></div>
+	                       		<div class="tab_box_title left mb16">광역 긴급차량 이동 건수 <span>총 400건</span></div>
 	                       		<div style="height:380px">
 		                       		<canvas id="tab4_1_chart"></canvas>
 	                       		</div>
 	                       	</div>
 	                       	<div class="chart">
-	                       		<div class="tab_box_title left mb16">긴급차량 운행시간 감소율<span>(예상 운행 시간 대비 34% 감소)</span></div>
+	                       		<div class="tab_box_title left mb16">광역 긴급차량 운행시간 감소율<span>(예상 운행 시간 대비 34% 감소)</span></div>
 	                       		<div style="height:380px">
 		                       		<canvas id="tab4_2_chart"></canvas>
 	                       		</div>
@@ -846,9 +857,9 @@
 	                            <div class="group_text2">기간 설정</div>
 	                            <div class="flex-center">
 	                                <div class="calendar">
-			                            <input type="text" class="date_picker input_same mr8 input_picker" placeholder="날짜를 선택해주세요.">
+			                            <input type="text" class="date_picker input_same mr8 input_picker" placeholder="날짜를 선택해주세요." autocomplete="off">
 			                            ~
-			                            <input type="text" class="end_date_picker input_same ml8 input_picker" placeholder="날짜를 선택해주세요.">
+			                            <input type="text" class="end_date_picker input_same ml8 input_picker" placeholder="날짜를 선택해주세요." autocomplete="off">
 	                                </div>
 	                            </div>
 	                        </div>
@@ -876,10 +887,7 @@
 		            <div class="search_container">
 		                <div class="search_head">
 		                    <div class="search_number">
-		                        <span>${totalCnt}개</span>의 검색결과를 찾았습니다.
-		                    </div>
-		                    <div class="table_right_btn">
-		                        <button type="button" class="is-darkgreen-btn">통계분석 바로보기</button>
+		                        <span id="totalCnt5">${totalCnt}</span>개의 검색결과를 찾았습니다.
 		                    </div>
 		                </div>
 		            </div>
@@ -974,9 +982,9 @@
 	                            <div class="group_text2">기간 설정</div>
 	                            <div class="flex-center">
 	                                <div class="calendar">
-			                            <input type="text" class="date_picker input_same mr8 input_picker" placeholder="날짜를 선택해주세요.">
+			                            <input type="text" class="date_picker input_same mr8 input_picker" placeholder="날짜를 선택해주세요." autocomplete="off">
 			                            ~
-			                            <input type="text" class="end_date_picker input_same ml8 input_picker" placeholder="날짜를 선택해주세요.">
+			                            <input type="text" class="end_date_picker input_same ml8 input_picker" placeholder="날짜를 선택해주세요." autocomplete="off">
 	                                </div>
 	                            </div>
 	                        </div>
@@ -1004,10 +1012,7 @@
 		            <div class="search_container">
 		                <div class="search_head">
 		                    <div class="search_number">
-		                        <span>${totalCnt}개</span>의 검색결과를 찾았습니다.
-		                    </div>
-		                    <div class="table_right_btn">
-		                        <button type="button" class="is-darkgreen-btn">통계분석 바로보기</button>
+		                        <span id="totalCnt6">${totalCnt}</span>개의 검색결과를 찾았습니다.
 		                    </div>
 		                </div>
 		            </div>
@@ -1090,6 +1095,14 @@
 	</section>
 </div>
 <script>
+	var dataTotalCnt = '${totalCount}';
+	$("#totalCnt1").text(numberComma(dataTotalCnt))
+	$("#totalCnt2").text(numberComma(dataTotalCnt))
+	$("#totalCnt3").text(numberComma(dataTotalCnt))
+	$("#totalCnt4").text(numberComma(dataTotalCnt))
+	$("#totalCnt5").text(numberComma(dataTotalCnt))
+	$("#totalCnt6").text(numberComma(dataTotalCnt))
+
 	$(document).ready(function(){
 		var strDt = $("#strDt").data("value");
 		var endDt = $("#endDt").data("value");
@@ -1126,7 +1139,7 @@
 	    .setDataSet({
 	            label: ['승용차', '대형차', '버스', '화물차'],
 	            data:[10, 10, 50, 60],
-	            backgroundColor: ['#00BCB1', 'red',  'yellow', 'green'],
+	            backgroundColor: ['#00E5D8', '#00C600',  '#FFFF00', '#FF3131'],
 	            borderColor:'transparent'
 	    })
 		.setLabelPadding(30)
@@ -1141,10 +1154,9 @@
 	        backgroundColor: '#00BCB1',
 	        borderWidth:2
 	    })
-	    .setTickStepX(10)
+	    .setTickStepX(20)
 	    .setAxis('y')
 	    .setBarGridX(true)
-	    .setLabelDisplay(false)
 	    .SetMaxWidth(80)
 	    .draw();
 
@@ -1152,7 +1164,7 @@
 	    new GITSChart(GITSChartType.BAR).init("tab1_3_chart")
 	    .setDataSetLabel('1차로', '2차로', '3차로', '4차로')
 	    .setDataSet({
-	        label: '사고건수',
+	        label: '교통량',
 	        data:[40, 20, 30, 60],
 	        backgroundColor: '#00BCB1',
 	        borderWidth:2
@@ -1160,7 +1172,6 @@
 	    .setTicksStep(10)
 	    .setBarGridX(false)
 	    .setBarGridY(true)
-	    .setLabelDisplay(false)
 	    .SetMaxWidth(80)
 	    .draw();
 
@@ -1184,7 +1195,7 @@
 	            data:[200, 120, 140, 40],
 	            backgroundColor: '#ACDC87',
 	    })
-	    .setTickStepX(200)
+	    .setTickStepX(300)
 	    .setAxis('y')
 	    .setBarGridX(true)
 	    .setLabelPadding(30)

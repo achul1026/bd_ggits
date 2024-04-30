@@ -56,12 +56,17 @@
 				]]>
 			</if>	 	 
 		 </if>
+		 <!-- 2023-11-11 기관별 로그 조회 조건 추가 -->
+		 <if test="oprtrGrd != null and oprtrGrd != '' and oprtrGrd != 'SUPER' ">
+		 	AND MOO.MNG_INST_CD = #{mngInstCd}
+		 </if>
 	</sql>
 	
 	<select id="countAcdntLogBySearchInfo" parameterType="lTcAcdntLogInfo" resultType="int">
      	SELECT
      		COUNT(*)
      	FROM L_TC_ACDNT_LOG_INFO ltali
+     	INNER JOIN M_OP_OPERATOR MOO ON ltali.SESN_ID = MOO.oprtr_email
      	WHERE 1=1
 		<include refid="lTcAcdntLogInfo-Where"/>
      </select>
@@ -69,7 +74,7 @@
      <select id="findOneLTcFcltsLogInfoByLogId" parameterType="String" resultType="lTcAcdntLogInfo">
      	SELECT
      		ltali.LOG_ID
-     		, TO_CHAR(ltali.OCCUR_DT,'YYYY-MM-DD') AS OCCUR_DT_STR
+     		, TO_CHAR(ltali.OCCUR_DT,'YYYY-MM-DD HH24:MI:SS') AS OCCUR_DT_STR
      		, ltali.LOG_TYPE
      		, ltali.SESN_ID
      		, ltali.RQSTR_NM
@@ -84,7 +89,7 @@
 		SELECT
 			ROW_NUMBER() OVER(ORDER BY ltali.OCCUR_DT) AS rownum,
 			ltali.LOG_ID,
-			TO_CHAR(ltali.OCCUR_DT,'YYYY-MM-DD') AS OCCUR_DT_STR,
+			TO_CHAR(ltali.OCCUR_DT,'YYYY-MM-DD HH24:MI:SS') AS OCCUR_DT_STR,
 			ltali.ACDNT_ID,
 			ltali.SESN_ID,
 			ltali.LGN_IP,
@@ -92,6 +97,7 @@
 			ltali.LOG_TYPE,
 			moc.CD_NM
 		FROM L_TC_ACDNT_LOG_INFO ltali
+		INNER JOIN M_OP_OPERATOR MOO ON ltali.SESN_ID = MOO.oprtr_email
 		LEFT JOIN M_OP_CODE moc ON ltali.LOG_TYPE = moc.CD_ID
 		     	WHERE 1=1
 		<include refid="lTcAcdntLogInfo-Where"/>

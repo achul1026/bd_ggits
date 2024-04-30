@@ -2,210 +2,391 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="c"   uri="http://java.sun.com/jsp/jstl/core" %>
 <div class="tab_bigbox_close">
-    <div class="original_box clearfix">
-    	<form id="searchForm">
-    		<input type="hidden" name="menuCode" value="BD_EFFECT_ANALYSIS_003">
-	        <div class="tab_item_box flex-center">
-	            <h5 class="tab_item_title">연도별</h5>
-	            <select class="selectBox radius" name="searchYear">
-	                <option value="searchAllYear">전체</option>
-	           	<c:forEach var="yearsList" items="${yearsList}">
-	                <option value="${yearsList.year}">${yearsList.year}년</option>
-	           	</c:forEach>
-	            </select>
-	        </div>
-	        <div class="tab_item_box">
-	            <div class="flex-center">
-	                <h5 class="tab_item_title">기간</h5>
-		            <div class="calendar">
-			            <input type="text" class="date_picker input_same mr8 input_picker" name="startDate" placeholder="날짜를 선택해주세요.">
-			            ~
-			            <div class="end_calendar_box">
-							<div class="date_picker_block"></div>								            
-				            <input type="text" class="end_date_picker input_same mr8 ml8 input_picker" name="endDate" placeholder="날짜를 선택해주세요.">
-			            </div>
-					</div>
-	            </div>
-	        </div>
-	        <div class="tab_item_box">
-	            <div class="flex-center">
-	                <h5 class="tab_item_title">시간</h5>
-					<select class="selectBox selectTime start_time_check" name="startTime" id="startTime"></select>
-					~
-					<select class="selectBox selectTime end_time_check ml8" name="endTime" id="endTime"></select>
-	            </div>
-	        </div>
-	        <div class="tab_item_box flex-center">
-	            <h5 class="tab_item_title">지역별</h5>
-	            <select class="selectBox radius">
-	                <option value="searchAllLocation">전체 지역</option>
-					<c:forEach var="sggCdList" items="${sggCdList}">
-	                	<option value="${sggCdList.cdId}">${sggCdList.cdNm}</option>
-					</c:forEach>
-	            </select>
-	        </div>
-	        <div class="tab_item_box flex-center">
-	            <h5 class="tab_item_title">차량번호</h5>
-	            <label class="group_btn_item is-dark-btn radius inpd is-darkgreen-btn"><input type="checkbox" class="none" id="selectMap" name="searchCrossroadsType" value="all" checked="checked">전체</label>
-	            <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" class="none" id="selectList" name="crossroadsType" value="list">리스트에서 선택</label>
-	        </div>
-	        <div class="tab_item_box flex-center pt8 none" id="crossroadsListDiv">
-				<h5 class="tab_item_title"></h5>
-				<div class="gis_table_scroll">
-					<div class="mt16">
-					    <div class="dashboard_sub_title">차량번호로 찾기</div>
-					    <input type="text" class="dashboard_input" id="searchCrsrdNm" placeholder="차량번호를 입력해주세요.">
-					    <input type="hidden" id="mapPage" name="page" value="1"/>
-					</div>
-					<div class="dashboard_btn_box">
-					    <button type="button" class="is-darkgreen-btn modal_input_srbtn" id="searchCrossBtn">찾기</button>
-					</div>
-					<div class="mt16">
-						<table>
-						    <colgroup>
-						        <col style="width:10%">
-						        <col style="width:10%">
-						        <col style="width:80%">
-						    </colgroup>
-						    <thead>
-						        <tr>
-						            <th scope="col"></th>
-						            <th scope="col">번호</th>
-						            <th scope="col">교차로명</th>
-						        </tr>
-						    </thead>
-						    <tbody>
-						    </tbody>
-						</table>
-					</div>
-					<div id="pagingDiv">
+	<div class="original_box clearfix">
+		<form id="searchForm" class="result_change">
+			<input type="hidden" name="menuCode" value="BD_EFFECT_ANALYSIS_003">
+			<input type="hidden" name="pageType" value="<c:out value='${type}'/>">
+			<input type="hidden" name="linkId" id="linkId">
+			<input type="hidden" name="endDate" id="endDate">
+			<input type="hidden" name="before_startDate" id="before_startDate">
+			<input type="hidden" name="before_endDate" id="before_endDate">
+			<input type="hidden" id="mapPage" name="page" value="1"/>
+			<div class="tab_item_box">
+				<div class="flex-center">
+					<h5 class="tab_item_title">기준일<span class="required-alert">*</span></h5>
+					<div class="calendar">
+						<input type="text" class="date_picker input_same mr8 input_picker start_date_check" name="startDate" id="startDate" onchange="changeEndDateByMonthlySection()" placeholder="날짜를 선택해주세요." autocomplete="off">
 					</div>
 				</div>
-	        </div>	        	        
-        </form>
-        <div class="bottom_btn">
-            <button type="button" class="is-darkgreen-btn radius original_result_btn" onclick="analysisResultEvent();">결과보기</button>
-        </div>
-    </div>
+			</div>
+			<div class="tab_item_box">
+				<div class="flex-center">
+					<h5 class="tab_item_title">조회구간<span class="required-alert">*</span></h5>
+					<div class="calendar">
+						<select name="monthly_section" id="monthly_section" class="selectBox radius" onchange="changeEndDateByMonthlySection()">
+							<option value="10">10일 전후</option>
+							<option value="30">30일 전후</option>
+							<option value="90">90일 전후</option>
+							<option value="120">120일 전후</option>
+						</select>
+					</div>
+				</div>
+			</div>
+			<%--<div class="tab_item_box flex-center">
+				<h5 class="tab_item_title">지역별</h5>
+				<select class="selectBox radius" name="searchLocation">
+					<option value="searchAllLocation">전체 지역</option>
+					<c:forEach var="sggCdList" items="${sggCdList}">
+						<option value="<c:out value='${sggCdList.cdId}'/>"><c:out value='${sggCdList.cdNm}'/></option>
+					</c:forEach>
+				</select>
+			</div>--%>
+			<div class="tab_item_box flex-center">
+				<h5 class="tab_item_title">검색</h5>
+				<input type="text" placeholder="도로명/링크아이디" name="searchContent" id="searchContent" class="input_same search_box radius">
+				<button type="button" class="is-darkgreen-btn ml8" onclick="fnSearchList();">검색</button>
+			</div>
+<%--			<div class="tab_item_box flex-center">--%>
+<%--				<h5 class="tab_item_title">항목</h5>--%>
+<%--				<label class="group_btn_item is-dark-btn radius inpd is-darkgreen-btn"><input type="checkbox" class="none" id="traffic" name="searchResultType" value="vhclTrfvlm" checked>교통량</label>--%>
+<%--				<label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" class="none" name="searchResultType" value="speedAvg" id="speed">평균속도</label>--%>
+<%--			</div>--%>
+			<input type="hidden" name="searchResultType" value="speedAvg">
+			<div class="tab_item_box flex-center pt8 none" id="tableHeader">
+				<h5 class="tab_item_title"></h5>
+				<div class="gis_table_scroll" style="width:600px;">
+					<div class="table_search_number tableTitle">
+						<span id="totalCnt"><c:out value='${totalCnt}'/></span>개의 검색결과를 찾았습니다.
+					</div>
+					<table class="all_center" id="modalTable">
+						<colgroup>
+							<col style="width:10%">
+							<col>
+							<col>
+						</colgroup>
+						<thead>
+						<tr>
+							<th scope="col">선택</th>
+							<th scope="col">도로명</th>
+							<th scope="col">링크ID</th>
+						</tr>
+						</thead>
+						<tbody>
+						</tbody>
+					</table>
+					<div id="modalPaging">
+						<%@ include file="/WEB-INF/jsp/ggits/utils/gis_paging.jsp" %>
+					</div>
+				</div>
+			</div>
+		</form>
+		<div class="bottom_btn">
+			<button type="button" class="is-darkgreen-btn radius original_result_btn" id="resulutButton" onclick="analysisResultEvent();">결과보기</button>
+		</div>
+	</div>
 </div>
 
 <script>
 	gisCheckInit();
 	datePickerInit();
-	dateTiemInit();
-	tabTitleCss();
-	resultRemove();
-	tabListOnOff();
-	
-	function analysisResultEvent(){
-/* 		var searchForm = $("#searchForm").serialize();
-        window.dualMap.bigdata.getTrafficActiveEffectAnalysis(searchForm);
-        window.map.monitoring.getTrafficInfo(false);
-        gitsApp.drawMergeButton(function(){
-            gitsApp.removeDualMap();
-        }); */
-		var resultItem = $(      
-			`
-	    		<div class="dashboard_boxTest">
-	   				<div class="dashboard_wrap dash_bg">
-			            <div class="original_box">
-							<div class="tab_box_sub_header">
-								<div class="tab_box_title">긴급차량 운행정보</div>
-								<div class="tab_box_close">
-									<div class="opa_slider ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all">
-										<div class="ui-slider-range ui-widget-header ui-corner-all ui-slider-range-min" style="width: 100%;"></div>
-										<span class="ui-slider-handle ui-state-default ui-corner-all" tabindex="0" style="left: 100%;"></span>
-									</div>
-									<button><img src="${pageContext.request.contextPath}/statics/images/wh_close.png" class="tab_popup_close"></button>
-								</div>
-							</div>
-			                <div class="tab_item_box">
-			                    <div class="tab_item_txt flex-center">
-			                        <div>2022년 5월 7일</div>
-			                        <div><span class="tab_item_span">차량번호</span> : 389루 7458</div>
-			                    </div>
-			                    <div class="tab_item_txt flex-center">
-			                        <div><span class="tab_item_span">출/도착지</span> : 장안구청/인계사거리</div>
-			                        <div><span class="tab_item_span">인근교차로</span> : 신동사거리 외 8</div>
-			                    </div>
-			                </div>
-			                <div class="tab_item_box">
-			                    <div class="tab_item_txt flex-center">
-			                        <div><span class="tab_item_span">예상 운행시간</span> : 45분</div>
-			                        <div><span class="tab_item_span">단축시간</span> : 20분</div>
-			                    </div>
-			                </div>
-			                <div class="tab_item_box">
-			                    <div class="tab_item_txt flex-center">
-			                        <div><span class="tab_item_span">실 운행시간</span> : 45분</div>
-			                        <div><span class="tab_item_span">골든타임 달성여부</span> : 달성</div>
-			                    </div>
-			                </div>
-			                <div class="tab_item_box flex-center select_arrow">
-			                	<div class="ftsize12">긴급차량 운행 구간 내 인접 도로 및 교차로 소통 변화</div>
-			                </div>
-			                <div class="tab_item_box flex-center">
-			                    <h5 class="tab_item_title">기준</h5>
-			                    <label class="group_btn_item is-dark-btn radius inpd ftsize12"><input type="checkbox" class="none">소통등급</label>
-			                    <label class="group_btn_item is-dark-btn radius inpd ftsize12"><input type="checkbox" class="none">평균속도</label>
-			                </div>
-			                <div class="tab_item_box">
-		                        <select class="selectBox radius ftsize12">
-		                            <option>신동사거리</option>
-		                            <option>테스트</option>
-		                            <option>테스트</option>
-		                            <option>테스트</option>
-		                        </select>
-			                    <div class="mt8">
-			                        <canvas id="chart"></canvas>
-			                    </div>
-			                </div>
-		            	</div>   				
-					</div>
-	   			</div>`     
-	   	);   
-        $('#aside_dashboard_container').append(resultItem);
-        
-    /*     new GITSChart(GITSChartType.LINE).init("chart")
-        .setDataSetLabel('원활','서행','지체/혼잡', '', '', '')
-        .setDataSet({
-            label:'교통량',
-            data: [40, 15, 25, 42, 60, 50],
-            backgroundColor:'#58edd2',
-            borderWidth:3,
-            borderColor:'#58edd2',
-            fill: false
-        })
-        .setTicksStep(20)
-        .setAxis('y')
-    	.setBarGridY(false)
-    	.setBarGridX(true)
-         .draw(); */
-         
-        var remarksItem = $(`
-    	        <div class="remarks_container">
-    		        <div class="remarks_title_box">
-    		            <h6 class="remarks_title">범례 - 소통등급</h6>
-    		        </div>
-    	        	<div class="remarks_wrap tab-none">
-    	            	<div>
-    		                <div class="check_line_container">
-	    	                    <button type="button" class="check_line_box remarks-red">정체</button>
-	    	                    <button type="button" class="check_line_box remarks-orange">서행</button>
-	    	                    <button type="button" class="check_line_box remarks-green">원활</button>
-    		                </div>
-    	            	</div>
-    		            <div class="unit">단위 : 소통등급</div>
-    	        	</div>
-    	    	</div>`)        
-            $('#map-container').append(remarksItem);
-            legendToggle();	          
+
+	$(document).ready(function(){
+		$('.date_picker_block').remove();
+	})
+
+	$("#searchAllRoadRankBtn").on("click",function(){
+		var allChkVal = $(this).hasClass("is-darkgreen-btn");
+		var roadRank = $("input[name='roadRank']");
+		var roadRankVal = "";
+		if(allChkVal){
+			roadRank.each(function(idx,item){
+				if(idx == 0){
+					roadRankVal = $(item).val();
+				}else{
+					roadRankVal += ","+$(item).val();
+				}
+			})
+		}
+		$("#searchRoadRank").val(roadRankVal);
+	});
+
+	function fnSearchList(){
+		$("#modalTable>tbody > tr").remove();
+		$("#modalPaging > .dashboard-pg-wrap").remove();
+		var page = $("#mapPage").val();
+		$("#linkId").val("");
+		$.ajax({
+			type : "get",
+			data : $("#searchForm").serialize(),
+			timeout : 60*1000*10,
+			url : "${pageContext.request.contextPath}/map/bigdata/effect/analysis/BD_EFFECT_ANALYSIS_003/data.ajax",
+			beforeSend : function(){
+				startLoading();
+			},
+			success : function(result){
+				if(result.code == 200){
+					var html = '';
+					var title = '';
+					var startDate = '';
+					var endDate = '';
+					if(result.data.resultList.length == 0){
+						html += '<tr>' +
+								'<td colspan="3">도로 정보를 찾을 수 없습니다.</td>' +
+								'</tr>';
+					}else{
+						$(result.data.resultList).each(function(index, item){
+							html += '<tr onclick="setLinkId(\'' + item.linkId + '\')">' +
+									'<td>' + '<input type="radio" id="listItem'+index+'" name="listItem" class="bigdata_input_radio" value="' + item.linkId + '">' + '</td>' +
+									'<td>' + '<label for="listItem'+index+'">' + item.roadName + '</label>' + '</td>' +
+									'<td>' + '<label for="listItem'+index+'">' + item.linkId + '</label>' + '</td>' +
+									'</tr>';
+						})
+					}
+					$("#tableHeader").removeClass("none");
+					$("#modalTable>tbody").append(html);
+					var paging = result.data.paging;
+					if(paging != null && paging != ''){
+						title += '<span id="totalCnt2">'+paging.totalCount+'</span>개의 검색결과를 찾았습니다.';
+						$("#modalPaging").append(getGisPagingHtml(paging, page));
+						var dataTotalCnt2 = '+paging.totalCount+';
+						$("#totalCnt2").text(numberComma(dataTotalCnt2))
+					};
+					$(".tableTitle").html(title);
+				}else{
+					endLoading();
+					new ModalBuilder().init().alertBoby("도로정보 조회에 실패 하였습니다.").footer(4,'확인',function(button, modal){modal.close();}).open();
+					modalAlertWrap();
+				}
+			},
+			complete : function(){
+				endLoading();
+			}
+		});
 	}
-	
-	
+	function setLinkId(linkId) {
+		$("#linkId").val(linkId);
+	}
+
+	function changeEndDateByMonthlySection(){
+		let stdt = $("#startDate").val();
+		if(!stdt) return;
+		let du = $("#monthly_section").val();
+
+		let stDate = new Date(stdt);
+
+		let beforeStDate = stDate.addDays(-1*parseInt(du));
+		let beforeEndDate = stDate;
+		let afterEndDate = stDate.addDays(parseInt(du));
+		let bf_st_yyyy = beforeStDate.getFullYear();
+		let bf_st_mm = beforeStDate.getMonth() + 1; // getMonth() is zero-based
+		let bf_st_dd = beforeStDate.getDate() < 10 ? "0"+beforeStDate.getDate() : beforeStDate.getDate();
+		let bf_ed_yyyy = beforeEndDate.getFullYear();
+		let bf_ed_mm = beforeEndDate.getMonth() + 1; // getMonth() is zero-based
+		let bf_ed_dd = beforeEndDate.getDate() < 10 ? "0"+beforeEndDate.getDate() : beforeEndDate.getDate();
+		let af_ed_yyyy = afterEndDate.getFullYear();
+		let af_ed_mm = afterEndDate.getMonth() + 1; // getMonth() is zero-based
+		let af_ed_dd = afterEndDate.getDate() < 10 ? "0"+afterEndDate.getDate() : afterEndDate.getDate();
+
+		$("#before_startDate").val(bf_st_yyyy+'-'+(bf_st_mm < 10 ? "0"+bf_st_mm : bf_st_mm)+'-'+bf_st_dd);
+		$("#before_endDate").val(bf_ed_yyyy+'-'+(bf_ed_mm < 10 ? "0"+bf_ed_mm : bf_ed_mm)+'-'+bf_ed_dd);
+		$("#endDate").val(af_ed_yyyy+'-'+(af_ed_mm < 10 ? "0"+af_ed_mm : af_ed_mm)+'-'+af_ed_dd);
+	}
+	function analysisResultEvent(){
+
+		if($("#startDate").val() == '') {
+			alert("기준일을 선택해주세요.");
+			return;
+		}
+		var searchResultType = $("input[name='type']:checked").val();
+		$("#searchResultType").val(searchResultType);
+		bigdataSearchForm = $("#searchForm").serializeObject();
+
+		let startDate = $('.start_date_check').val();
+		let endDate = $('.end_date_check').val();
+		var startTime = $('.start_time_check').val();
+		var endTime = $('.end_time_check').val();
+
+		var edForm = $(':not([name^=before_])', "#searchForm").serialize(); // 후
+		var stForm = $('[name!=startDate][name!=endDate]', "#searchForm").serialize(); // 전
+
+
+		stForm = stForm+"&startDate="+$("#before_startDate").val()+"&endDate="+$("#before_endDate").val();
+		window.dualMap.bigdata.getTrafficActiveEffectAnalysisSvcLink(edForm); // 후
+		window.map.bigdata.getTrafficActiveEffectAnalysisSvcLink(stForm); // 전
+		/* gitsApp.drawMergeButton(function(){
+             window.afterData = window.dualMap.getSavedData();
+             window.beforeData = window.map.getSavedData();
+             const afterSearchOption =  Object.fromEntries(new URLSearchParams(window.afterData.searchOption));
+             const beforeSearchOption =  Object.fromEntries(new URLSearchParams(window.beforeData.searchOption));
+
+             const mergeSearchOption = "menuCode=BD_EFFECT_ANALYSIS_002&type="+beforeSearchOption.searchResultType+"&startDate="+beforeSearchOption.startDate+"&endDate="+afterSearchOption.endDate+"&startTime="+beforeSearchOption.startTime+"&endTime="+afterSearchOption.endTime+"&searchCrossroadsType=all&page=1";
+             window.map.bigdata.getTrafficEffectAnalysisMerge(mergeSearchOption);
+
+             gitsApp.removeDualMap();
+         });*/
+
+		$(".start_date").text(startDate);
+		$(".end_date").text(endDate);
+
+//        	let oneHourStartLeft = Number(startTime)+1 < 10 ? "0"+(Number(startTime)+1):Number(startTime)+1;
+//        	let oneHourAfterLeft = Number(endTime)+1 < 10 ? "0"+(Number(endTime)+1):Number(endTime)+1;
+
+		//숫자 정규식
+		var numRegex = /^[0-9]+$/;
+		if(numRegex.test(startTime) && numRegex.test(endTime)){
+			let oneHourStartLeft = Number(startTime)+1;
+			let oneHourAfterLeft = Number(endTime)+1;
+
+			$(".start_time").text(Number(startTime) + "시 ~ " + oneHourStartLeft+"시");
+			$(".end_time").text(Number(endTime) + "시 ~ " + oneHourAfterLeft+"시");
+		}
+
+		var trafficRemrks= $(`
+	        <div class="remarks_container remarksClose">
+		        <div class="remarks_title_box">
+		            <h6 class="remarks_title">범례 - 교통량</h6>
+		        </div>
+	        	<div class="remarks_wrap">
+	            	<div>
+		                <ul class="check_line_container">
+		                    <li class="check_line_box remarks-red">14,001 - 100,000</li>
+		                    <li class="check_line_box remarks-orange">8,001 - 14,000</li>
+		                    <li class="check_line_box remarks-light-orange">5,001 - 8,000</li>
+		                    <li class="check_line_box remarks-light-green">2,001 - 5,000</li>
+		                    <li class="check_line_box remarks-green">0 - 2,000</li>
+		                </ul>
+	            	</div>
+		            <div class="unit">단위 : (일/대)</div>
+	        	</div>
+	    	</div>`)
+
+		var speedRemrks= $(`
+	        <div class="remarks_container speed remarksClose">
+		        <div class="remarks_title_box">
+		            <h6 class="remarks_title">범례 - 평균속도</h6>
+		        </div>
+	        	<div class="remarks_wrap">
+	            	<div>
+		                <ul class="check_line_container">
+		                    <li class="check_line_box remarks-red">정체</li>
+		                    <li class="check_line_box remarks-orange">지체(서행)</li>
+		                    <li class="check_line_box remarks-green">원활</li>
+		                </ul>
+	            	</div>
+		            <div class="unit">단위 : 소통등급</div>
+	        	</div>
+	    	</div>`)
+		$('#map-container').find(".remarks_container").remove();
+		const trafficCheck = $('#traffic').is(':checked');
+		if(trafficCheck == true){
+			$('#map-container').append(trafficRemrks);
+		} else {
+			$('#map-container').append(speedRemrks);
+		}
+		legendToggle();
+
+		resultChange();
+	}
+
+	$("#searchCrossBtn").on('click', function(){
+		$("#mapPage").val("1");
+		fnSearchCrossListForBigdata();
+	});
+
 	$("#selectList").on("click",function(){
 		var checkedVal = $(this).is(":checked");
 		$("#crossroadsListDiv").removeClass("none");
 		fnSearchCrossListForBigdata();
 	})
+
+	$("#selectMap").on("click",function(){
+		$("#crossroadsListDiv").addClass("none");
+	})
+
+	if(window.afterData && window.beforeData){
+		const afterSearchOption =  Object.fromEntries(new URLSearchParams(window.afterData.searchOption));
+		const beforeSearchOption =  Object.fromEntries(new URLSearchParams(window.beforeData.searchOption));
+		$('.yesterday').datepicker('setDate', beforeSearchOption.startDate);
+		$('.today').datepicker('setDate', afterSearchOption.endDate);
+	}
+
+	$(document).ready(function(){
+		var toDayTime = new Date();
+		var year = toDayTime.getFullYear();
+		var month = ('0' + (toDayTime.getMonth() + 1)).slice(-2);
+		var day = ('0' + toDayTime.getDate()).slice(-2);
+		var dateString = year + '-' + month  + '-' + day;
+
+		//실시간 select time
+		var optionHtml = "";
+		let dayTime = new Date()
+		$(".hour").append(optionHtml);
+		var hour = dayTime.getHours();
+		$(".hour").val(hour -1);
+
+		//실시간보다 높은 option disabled
+		let endDay = $('.end_date_picker').val();
+		if(dateString == endDay){
+			$.each($('#endTime option'), function(){
+				var idx = $(this).index();
+				if (hour <= idx){
+					$(this).attr('disabled','disabled');
+				} else {
+					$(this).removeAttr('disabled').prop('selected', true);
+				}
+			})
+			$.each($('#startTime option'), function(){
+				var idx = $(this).index();
+				if (hour <= idx){
+					$(this).attr('disabled','disabled');
+				} else {
+					$(this).removeAttr('disabled').prop('selected', true);
+				}
+			})
+		}
+
+		//날짜 같은날 지정못하게
+		$('.date_picker').datepicker();
+		$('.date_picker').datepicker("option", "onClose", function (selectedDate) {
+			var nextDay = new Date(selectedDate);
+			nextDay.setDate(nextDay.getDate() + 1);
+			$(".end_date_picker").datepicker("option", "minDate", nextDay);
+		});
+
+		$('.end_date_picker').datepicker();
+		$('.end_date_picker').datepicker("option", "minDate", $(".date_picker").val());
+		$('.end_date_picker').datepicker("option", "onClose", function (selectedDate) {
+			var prevDay = new Date(selectedDate);
+			prevDay.setDate(prevDay.getDate() - 1);
+			$(".date_picker").datepicker("option", "maxDate", prevDay);
+		});
+
+		$('.date_picker').datepicker('option', 'maxDate', '-1D');
+	})
+
+	$('.date_picker').on('change', function(){
+		var toDayTime = new Date();
+		var year = toDayTime.getFullYear();
+		var month = ('0' + (toDayTime.getMonth() + 1)).slice(-2);
+		var day = ('0' + toDayTime.getDate()).slice(-2);
+		var dateString = year + '-' + month  + '-' + day;
+
+		var getHours = toDayTime.getHours();
+		var afterTime = $("#endTime").val();
+		var beforeTime = $("#startTime").val();
+		var beforeDate = $(".date_picker").val();
+		var afterDate = $(".end_date_picker").val();
+
+		if(afterDate == dateString){
+			$.each($('#startTime option'), function(){
+				var idx = $(this).index();
+				if (getHours <= idx){
+					$(this).attr('disabled','disabled');
+				} else {
+					$(this).removeAttr('disabled').prop('selected', true);
+				}
+			})
+		}
+	})
+
 </script>

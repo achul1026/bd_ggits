@@ -176,11 +176,23 @@ public class MOpMenu {
   
 
   public String[] getMenuPttrnTypeArr() {
-	return menuPttrnTypeArr;
+    String[] menuPttrnTypeArrCopy = null;
+    if(this.menuPttrnTypeArr != null) {
+      menuPttrnTypeArrCopy = new String[menuPttrnTypeArr.length];
+      for (int i = 0; i < menuPttrnTypeArr.length; i++) {
+        menuPttrnTypeArrCopy[i] = this.menuPttrnTypeArr[i];
+      }
+    } 
+    return menuPttrnTypeArrCopy;
   }
 
   public void setMenuPttrnTypeArr(String[] menuPttrnTypeArr) {
-	this.menuPttrnTypeArr = menuPttrnTypeArr;
+    if(menuPttrnTypeArr != null) {
+      this.menuPttrnTypeArr = new String[menuPttrnTypeArr.length];
+      for (int i = 0; i <menuPttrnTypeArr.length; i++) {
+        this.menuPttrnTypeArr[i] = menuPttrnTypeArr[i];
+      }
+    }
   }
 
   @Override

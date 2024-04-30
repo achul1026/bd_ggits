@@ -1,11 +1,10 @@
 package com.neighbor21.ggits.common.mapper;
 import java.util.List;
 
-import com.neighbor21.ggits.common.entity.AdsiMFaDsrc;
-import com.neighbor21.ggits.common.entity.AdsiMFaVds;
 import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
 
 import com.neighbor21.ggits.common.dto.MapFacilityMenuDTO;
+import com.neighbor21.ggits.common.entity.AdsiMFaDsrc;
 
 @Mapper
 public interface AdsiMFaDsrcMapper {

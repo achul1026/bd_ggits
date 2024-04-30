@@ -10,9 +10,9 @@
                 데이터 활용 통계 및 분석 자료
             </div>
             <div class="side_btn">
-			     <a href="${pageContext.request.contextPath}/statistics/data/use/open_api_use_log/list.do"class="on">서비스 이력</a>
-			     <a href="${pageContext.request.contextPath}/statistics/data/impact/reg_enty_exit_data_tnt/list.do">교통영향평가 데이터</a>
-			     <a href="${pageContext.request.contextPath}/statistics/data/recode/traffic_info_log_colt/list.do">이력 집계</a>
+			     <a href="${pageContext.request.contextPath}/statistics/data/use/open_api_use_log/list.do"class="on" onclick="startLoading()">서비스 이력</a>
+			     <a href="${pageContext.request.contextPath}/statistics/data/impact/reg_enty_exit_data_tnt/list.do" onclick="startLoading()">교통영향평가 데이터</a>
+			     <a href="${pageContext.request.contextPath}/statistics/data/recode/traffic_info_log_colt/list.do" onclick="startLoading()">이력 집계</a>
             </div>
         </div>
     </aside>
@@ -20,28 +20,42 @@
     	<form id="searchForm" method="get">
     	<input type="hidden" id="page" name="page"  value="1"/>
         <h2 class="blind">운영 관리</h2>
-        <div class="table_btn_wrap clearfix tab_fc">
-            <div class="btn_search_wrap float-left">
-            	<button type="button" class="tab_btn_item is-dark-btn" onclick="location.href='${pageContext.request.contextPath}/statistics/data/use/open_api_use_log/list.do'" >Open API 활용 이력</button>
-                <button type="button" class="tab_btn_item is-dark-btn" onclick="location.href='${pageContext.request.contextPath}/statistics/data/use/clit_link_sys_log/list.do'">수집/연계시스템 이력</button>
-                <button type="button" class="tab_btn_item is-dark-btn is-darkgreen-btn" onclick="location.href='${pageContext.request.contextPath}/statistics/data/use/sm_crsrd_data_log/list.do'">스마트교차로 데이터 이력</button>
+        <div class="table_btn_wrap tab_fc flex-between">
+            <div class="btn_search_wrap">
+            	<ul>
+            		<li>
+            			 <button type="button" class="tab_btn_item is-dark-btn" onclick="startLoading(); location.href='${pageContext.request.contextPath}/statistics/data/use/clit_link_sys_log/list.do'">수집/연계시스템 이력</button>
+            		</li>
+            		<li>
+            			<button type="button" class="tab_btn_item is-dark-btn is-darkgreen-btn" onclick="startLoading(); location.href='${pageContext.request.contextPath}/statistics/data/use/sm_crsrd_data_log/list.do'">스마트교차로 데이터 이력</button>
+            		</li>
+            	</ul>
             </div>
-            <div class="flex-end">
-                <div class="flex-center">
-                    <div>
+            <div class="btn_search_wrap">
+                <ul>
+                    <li>
                         <select class="selectBox" name="searchType" id="searchType">
                             <option value="all" <c:if test="${searchInfo.searchType eq 'all'}">selected</c:if>>전체</option>
-                            <option value="apiRqstLog" <c:if test="${searchInfo.searchType eq 'apiRqstLog'}">selected</c:if>>제목</option>
+                            <option value="apiRqstLog" <c:if test="${searchInfo.searchType eq 'apiRqstLog'}">selected</c:if>>수집자료</option>
                         </select>
-                    </div>
-                </div>
-                <div class="btn_search_wrap float-none">
-                    <input type="text" placeholder="검색어를 입력하세요." name="searchContent" id="searchContent" class="input_same search_box" value="${searchInfo.searchContent}">
-                    <input type="button" class="input_same search_box2" onclick="fnSearchList();" value="검색">
+                    </li>
+                    <li>
+                        <input type="text" placeholder="검색어를 입력하세요." name="searchContent" id="searchContent" class="input_same search_box" value="<c:out value='${searchInfo.searchContent}'/>">
+                    </li>
+                    <li>
+                       <input type="button" class="input_same search_box2 pointer mj0" onclick="fnSearchList();" value="검색">
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="search_container">
+            <div class="search_head">
+                <div class="search_number">
+                    <span id="totalCnt"><c:out value='${totalCnt}'/></span>개의 검색결과를 찾았습니다.
                 </div>
             </div>
         </div>
-        <div class="contents_wrap tab_area mt8">
+        <div class="tab_area">
             <div class="">
                 <table>
                     <colgroup>
@@ -52,17 +66,17 @@
                     </colgroup>
                     <tr>
                         <th scope="col">번호</th>
-                        <th scope="col">스마트 교차로</th>
-                        <th scope="col">수집 데이터 보기</th>
+                        <th scope="col">수집/연계 시스템</th>
+                        <th scope="col">수집자료</th>
                         <th scope="col">수집일자</th>
                     </tr>
                     <c:choose>
                     	<c:when test="${fn:length(dataUseStatsList) > 0}">
                     		<c:forEach var="dataUseStats" items="${dataUseStatsList}">
                     			<tr>
-                    				<td>${dataUseStats.rownum}</td>
-                    				<td>-</td>
-                    				<td><button type="button" class="smart_data_modal" data-index="${dataUseStats.dsetId}">${dataUseStats.jobNm}</button></td>
+                    				<td><c:out value='${dataUseStats.rownum}'/></td>
+                    				<td><c:out value='${dataUseStats.etlClsf}'/></td>
+                    				<td><c:out value='${dataUseStats.jobNm}'/></td>
                     				<td><fmt:formatDate value="${dataUseStats.clctStartDt}" pattern="yyyy년 MM월 dd일 hh시 mm분"/></td>
                     			</tr>
                     		</c:forEach>
@@ -82,6 +96,16 @@
 </div>
 
 <script>
+	$(document).ready(function() {
+		$('#searchContent').keydown(function() {
+			if (event.keyCode === 13) {
+				event.preventDefault();
+			}
+		});
+	});
+
+	var dataTotalCnt = '<c:out value="${totalCnt}"/>';
+	$("#totalCnt").text(numberComma(dataTotalCnt))
 	/* 수집데이터 */
 	$('.smart_data_modal').on("click", function(){
 		var dsetId = $(this).data("index");

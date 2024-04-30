@@ -18,7 +18,7 @@
 	</div>
 	<div class="modal_table_container none">
 		<div>
-			<div class="modal_input_txt ml8 mt8">총 <span>${totalCnt}</span> 개의 검색결과가 있습니다.</div>
+			<div class="modal_input_txt">총<span id="totalCnt"><c:out value='${totalCnt}'/></span>개의 검색결과가 있습니다.</div>
 		</div>
 		<table class="modal_table mt8" style="width:42rem">
 			<colgroup>
@@ -43,18 +43,18 @@
 				<c:forEach var="userList" items="${userList}">
 					<tr>
 						<td class="center">
-							<input type="checkbox" id="modalOprtrId_${userList.oprtrId}" name="modalOprtrId" value="${userList.oprtrId}" 
+							<input type="checkbox" id="modalOprtrId_<c:out value='${userList.oprtrId}'/>" name="modalOprtrId" value="<c:out value='${userList.oprtrId}'/>" 
 								<c:forEach var="modalUser" items="${modalUserList}">
 									<c:if test="${userList.oprtrId eq modalUser}">checked</c:if>
 								</c:forEach>
 								/>
 						</td>
-						<td class="center"><label for="modalOprtrId_${userList.oprtrId}">${userList.rownum}</label></td>
-                       	<td class="pl24" id="oprtrEmail_${userList.oprtrId}"><label for="modalOprtrId_${userList.oprtrId}">${userList.oprtrEmail}</label></td>
-                       	<td class="pl24" id="oprtrNm_${userList.oprtrId}"><label for="modalOprtrId_${userList.oprtrId}">${userList.oprtrNm}</label></td>
-                       	<td class="pl24"><label for="modalOprtrId_${userList.oprtrId}">${userList.grpNm}</label></td>
+						<td class="center"><label for="modalOprtrId_<c:out value='${userList.oprtrId}'/>"><c:out value='${userList.rownum}'/></label></td>
+                       	<td class="pl24" id="oprtrEmail_<c:out value='${userList.oprtrId}'/>"><label for="modalOprtrId_<c:out value='${userList.oprtrId}'/>"><c:out value='${userList.oprtrEmail}'/></label></td>
+                       	<td class="pl24" id="oprtrNm_<c:out value='${userList.oprtrId}'/>"><label for="modalOprtrId_<c:out value='${userList.oprtrId}'/>"><c:out value='${userList.oprtrNm}'/></label></td>
+                       	<td class="pl24"><label for="modalOprtrId_${userList.oprtrId}"><c:out value="${userList.grpNm}"/></label></td>
                        	<td class="pl24">
-                       		<label for="modalOprtrId_${userList.oprtrId}">
+                       		<label for="modalOprtrId_<c:out value='${userList.oprtrId}'/>">
 	                       		<c:choose>
 	                        		<c:when test="${userList.oprtrSttsCd eq 'OSC001'}">
 	                        			미승인
@@ -82,6 +82,10 @@
 </div>
 <script type="text/javascript">
 
+
+	var dataTotalCnt = '<c:out value="${totalCnt}"/>';
+	$("#totalCnt").text(numberComma(dataTotalCnt))
+	
 	$('.modal_table_container').removeClass('none');
 	$('.modal_footer').removeClass('none');
 

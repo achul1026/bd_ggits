@@ -60,7 +60,7 @@
                                 <li class="depth2_item"><button type="button"><img src="statics/images/monitor_icon02.svg" alt="실시간교통신호"><span>실시간<br>교통신호</span></button></li>
                                 <li class="depth2_item"><button type="button"><img src="statics/images/monitor_icon03.svg" alt="돌발현황"><span>돌발현황</span></button></li>
                                 <li class="depth2_item"><button type="button"><img src="statics/images/monitor_icon04.svg" alt="기상현황"><span>기상현황</span></button></li>
-                                <li class="depth2_item"><button type="button"><img src="statics/images/monitor_icon05.svg" alt="긴급차량이동현황"><span>긴급차량<br>이동현황</span></button></li>
+                                <li class="depth2_item"><button type="button"><img src="statics/images/monitor_icon05.svg" alt="광역 긴급차량이동현황"><span>긴급차량<br>이동현황</span></button></li>
                                 <li class="depth2_item"><button type="button"><img src="statics/images/monitor_icon06.svg" alt="시내버스이동형황"><span>시내버스<br>이동현황</span></button></li>
                                 <li class="depth2_item"><button type="button"><img src="statics/images/monitor_icon07.svg" alt="위험예측구간현황"><span>위험예측<br>구간현황</span></button></li>
                             </ul>
@@ -113,7 +113,7 @@
                                 <li class="depth2_item"><button type="button"><img src="statics/images/bigdata_icon01.svg" alt="경기도최고/최저교통량패턴분석"><span>교통패턴분석</span></button></li>
                                 <li class="depth2_item"><button type="button"><img src="statics/images/bigdata_icon02.svg" alt="정체구간분석"><span>교통활동<br>효과분석</span></button></li>
                                 <li class="depth2_item"><button type="button"><img src="statics/images/bigdata_icon03.svg" alt="정체구간개선효과"><span>교통위험<br>구간분석</span></button></li>
-                                <li class="depth2_item"><button type="button"><img src="statics/images/bigdata_icon04.svg" alt="긴급차량제어효과"><span>교통예측분석</span></button></li>
+                                <li class="depth2_item"><button type="button"><img src="statics/images/bigdata_icon04.svg" alt="교통예측분석"><span>교통예측분석</span></button></li>
                                 <li class="depth2_item"><button type="button"><img src="statics/images/bigdata_icon05.svg" alt="도로안전정보분석"><span>교통신호<br>연동분석</span></button></li>
                                 <li class="depth2_item"><button type="button"><img src="statics/images/bigdata_icon06.svg" alt="교통사고위험지역정보분석"><span>대중교통<br>이용현황 분석</span></button></li>
                                 <li class="depth2_item"><button type="button"><img src="statics/images/bigdata_icon07.svg" alt="교차로 교통량 예측 분석"><span>버스위험운영<br>구간분석</span></button></li>

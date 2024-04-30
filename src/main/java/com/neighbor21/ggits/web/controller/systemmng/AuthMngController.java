@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jcodings.exception.ErrorCodes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -22,12 +23,16 @@ import com.neighbor21.ggits.common.component.validate.ValidateChecker;
 import com.neighbor21.ggits.common.component.validate.ValidateResult;
 import com.neighbor21.ggits.common.entity.CommonResponse;
 import com.neighbor21.ggits.common.entity.MOpAuthority;
+import com.neighbor21.ggits.common.entity.MOpGrpInfo;
 import com.neighbor21.ggits.common.entity.MOpMenu;
 import com.neighbor21.ggits.common.entity.Paging;
 import com.neighbor21.ggits.common.mapper.MOpAthrMenuMapper;
 import com.neighbor21.ggits.common.mapper.MOpAuthorityMapper;
 import com.neighbor21.ggits.common.mapper.MOpGrpInfoMapper;
 import com.neighbor21.ggits.common.mapper.MOpMenuMapper;
+import com.neighbor21.ggits.common.util.LoginSessionUtils;
+import com.neighbor21.ggits.support.exception.CommonException;
+import com.neighbor21.ggits.support.exception.ErrorCode;
 import com.neighbor21.ggits.web.service.systemmng.AuthMngService;
 import com.neighbor21.ggits.web.service.systemmng.MenuMngService;
 
@@ -149,19 +154,24 @@ public class AuthMngController {
     	// validation check
     	ValidateBuilder dtoValidator = new ValidateBuilder(mOpAuthority);
 		dtoValidator
-			        .addRule("authNm", new ValidateChecker().setRequired().setMaxLength(50, "권한 이름은 50자를 넘을 수 없습니다."));
+			        .addRule("authNm", new ValidateChecker().setRequired().setMaxLength(50, "권한 이름은 50자를 넘을 수 없습니다."))
+			        .addRule("authCd", new ValidateChecker().setRequired());
 		
     	ValidateResult dtoValidatorResult = dtoValidator.isValid();
     	
     	if(!dtoValidatorResult.isSuccess()) {
     		return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST , dtoValidatorResult.getMessage());
     	}
+		try {
+			authMngService.saveAuthorityAndMenuAuth(mOpAuthority);
+		} catch(CommonException e) {
+			if(e.getErrorCode().getCode() == ErrorCode.DATA_DUPLICATE.getCode()) {
+				return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST, "VIP권한은 한개만 생성가능합니다.");
+			} else {
+				return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST, "권한 등록 실패");
+			}
+		}
 		
-    	try {
-    		authMngService.saveAuthorityAndMenuAuth(mOpAuthority);
-    	} catch (Exception e) {
-    		return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST, "권한 등록 중 오류가 발생했습니다.");
-    	}
     	return CommonResponse.ResponseCodeAndMessage(HttpStatus.OK, "권한 등록 성공");
     }
     
@@ -185,16 +195,13 @@ public class AuthMngController {
     		return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST , dtoValidatorResult.getMessage());
     	}
 		
-      	try {
-      		Long cnt = mOpGrpInfoMapper.existsByAuthId(authId);
-      		if(cnt > 0) {
-      			return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST ,"권한을 사용중인 그룹이 존재하여 삭제 할 수 없습니다.");
-      		} else {
-      			authMngService.deleteAll(authId);
-      		}
-      	} catch (Exception e) {
-      		return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST ,"권한 삭제중 오류가 발생했습니다.");
-    	}
+  		Long cnt = mOpGrpInfoMapper.existsByAuthId(authId);
+  		if(cnt > 0) {
+  			return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST ,"권한을 사용중인 그룹이 존재하여 삭제 할 수 없습니다.");
+  		} else {
+  			authMngService.deleteAll(authId);
+  		}
+  		
 		return CommonResponse.ResponseCodeAndMessage(HttpStatus.OK, "권한을 성공적으로 삭제 했습니다.");
     }
     
@@ -218,11 +225,8 @@ public class AuthMngController {
     		return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST , dtoValidatorResult.getMessage());
     	}
 		
-	 try {
-   		authMngService.updateMOpAuthority(mOpAuthority);
-   	 } catch(Exception e) { 
-     	return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST , "권한 수정중 오류가 발생했습니다.");
- 	 }
+   		 authMngService.updateMOpAuthority(mOpAuthority);
+   		 
     	 return CommonResponse.ResponseCodeAndMessage(HttpStatus.OK ,"권한 수정에 성공했습니다.");
    }
 }

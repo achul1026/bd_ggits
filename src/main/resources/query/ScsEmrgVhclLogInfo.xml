@@ -4,50 +4,221 @@
 <mapper namespace='com.neighbor21.ggits.common.mapper.ScsEmrgVhclLogInfoMapper'>
 	<sql id="scsEmrgVhclLogInfo-Where">
 		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
-			AND sevli.DATE 
-			BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
-		    	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			AND SEVPI.COLLECTDT
+			BETWEEN TO_TIMESTAMP(#{strDt}|| ' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}|| ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
 		</if>
 		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
 			<![CDATA[
-			AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS')  <= sevli.DATE
+			AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS')  <= SEVPI.COLLECTDT
 			]]>
 		</if>
 		<if test="(strDt == '' or strDt == null) and (endDt != '' and endDt != null)">
 			<![CDATA[
-			AND sevli.DATE <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			AND SEVPI.COLLECTDT <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
 			]]>
 		</if>
+		<if test="searchContent != null and searchContent != ''">
+			AND SEVPI.EVNO LIKE '%' || #{searchContent} || '%'
+		</if>
 		<if test="dayOfTheWeek != null">
-			AND EXTRACT (ISODOW from sevli.DATE)::varchar(1) IN 
+			AND EXTRACT (ISODOW from SEVPI.COLLECTDT)::varchar(1) IN
 				<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
                     #{item}
                 </foreach>
 		</if>
 	</sql>
 	
-	<select id="countEmrgVhclLogList" parameterType="commonEntity" resultType="int">
+	<select id="findAllEmrgVhclLogList" parameterType="commonEntity" resultType="scsEmrgVhclLogInfo">
+		WITH EMRG_CUR_INFO_CHK AS (
+			SELECT
+				COUNT(SEVPI.SERVICEID) AS CUR_INF_CNT,
+				SEVPI.SERVICEID
+			FROM SCS_EMRG_VHCL_PATH_INFO SEVPI
+			GROUP BY SEVPI.SERVICEID 
+		)
 		SELECT
-			COUNT(*)
-		FROM SCS_EMRG_VHCL_LOG_INFO sevli
-		INNER JOIN SCS_EMRG_VHCL_PATH_INFO sevpi
-			ON sevli.SERVICEID = sevpi.SERVICEID
-		WHERE
-			1=1
+			SEVPI.EVNO ,
+			SEVLI.SPEED ,
+			SEVPI.OCRTYPE ,
+			ROUND(SEVPI.METER::NUMERIC  / 1000.0, 2) as KILOMETER,
+			CASE WHEN COALESCE(EMRG_CUR_INFO_CHK.CUR_INF_CNT, 0) = 0 THEN 'CUS001'
+			ELSE 'CUS002'
+			END AS EMRG_CUR_STTS_CD ,
+			MAX(SEVLI.COLLECTDT) AS ARRIVAL_DATE ,
+			<![CDATA[
+			CASE WHEN MAX(SEVPI.ARRIVALTIME) >= 3600 THEN TO_CHAR(MAX(SEVPI.ARRIVALTIME) * INTERVAL '1 SECOND', 'HH24시 MI분 SS초')
+				WHEN (MAX(SEVPI.ARRIVALTIME) < 3600 AND MAX(SEVPI.ARRIVALTIME) > 60) THEN TO_CHAR(MAX(SEVPI.ARRIVALTIME) * INTERVAL '1 SECOND', 'MI분 SS초')
+				WHEN MAX(SEVPI.ARRIVALTIME) <= 60 THEN TO_CHAR(MAX(SEVPI.ARRIVALTIME) * INTERVAL '1 SECOND', 'SS초')
+				ELSE '0'
+			END AS ARRIVALTIME_FORMAT
+			]]>
+		FROM
+			(
+			SELECT
+			EVNO ,
+			OCRTYPE,
+			ARRIVALTIME,
+			SERVICEID ,
+			ST_LENGTH(ROUTE::GEOGRAPHY) as METER,
+			MAX(COLLECTDT) AS COLLECTDT
+			FROM SCS_EMRG_VHCL_PATH_LOG SEVPI
+			GROUP BY SERVICEID ,EVNO, ARRIVALTIME, OCRTYPE, METER
+			) SEVPI
+			INNER JOIN (
+					SELECT
+						SERVICEID ,
+						AVG(SPEED) AS  SPEED,
+						MAX(COLLECTDT) AS COLLECTDT
+						FROM SCS_EMRG_VHCL_LOG_INFO SEVLI
+						GROUP BY SERVICEID
+			) SEVLI ON SEVLI.SERVICEID = SEVPI.SERVICEID
+			LEFT JOIN EMRG_CUR_INFO_CHK ON EMRG_CUR_INFO_CHK.SERVICEID = SEVPI.SERVICEID
+			WHERE 1 = 1
 			<include refid="scsEmrgVhclLogInfo-Where"/>
+			GROUP BY SEVPI.EVNO, SEVLI.SPEED, EMRG_CUR_INFO_CHK.CUR_INF_CNT, SEVPI.OCRTYPE, SEVPI.METER
+		ORDER BY ARRIVAL_DATE DESC
+		LIMIT 10 OFFSET (#{page} - 1) * 10;
 	</select>
 	
-	<select id="findAllEmrgVhclLogList" parameterType="commonEntity" resultType="scsEmrgVhclLogInfo">
+	<select id="countEmrgVhclLog" parameterType="commonEntity" resultType="int">
 		SELECT
-			sevli.EVNO
-			, sevli.SPEED
-			, sevpi.ARRIVALTIME
-		FROM SCS_EMRG_VHCL_LOG_INFO sevli
-		INNER JOIN SCS_EMRG_VHCL_PATH_INFO sevpi
-			ON sevli.SERVICEID = sevpi.SERVICEID
-		WHERE
-			1=1
-			<include refid="scsEmrgVhclLogInfo-Where"/>
-		ORDER BY sevli.DATE DESC
+			COUNT(*)
+		FROM (
+			WITH EMRG_CUR_INFO_CHK AS (
+					SELECT
+						COUNT(SEVPI.SERVICEID) AS CUR_INF_CNT,
+						SEVPI.SERVICEID
+					FROM SCS_EMRG_VHCL_PATH_INFO SEVPI
+					GROUP BY SEVPI.SERVICEID 
+				)
+				SELECT
+					SEVPI.EVNO ,
+					SEVLI.SPEED ,
+					SEVPI.OCRTYPE ,
+					CASE WHEN COALESCE(EMRG_CUR_INFO_CHK.CUR_INF_CNT, 0) = 0 THEN 'CUS001'
+					ELSE 'CUS002'
+					END AS EMRG_CUR_STTS_CD ,
+					MAX(SEVLI.COLLECTDT) AS ARRIVAL_DATE ,
+					<![CDATA[
+					CASE WHEN MAX(SEVPI.ARRIVALTIME) >= 3600 THEN TO_CHAR(MAX(SEVPI.ARRIVALTIME) * INTERVAL '1 SECOND', 'HH24시 MI분 SS초')
+						WHEN (MAX(SEVPI.ARRIVALTIME) < 3600 AND MAX(SEVPI.ARRIVALTIME) > 60) THEN TO_CHAR(MAX(SEVPI.ARRIVALTIME) * INTERVAL '1 SECOND', 'MI분 SS초')
+						WHEN MAX(SEVPI.ARRIVALTIME) <= 60 THEN TO_CHAR(MAX(SEVPI.ARRIVALTIME) * INTERVAL '1 SECOND', 'SS초')
+						ELSE '0'
+					END AS ARRIVALTIME_FORMAT
+					]]>
+				FROM
+					(
+					SELECT
+					EVNO ,
+					OCRTYPE,
+					ARRIVALTIME,
+					SERVICEID ,
+					MAX(COLLECTDT) AS COLLECTDT
+					FROM SCS_EMRG_VHCL_PATH_LOG SEVPI
+					GROUP BY SERVICEID ,EVNO, ARRIVALTIME, OCRTYPE
+					) SEVPI
+					INNER JOIN (
+							SELECT
+								SERVICEID ,
+								AVG(SPEED) AS  SPEED,
+								MAX(COLLECTDT) AS COLLECTDT
+								FROM SCS_EMRG_VHCL_LOG_INFO SEVLI
+								GROUP BY SERVICEID
+					) SEVLI ON SEVLI.SERVICEID = SEVPI.SERVICEID
+					LEFT JOIN EMRG_CUR_INFO_CHK ON EMRG_CUR_INFO_CHK.SERVICEID = SEVPI.SERVICEID
+					WHERE 1 = 1
+					<include refid="scsEmrgVhclLogInfo-Where"/>
+					GROUP BY SEVPI.EVNO, SEVLI.SPEED, EMRG_CUR_INFO_CHK.CUR_INF_CNT, SEVPI.OCRTYPE
+				ORDER BY ARRIVAL_DATE DESC
+		)A
+	</select>
+
+	<select id="findOneDataCntForMonitoring" resultType="mapMonitoringLinkDataDTO">
+		SELECT
+			COUNT(*) as DATA_CNT,
+			COALESCE(TO_CHAR(MAX(COLLECTDT),'hh24시mi분'),'-') as RENEW_TIME
+		FROM
+			SCS_EMRG_VHCL_LOG_INFO 
+		WHERE TO_CHAR(COLLECTDT,'YYYY-MM-DD') = TO_CHAR(NOW(),'YYYY-MM-DD')
+	</select>
+	
+	<select id="findOneByChartDataForMonitoringDashboard" parameterType="scsEmrgVhclLogInfo" resultType="map">
+	  SELECT 	
+  		COALESCE(A.CNT,0) as "completeCnt",
+   		COALESCE(B.CNT,0) as "runningCnt" ,
+   		COALESCE(A.CNT,0)+COALESCE(B.CNT,0) as "totalCnt"
+	  FROM 
+	  	(
+	  		SELECT
+				COUNT(DISTINCT SEVLI.SERVICEID) as CNT
+	  		FROM
+				SCS_EMRG_VHCL_LOG_INFO SEVLI
+			LEFT JOIN SCS_EMRG_VHCL_CRSRD_SIGL_CUR SEVCSC
+			ON SEVLI.SERVICEID = SEVCSC.SERVICEID
+			WHERE 1=1
+			<![CDATA[
+		    	AND	COLLECTDT >= TO_TIMESTAMP(#{strDt},'YYYY-MM-DD HH24:MI:SS') 
+				AND COLLECTDT <= TO_TIMESTAMP(#{endDt},'YYYY-MM-DD HH24:MI:SS')
+			]]>
+		) A,
+		(
+			SELECT COUNT(*) CNT
+			FROM 
+				SCS_EMRG_VHCL_CUR_INFO SEVCI
+			LEFT JOIN SCS_EMRG_VHCL_PATH_INFO SEVPI 
+				ON SEVCI.SERVICEID = SEVPI.SERVICEID AND SEVCI.EVNO = SEVPI.EVNO
+			WHERE SEVPI.OCRTYPE IS NOT NULL AND SEVPI.ARRIVALTIME IS NOT NULL
+		) B
+	</select>
+	
+	<select id="findAllEmrgCntMap" parameterType="commonEntity" resultType="map">
+		WITH EMRG_CHART_INFO_LIST AS (
+				SELECT
+					ROUND(100.0*COUNT(A.OCRTYPE) / (SELECT COUNT(EVNO) FROM SCS_EMRG_VHCL_PATH_LOG SEVPI WHERE 1=1 <include refid="scsEmrgVhclLogInfo-Where"/>) ,2) as RATEVALUE
+					, A.OCRTYPE
+				FROM
+					(
+					WITH EMRG_CUR_INFO_CHK AS (
+							SELECT
+								COUNT(SEVPI.SERVICEID) AS CUR_INF_CNT,
+								SEVPI.SERVICEID
+							FROM SCS_EMRG_VHCL_PATH_INFO SEVPI
+							GROUP BY SEVPI.SERVICEID
+					)
+					SELECT
+						SEVPI.OCRTYPE
+					FROM
+						(
+						SELECT
+							EVNO,
+							OCRTYPE,
+							ARRIVALTIME,
+							SERVICEID ,
+							MAX(COLLECTDT) AS COLLECTDT
+						FROM SCS_EMRG_VHCL_PATH_LOG SEVPI
+						GROUP BY SERVICEID ,EVNO, ARRIVALTIME,OCRTYPE
+						) SEVPI
+						INNER JOIN (
+								SELECT
+									SERVICEID ,
+									AVG(SPEED) AS  SPEED,
+									MAX(COLLECTDT) AS COLLECTDT
+								FROM SCS_EMRG_VHCL_LOG_INFO SEVLI
+								GROUP BY SERVICEID
+						) SEVLI ON SEVLI.SERVICEID = SEVPI.SERVICEID
+						LEFT JOIN EMRG_CUR_INFO_CHK ON EMRG_CUR_INFO_CHK.SERVICEID = SEVPI.SERVICEID
+						WHERE 1 = 1
+						<include refid="scsEmrgVhclLogInfo-Where"/>
+						AND LENGTH(SEVPI.OCRTYPE) >= 1
+						GROUP BY SEVPI.EVNO, SEVLI.SPEED, EMRG_CUR_INFO_CHK.CUR_INF_CNT, SEVPI.OCRTYPE
+				)A
+		GROUP BY A.OCRTYPE
+		)
+		SELECT
+			ARRAY_TO_STRING(ARRAY_AGG(RATEVALUE), ',') AS "emrgRateArr"
+			,ARRAY_TO_STRING(ARRAY_AGG(OCRTYPE), ',') AS "emrgLabelArr"
+		FROM
+			EMRG_CHART_INFO_LIST
 	</select>
 </mapper>

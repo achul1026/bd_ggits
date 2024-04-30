@@ -5,8 +5,8 @@
 	<sql id="mrtDtgDangerSectn-Where">
 		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
 			AND mdds.ANLS_DT 
-			BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
-		    	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			BETWEEN TO_TIMESTAMP(#{strDt}|| ' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}|| ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
 		</if>
 		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
 			<![CDATA[
@@ -18,6 +18,12 @@
 			AND mdds.ANLS_DT <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
 			]]>
 		</if>
+		<if test="searchContent != null and searchContent != ''">
+			AND gbr.ROUTE_NM LIKE '%' ||  #{searchContent} || '%'
+		</if>
+		<if test="sigunCdId != null and sigunCdId != '' and sigunCdId != 'searchAllLocation'">
+			AND SUBSTRING(gbr.SIDO_CD,0,6) = #{sigunCdId}
+		</if>
 		<if test="dayOfTheWeek != null">
 			AND EXTRACT (ISODOW from mdds.ANLS_DT)::varchar(1) IN 
 				<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
@@ -28,8 +34,10 @@
 	
 	<select id="countBusDtgInfo" parameterType="commonEntity" resultType="int">
 		SELECT
-			COUNT(*)
+			COUNT(mdds.*)
 		FROM MRT_DTG_DANGER_SECTN mdds
+		INNER JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE gbr 
+			ON mdds.BUS_ROUTE_NO = gbr.ROUTE_ID
 		WHERE
 			1=1
 			<include refid="mrtDtgDangerSectn-Where"/>
@@ -41,25 +49,40 @@
 			, gbr.ST_STA_NM
 			, gbr.ED_STA_NM
 			, gbr.ROUTE_INTERVAL
-			, gbr.ROUTE_LENGTH
-			, mdds.BUS_ROUTE_NO
+			, ROUND(gbr.ROUTE_LENGTH::numeric, 2) as ROUTE_LENGTH
+			, gbr.ROUTE_NM
+			, GBR.ROUTE_ID
 			, SUM(mdds.SPDNG_RUNG_CNT) + SUM(mdds.SDACEL_RUNG_CNT) + SUM(mdds.RPDDCL_RUNG_CNT) + SUM(mdds.SDSTOP_RUNG_CNT) + SUM(mdds.SDSTRT_RUNG_CNT) + SUM(mdds.LNGTRMACL_RUNG_CNT) as riskJugCnt
 		FROM MRT_DTG_DANGER_SECTN mdds	
-		LEFT JOIN GGBIS_BUS_ROUTE gbr 
+		INNER JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE gbr 
 			ON mdds.BUS_ROUTE_NO = gbr.ROUTE_ID 
 		WHERE
 			1=1
 			<include refid="mrtDtgDangerSectn-Where"/>
-		GROUP BY mdds.VHCL_NO, mdds.ANLS_DT, mdds.BUS_ROUTE_NO, gbr.ST_STA_NM, gbr.ED_STA_NM, gbr.ROUTE_INTERVAL, gbr.ROUTE_LENGTH
+		GROUP BY GBR.ROUTE_ID, mdds.VHCL_NO, mdds.ANLS_DT, mdds.BUS_ROUTE_NO, gbr.ST_STA_NM, gbr.ED_STA_NM, gbr.ROUTE_INTERVAL, gbr.ROUTE_LENGTH, gbr.ROUTE_NM
 		ORDER BY mdds.ANLS_DT DESC
+		LIMIT 10 OFFSET (#{page} - 1) * 10;
 	</select>
 
 	<select id="findAllBySearchOption" parameterType="mapBigdataSearchDTO" resultType="mrtDtgDangerSectn">
+		select
+		GCIL.LINK_ID as ST_LINK_ID ,
+		ST_ASGEOJSON(ST_LINEMERGE(GCIL.GEOMETRY)) as GEOJSON ,
+		GCIL.ROAD_NAME ,
+		mdds.SPDNG_RUNG_CNT ,
+		mdds.SDACEL_RUNG_CNT ,
+		mdds.RPDDCL_RUNG_CNT ,
+		mdds.SDSTOP_RUNG_CNT ,
+		mdds.SDSTRT_RUNG_CNT ,
+		mdds.LNGTRMACL_RUNG_CNT ,
+		mdds.riskJugCnt
+		FROM
+		C_GM_STD_LINK GCIL
+		inner join bigdata.ext_ggbis_link_mapping eglm on gcil.link_id = eglm.st_link_id
+		inner join (
 		SELECT
-		VHCL_NO
-		,LINK_ID
+		LINK_ID
 		,BUS_ROUTE_NO
-		,CO_ID
 		,SUM(SPDNG_RUNG_CNT) AS SPDNG_RUNG_CNT
 		,SUM(SDACEL_RUNG_CNT) AS SDACEL_RUNG_CNT
 		,SUM(RPDDCL_RUNG_CNT) AS RPDDCL_RUNG_CNT
@@ -67,22 +90,25 @@
 		,SUM(SDSTRT_RUNG_CNT) AS SDSTRT_RUNG_CNT
 		,SUM(LNGTRMACL_RUNG_CNT) AS LNGTRMACL_RUNG_CNT
 		,SUM(SPDNG_RUNG_CNT) + SUM(SDACEL_RUNG_CNT) + SUM(RPDDCL_RUNG_CNT) + SUM(SDSTOP_RUNG_CNT) + SUM(SDSTRT_RUNG_CNT) + SUM(LNGTRMACL_RUNG_CNT) as riskJugCnt
-		FROM MRT_DTG_DANGER_SECTN
-		where
-	    1=1
-	    <if test="searchYear != null and searchYear != ''">
-		<![CDATA[
-		AND ANLS_DT >= to_date(#{searchYear}||'0101','YYYYMMDD')  and ANLS_DT <= to_date(#{searchYear}||'1231','YYYYMMDD')
-		 ]]>
-		</if>
-		group by VHCL_NO, BUS_ROUTE_NO, CO_ID, LINK_ID
+		FROM mrt_dtg_danger_sectn mdds
+		<where>
+			<if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+				AND TO_CHAR(ANLS_DT, 'YYYY') = #{searchYear}
+			</if>
+			<if test="startDate != null and startDate != ''">
+				<![CDATA[AND TO_CHAR(ANLS_DT, 'YYYY-MM-DD') = #{startDate}]]>
+			</if>
+		</where>
+		group by BUS_ROUTE_NO, LINK_ID
+		) mdds on mdds.link_id = eglm.LINK_ID
+		WHERE mdds.bus_route_no = #{routeId}
 	</select>
 	
 	<select id="countAllPubTrfSafeDrvAnal" parameterType="mapBigdataSearchDTO" resultType="int">
 		SELECT
 			COUNT(*)
 		FROM MRT_DTG_DANGER_SECTN mdds
-		LEFT JOIN GGBIS_BUS_ROUTE gbr
+		INNER JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE gbr
 			ON mdds.BUS_ROUTE_NO = gbr.ROUTE_ID
 		WHERE
 			1=1
@@ -99,6 +125,9 @@
 			AND mdds.ANLS_DT
 		    	BETWEEN TO_TIMESTAMP(#{startDate}, 'YYYY-MM-DD HH24:MI:SS') 
 		    	AND TO_TIMESTAMP(#{endDate}, 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<if test="sigunCdId != null and sigunCdId != '' and sigunCdId != 'searchAllLocation'">
+			AND gbr.SIDO_CD = #{sigunCdId}
 		</if>
 		<if test="(peekAndOffPeek != null and peekAndOffPeek != '') and peekAndOffPeek == 'peek'">
 			AND EXTRACT('HOUR' from mdds.ANLS_DT::timestamp)
@@ -114,11 +143,26 @@
 	
 	<select id="findAllPubTrfSafeDrvAnal" parameterType="MapBigdataSearchDTO" resultType="mrtDtgDangerSectn">
 		SELECT
-			gbr.ROUTE_NM
+			gbr.ROUTE_ID
+			, gbr.ROUTE_NM
 			, gbr.ST_STA_NM
 			, gbr.ED_STA_NM
+			, CASE WHEN gbr.ROUTE_TP ='11' THEN '직행좌석형시내버스'
+				WHEN gbr.ROUTE_TP ='12' THEN '좌석형시내버스'
+				WHEN gbr.ROUTE_TP ='13' THEN '일반형시내버스'
+				WHEN gbr.ROUTE_TP ='21' THEN '직행좌석형농어촌버스'
+				WHEN gbr.ROUTE_TP ='22' THEN '좌석형농어촌버스'
+				WHEN gbr.ROUTE_TP ='23' THEN '일반형농어촌버스'
+				WHEN gbr.ROUTE_TP ='30' THEN '마을버스'
+				WHEN gbr.ROUTE_TP ='41' THEN '고속형시외버스'
+				WHEN gbr.ROUTE_TP ='42' THEN '좌석형시외버스'
+				WHEN gbr.ROUTE_TP ='43' THEN '일반형시외버스'
+				WHEN gbr.ROUTE_TP ='51' THEN '리무진형공항버스'
+				WHEN gbr.ROUTE_TP ='52' THEN '좌석형공항버스'
+				WHEN gbr.ROUTE_TP ='53' THEN '일반형공항버스'
+				END AS ROUTE_TP
 		FROM MRT_DTG_DANGER_SECTN mdds
-		LEFT JOIN GGBIS_BUS_ROUTE gbr
+		LEFT JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE gbr
 			ON mdds.BUS_ROUTE_NO = gbr.ROUTE_ID
 		WHERE
 			1=1
@@ -135,6 +179,9 @@
 			AND mdds.ANLS_DT
 		    	BETWEEN TO_TIMESTAMP(#{startDate}, 'YYYY-MM-DD HH24:MI:SS') 
 		    	AND TO_TIMESTAMP(#{endDate}, 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<if test="sigunCdId != null and sigunCdId != '' and sigunCdId != 'searchAllLocation'">
+			AND gbr.SIDO_CD = #{sigunCdId}
 		</if>
 		<if test="(peekAndOffPeek != null and peekAndOffPeek != '') and peekAndOffPeek == 'peek'">
 			AND EXTRACT('HOUR' from mdds.ANLS_DT::timestamp)
@@ -159,5 +206,153 @@
 				MRT_DTG_DANGER_SECTN
 		GROUP BY TO_CHAR(ANLS_DT,'YYYY')
 		ORDER BY TO_CHAR(ANLS_DT,'YYYY') DESC  
+	</select>
+	
+	
+	<select id="findAllPubTrfDagrFrecRank" parameterType="mapBigdataSearchDTO" resultType="map">
+		WITH DNGR_RANK_LIST AS (
+			SELECT 
+				A.DNGR_CNT
+					<if test="searchResultType != null and searchResultType != '' and searchResultType == 'city'">,A.ADSI_NM</if>
+					<if test="searchResultType != null and searchResultType != '' and searchResultType == 'road'">,A.ROAD_NAME</if>
+			FROM
+				(
+				SELECT 
+					SUM(SPDNG_RUNG_CNT + SDACEL_RUNG_CNT + RPDDCL_RUNG_CNT + SDSTOP_RUNG_CNT + SDSTRT_RUNG_CNT + LNGTRMACL_RUNG_CNT) as DNGR_CNT
+					<if test="searchResultType != null and searchResultType != '' and searchResultType == 'city'">, cgslam.ADSI_NM</if>
+					<if test="searchResultType != null and searchResultType != '' and searchResultType == 'road'">, cgslam.ROAD_NAME</if>
+					FROM MRT_DTG_DANGER_SECTN mdds
+					INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam
+						on mdds.LINK_ID  = cgslam.LINK_ID
+					<if test="searchResultType != null and searchResultType != '' and searchResultType == 'city'">GROUP BY cgslam.ADSI_NM</if>
+					<if test="searchResultType != null and searchResultType != '' and searchResultType == 'road'">GROUP BY cgslam.ROAD_NAME</if>
+					ORDER BY DNGR_CNT DESC
+					LIMIT 5
+				)A
+			GROUP BY  A.DNGR_CNT
+					<if test="searchResultType != null and searchResultType != '' and searchResultType == 'city'">,A.ADSI_NM</if>
+					<if test="searchResultType != null and searchResultType != '' and searchResultType == 'road'">, A.ROAD_NAME</if>
+		) 
+		SELECT 	
+			ARRAY_TO_STRING(ARRAY_AGG(DNGR_CNT ORDER BY DNGR_CNT DESC), ',') AS "danrFrecArr"
+			<if test="searchResultType != null and searchResultType != '' and searchResultType == 'city'">, ARRAY_TO_STRING(ARRAY_AGG(ADSI_NM ORDER BY DNGR_CNT DESC), ',') AS "cityInfoArr"</if>
+			<if test="searchResultType != null and searchResultType != '' and searchResultType == 'road'">, ARRAY_TO_STRING(ARRAY_AGG(ROAD_NAME ORDER BY DNGR_CNT DESC), ',') AS "cityInfoArr"</if>
+		FROM 
+		DNGR_RANK_LIST
+	</select>
+	
+	<select id="findAllPubTrfDagrFrecRankList" parameterType="mapBigdataSearchDTO" resultType="map">
+		SELECT 
+			SUM(SPDNG_RUNG_CNT + SDACEL_RUNG_CNT + RPDDCL_RUNG_CNT + SDSTOP_RUNG_CNT + SDSTRT_RUNG_CNT + LNGTRMACL_RUNG_CNT) as dngrCnt
+			<if test="searchResultType != null and searchResultType != '' and searchResultType == 'city'">, cgslam.ADSI_NM 	as adsiNm</if>
+			<if test="searchResultType != null and searchResultType != '' and searchResultType == 'road'">, cgslam.ROAD_NAME as adsiNm</if>
+		FROM MRT_DTG_DANGER_SECTN mdds
+		INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam
+			ON mdds.LINK_ID  = cgslam.LINK_ID
+		<if test="searchResultType != null and searchResultType != '' and searchResultType == 'city'">GROUP BY cgslam.ADSI_NM</if>
+		<if test="searchResultType != null and searchResultType != '' and searchResultType == 'road'">GROUP BY cgslam.ROAD_NAME</if>
+		ORDER BY DNGRCNT DESC
+		LIMIT 5
+	</select>
+	
+	<select id="findOneBusDangrStatsMap" parameterType="map" resultType="map">
+		WITH BUS_DTG_DANGR_ARRAY_LIST as (
+											SELECT
+												TIME_DATA.GRAPH_TIME , 
+												coalesce(GRAPH_DATA.SPDNG_RUNG_CNT,'0') as SPDNG_RUNG_CNT,
+												coalesce(GRAPH_DATA.SDACEL_RUNG_CNT,'0') as SDACEL_RUNG_CNT,
+												coalesce(GRAPH_DATA.RPDDCL_RUNG_CNT,'0') as RPDDCL_RUNG_CNT,
+												coalesce(GRAPH_DATA.SDSTOP_RUNG_CNT,'0') as SDSTOP_RUNG_CNT,
+												coalesce(GRAPH_DATA.LNGTRMACL_RUNG_CNT,'0') as LNGTRMACL_RUNG_CNT,
+												coalesce(GRAPH_DATA.SDSTRT_RUNG_CNT,'0') as SDSTRT_RUNG_CNT,
+												coalesce(GRAPH_DATA.riskJugCnt,'0') as RISK_JUG_CNT
+											FROM(
+												SELECT
+													TO_CHAR(GENERATE_SERIES(TO_TIMESTAMP(#{todayStartDt},'YYYY-MM-DD HH24'),TO_TIMESTAMP(#{todayEndDt},'YYYY-MM-DD HH24'),'1 hours'),'HH24') as GRAPH_TIME
+												) TIME_DATA
+											LEFT JOIN (
+													select
+														sum(mdds.SPDNG_RUNG_CNT) as SPDNG_RUNG_CNT
+														, SUM(mdds.SDACEL_RUNG_CNT) as SDACEL_RUNG_CNT
+														, SUM(mdds.RPDDCL_RUNG_CNT) as RPDDCL_RUNG_CNT
+														, SUM(mdds.SDSTOP_RUNG_CNT) as SDSTOP_RUNG_CNT
+														, SUM(mdds.SDSTRT_RUNG_CNT) as SDSTRT_RUNG_CNT
+														, SUM(mdds.LNGTRMACL_RUNG_CNT) as LNGTRMACL_RUNG_CNT
+														,SUM(mdds.SPDNG_RUNG_CNT) + SUM(mdds.SDACEL_RUNG_CNT) + SUM(mdds.RPDDCL_RUNG_CNT) + SUM(mdds.SDSTOP_RUNG_CNT) + SUM(mdds.SDSTRT_RUNG_CNT) + SUM(mdds.LNGTRMACL_RUNG_CNT) as riskJugCnt,
+														TO_CHAR(mdds.ANLS_DT,'HH24') as TIME_DATA
+													FROM
+														MRT_DTG_DANGER_SECTN mdds
+													INNER JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE gbr
+														ON mdds.BUS_ROUTE_NO = gbr.ROUTE_ID 
+													WHERE 1=1
+														<if test="routeId != null and routeId != ''">
+															AND	gbr.ROUTE_ID = #{routeId}
+														</if>
+													GROUP BY
+														TO_CHAR(mdds.ANLS_DT,'HH24'), gbr.ROUTE_NM
+											) GRAPH_DATA 
+											ON TIME_DATA.GRAPH_TIME = GRAPH_DATA.TIME_DATA
+											ORDER BY TIME_DATA.GRAPH_TIME asc 
+										)
+			SELECT
+				ARRAY_TO_STRING(ARRAY_AGG(GRAPH_TIME ORDER BY GRAPH_TIME),',') as "graphTimeArr",
+				ARRAY_TO_STRING(ARRAY_AGG(SPDNG_RUNG_CNT),',') as "spdngRungCntArr",
+				ARRAY_TO_STRING(ARRAY_AGG(SDACEL_RUNG_CNT),',') as "sdacelRungCntArr",
+				ARRAY_TO_STRING(ARRAY_AGG(RPDDCL_RUNG_CNT),',') as "rpddclRungCntArr",
+				ARRAY_TO_STRING(ARRAY_AGG(SDSTOP_RUNG_CNT),',') as "sdstopRungCntArr",
+				ARRAY_TO_STRING(ARRAY_AGG(LNGTRMACL_RUNG_CNT),',') as "lngtrmaclRungCntArr",
+				ARRAY_TO_STRING(ARRAY_AGG(SDSTRT_RUNG_CNT),',') as "sdstrtRungCntArr",
+				ARRAY_TO_STRING(ARRAY_AGG(RISK_JUG_CNT),',') as "riskJugCntArr"
+			FROM
+				BUS_DTG_DANGR_ARRAY_LIST 
+	</select>
+
+	<select id="findByRouteIdGroupRoadNameAndHHForChart"  parameterType="mapBigdataSearchDTO" resultType="mrtDtgDangerSectn">
+		select
+			distinct
+			GCIL.ROAD_NAME
+				   ,MDDS.HH
+				   ,SUM(mdds.SPDNG_RUNG_CNT) as SPDNG_RUNG_CNT
+				   ,SUM(mdds.SDACEL_RUNG_CNT) as SDACEL_RUNG_CNT
+				   ,SUM(mdds.RPDDCL_RUNG_CNT) as RPDDCL_RUNG_CNT
+				   ,SUM(mdds.SDSTOP_RUNG_CNT) as SDSTOP_RUNG_CNT
+				   ,SUM(mdds.SDSTRT_RUNG_CNT) as SDSTRT_RUNG_CNT
+				   ,SUM(mdds.LNGTRMACL_RUNG_CNT) as LNGTRMACL_RUNG_CNT
+				   ,SUM(mdds.riskJugCnt) as riskJugCnt
+		FROM
+			BIGDATA.EXT_GGBIS_BUSROUTE_LINK EGBL
+				INNER JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE EGBR ON
+				EGBL.ROUTE_ID = EGBR.ROUTE_ID
+				INNER JOIN BIGDATA.EXT_GGBIS_LINK_MAPPING EGLM ON EGBL.LINK_ID = EGLM.LINK_ID
+				INNER JOIN C_GM_STD_LINK GCIL ON
+				EGLM.ST_LINK_ID = GCIL.LINK_ID
+				left join (
+				SELECT
+					VHCL_NO
+					 ,LINK_ID
+					 ,BUS_ROUTE_NO
+					 ,CO_ID
+					 ,TO_CHAR(ANLS_DT, 'HH24') as HH
+					 ,SUM(SPDNG_RUNG_CNT) AS SPDNG_RUNG_CNT
+					 ,SUM(SDACEL_RUNG_CNT) AS SDACEL_RUNG_CNT
+					 ,SUM(RPDDCL_RUNG_CNT) AS RPDDCL_RUNG_CNT
+					 ,SUM(SDSTOP_RUNG_CNT) AS SDSTOP_RUNG_CNT
+					 ,SUM(SDSTRT_RUNG_CNT) AS SDSTRT_RUNG_CNT
+					 ,SUM(LNGTRMACL_RUNG_CNT) AS LNGTRMACL_RUNG_CNT
+					 ,SUM(SPDNG_RUNG_CNT) + SUM(SDACEL_RUNG_CNT) + SUM(RPDDCL_RUNG_CNT) + SUM(SDSTOP_RUNG_CNT) + SUM(SDSTRT_RUNG_CNT) + SUM(LNGTRMACL_RUNG_CNT) as riskJugCnt
+				FROM mrt_dtg_danger_sectn mdds
+				WHERE BUS_ROUTE_NO = #{routeId}
+				<!-- 연도별 검색 -->
+				<if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+					AND TO_CHAR(ANLS_DT, 'YYYY') = #{searchYear}
+				</if>
+				<if test="startDate != null and startDate != ''">
+				<![CDATA[AND TO_CHAR(ANLS_DT, 'YYYY-MM-DD') = #{startDate}]]>
+				</if>
+				group by VHCL_NO, BUS_ROUTE_NO, CO_ID, LINK_ID, HH
+			) mdds on mdds.bus_route_no = egbl.route_id and mdds.link_id = GCIL.link_id
+		WHERE mdds.BUS_ROUTE_NO= #{routeId}
+		group by GCIL.ROAD_NAME, MDDS.HH
+		ORDER BY GCIL.ROAD_NAME
 	</select>
 </mapper>

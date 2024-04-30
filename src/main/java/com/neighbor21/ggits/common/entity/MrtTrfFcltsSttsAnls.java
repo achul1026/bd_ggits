@@ -13,6 +13,10 @@ public class MrtTrfFcltsSttsAnls extends CommonEntity{
 	private String etlDt;			// etl 일시
 	
 	private String roadName;		// 도로명
+	private String seltRoadRank;	// 도로 유형
+	private String seltRoadDrct;	// 도로 방향
+	private String seltFicltInfo;	// 시설물
+	private String successYn;		// 성공 여부
 
 	public Timestamp getAnlsDt() {
 		return anlsDt;
@@ -84,6 +88,44 @@ public class MrtTrfFcltsSttsAnls extends CommonEntity{
 
 	public void setRoadName(String roadName) {
 		this.roadName = roadName;
+	}
+
+	@Override
+	public String getSeltRoadRank() {
+		return seltRoadRank;
+	}
+
+	@Override
+	public void setSeltRoadRank(String seltRoadRank) {
+		this.seltRoadRank = seltRoadRank;
+	}
+
+	@Override
+	public String getSeltRoadDrct() {
+		return seltRoadDrct;
+	}
+
+	@Override
+	public void setSeltRoadDrct(String seltRoadDrct) {
+		this.seltRoadDrct = seltRoadDrct;
+	}
+
+	@Override
+	public String getSeltFicltInfo() {
+		return seltFicltInfo;
+	}
+
+	@Override
+	public void setSeltFicltInfo(String seltFicltInfo) {
+		this.seltFicltInfo = seltFicltInfo;
+	}
+
+	public String getSuccessYn() {
+		return successYn;
+	}
+
+	public void setSuccessYn(String successYn) {
+		this.successYn = successYn;
 	}
 	
 	

@@ -4,18 +4,24 @@
 <mapper namespace='com.neighbor21.ggits.common.mapper.MrtBusSttnRungAnalMapper'>
 	<sql id="mrtBusSttnRungAnal-Where">
 		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
-			AND mrsra.RIDE_YMD 
+			AND TO_CHAR(TO_DATE(mrsra.RIDE_YMD, 'YYYYMMDD'), 'YYYY-MM-DD') 
 			BETWEEN #{strDt} AND #{endDt}
 		</if>
 		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
 			<![CDATA[
-			AND #{strDt} <= mrsra.RIDE_YMD
+			AND #{strDt} <= TO_CHAR(TO_DATE(mrsra.RIDE_YMD, 'YYYYMMDD'), 'YYYY-MM-DD') 
 			]]>
 		</if>
 		<if test="(strDt == '' or strDt == null) and (endDt != '' and endDt != null)">
 			<![CDATA[
-			AND mrsra.RIDE_YMD <= #{endDt}
+			AND TO_CHAR(TO_DATE(mrsra.RIDE_YMD, 'YYYYMMDD'), 'YYYY-MM-DD')  <= #{endDt}
 			]]>
+		</if>
+		<if test="searchContent != null and searchContent != ''">
+			AND gbs.STATION_NM LIKE '%' || #{searchContent} || '%'
+		</if>
+		<if test="sigunCdId != null and sigunCdId != '' and sigunCdId != 'searchAllLocation'">
+			AND gbs.SIDO_CD LIKE #{sigunCdId} || '%'
 		</if>
 		<if test="dayOfTheWeek != null">
 			 AND EXTRACT (ISODOW from TO_DATE(mrsra.RIDE_YMD, 'YYYYMMDD'))::varchar(1) IN 
@@ -29,8 +35,8 @@
 		SELECT
 			COUNT(*)
 		FROM MRT_BUS_STTN_RUNG_ANAL mrsra
-		LEFT JOIN GGDTDR_BUS_STTN_INFO gbsi
-			ON mrsra.BSTP_ID = gbsi.BSTP_ID
+		INNER JOIN BIGDATA.EXT_GGBIS_BUS_STATION gbs
+			ON mrsra.BSTP_ID = gbs.STATION_ID
 		WHERE	
 			1=1
 			<include refid="mrtBusSttnRungAnal-Where"/>
@@ -38,18 +44,19 @@
 
 	<select id="findAllBusSttnRungAnal" parameterType="commonEntity" resultType="mrtBusSttnRungAnal">
 		SELECT
-			gbsi.BSTP_NM
+			gbs.station_nm  as bstpNm
 			, mrsra.BUS_ROUTE_RUNG_CNT
 			, mrsra.RIDE_USER_CNT
 			, mrsra.LNDI_USER_CNT
 			, mrsra.TRNSIT_USER_CNT
 			, mrsra.RIDE_YMD
 		FROM MRT_BUS_STTN_RUNG_ANAL mrsra
-		LEFT JOIN GGDTDR_BUS_STTN_INFO gbsi
-			ON mrsra.BSTP_ID = gbsi.BSTP_ID
+		INNER JOIN BIGDATA.EXT_GGBIS_BUS_STATION gbs
+			ON mrsra.BSTP_ID = gbs.STATION_ID
 		WHERE	
 			1=1
 			<include refid="mrtBusSttnRungAnal-Where"/>
-		LIMIT 10 OFFSET (#{page} - 1) * 10 
+		ORDER BY TO_TIMESTAMP(mrsra.RIDE_YMD, 'YYYYMMDD') DESC
+		LIMIT 10 OFFSET (#{page} - 1) * 10
 	</select>
 </mapper>

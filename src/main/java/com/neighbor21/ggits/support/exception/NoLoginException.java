@@ -31,6 +31,7 @@ public class NoLoginException extends RuntimeException{
 		this.errorCode = errorCode;
 	}
 
+	@Override
 	public String getMessage() {
 		return message;
 	}

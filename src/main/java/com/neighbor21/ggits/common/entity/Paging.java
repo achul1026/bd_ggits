@@ -181,4 +181,11 @@ public class Paging {
  
         this.setFinalPageNo(finalPage); // 마지막 페이지 번호
     }
+
+	@Override
+	public String toString() {
+		return "Paging [pageSize=" + pageSize + ", firstPageNo=" + firstPageNo + ", prevPageNo=" + prevPageNo
+				+ ", pageNo=" + pageNo + ", startPageNo=" + startPageNo + ", endPageNo=" + endPageNo + ", nextPageNo="
+				+ nextPageNo + ", finalPageNo=" + finalPageNo + ", totalCount=" + totalCount + "]";
+	}
 }

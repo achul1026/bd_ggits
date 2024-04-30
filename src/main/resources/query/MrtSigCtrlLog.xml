@@ -12,7 +12,7 @@
             STRING_AGG(TO_CHAR(MSCL.ANLS_DT, 'YYYY-MM-DD HH24:MI')||'|'|| AVG_VHCL_SPEED || '|' || VHCL_TRFVLM, '$$') AS TIME_GROUP_TXT
         FROM MRT_SIG_CTRL_LOG MSCL	 
         INNER JOIN MRT_SIG_CRSD_TRF_ANAL MSCTA ON MSCL.SRVC_ID = MSCTA.SRVC_ID AND MSCL.CRSRD_ID = MSCTA.CRSRD_ID  
-        INNER JOIN GY_COMM_INFO_LINK GCIL ON MSCTA.LINK_ID = GCIL.LINK_ID  
+        INNER JOIN C_GM_STD_LINK  GCIL ON MSCTA.LINK_ID = GCIL.LINK_ID
         WHERE 1=1
         <!-- 연도별 검색 -->
         <if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
@@ -25,7 +25,7 @@
         			AND TO_CHAR(MSCL.ANLS_DT::DATE, 'D') BETWEEN '2' AND '6'	
         		</when>
         		<when test="searchPeriod == 'weekend' ">
-        			AND TO_CHAR(MSCL.ANLS_DT::DATE, 'D') = '1' OR TO_CHAR(MSCL.ANLS_DT::DATE, 'D') = '7'	
+        			AND (TO_CHAR(MSCL.ANLS_DT::DATE, 'D') = '1' OR TO_CHAR(MSCL.ANLS_DT::DATE, 'D') = '7')
         		</when>
         		<otherwise>
         			AND TO_CHAR(MSCL.ANLS_DT, 'YYYY-MM-DD') BETWEEN #{startDate} AND #{endDate}
@@ -38,7 +38,7 @@
         		<when test="searchTime == 'workingTime' ">
         			AND TO_CHAR(MSCL.ANLS_DT, 'HH24') BETWEEN '06' AND '10'	
         		</when>
-        		<when test="searchPeriod == 'workingEndTime' ">
+        		<when test="searchTime == 'workingEndTime' ">
         			AND TO_CHAR(MSCL.ANLS_DT, 'HH24') BETWEEN '17' AND '20'
         		</when>
         		<otherwise>

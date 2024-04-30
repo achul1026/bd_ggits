@@ -9,4 +9,62 @@
 		WHERE
 			DSET_ID = #{dsetId}
 	</select>
+	
+	<insert id="saveDsetInfo" parameterType="dsetInfo">
+		INSERT INTO DSET_INFO (
+			DSET_ID,
+			SRVC_NM,
+			CLSCHM_ID,
+			ORG_DATA_NM,
+			DATA_PVSN_COL,
+			DATA_TYPE,
+			DATA_KEYWORD,
+			YMD_COL_NM,
+			YMD_TYPE_FORMAT,
+			DATA_CLCT_TYPE,
+			DSET_FILE_NM,
+			SRVC_STTS,
+			CLCT_SCHD,
+			DSET_DESCR,
+			PVSN_YN,
+			RLTINST_ID
+		) VALUES (
+			#{dsetId},
+			#{srvcNm},
+			#{clschmId},
+			#{orgDataNm},
+			#{dataPvsnCol},
+			#{dataType},
+			#{dataKeyword},
+			#{ymdColNm},
+			#{ymdTypeFormat},
+			#{dataClctType},
+			#{dsetFileNm},
+			#{srvcStts},
+			#{clctSchd},
+			#{dsetDescr},
+			#{pvsnYn},
+			#{rltinstId}
+		)
+	</insert>
+
+	<update id="updateDsetInfo" parameterType="dsetInfo">
+		UPDATE DSET_INFO SET 
+			SRVC_NM = #{srvcNm},
+			CLSCHM_ID = #{clschmId},
+			ORG_DATA_NM = #{orgDataNm},
+			DATA_PVSN_COL = #{dataPvsnCol},
+			DATA_TYPE = #{dataType},
+			DATA_KEYWORD = #{dataKeyword},
+			YMD_COL_NM = #{ymdColNm},
+			YMD_TYPE_FORMAT = #{ymdTypeFormat},
+			DATA_CLCT_TYPE = #{dataClctType},
+			DSET_FILE_NM = #{dsetFileNm},
+			SRVC_STTS = #{srvcStts},
+			CLCT_SCHD = #{clctSchd},
+			DSET_DESCR = #{dsetDescr},
+			PVSN_YN = #{pvsnYn},
+			RLTINST_ID = #{rltinstId}
+		WHERE DSET_ID = #{dsetId}
+	</update>
 </mapper>

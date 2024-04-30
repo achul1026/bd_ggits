@@ -103,6 +103,29 @@
      	 	, mom.CD_DIV_CD
      	FROM M_OP_MENU mom
      	WHERE mom.SBMNU_SORT_NO IS NOT NULL
+     		AND mom.USE_YN = 'Y'
+     		AND mom.UPPER_MENU_ID = #{upperMenuId}
+     	ORDER BY mom.SBMNU_SORT_NO ASC
+     </select>
+     
+     <select id="findAllSubMenuBySortNoIsNotNullAndUpprMenuId" parameterType="map" resultType="mOpMenu">
+     	SELECT 
+     	 	mom.MENU_ID
+     	 	, mom.MENU_NM
+     	 	, mom.MENU_LVL
+     	 	, mom.UPPER_MENU_ID
+     	 	, mom.USE_YN
+     	 	, mom.ASCTN_INFO
+     	 	, mom.DESCR
+     	 	, mom.SORT_NO
+     	 	, mom.URL_PTTRN
+     	 	, mom.URL_ADDR
+     	 	, mom.SBMNU_SORT_NO
+     	 	, mom.CATEG_CD
+     	 	, mom.MENU_PTTRN_TYPE
+     	 	, mom.CD_DIV_CD
+     	FROM M_OP_MENU mom
+     	WHERE mom.SBMNU_SORT_NO IS NOT NULL
      		AND mom.UPPER_MENU_ID = #{upperMenuId}
      	ORDER BY mom.SBMNU_SORT_NO ASC
      </select>
@@ -288,5 +311,12 @@
 	 			#{menuPttrnType}
 			</foreach>
      	</if> 
+     </select>
+
+     <select id="findOneMenuIdByMenuPttrnType" parameterType="mOpMenu" resultType="String">
+     	SELECT 
+     		mom.MENU_ID
+     	FROM M_OP_MENU mom
+     	WHERE  mom.MENU_PTTRN_TYPE = #{menuPttrnType}
      </select>
 </mapper>

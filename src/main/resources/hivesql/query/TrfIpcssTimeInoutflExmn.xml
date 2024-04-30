@@ -1,0 +1,227 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.hivesql.mapper.TrfIpcssTimeInoutflExmnMapper'>
+	
+	<select id="findAllTimeInoutflExmnList" parameterType="trfvlmStatisticsDTO" resultType="timeInoutflExmnDTO">
+		SELECT 
+			TRFVLM_RESULT.TIME_SCTN_NM,
+			COLLECT_LIST(
+					NAMED_STRUCT(
+						'resdngInfl', RESDNG_INFL,
+		        		'resdngOutfl', RESDNG_OUTFL,
+						'visitInfl', VISIT_INFL,
+		        		'visitOutfl', VISIT_OUTFL,
+						'totInfl', TOT_INFL,
+		        		'totOutfl', TOT_OUTFL
+					)
+				) AS TRFVLM_STATISTICS_LIST_JSON
+		FROM(
+			SELECT
+				TIME_SCTN_NM,
+				USG_NO,
+				ACT_POPLTN_EXMN_TYPE,
+				concat_ws(',', collect_list(TICTI.RESDNG_INFL)) AS RESDNG_INFL,
+				concat_ws(',', collect_list(TICTI.RESDNG_OUTFL)) AS RESDNG_OUTFL,
+				concat_ws(',', collect_list(TICTI.VISIT_INFL)) AS VISIT_INFL,
+				concat_ws(',', collect_list(TICTI.VISIT_OUTFL)) AS VISIT_OUTFL,
+				concat_ws(',', collect_list(TICTI.TOT_INFL)) AS TOT_INFL,
+				concat_ws(',', collect_list(TICTI.TOT_OUTFL)) AS TOT_OUTFL
+			FROM (
+				SELECT
+					TIME_SCTN_NM,
+					USG_NO,
+					ACT_POPLTN_EXMN_TYPE,
+					ROUND(RESDNG_INFL, 2) as RESDNG_INFL,
+					ROUND(RESDNG_OUTFL, 2) as RESDNG_OUTFL,
+					ROUND(VISIT_INFL, 2) as VISIT_INFL,
+					ROUND(VISIT_OUTFL, 2) as VISIT_OUTFL,
+					ROUND(TOT_INFL, 2) as TOT_INFL,
+					ROUND(TOT_OUTFL, 2) as TOT_OUTFL
+				FROM
+					ggits.TRF_IPCSS_TIME_INOUTFL_EXMN
+				WHERE IPCSS_MNG_NO = #{ipcssMngNo}
+				GROUP BY TIME_SCTN_NM,USG_NO,ACT_POPLTN_EXMN_TYPE,RESDNG_INFL,RESDNG_OUTFL,VISIT_INFL,VISIT_OUTFL,TOT_INFL,TOT_OUTFL
+			) TICTI
+			GROUP BY TICTI.TIME_SCTN_NM,TICTI.USG_NO,TICTI.ACT_POPLTN_EXMN_TYPE
+			ORDER BY TICTI.TIME_SCTN_NM,TICTI.USG_NO,TICTI.ACT_POPLTN_EXMN_TYPE
+		) TRFVLM_RESULT
+		GROUP BY 	TRFVLM_RESULT.TIME_SCTN_NM
+		ORDER BY 	TRFVLM_RESULT.TIME_SCTN_NM
+	</select>
+	
+	<select id="findOneUsgCdNmList" parameterType="trfvlmStatisticsDTO" resultType="map">
+		SELECT 
+			COLLECT_LIST(A.USG_NM) AS cdNmArr
+		FROM (
+			SELECT 
+				TRFVLM_RESULT.USG_NM
+				, TRFVLM_RESULT.usgNo
+			FROM(
+				SELECT
+					USG_NM
+					,usgNo
+				FROM (
+					SELECT
+						titie.USG_NM
+						, SUBSTRING(titie.usg_no, 3) AS usgNo
+					FROM
+						GGITS.TRF_IPCSS_TIME_INOUTFL_EXMN titie
+					WHERE titie.IPCSS_MNG_NO = #{ipcssMngNo}
+					GROUP BY titie.USG_NM,titie.usg_no
+				) TICTI
+				GROUP by TICTI.USG_NM, TICTI.usgNo
+				ORDER BY TICTI.usgNo
+			) TRFVLM_RESULT
+			GROUP BY TRFVLM_RESULT.USG_NM,TRFVLM_RESULT.usgNo
+			ORDER BY TRFVLM_RESULT.usgNo
+		)A
+	</select>
+	
+	<select id="findAllChartData" parameterType="trfvlmStatisticsDTO" resultType="map">
+		SELECT 
+				COLLECT_LIST(A.hour) AS timeDataArray,
+				COLLECT_LIST(A.RESDNG_INFL) as resdngInflArray,
+				COLLECT_LIST(A.RESDNG_OUTFL) as resdngOutflArray,
+				COLLECT_LIST(A.VISIT_INFL) as visitInflArray,
+				COLLECT_LIST(A.VISIT_OUTFL) as visitOutflArray,
+				COLLECT_LIST(A.TOT_INFL) as totInflArray,
+				COLLECT_LIST(A.TOT_OUTFL) as totOutflArray
+			FROM(
+				SELECT
+					TIME_DATA.hour
+					,COALESCE(GRAPH_DATA.RESDNG_INFL,0) as RESDNG_INFL
+					, COALESCE(GRAPH_DATA.RESDNG_OUTFL,0) as RESDNG_OUTFL
+					,COALESCE(GRAPH_DATA.VISIT_INFL,0) as VISIT_INFL
+					, COALESCE(GRAPH_DATA.VISIT_OUTFL,0) as VISIT_OUTFL
+					,COALESCE(GRAPH_DATA.TOT_INFL,0) as TOT_INFL
+					, COALESCE(GRAPH_DATA.TOT_OUTFL,0) as TOT_OUTFL
+				FROM(
+					SELECT 
+						posexplode(array('00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23')) AS (pos, hour)
+				) TIME_DATA
+				LEFT JOIN (
+					SELECT
+						SUM(RESDNG_INFL) as RESDNG_INFL,
+						SUM(RESDNG_OUTFL) as RESDNG_OUTFL,
+						SUM(VISIT_INFL) as VISIT_INFL,
+						SUM(VISIT_OUTFL) as VISIT_OUTFL,
+						SUM(TOT_INFL) as TOT_INFL,
+						SUM(TOT_OUTFL) as TOT_OUTFL,
+						SUBSTRING(time_sctn_nm,1,2) as timeSctnNm
+					FROM
+						ggits.TRF_IPCSS_TIME_INOUTFL_EXMN
+					WHERE 1=1
+						AND IPCSS_MNG_NO = #{ipcssMngNo}
+						AND ACT_POPLTN_EXMN_TYPE = '1'
+					GROUP BY 
+						SUBSTRING(TIME_SCTN_NM,1,2)
+					ORDER BY timeSctnNm ASC	
+		  		) GRAPH_DATA on TIME_DATA.hour = GRAPH_DATA.timeSctnNm
+				ORDER BY TIME_DATA.hour ASC
+			)A		
+	</select>
+	
+	<select id="findAllInoutCntSumList" parameterType="map" resultType="trfIpcssTimeInoutflExmn">
+		SELECT 
+			SUM(B.RESDNG_INFL) as RESDNG_INFL ,
+			SUM(B.RESDNG_OUTFL) as RESDNG_OUTFL ,
+			SUM(B.VISIT_INFL) as VISIT_INFL ,
+			SUM(B.VISIT_OUTFL) as VISIT_OUTFL ,
+			SUM(B.TOT_INFL) as TOT_INFL ,
+			SUM(B.TOT_OUTFL) as TOT_OUTFL 
+		FROM(
+			SELECT 
+				A.TIME_SCTN_NM,
+				COALESCE(SUM(A.RESDNG_INFL),0) as RESDNG_INFL ,
+				COALESCE(SUM(A.RESDNG_OUTFL),0) as RESDNG_OUTFL ,
+				COALESCE(SUM(A.VISIT_INFL),0) as VISIT_INFL ,
+				COALESCE(SUM(A.VISIT_OUTFL),0) as VISIT_OUTFL ,
+				COALESCE(SUM(A.TOT_INFL),0) as TOT_INFL ,
+				COALESCE(SUM(A.TOT_OUTFL),0) as TOT_OUTFL 
+			from (
+				SELECT
+					TIME_SCTN_NM,
+					USG_NO,
+					ACT_POPLTN_EXMN_TYPE,
+					RESDNG_INFL,
+					RESDNG_OUTFL,
+					VISIT_INFL,
+					VISIT_OUTFL,
+					TOT_INFL,
+					TOT_OUTFL
+				FROM
+					TRF_IPCSS_TIME_INOUTFL_EXMN
+				WHERE IPCSS_MNG_NO = #{ipcssMngNo} and usg_nm = #{usgNm}
+				AND ACT_POPLTN_EXMN_TYPE = '1'
+				GROUP BY TIME_SCTN_NM,USG_NO,ACT_POPLTN_EXMN_TYPE,RESDNG_INFL,RESDNG_OUTFL,VISIT_INFL,VISIT_OUTFL,TOT_INFL,TOT_OUTFL
+			)A
+			GROUP BY TIME_SCTN_NM
+		)B
+	</select>
+	
+	<select id="findAllInoutRateSumList" parameterType="map" resultType="trfIpcssTimeInoutflExmn">
+		SELECT 
+			ROUND((SUM(B.RESDNG_INFL)/100),2) as RESDNG_INFL ,
+			ROUND((SUM(B.RESDNG_OUTFL)/100),2) as RESDNG_OUTFL ,
+			ROUND((SUM(B.VISIT_INFL)/100),2) as VISIT_INFL ,
+			ROUND((SUM(B.VISIT_OUTFL)/100),2) as VISIT_OUTFL ,
+			ROUND((SUM(B.TOT_INFL)/100),2) as TOT_INFL ,
+			ROUND((SUM(B.TOT_OUTFL)/100),2) as TOT_OUTFL
+		FROM(
+			SELECT 
+				A.TIME_SCTN_NM,
+				COALESCE(SUM(A.RESDNG_INFL),0) as RESDNG_INFL ,
+				COALESCE(SUM(A.RESDNG_OUTFL),0) as RESDNG_OUTFL ,
+				COALESCE(SUM(A.VISIT_INFL),0) as VISIT_INFL ,
+				COALESCE(SUM(A.VISIT_OUTFL),0) as VISIT_OUTFL ,
+				COALESCE(SUM(A.TOT_INFL),0) as TOT_INFL ,
+				COALESCE(SUM(A.TOT_OUTFL),0) as TOT_OUTFL 
+			from (
+				SELECT
+					TIME_SCTN_NM,
+					USG_NO,
+					ACT_POPLTN_EXMN_TYPE,
+					RESDNG_INFL,
+					RESDNG_OUTFL,
+					VISIT_INFL,
+					VISIT_OUTFL,
+					TOT_INFL,
+					TOT_OUTFL
+				FROM
+					TRF_IPCSS_TIME_INOUTFL_EXMN
+				WHERE IPCSS_MNG_NO = #{ipcssMngNo} and usg_nm = #{usgNm}
+				AND ACT_POPLTN_EXMN_TYPE = '2'
+				GROUP BY TIME_SCTN_NM,USG_NO,ACT_POPLTN_EXMN_TYPE,RESDNG_INFL,RESDNG_OUTFL,VISIT_INFL,VISIT_OUTFL,TOT_INFL,TOT_OUTFL
+			)A
+			GROUP BY TIME_SCTN_NM
+		)B
+	</select>
+
+	<insert id="saveTimeInoutflExmn" parameterType="trfIpcssTimeInoutflExmn">
+		INSERT INTO GGITS.TRF_IPCSS_TIME_INOUTFL_EXMN
+			VALUES(
+			#{ipcssMngNo}, 
+			#{exmnYmd}, 
+			#{dywkDiv}, 
+			#{usgNo}, 
+			#{usgNm}, 
+			#{timeSctnNm}, 
+			#{actPopltnExmnType}, 
+			#{resdngInfl}, 
+			#{resdngOutfl}, 
+			#{visitInfl}, 
+			#{visitOutfl}, 
+			#{totInfl}, 
+			#{totOutfl},
+			FROM_UNIXTIME(UNIX_TIMESTAMP(), 'yyyyMMddHHmmss'))
+	</insert>
+	
+	<delete id="deleteTrafficImpactReportByIpcssMngNo" parameterType="String">
+		DELETE 
+			FROM
+				GGITS.TRF_IPCSS_TIME_INOUTFL_EXMN
+		WHERE
+			IPCSS_MNG_NO = #{ipcssMngNo}
+	</delete>
+</mapper>

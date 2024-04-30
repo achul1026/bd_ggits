@@ -12,7 +12,7 @@
 <div class="mt24 mb10">
 	<div class="dashboard_sub_title">밀집 수준 선택</div>
 	<div class="time_choice">
-		<label class="time_green"><input type="checkbox" class="none">원할</label>
+		<label class="time_green"><input type="checkbox" class="none">원활</label>
 		<label class="time_yellow"><input type="checkbox" class="none">혼잡</label>
 		<label class="time_red"><input type="checkbox" class="none">심각</label>
 	</div>

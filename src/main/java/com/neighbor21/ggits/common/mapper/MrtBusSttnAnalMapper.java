@@ -3,9 +3,9 @@ package com.neighbor21.ggits.common.mapper;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.ibatis.annotations.Param;
 import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
 
-import com.neighbor21.ggits.common.dto.MapBigdataSearchDTO;
 import com.neighbor21.ggits.common.entity.CommonEntity;
 import com.neighbor21.ggits.common.entity.MrtBusSttnAnal;
 
@@ -32,28 +32,6 @@ public interface MrtBusSttnAnalMapper {
 	List<MrtBusSttnAnal> findAllBusSttnInfoList(CommonEntity commonEntity);
 
 	/**
-	  * @param mapBigdataSearchDTO 
-	 * @Method Name : countAllBusUseStatAnal
-	  * @작성일 : 2023. 10. 25.
-	  * @작성자 : KC.KIM
-	  * @Method 설명 : 빅데이터 분석 > 대중교통 이용현황 분석 > 정류장별 버스 이용률 개수 조회
-	  * @param 
-	  * @return
-	  */
-	int countAllBusUseStatAnal(MapBigdataSearchDTO mapBigdataSearchDTO);
-
-	/**
-	  * @param mapBigdataSearchDTO 
-	 * @Method Name : findAllBusUseStatsAnal
-	  * @작성일 : 2023. 10. 25.
-	  * @작성자 : KC.KIM
-	  * @Method 설명 : 빅데이터 분석 > 대중교통 이용현황 분석 > 정류장별 버스 이용률 리스트 조회
-	  * @param 
-	  * @return
-	  */
-	List<MrtBusSttnAnal> findAllBusUseStatsAnal(MapBigdataSearchDTO mapBigdataSearchDTO);
-	
-	/**
      * @Method Name : findAllDataYears
      * @작성일 : 2023. 10. 25.
      * @작성자 : KC.KIM
@@ -62,5 +40,34 @@ public interface MrtBusSttnAnalMapper {
      * @return
      */
 	List<Map<String, Object>> findAllDataYears();
+
+
+	List<MrtBusSttnAnal> findAllByStationId(@Param("stationId") String stationId, @Param("searchYear") String searchYear, @Param("searchPeriod") String searchPeriod, @Param("searchTime") String searchTime);
+
+	/**
+     * @Method Name : findAllBusStatsList
+     * @작성일 : 2023. 11. 02.
+     * @작성자 : KC.KIM
+     * @Method 설명 : 정류장별 버스노선, 버스유형 통계 데이터 조회
+     * @param : commonEntity
+     * @return
+     */
+	Map<String, Object> findAllBusStatsList(CommonEntity commonEntity);
+
+	/**
+	 * @Method Name : findMaxRideYmd
+	 * @작성일 : 2023. 01. 04.
+	 * @작성자 : KY.LEE
+	 * @Method 설명 : RideYmd 최대 날짜 조회
+	 */	
+	String findMaxRideYmd();
+
+	/**
+    * @Method Name : findBusStationUsageInit
+    * @작성일 : 2023. 01. 04.
+    * @작성자 : KY.LEE
+    * @Method 설명 : 모니터링 대시보드 -> 버스정류장 이용량
+    */	
+	List<MrtBusSttnAnal> findBusStationUsageInit(String rideYmd);
 
 }

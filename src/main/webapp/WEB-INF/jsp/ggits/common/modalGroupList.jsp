@@ -29,7 +29,7 @@
 							<tr>
 								<td class="pl24">
 									<label class="flex-center">
-										<input type="radio" class="mr8" name="modalGrpId" value="${groupList.grpId}" data-grpnm="${groupList.grpNm}">${groupList.grpNm}
+										<input type="radio" class="mr8" name="modalGrpId" value="<c:out value='${groupList.grpId}'/>" data-grpnm="<c:out value='${groupList.grpNm}'/>"><c:out value='${groupList.grpNm}'/>
 									</label>
 								</td>	
 							</tr>

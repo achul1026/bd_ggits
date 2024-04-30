@@ -1,42 +1,42 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c"   uri="http://java.sun.com/jsp/jstl/core" %>
-<div class="tab_box_content">
-<!-- 	<div class="mt16"> -->
-<!-- 	    <label class="dashboard_sub_title">지역명으로 찾기</label> -->
-<!-- 	    <input type="text" class="dashboard_input" placeholder="지역명을 입력해주세요."> -->
-<!-- 	</div> -->
-	<div class="mt16 mb16">
-	    <label class="dashboard_sub_title">도로명으로 찾기</label>
-	    <input type="text" class="dashboard_input" id="searchInput" placeholder="도로명을 입력해주세요.">
-	</div>
-	<div class="dashboard_btn_box mj0">
-		<input type="hidden" id="nodeId" />
-		<input type="hidden" id="lon" />
-		<input type="hidden" id="lat" />
-	    <button type="button" class="is-dark-btn" id="searchBtn">찾기</button>
+<div class="tab_box_body_wrap tab_box_body_wrap_wdat">
+	<div class="tab_box_content">
+	<!-- 	<div class="mt16"> -->
+	<!-- 	    <label class="dashboard_sub_title">지역명으로 찾기</label> -->
+	<!-- 	    <input type="text" class="dashboard_input" placeholder="지역명을 입력해주세요."> -->
+	<!-- 	</div> -->
+		<div class="mj0">
+			<label class="dashboard_sub_title">- 도로명으로 찾기 : </label>
+			<input type="text" class="dashboard_input mr4" id="searchInput" placeholder="도로명을 입력해주세요.">
+			<input type="hidden" id="nodeId" />
+			<input type="hidden" id="lon" />
+			<input type="hidden" id="lat" />
+		    <button type="button" class="is-darkgreen-btn mj0" id="searchBtn">찾기</button>
+		</div>
 	</div>
 </div>
 <script>
 $(function() {
 	//데이터 가공해서 불러오기
-	var nodeList = '${nodeList}';
+	var nodeList = '<c:out value="${nodeList}"/>';
 	if(nodeList != null && nodeList != ''){
 		nodeList = JSON.parse('${nodeList}'); 
 	}
 	
 	$("#searchInput").autocomplete({
 		source: nodeList,	
-		focus : function(event, ui) { 	
+		focus : function(event, ui) {
 			return false;
 		},
 		select: function(event, ui) {
 			$("#nodeId").val(ui.item.nodeId)
 			$("#lon").val(ui.item.lon)
 			$("#lat").val(ui.item.lat)
-			$("#searchBtn").removeClass("is-dark-btn");
+ 			$("#searchBtn").removeClass("is-dark-btn");
 			$("#searchBtn").addClass("is-darkgreen-btn");
         },
-		minLength: 1,
+		minLength: 3,
 		delay: 100,
 	});
 	

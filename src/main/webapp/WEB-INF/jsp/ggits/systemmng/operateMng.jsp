@@ -12,45 +12,65 @@
         <section class="main_section">
             <h2 class="blind">운영 관리</h2>
            	<form id="searchForm" method="get">
-            	<div class="table_btn_wrap clearfix">
+            	<div class="table_btn_wrap table_btn_wrap_between">
             		<input type="hidden" id="page" name="page"  value="1"/>
 	                <div class="btn_search_wrap float-left">
-	                    <button type="button" onclick="location.href='${pageContext.request.contextPath}/system/oprtr/server/list.do'" class="group_btn_item is-dark-btn">서버</button>
-	                    <button type="button" onclick="location.href='${pageContext.request.contextPath}/system/oprtr/user/list.do'" class="group_btn_item is-dark-btn">사용자</button>
-	                    <button type="button" onclick="location.href='${pageContext.request.contextPath}/system/oprtr/facility/list.do'" class="group_btn_item is-dark-btn">시설물</button>
-	                    <button type="button" onclick="location.href='${pageContext.request.contextPath}/system/oprtr/accident/list.do'" class="group_btn_item is-dark-btn">사고</button>
+	                	<ul>
+	                		<li>
+	                			<button type="button" onclick="location.href='${pageContext.request.contextPath}/system/oprtr/user/list.do'" class="group_btn_item is-dark-btn">사용자</button>
+	                		</li>
+	                		<li>
+	                			<button type="button" onclick="location.href='${pageContext.request.contextPath}/system/oprtr/server/list.do'" class="group_btn_item is-dark-btn">서버</button>
+	                		</li>
+	                		<li>
+	                			<button type="button" onclick="location.href='${pageContext.request.contextPath}/system/oprtr/facility/list.do'" class="group_btn_item is-dark-btn">시설물</button>
+	                		</li>
+	                		<li>
+	                			<button type="button" onclick="location.href='${pageContext.request.contextPath}/system/oprtr/accident/list.do'" class="group_btn_item is-dark-btn">사고</button>
+	                		</li>
+	                	</ul>
 	                </div>
-	                <div class="flex-end">
-	                    <div class="calendar mr8">
-		             		<input type="text" name="strDt" id="strDt" class="date_picker input_same mr8 input_picker" placeholder="날짜를 선택해주세요." value="${strDt}" autocomplete="off">
-		                    ~
-		                    <input type="text" name="endDt" id="endDt" class="end_date_picker input_same ml8 input_picker" placeholder="날짜를 선택해주세요." value="${endDt}" autocomplete="off">          
-	                    </div>
-	                    <select class="selectBox" name="searchType" id="searchType">
-	                        <option value="all" <c:if test="${searchType eq 'all'}">selected</c:if>>전체</option>
-	                        <option value="logId" <c:if test="${searchType eq 'logId'}">selected</c:if>>로그ID</option>
-	                        <option value="occurDt" <c:if test="${searchType eq 'occurDt'}">selected</c:if>>발생기간설정</option>
-	                        <option value="sesnId" <c:if test="${searchType eq 'sesnId'}">selected</c:if>>요청자ID</option>
-	                        <option value="rqstrNm" <c:if test="${searchType eq 'rqstrNm'}">selected</c:if>>요청자 이름</option>
-	                        <option value="lgnIp" <c:if test="${searchType eq 'lgnIp'}">selected</c:if>>요청자 IP</option>
-	                    </select>
-	                    <div class="btn_search_wrap float-none">
-	                        <input type="text" name="searchContent" id="searchContent" placeholder="검색어를 입력하세요." class="input_same search_box" value="${searchContent}">
-	                        <input type="button" id="searchBtn" value="검색" class="input_same search_box2" onclick="fnSearchList();">
-	                    </div>
+	                <div class="btn_search_wrap">
+	                	<ul>
+	                		<li>
+	                			<input type="text" name="strDt" id="strDt" class="date_picker input_same input_picker" placeholder="날짜를 선택해주세요." value="<c:out value='${strDt}'/>" autocomplete="off">
+	                		</li>
+	                		<li>
+	                			~
+	                		</li>
+	                		<li>
+	                			<input type="text" name="endDt" id="endDt" class="end_date_picker input_same input_picker" placeholder="날짜를 선택해주세요." value="<c:out value='${endDt}'/>" autocomplete="off">
+	                		</li>
+	                		<li>
+	                			<select class="selectBox" name="searchType" id="searchType">
+			                        <option value="all" <c:if test="${searchType eq 'all'}">selected</c:if>>전체</option>
+			                        <option value="logId" <c:if test="${searchType eq 'logId'}">selected</c:if>>로그ID</option>
+			                        <option value="occurDt" <c:if test="${searchType eq 'occurDt'}">selected</c:if>>발생기간설정</option>
+			                        <option value="sesnId" <c:if test="${searchType eq 'sesnId'}">selected</c:if>>요청자ID</option>
+			                        <option value="rqstrNm" <c:if test="${searchType eq 'rqstrNm'}">selected</c:if>>요청자 이름</option>
+			                        <option value="lgnIp" <c:if test="${searchType eq 'lgnIp'}">selected</c:if>>요청자 IP</option>
+			                    </select>
+	                		</li>
+	                		<li>
+	                			<input type="text" name="searchContent" id="searchContent" placeholder="검색어를 입력하세요." class="input_same search_box" value="<c:out value='${searchContent}'/>">
+	                		</li>
+	                		<li>
+	                			<input type="button" id="searchBtn" value="검색" class="input_same search_box2 mj0 pointer" onclick="fnSearchList();">
+	                		</li>
+	                	</ul>
 	                </div>
   		          </div>
            	</form>
             
             <table>
                 <colgroup>
-                    <col style="width:10%">
+                    <!--<col style="width:10%">
                     <col style="width:16%">
                     <col style="width:10%">
                     <col style="width:14%">
                     <col style="width:26%">
                     <col style="width:10%">
-                    <col style="width:14%">
+                    <col style="width:14%">-->
                 </colgroup>
                 <tr>
                     <th scope="col">번호</th>
@@ -64,21 +84,21 @@
                 <c:choose> 
                 	<c:when test="${fn:length(oprtrLoglist) > 0}">
                   <c:forEach var="oprtrLog" items="${oprtrLoglist}">
-                   <tr class="modal_operation pointer" data-logid="${oprtrLog.logId}" data-logtype="${logType}">
-                       <td>${oprtrLog.rownum}</td>
+                   <tr class="modal_operation pointer" data-logid="<c:out value='${oprtrLog.logId}'/>" data-logtype="<c:out value='${logType}'/>">
+                       <td><c:out value="${oprtrLog.rownum}"/></td>
                        <td>
-                       	${oprtrLog.logId} 
+                       	<c:out value="${oprtrLog.logId}"/> 
                        	<c:if test="${oprtrLog.cdNm ne null && oprtrLog.cdNm ne ''}">/</c:if>
-                       	${oprtrLog.cdNm}
+                       	<c:out value="${oprtrLog.cdNm}"/>
                       	</td>
-                       <td>${oprtrLog.occurDtStr}</td>
-                       <td>${logCtg.grpCdNm}</td>
+                       <td><c:out value="${oprtrLog.occurDtStr}"/></td>
+                       <td><c:out value="${logCtg.grpCdNm}"/></td>
                        <c:choose>
                        	<c:when test="${logCtg.grpCdId ne 'USER_LOG_CD'}">
-		                    <td>${oprtrLog.sesnId}</td>
+		                    <td><c:out value="${oprtrLog.sesnId}"/></td>
                        	</c:when>
                        	<c:when test="${logCtg.grpCdId eq 'USER_LOG_CD'}">
-		                    <td>${oprtrLog.prgrmSesnId}</td>
+		                    <td><c:out value="${oprtrLog.prgrmSesnId}"/></td>
                        	</c:when>
 						<c:otherwise>
 							<td></td>
@@ -86,13 +106,13 @@
                        </c:choose>
 	                <c:choose>
 	                	<c:when test="${logCtg.grpCdId ne 'SRVR_LOG_CD'}">
-			                <td>${oprtrLog.rqstrNm}</td>
+			                <td><c:out value="${oprtrLog.rqstrNm}"/></td>
 	                	</c:when>
 						<c:otherwise>
 							<td></td>
 						</c:otherwise>
 	                </c:choose>
-                       <td>${oprtrLog.lgnIp}</td>
+                       <td><c:out value="${oprtrLog.lgnIp}"/></td>
                    </tr>
                   </c:forEach>
                 	</c:when>
@@ -127,9 +147,9 @@
     $(document).ready(function(){
         let buttonItem = $(".group_btn_item");
         if (pageUrl.indexOf('server') > -1){
-            $(buttonItem).eq(0).addClass("is-darkgreen-btn");
-        } else if (pageUrl.indexOf('user') > -1 ) {
             $(buttonItem).eq(1).addClass("is-darkgreen-btn");
+        } else if (pageUrl.indexOf('user') > -1 ) {
+            $(buttonItem).eq(0).addClass("is-darkgreen-btn");
         }
         else if (pageUrl.indexOf('facility') > -1) {
             $(buttonItem).eq(2).addClass("is-darkgreen-btn");

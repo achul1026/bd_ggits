@@ -1,7 +1,5 @@
 package com.neighbor21.ggits.common.entity;
 
-import java.sql.Timestamp;
-
 public class GgbisBusrouteLink {
     private String routeId;
     private String linkId;
@@ -53,6 +51,7 @@ public class GgbisBusrouteLink {
     private String    lastvehFlags;
     private String    turnprocessFlags;
     private String    firstvehFlags;
+    private String updown;
 
 
     public Long getLinkOrder() {
@@ -442,5 +441,13 @@ public class GgbisBusrouteLink {
 
     public void setFirstvehFlags(String firstvehFlags) {
         this.firstvehFlags = firstvehFlags;
+    }
+
+    public String getUpdown() {
+        return updown;
+    }
+
+    public void setUpdown(String updown) {
+        this.updown = updown;
     }
 }

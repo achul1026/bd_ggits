@@ -2,4 +2,59 @@
 <!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.MetaFileInfoMapper'>
+
+	<insert id="saveMetaFileInfo" parameterType="metaFileInfo">
+		INSERT INTO META_FILE_INFO (
+			FILE_ID,
+			FILE_NM,
+			ORG_FILE_NM,
+			SAVE_STORG_TYPE,
+			SAVE_LC,
+			SAVE_SIZE,
+			DSET_ID 
+		) VALUES ( 
+			#{fileId},
+			#{fileNm},
+			#{orgFileNm},
+			#{saveStorgType},
+			#{saveLc},
+			#{saveSize},
+			#{dsetId}
+		)
+	</insert>
+
+	<select id="findOneByFileId" parameterType="String" resultType="metaFileInfo">
+		SELECT 
+			FILE_ID,
+			FILE_NM,
+			ORG_FILE_NM,
+			SAVE_STORG_TYPE,
+			SAVE_LC,
+			SAVE_SIZE,
+			DSET_ID
+			<!-- ,TBL_ID -->
+		FROM 
+			META_FILE_INFO
+		WHERE FILE_ID = #{fileId}
+	</select>
+	
+	<select id="findAllByTblId" parameterType="String" resultType="metaFileInfo">
+		SELECT 
+			FILE_ID,
+			FILE_NM,
+			ORG_FILE_NM,
+			SAVE_STORG_TYPE,
+			SAVE_LC,
+			SAVE_SIZE,
+			DSET_ID
+			<!-- ,TBL_ID -->
+		FROM 
+			META_FILE_INFO
+		WHERE SAVE_STORG_TYPE = #{tblId}
+	</select>
+	
+	<delete id="deleteMetaFileInfoByFileId" parameterType="String">
+		DELETE FROM META_FILE_INFO
+		WHERE FILE_ID = #{fileId}
+	</delete>
 </mapper>

@@ -1,0 +1,377 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MrtVdsTrfvlmAnalMapper'>
+
+    <select id="findAllByTotalChart" parameterType="mapBigdataSearchDTO" resultType="mrtVdsTrfvlmAnal">
+        select
+        to_char(mvta.clct_dt, 'HH24:00') as time,
+        round(coalesce(AVG(mvta.AVG_SPEED),0),0) as AVG_VHCL_SPEED_AVG ,
+        coalesce(SUM(mvta.TRFVLM),0) as VHCL_TRFVLM_TOTAL ,
+        coalesce(AVG(mvta.TRFVLM),0) as VHCL_TRFVLM_AVG
+        from
+        mrt_vds_trfvlm_anls mvta
+        inner join c_gm_std_link cgsl on mvta.std_link_id = cgsl.link_id
+        inner join c_gm_std_link_adstdg_mppg cgslam on mvta.std_link_id = cgslam.link_id
+        <where>
+            <if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+                AND TO_CHAR(mvta.clct_dt, 'YYYY') = #{searchYear}
+            </if>
+            <!-- 기간 검색 -->
+            <if test="searchPeriod != null and searchPeriod != ''">
+                <choose>
+                    <when test="searchPeriod == 'weekday' ">
+                        AND TO_CHAR(mvta.clct_dt, 'D') BETWEEN '2' AND '6'
+                    </when>
+                    <when test="searchPeriod == 'weekend' ">
+                        AND (TO_CHAR(mvta.clct_dt, 'D') = '1' OR TO_CHAR(mvta.clct_dt, 'D') = '7')
+                    </when>
+                    <otherwise>
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="(startDate != null and startDate != '') and (endDate != null and endDate != '')">
+                AND TO_CHAR(mvta.clct_dt, 'YYYY-MM-DD') BETWEEN #{startDate} AND #{endDate}
+            </if>
+            <!-- 시간 검색 -->
+            <if test="searchTime != null and searchTime != ''">
+                <choose>
+                    <when test="searchTime == 'workingTime' ">
+                        AND TO_CHAR(mvta.clct_dt, 'HH24') BETWEEN '06' AND '10'
+                    </when>
+                    <when test="searchTime == 'workingEndTime' ">
+                        AND TO_CHAR(mvta.clct_dt, 'HH24') BETWEEN '17' AND '20'
+                    </when>
+                    <otherwise>
+                        AND TO_CHAR(mvta.clct_dt, 'HH24') BETWEEN #{startTime} AND #{endTime}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="searchRoadRank != null and searchRoadRank != ''">
+                AND cgsl.ROAD_RANK IN
+                <foreach item="roadRank" collection="searchRoadRank.split(',')" open="(" separator="," close=")">
+                    #{roadRank}
+                </foreach>
+            </if>
+            <if test="searchLocation != null and searchLocation != '' and searchLocation != 'searchAllLocation' ">
+                AND SUBSTRING(cgslam.ADSTDG_CD,0,5) = SUBSTRING(#{searchLocation},0,5)
+            </if>
+        </where>
+        group by 1
+        order by 1 asc
+    </select>
+    <select id="findAllByTotalChartGroupDay" parameterType="mapBigdataSearchDTO" resultType="mrtVdsTrfvlmAnal">
+        select
+        to_char(mvta.clct_dt, 'YYYY-MM-DD') as time,
+        round(coalesce(AVG(mvta.AVG_SPEED),0),0) as AVG_VHCL_SPEED_AVG ,
+        coalesce(SUM(mvta.TRFVLM),0) as VHCL_TRFVLM_TOTAL ,
+        coalesce(AVG(mvta.TRFVLM),0) as VHCL_TRFVLM_AVG
+        from
+        mrt_vds_trfvlm_anls mvta
+        inner join c_gm_std_link cgsl on mvta.std_link_id = cgsl.link_id
+        inner join c_gm_std_link_adstdg_mppg cgslam on mvta.std_link_id = cgslam.link_id
+        <where>
+            <if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+                AND TO_CHAR(mvta.clct_dt, 'YYYY') = #{searchYear}
+            </if>
+            <!-- 기간 검색 -->
+            <if test="searchPeriod != null and searchPeriod != ''">
+                <choose>
+                    <when test="searchPeriod == 'weekday' ">
+                        AND TO_CHAR(mvta.clct_dt, 'D') BETWEEN '2' AND '6'
+                    </when>
+                    <when test="searchPeriod == 'weekend' ">
+                        AND (TO_CHAR(mvta.clct_dt, 'D') = '1' OR TO_CHAR(mvta.clct_dt, 'D') = '7')
+                    </when>
+                    <otherwise>
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="(startDate != null and startDate != '') and (endDate != null and endDate != '')">
+                AND TO_CHAR(mvta.clct_dt, 'YYYY-MM-DD') BETWEEN #{startDate} AND #{endDate}
+            </if>
+            <!-- 시간 검색 -->
+            <if test="searchTime != null and searchTime != ''">
+                <choose>
+                    <when test="searchTime == 'workingTime' ">
+                        AND TO_CHAR(mvta.clct_dt, 'HH24') BETWEEN '06' AND '10'
+                    </when>
+                    <when test="searchTime == 'workingEndTime' ">
+                        AND TO_CHAR(mvta.clct_dt, 'HH24') BETWEEN '17' AND '20'
+                    </when>
+                    <otherwise>
+                        AND TO_CHAR(mvta.clct_dt, 'HH24') BETWEEN #{startTime} AND #{endTime}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="searchRoadRank != null and searchRoadRank != ''">
+                AND cgsl.ROAD_RANK IN
+                <foreach item="roadRank" collection="searchRoadRank.split(',')" open="(" separator="," close=")">
+                    #{roadRank}
+                </foreach>
+            </if>
+            <if test="searchLocation != null and searchLocation != '' and searchLocation != 'searchAllLocation' ">
+                AND SUBSTRING(cgslam.ADSTDG_CD,0,5) = SUBSTRING(#{searchLocation},0,5)
+            </if>
+        </where>
+        group by 1
+        order by 1 asc
+    </select>
+    <select id="findAllBySGGChart" parameterType="mapBigdataSearchDTO" resultType="mrtVdsTrfvlmAnal">
+        select
+        to_char(mvta.clct_dt, 'HH24:00') as time,
+        mvta.mng_inst_cd,
+        round(coalesce(AVG(mvta.AVG_SPEED),0),0) as AVG_VHCL_SPEED_AVG ,
+        coalesce(SUM(mvta.TRFVLM),0) as VHCL_TRFVLM_TOTAL ,
+        coalesce(AVG(mvta.TRFVLM),0) as VHCL_TRFVLM_AVG
+        from
+        mrt_vds_trfvlm_anls mvta
+        inner join c_gm_std_link cgsl on mvta.std_link_id = cgsl.link_id
+        inner join c_gm_std_link_adstdg_mppg cgslam on mvta.std_link_id = cgslam.link_id
+        <where>
+            <if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+                AND TO_CHAR(mvta.clct_dt, 'YYYY') = #{searchYear}
+            </if>
+            <!-- 기간 검색 -->
+            <if test="searchPeriod != null and searchPeriod != ''">
+                <choose>
+                    <when test="searchPeriod == 'weekday' ">
+                        AND TO_CHAR(mvta.clct_dt, 'D') BETWEEN '2' AND '6'
+                    </when>
+                    <when test="searchPeriod == 'weekend' ">
+                        AND (TO_CHAR(mvta.clct_dt, 'D') = '1' OR TO_CHAR(mvta.clct_dt, 'D') = '7')
+                    </when>
+                    <otherwise>
+
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="(startDate != null and startDate != '') and (endDate != null and endDate != '')">
+                AND TO_CHAR(mvta.clct_dt, 'YYYY-MM-DD') BETWEEN #{startDate} AND #{endDate}
+            </if>
+            <!-- 시간 검색 -->
+            <if test="searchTime != null and searchTime != ''">
+                <choose>
+                    <when test="searchTime == 'workingTime' ">
+                        AND TO_CHAR(mvta.clct_dt, 'HH24') BETWEEN '06' AND '10'
+                    </when>
+                    <when test="searchTime == 'workingEndTime' ">
+                        AND TO_CHAR(mvta.clct_dt, 'HH24') BETWEEN '17' AND '20'
+                    </when>
+                    <otherwise>
+                        AND TO_CHAR(mvta.clct_dt, 'HH24') BETWEEN #{startTime} AND #{endTime}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="searchRoadRank != null and searchRoadRank != ''">
+                AND cgsl.ROAD_RANK IN
+                <foreach item="roadRank" collection="searchRoadRank.split(',')" open="(" separator="," close=")">
+                    #{roadRank}
+                </foreach>
+            </if>
+            <if test="searchLocation != null and searchLocation != '' and searchLocation != 'searchAllLocation' ">
+                AND SUBSTRING(cgslam.ADSTDG_CD,0,5) = SUBSTRING(#{searchLocation},0,5)
+            </if>
+        </where>
+        group by 1,2
+        order by 1 asc
+    </select>
+    <select id="findAllBySGGChartGroupDay" parameterType="mapBigdataSearchDTO" resultType="mrtVdsTrfvlmAnal">
+        select
+        to_char(mvta.clct_dt, 'D') as time,
+        mvta.mng_inst_cd,
+        round(coalesce(AVG(mvta.AVG_SPEED),0),0) as AVG_VHCL_SPEED_AVG ,
+        coalesce(SUM(mvta.TRFVLM),0) as VHCL_TRFVLM_TOTAL ,
+        coalesce(AVG(mvta.TRFVLM),0) as VHCL_TRFVLM_AVG
+        from
+        mrt_vds_trfvlm_anls mvta
+        inner join c_gm_std_link cgsl on mvta.std_link_id = cgsl.link_id
+        inner join c_gm_std_link_adstdg_mppg cgslam on mvta.std_link_id = cgslam.link_id
+        <where>
+            <if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+                AND TO_CHAR(mvta.clct_dt, 'YYYY') = #{searchYear}
+            </if>
+            <!-- 기간 검색 -->
+            <if test="searchPeriod != null and searchPeriod != ''">
+                <choose>
+                    <when test="searchPeriod == 'weekday' ">
+                        AND TO_CHAR(mvta.clct_dt, 'D') BETWEEN '2' AND '6'
+                    </when>
+                    <when test="searchPeriod == 'weekend' ">
+                        AND (TO_CHAR(mvta.clct_dt, 'D') = '1' OR TO_CHAR(mvta.clct_dt, 'D') = '7')
+                    </when>
+                    <otherwise>
+
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="(startDate != null and startDate != '') and (endDate != null and endDate != '')">
+                AND TO_CHAR(mvta.clct_dt, 'YYYY-MM-DD') BETWEEN #{startDate} AND #{endDate}
+            </if>
+            <!-- 시간 검색 -->
+            <if test="searchTime != null and searchTime != ''">
+                <choose>
+                    <when test="searchTime == 'workingTime' ">
+                        AND TO_CHAR(mvta.clct_dt, 'HH24') BETWEEN '06' AND '10'
+                    </when>
+                    <when test="searchTime == 'workingEndTime' ">
+                        AND TO_CHAR(mvta.clct_dt, 'HH24') BETWEEN '17' AND '20'
+                    </when>
+                    <otherwise>
+                        AND TO_CHAR(mvta.clct_dt, 'HH24') BETWEEN #{startTime} AND #{endTime}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="searchRoadRank != null and searchRoadRank != ''">
+                AND cgsl.ROAD_RANK IN
+                <foreach item="roadRank" collection="searchRoadRank.split(',')" open="(" separator="," close=")">
+                    #{roadRank}
+                </foreach>
+            </if>
+            <if test="searchLocation != null and searchLocation != '' and searchLocation != 'searchAllLocation' ">
+                AND SUBSTRING(cgslam.ADSTDG_CD,0,5) = SUBSTRING(#{searchLocation},0,5)
+            </if>
+        </where>
+        group by 1,2
+        order by 1 asc
+    </select>
+    <select id="findAllByTop10Chart" parameterType="mapBigdataSearchDTO" resultType="mrtVdsTrfvlmAnal">
+        select
+            mvta.mng_inst_cd,
+            cgsl.road_name ,
+            round(coalesce(AVG(mvta.AVG_SPEED),0),0) as AVG_VHCL_SPEED_AVG ,
+            coalesce(SUM(mvta.TRFVLM),0) as VHCL_TRFVLM_TOTAL ,
+            coalesce(AVG(mvta.TRFVLM),0) as VHCL_TRFVLM_AVG
+        from
+            mrt_vds_trfvlm_anls mvta
+                inner join c_gm_std_link cgsl on mvta.std_link_id = cgsl.link_id
+                inner join c_gm_std_link_adstdg_mppg cgslam on mvta.std_link_id = cgslam.link_id
+        <where>
+            <if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+                AND TO_CHAR(mvta.clct_dt, 'YYYY') = #{searchYear}
+            </if>
+            <!-- 기간 검색 -->
+            <if test="searchPeriod != null and searchPeriod != ''">
+                <choose>
+                    <when test="searchPeriod == 'weekday' ">
+                        AND TO_CHAR(mvta.clct_dt, 'D') BETWEEN '2' AND '6'
+                    </when>
+                    <when test="searchPeriod == 'weekend' ">
+                        AND (TO_CHAR(mvta.clct_dt, 'D') = '1' OR TO_CHAR(mvta.clct_dt, 'D') = '7')
+                    </when>
+                    <otherwise>
+
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="(startDate != null and startDate != '') and (endDate != null and endDate != '')">
+                AND TO_CHAR(mvta.clct_dt, 'YYYY-MM-DD') BETWEEN #{startDate} AND #{endDate}
+            </if>
+            <!-- 시간 검색 -->
+            <if test="searchTime != null and searchTime != ''">
+                <choose>
+                    <when test="searchTime == 'workingTime' ">
+                        AND TO_CHAR(mvta.clct_dt, 'HH24') BETWEEN '06' AND '10'
+                    </when>
+                    <when test="searchTime == 'workingEndTime' ">
+                        AND TO_CHAR(mvta.clct_dt, 'HH24') BETWEEN '17' AND '20'
+                    </when>
+                    <otherwise>
+                        AND TO_CHAR(mvta.clct_dt, 'HH24') BETWEEN #{startTime} AND #{endTime}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="searchRoadRank != null and searchRoadRank != ''">
+                AND cgsl.ROAD_RANK IN
+                <foreach item="roadRank" collection="searchRoadRank.split(',')" open="(" separator="," close=")">
+                    #{roadRank}
+                </foreach>
+            </if>
+            <if test="searchLocation != null and searchLocation != '' and searchLocation != 'searchAllLocation' ">
+                AND SUBSTRING(cgslam.ADSTDG_CD,0,5) = SUBSTRING(#{searchLocation},0,5)
+            </if>
+        </where>
+        group by 1,2
+        <if test="type != null and type != ''">
+            <choose>
+                <when test="type == 'speed' ">
+                    order by 3 desc
+                </when>
+                <otherwise>
+                    order by 4 desc
+                </otherwise>
+            </choose>
+        </if>
+            limit 10
+    </select>
+    <select id="findAllGroupByLinkId" parameterType="mapBigdataSearchDTO" resultType="mrtVdsTrfvlmAnal">
+        SELECT
+        GCIL.LINK_ID
+        ,AVG_VHCL_SPEED_AVG
+        ,VHCL_TRFVLM_TOTAL
+        ,VHCL_TRFVLM_AVG
+        ,ST_ASGEOJSON(ST_LINEMERGE(GCIL.GEOMETRY)) AS GEOJSON
+        ,GCIL.ROAD_RANK
+        ,GCIL.ROAD_NAME
+        ,GCIL.ROAD_TYPE
+        FROM C_GM_STD_LINK GCIL
+        inner JOIN (
+        select
+        mvta.std_link_id as link_id,
+        coalesce(AVG(mvta.avg_speed),0) as AVG_VHCL_SPEED_AVG ,
+        coalesce(SUM(mvta.trfvlm),0) as VHCL_TRFVLM_TOTAL ,
+        coalesce(AVG(mvta.trfvlm),0) as VHCL_TRFVLM_AVG
+        from
+        mrt_vds_trfvlm_anls mvta
+        <where>
+            <!-- 연도별 검색 -->
+            <if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+                AND TO_CHAR(mvta.clct_dt, 'YYYY') = #{searchYear}
+            </if>
+            <!-- 기간 검색 -->
+            <if test="searchPeriod != null and searchPeriod != ''">
+                <choose>
+                    <when test="searchPeriod == 'weekday' ">
+                        AND TO_CHAR(mvta.clct_dt, 'D') BETWEEN '2' AND '6'
+                    </when>
+                    <when test="searchPeriod == 'weekend' ">
+                        AND (TO_CHAR(mvta.clct_dt, 'D') = '1' OR TO_CHAR(mvta.clct_dt, 'D') = '7')
+                    </when>
+                    <otherwise>
+                        AND TO_CHAR(mvta.clct_dt, 'YYYY-MM-DD') BETWEEN #{startDate} AND #{endDate}
+                    </otherwise>
+                </choose>
+            </if>
+            <!-- 시간 검색 -->
+            <if test="searchTime != null and searchTime != ''">
+                <choose>
+                    <when test="searchTime == 'workingTime' ">
+                        AND TO_CHAR(mvta.clct_dt, 'HH24') BETWEEN '06' AND '10'
+                    </when>
+                    <when test="searchTime == 'workingEndTime' ">
+                        AND TO_CHAR(mvta.clct_dt, 'HH24') BETWEEN '17' AND '20'
+                    </when>
+                    <otherwise>
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="(startDate != null and startDate != '') and (endDate != null and endDate != '')">
+                AND TO_CHAR(mvta.clct_dt, 'YYYY-MM-DD') BETWEEN #{startDate} AND #{endDate}
+            </if>
+        </where>
+        group by mvta.std_link_id
+        ) MSTP ON MSTP.LINK_ID = GCIL.LINK_ID
+        inner JOIN C_GM_STD_LINK_ADSTDG_MPPG CGSLAM ON MSTP.LINK_ID = CGSLAM.LINK_ID
+        <where>
+            <if test="searchRoadRank != null and searchRoadRank != ''">
+                AND GCIL.ROAD_RANK IN
+                <foreach item="roadRank" collection="searchRoadRank.split(',')" open="(" separator="," close=")">
+                    #{roadRank}
+                </foreach>
+            </if>
+            <if test="searchLocation != null and searchLocation != '' and searchLocation != 'searchAllLocation' ">
+                AND SUBSTRING(CGSLAM.ADSTDG_CD,0,5) = SUBSTRING(#{searchLocation},0,5)
+            </if>
+        </where>
+    </select>
+</mapper>

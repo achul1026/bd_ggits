@@ -1,0 +1,81 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.AdsiVdsColctInfoCurMapper'>
+	<sql id="vdsInfo-Where">
+		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
+			AND AVCIC.ANLS_DT 
+			BETWEEN TO_TIMESTAMP(#{strDt}|| ' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}|| ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
+			<![CDATA[
+			AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS')  <= AVCIC.ANLS_DT
+			]]>
+		</if>
+		<if test="(strDt == '' or strDt == null) and (endDt != '' and endDt != null)">
+			<![CDATA[
+			AND AVCIC.ANLS_DT <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			]]>
+		</if>
+		<if test="searchContent != null and searchContent != ''">
+			AND (EAMFV.VDS_NM LIKE '%' ||  #{searchContent} || '%')
+				OR (cgslam.ROAD_NAME LIKE '%' || #{searchContent} || '%')
+		</if>
+		<if test="(sigunCdId != null and sigunCdId != '') and sigunCdId != 'searchAllLocation'">
+			AND CGSLAM.ADSTDG_CD LIKE SUBSTRING(#{sigunCdId}, 0, 5) || '%'
+		</if>
+	</sql>
+	
+	<select id="findAdsiVdsColctInfoList" parameterType="adsiVdsColctInfoCur" resultType="adsiVdsColctInfoCur">
+		SELECT
+			TO_CHAR(anls_dt, 'YYYYMMDD'),
+			CASE WHEN eamfv.VDS_NM is null
+				THEN eamfv.VDS_ID
+			ELSE eamfv.VDS_NM
+			END as vds_nm,
+			SUM(avcic.TRFVLM) as SUM_TRFVLM,
+			ROUND(SUM(avcic.TRFVLM) / COUNT(eamfv.VDS_ID),2) as AVG_TRFVLM,
+			COALESCE(ROUND(SUM(avcic.AVG_SPEED) / COUNT(eamfv.VDS_ID),0), 0)as AVG_SPD,
+			cgslam.ROAD_NAME
+		FROM ggits.mrt_vds_clct_stats avcic
+		INNER JOIN bigdata.ext_ADSI_M_FA_VDS eamfv
+			ON (avcic.VDS_ID = eamfv.VDS_ID and avcic.mng_inst_cd = eamfv.mng_inst_cd)
+		INNER JOIN bigdata.ext_ADSI_VDS_SCTN_INFO avsi
+			ON (eamfv.VDS_ID = avsi.VDS_ID and eamfv.mng_inst_cd = avsi.mng_inst_cd)
+		INNER JOIN bigdata.ext_ADSI_VDS_SCTN_STLINK_MPPG avssm
+			ON (avsi.vds_sctn_id = avssm.vds_sctn_id and avsi.mng_inst_cd = avssm.mng_inst_cd)
+		INNER JOIN ggits.C_GM_STD_LINK_ADSTDG_MPPG cgslam
+			ON avssm.STD_LINK_ID = cgslam.LINK_ID
+		WHERE 1=1
+			<include refid="vdsInfo-Where"/>
+			AND cgslam.ROAD_NAME <![CDATA[<>]]> '-'
+		GROUP BY 1,2, cgslam.ROAD_NAME
+		ORDER BY 1,cgslam.ROAD_NAME
+		<if test="page != null and page != '' and page != 0">
+		LIMIT 10 OFFSET (#{page} - 1) * 10;
+		</if>
+	</select>
+	
+	<select id="countVdsColctInfo" parameterType="adsiVdsColctInfoCur" resultType="int">
+		SELECT
+			COUNT(A.VDS_ID)
+		FROM(
+			SELECT
+				EAMFV.VDS_ID
+			FROM ggits.mrt_vds_clct_stats AVCIC
+			INNER JOIN bigdata.ext_ADSI_M_FA_VDS EAMFV
+				ON (AVCIC.VDS_ID = EAMFV.VDS_ID and AVCIC.mng_inst_cd = EAMFV.mng_inst_cd)
+			INNER JOIN bigdata.ext_ADSI_VDS_SCTN_INFO avsi
+				ON (EAMFV.VDS_ID = avsi.VDS_ID and EAMFV.mng_inst_cd = avsi.mng_inst_cd)
+			INNER JOIN bigdata.ext_ADSI_VDS_SCTN_STLINK_MPPG avssm
+				ON (avsi.vds_sctn_id = avssm.vds_sctn_id and avsi.mng_inst_cd = avssm.mng_inst_cd)
+			INNER JOIN ggits.C_GM_STD_LINK_ADSTDG_MPPG cgslam
+				ON avssm.STD_LINK_ID = cgslam.LINK_ID
+			WHERE 1=1
+				<include refid="vdsInfo-Where"/>
+			  	AND cgslam.ROAD_NAME <![CDATA[<>]]> '-'
+			GROUP BY to_char(anls_dt, 'YYYYMMDD'),EAMFV.VDS_ID,cgslam.ROAD_NAME
+		)A
+	</select>
+</mapper>

@@ -53,8 +53,7 @@ $(function(){
         $('.dashboard_wrap').css('display',"block");
         $('.dashboard_wrap_detail').css('display',"none");
     })
-    
-    
+   
     //데이터 수집 장애이력 클릭
     $('.sub_data_btn').click(function(){
         // alert('asd')
@@ -103,15 +102,37 @@ $(function(){
 })
 
 
+
 //정체구간 개선활동
 function imporovement(){
-    $(".map_fusion_data_arrow").click(function(){
+    $(".label").click(function(){
         $(this).closest(".map_fusion_dataitem").toggleClass("active");
         $(this).parent(".fusion_data_titlebox").siblings(".fusion_data_inputbox").slideToggle(100);
         $(this).toggleClass("active");
     })
 }
-
+function introcheck(){
+	const label = document.querySelectorAll('.label');
+	const options = document.querySelectorAll('.optionItem');
+	
+	const handleSelect = (item) => {
+	  label.parentNode.parentNode.classList.remove('active');
+	  label.innerHTML = item.textContent;
+	}
+	options.forEach(option => {
+		option.addEventListener('click', () => handleSelect(option))
+	})
+	
+	label.forEach(item => {
+		item.addEventListener('click', () => {
+			if(item.parentNode.parentNode.classList.contains('active')) {
+				item.parentNode.parentNode.classList.remove('active');
+			} else {
+				item.parentNode.parentNode.classList.add('active');
+			}
+		})
+	})
+}
 //datePicker
 function previousDay(){
 	$('#previousDay').datepicker({
@@ -158,5 +179,78 @@ $(function(){
 		$('.control_container').toggleClass('none');
 	})
 })
+
+
+function bigdataPredction(){
+	//select validation
+	var searchYear = $("select[name='searchYear']");
+	$(searchYear).off().on('change', function(){
+		const searchYearValue = $("select[name='searchYear']").val();
+		if(searchYearValue != null){
+			const minDate = searchYearValue+"-01-01";
+			const maxDate = searchYearValue+"-12-31";
+		    $(".date_picker").datepicker("option", "minDate",minDate);
+		    $(".date_picker").datepicker("option", "maxDate",maxDate);
+			$(".date_picker").datepicker("option", "defaultDate", minDate);
+		    $(".end_date_picker").datepicker("option", "minDate",minDate);
+		    $(".end_date_picker").datepicker("option", "maxDate",maxDate);
+		}
+	});	
+	$('.date_picker').datepicker({
+		dateFormat:'yy-mm-dd',
+		changMonth:true,
+		changYear:true,
+		nextText:'다음 달',
+		prevText:'이전 달',
+		dayNames:['월요일','화요일','수요일','목요일','금요일','토요일','일요일'],
+		dayNamesMin:['일','월','화','수','목','금','토'],
+		monthNamesShort:['1','2','3','4','5','6','7','8','9','10','11','12'],
+		monthNames:['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],
+		showMonthAfterYear:true,
+		yearSuffix:'년',
+	    format: 'YYYY',
+		minViewMode: 'years',
+	    viewMode: "years",
+	})
+	$('.end_date_picker').datepicker({
+		dateFormat:'yy-mm-dd',
+		changMonth:true,
+		changYear:true,
+		nextText:'다음 달',
+		prevText:'이전 달',
+		dayNames:['월요일','화요일','수요일','목요일','금요일','토요일','일요일'],
+		dayNamesMin:['일','월','화','수','목','금','토'],
+		monthNamesShort:['1','2','3','4','5','6','7','8','9','10','11','12'],
+		monthNames:['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],
+		showMonthAfterYear:true,
+		yearSuffix:'년',
+	    format: 'YYYY',
+		minViewMode: 'years',
+	    viewMode: "years",
+	})	
+    $('.date_picker').on('change', function(){
+           var date = $(this).datepicker("getDate");
+           if (date) {
+               date.setDate(date.getDate() + 6);
+               $(".end_date_picker").datepicker("setDate", date);
+           }
+    })
+    $('.end_date_picker').on('change', function(){
+           var date = $(this).datepicker("getDate");
+           if (date) {
+               date.setDate(date.getDate() - 6);
+               $(".date_picker").datepicker("setDate", date);
+           }
+    })
+	var optionHtml = "";
+	for(var i = 0; i < 24; i++){
+		if(i < 10){
+			optionHtml += "<option value=0"+i+">0"+i+":00</option>";
+		}else{
+			optionHtml += "<option value="+i+">"+i+":00</option>";
+		}
+	}
+	$(".selectTime").append(optionHtml);	
+}
 
 

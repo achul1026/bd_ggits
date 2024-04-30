@@ -4,22 +4,261 @@
 <mapper namespace='com.neighbor21.ggits.common.mapper.MrtTrfAcdntDngrPrdctnMapper'>
 
     <select id="findAll" parameterType="mapBigdataSearchDTO" resultType="mrtTrfAcdntDngrPrdctn">
-        SELECT
-            link_id
-             ,speed
-             ,safe_idex
-             ,safe_grd
-        FROM
-            mrt_trf_acdnt_dngr_prdctn
+    	SELECT
+				MTADP.LINK_ID ,
+				MTADP.SPEED ,
+				MTADP.SAFE_IDEX ,
+				MTADP.SAFE_GRD 
+		FROM
+			MRT_TRF_ACDNT_DNGR_PRDCTN MTADP
+		INNER JOIN C_GM_STD_LINK  GCIL ON MTADP.LINK_ID = GCIL.LINK_ID
+		INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG CGSLAM ON GCIL.LINK_ID = CGSLAM.LINK_ID
+		WHERE 1=1
+		<!-- 연도별 검색 -->
+        <!--<if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+            AND TO_CHAR(TO_DATE(MTADP.PRDCTN_YMD  ,'YYYYMMDD'),'YYYY') = #{searchYear}
+        </if>
+        &lt;!&ndash; 기간 검색 &ndash;&gt;
+        <if test="startDate != null and startDate != ''">
+	        AND TO_CHAR(TO_DATE(MTADP.PRDCTN_YMD  ,'YYYYMMDD'),'YYYY-MM-DD') = #{startDate} 
+        </if>-->
+		<if test="searchRoadRank != null and searchRoadRank != ''">
+        AND GCIL.ROAD_RANK IN 
+        					<foreach item="roadRank" collection="searchRoadRank.split(',')" open="(" separator="," close=")">
+			        			#{roadRank}
+			  				</foreach>
+        </if>
+		<if test="searchLocation != null and searchLocation != '' and searchLocation != 'searchAllLocation' ">
+		AND SUBSTRING(CGSLAM.ADSTDG_CD,0,5) = SUBSTRING(#{searchLocation},0,5)
+		</if>
     </select>
 
     <select id="findAllBySearchOption" parameterType="mapBigdataSearchDTO" resultType="mrtTrfAcdntDngrPrdctn">
         SELECT
-            link_id
-            ,speed
-            ,safe_idex
-            ,safe_grd
-        FROM
-            mrt_trf_acdnt_dngr_prdctn
+				MTADP.LINK_ID ,
+				MTADP.SPEED ,
+				MTADP.SAFE_IDEX  as safe_idex,
+				MTADP.SAFE_GRD 
+		FROM
+			MRT_TRF_ACDNT_DNGR_PRDCTN MTADP
+		INNER JOIN C_GM_STD_LINK  GCIL ON MTADP.LINK_ID = GCIL.LINK_ID
+		INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG CGSLAM ON GCIL.LINK_ID = CGSLAM.LINK_ID
+		WHERE 1=1
+			<if test="searchRoadRank != null and searchRoadRank != ''">
+	        AND GCIL.ROAD_RANK IN 
+	        					<foreach item="roadRank" collection="searchRoadRank.split(',')" open="(" separator="," close=")">
+				        			#{roadRank}
+				  				</foreach>
+	        </if>
+			<if test="searchLocation != null and searchLocation != '' and searchLocation != 'searchAllLocation' ">
+			AND SUBSTRING(CGSLAM.ADSTDG_CD,0,5) = SUBSTRING(#{searchLocation},0,5)
+			</if>
+			AND mtadp.PRDCTN_YMD = to_char(now(),'YYYYMMDD')
+			AND mtadp.TIMEZN = (CASE
+									WHEN <![CDATA[ (0 <= SUBSTRING(TO_CHAR(NOW(),'HH24MI'), 3, 4)::INT) 
+											AND (SUBSTRING(TO_CHAR(NOW(),'HH24MI'), 3, 4)::INT <= 29) 
+										]]> THEN
+										CONCAT(SUBSTRING(TO_CHAR(NOW(),'HH24MI'), 1, 2), '30')
+									WHEN <![CDATA[ (30 <= SUBSTRING(TO_CHAR(NOW(),'HH24MI'), 3, 4)::INT) 
+											AND (SUBSTRING(TO_CHAR(NOW(),'HH24MI'), 3, 4)::INT <= 59) 
+										]]> THEN
+										CONCAT(SUBSTRING(TO_CHAR(NOW() + INTERVAL'1 hour','HH24MI'), 1, 2), '00')
+									ELSE '0000'
+								END)
+    </select>
+
+    <!--시군구별 -->
+    <select id="findAllBySearchOptionGroupSGG" parameterType="mapBigdataSearchDTO" resultType="mrtTrfAcdntDngrPrdctn">
+    select
+    COUNT(1) filter (where safe_grd = '-3') "none_link_cnt_by_sgg"
+    ,COUNT(1) filter (where safe_grd = '-2') "speed_over_cnt_by_sgg"
+    ,COUNT(1) filter (where safe_grd = '-1') "speed_under_cnt_by_sgg"
+    ,COUNT(1) filter (where safe_grd = '0') "safe_cnt_by_sgg"
+    ,COUNT(1) filter (where safe_grd = '1') "warn_cnt_by_sgg"
+    ,COUNT(1) filter (where safe_grd = '2') "danger_cnt_by_sgg"
+    ,COUNT(1) filter (where safe_grd = '3') "serious_cnt_by_sgg"
+    ,sgg_cd
+    FROM
+    (SELECT
+    mtadp.safe_grd
+    ,mtadp.link_id
+    ,SUBSTRING(CGSLAM.ADSTDG_CD,0,5) AS "sgg_cd"
+    FROM
+    mrt_trf_acdnt_dngr_prdctn mtadp
+	INNER JOIN C_GM_STD_LINK  GCIL ON MTADP.LINK_ID = GCIL.LINK_ID
+    inner join c_gm_std_link_adstdg_mppg cgslam on mtadp.link_id = cgslam.link_id
+	where
+	1=1
+		<if test="searchRoadRank != null and searchRoadRank != ''">
+			AND GCIL.ROAD_RANK IN
+			<foreach item="roadRank" collection="searchRoadRank.split(',')" open="(" separator="," close=")">
+				#{roadRank}
+			</foreach>
+		</if>
+		<if test="searchLocation != null and searchLocation != '' and searchLocation != 'searchAllLocation' ">
+			AND SUBSTRING(CGSLAM.ADSTDG_CD,0,5) = SUBSTRING(#{searchLocation},0,5)
+		</if>
+		AND mtadp.PRDCTN_YMD = TO_CHAR(now(),'YYYYMMDD')
+		AND mtadp.TIMEZN = (CASE
+								WHEN <![CDATA[ (0 <= substring(to_char(NOW(),'HH24MI'), 3, 4)::INT) 
+										AND (SUBSTRING(TO_CHAR(NOW(),'HH24MI'), 3, 4)::INT <= 29) 
+									]]> THEN
+									CONCAT(SUBSTRING(TO_CHAR(NOW(),'HH24MI'), 1, 2), '30')
+								WHEN <![CDATA[ (30 <= SUBSTRING(TO_CHAR(NOW(),'HH24MI'), 3, 4)::INT) 
+										AND (SUBSTRING(TO_CHAR(NOW(),'HH24MI'), 3, 4)::INT <= 59) 
+									]]> THEN
+									CONCAT(SUBSTRING(TO_CHAR(NOW() + INTERVAL'1 hour','HH24MI'), 1, 2), '00')
+								ELSE '0000'
+							END)
+    group by  mtadp.safe_grd,mtadp.link_id,SUBSTRING(CGSLAM.ADSTDG_CD,0,5)) mtadp
+    group by sgg_cd
+    </select>
+    
+    <!-- 더많은 데이터 보기 > 사고 예측 지역 순위 -->
+    <select id="findAllBySearchOptionForDataView" parameterType="map" resultType="map">
+    	<if test="searchType != null and searchType != '' and searchType == 'graph' ">
+    	SELECT 
+			ARRAY_TO_STRING(ARRAY_AGG(GROUP_INFO."adstdgNm"), ',') 		AS "adstdgNmArray",    
+			ARRAY_TO_STRING(ARRAY_AGG(GROUP_INFO."safeCnt"), ',') 		AS "safeCntArray",   
+			ARRAY_TO_STRING(ARRAY_AGG(GROUP_INFO."cautionCnt"), ',')    AS "cautionCntArray",
+			ARRAY_TO_STRING(ARRAY_AGG(GROUP_INFO."dangerCnt"), ',')   	AS "dangerCntArray", 
+			ARRAY_TO_STRING(ARRAY_AGG(GROUP_INFO."seriousCnt"), ',')    AS "seriousCntArray"
+		FROM (
+    	</if>
+				SELECT 
+					<if test="searchStandard != '' and searchStandard != '' ">
+						<choose>
+							<when test="searchStandard == 'sgg'">
+								(SELECT 
+										CD_NM 
+								FROM 	M_OP_CODE MOC 
+								WHERE 	GRP_CD_ID = 'SGG_CD' 
+								AND 	SUBSTRING(CD_ID,0,5) = ADSTDG_CD
+								) 
+							</when>
+							<when test="searchStandard == 'umd'">
+								ADSTDG_NM 
+							</when>
+							<otherwise>
+								ROAD_NAME							
+							</otherwise>
+						</choose>
+								AS "adstdgNm",
+					</if>
+					SUM(CASE WHEN PRDCTN_INFO.SAFE_GRD_NM = 'SAFE' THEN 1 ELSE 0 END) 		AS "safeCnt",
+					SUM(CASE WHEN PRDCTN_INFO.SAFE_GRD_NM = 'CAUTION' THEN 1 ELSE 0 END) 	AS "cautionCnt",
+					SUM(CASE WHEN PRDCTN_INFO.SAFE_GRD_NM = 'DANGER' THEN 1 ELSE 0 END) 	AS "dangerCnt",
+					SUM(CASE WHEN PRDCTN_INFO.SAFE_GRD_NM = 'SERIOUS' THEN 1 ELSE 0 END) 	AS "seriousCnt"
+				FROM (
+						SELECT
+							<if test="searchStandard != '' and searchStandard != '' ">
+								<choose>
+									<when test="searchStandard == 'sgg'">
+										SUBSTRING(CGSLAM.ADSTDG_CD,0,5)		AS ADSTDG_CD,	
+									</when>
+									<when test="searchStandard == 'umd'">
+										CGSLAM.ADSTDG_CD,
+										CGSLAM.ADSTDG_NM,
+									</when>
+									<otherwise>
+										GCIL.ROAD_NAME  ,						
+									</otherwise>
+								</choose>
+							</if>
+							CAST(MTADP.SAFE_GRD	as INTEGER)					AS SAFE_GRD	,
+							CGSLAM.ADSI_NM,
+							GCIL.LINK_ID ,
+							MTADP.SAFE_IDEX as safe_idex,
+							MTADP.SPEED,
+							CASE 	WHEN MTADP.SAFE_GRD = '1' THEN 'SAFE'
+									WHEN MTADP.SAFE_GRD = '2' THEN 'CAUTION'
+									WHEN MTADP.SAFE_GRD = '3' THEN 'DANGER'
+									WHEN MTADP.SAFE_GRD = '4' THEN 'SERIOUS'
+									ELSE 'ERROR' 
+							END AS SAFE_GRD_NM
+						FROM
+							MRT_TRF_ACDNT_DNGR_PRDCTN MTADP
+						INNER JOIN C_GM_STD_LINK  GCIL ON MTADP.LINK_ID = GCIL.LINK_ID
+						INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG CGSLAM ON GCIL.LINK_ID = CGSLAM.LINK_ID
+						WHERE 1=1
+				) PRDCTN_INFO
+				<if test="searchStandard != '' and searchStandard != '' ">
+				GROUP BY
+					<choose>
+						<when test="searchStandard == 'road'">
+							LINK_ID,ROAD_NAME
+						</when>
+						<otherwise>
+							<if test="searchStandard == 'umd'">
+							ADSTDG_NM,
+							</if>
+							 ADSTDG_CD
+						</otherwise>
+					</choose>
+				</if>
+				ORDER by SUM(CASE WHEN PRDCTN_INFO.SAFE_GRD_NM = 'SERIOUS' THEN 1 ELSE 0 END) DESC
+				LIMIT 5
+		<if test="searchType != null and searchType != '' and searchType == 'graph' ">		
+		) GROUP_INFO
+		</if>
+    </select>
+    
+    <select id="findAllDataYears" resultType="map">
+        SELECT
+				TO_CHAR(TO_DATE(ETL_DT ,'YYYYMMDD'),'YYYY') AS "year"
+		FROM
+				MRT_TRF_ACDNT_DNGR_PRDCTN
+		GROUP BY TO_CHAR(TO_DATE(ETL_DT ,'YYYYMMDD'),'YYYY')
+		ORDER BY TO_CHAR(TO_DATE(ETL_DT ,'YYYYMMDD'),'YYYY') desc
+    </select>
+    
+    <select id="findTrafficAccidentPredictionInfo" parameterType="trafficAccidentPredictionInfoRequest" resultType="trafficAccidentPredictionInfoResponse">
+       	SELECT
+			LINK_ID ,
+			SPEED ,
+			SAFE_IDEX ,
+			SAFE_GRD 
+		FROM
+			MRT_TRF_ACDNT_DNGR_PRDCTN
+		<trim prefix="WHERE" prefixOverrides="AND">
+			<if test="linkId != null and linkId != ''">
+				AND LINK_ID = #{linkId}
+			</if>
+			<if test="date != null and date != ''">
+		        AND TO_CHAR(TO_DATE(PRDCTN_YMD  ,'YYYYMMDD'),'YYYYMMDD') = #{date} 
+			</if>
+		</trim>
+    </select>
+
+    <select id="findAcdntPredictionTop10Info" resultType="mrtTrfAcdntDngrPrdctn">
+		SELECT
+		--   ROUND(SAFE_IDEX::NUMERIC, 9) AS SAFE_IDEX,
+		--   SAFE_IDEX AS ORD_SAFE_IDEX,
+		count(*) as safe_idex,
+		CASE WHEN SAFE_GRD = '3' THEN '심각'
+		WHEN SAFE_GRD = '2' THEN '위험'
+		WHEN SAFE_GRD = '1' THEN '주의'
+		WHEN SAFE_GRD = '0' THEN '안전' END AS SAFE_GRD,
+		--   CGSL.ROAD_NAME ,
+		CGSLAM.ADSI_NM  ,
+		CGSLAM.ADSTDG_NM,
+		CGSLAM.ADSTDG_CD
+		FROM
+		MRT_TRF_ACDNT_DNGR_PRDCTN MTADP
+		INNER JOIN C_GM_STD_LINK CGSL ON MTADP.LINK_ID = CGSL.LINK_ID
+		INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG CGSLAM ON MTADP.LINK_ID = CGSLAM.LINK_ID
+		WHERE
+		PRDCTN_YMD >= TO_CHAR(CURRENT_DATE, 'YYYYMMDD')
+		  <![CDATA[
+		  AND TIMEZN <= TO_CHAR(NOW()+INTERVAL '1 HOURS','HH24')
+		]]>
+		AND SAFE_GRD =  '3'
+		GROUP BY
+		SAFE_GRD ,
+		CGSLAM.ADSI_NM  ,
+		CGSLAM.ADSTDG_NM ,
+		CGSLAM.ADSTDG_CD
+		ORDER BY count(*) DESC
+		LIMIT 20
     </select>
 </mapper>

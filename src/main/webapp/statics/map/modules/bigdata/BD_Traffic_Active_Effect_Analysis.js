@@ -5,6 +5,12 @@
  */
 const BD_Traffic_Active_Effect_Analysis = async function(searchOption = ''){
     let list = await self.util.getJsonFormApi("/bigdata/getTrafficActiveEffectAnalysis.ajax?"+searchOption);
+    if(list?.noLogin){
+        return {
+            error : true,
+            noLogin : true
+        }
+    }
     const so =  Object.fromEntries(new URLSearchParams(searchOption));
     let errorMsg = "";
     if(so.startDate){

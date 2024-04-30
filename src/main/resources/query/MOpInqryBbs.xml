@@ -1,0 +1,165 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.MOpInqryBbsMapper'>
+	<insert id="saveMOpInqryBbs" parameterType="mOpInqryBbs">
+		INSERT INTO M_OP_INQRY_BBS (
+			INQRY_ID,
+			OPRTR_ID,
+			INQRY_TITLE,
+			INQRY_CNTS,
+			INQRY_CRT_DT,
+			INQRY_UPDT_DT,
+			INQRY_ANS_DT,
+			INQRY_SRCH_CNT,
+			INQRY_ANS_YN,
+			ATCH_FILE_YN,
+			ATCH_FILE_NM,
+			ATCH_FILE_ORG_NM,
+			ATCH_FILE_PATH,
+			ATCH_FILE_SIZE
+		) VALUES ( 
+			#{inqryId},
+			#{oprtrId},
+			#{inqryTitle},
+			#{inqryCnts},
+			NOW(),
+			NOW(),
+			NULL,
+			#{inqrySrchCnt},
+			#{inqryAnsYn},
+			#{atchFileYn},
+			#{atchFileNm},
+			#{atchFileOrgNm},
+			#{atchFilePath},
+			#{atchFileSize}
+		)
+	</insert>
+	
+	<select id="findMOpInqryBbsBySearchOption" resultType="mOpInqryBbs" parameterType="mOpInqryBbs">
+	SELECT
+		ROW_NUMBER() OVER(ORDER BY MOIB.INQRY_CRT_DT) AS ROWNUM,
+		MOIB.INQRY_ID,
+		MOIB.OPRTR_ID,
+		MOIB.INQRY_TITLE,
+		MOIB.INQRY_CNTS,
+		MOIB.INQRY_CRT_DT,
+		MOIB.INQRY_UPDT_DT,
+		MOIB.INQRY_ANS_DT,
+		MOIB.INQRY_SRCH_CNT,
+		MOIB.INQRY_ANS_YN,
+		MOIB.ATCH_FILE_YN,
+		MOIB.ATCH_FILE_NM,
+		MOIB.ATCH_FILE_ORG_NM,
+		MOIB.ATCH_FILE_PATH,
+		MOIB.ATCH_FILE_SIZE,
+		MOO.OPRTR_NM
+	FROM M_OP_INQRY_BBS MOIB
+	INNER JOIN M_OP_OPERATOR MOO ON MOIB.OPRTR_ID = MOO.OPRTR_ID
+	<where>
+		<if test="strDt != null and strDt != ''">
+		<![CDATA[
+		   AND MOIB.INQRY_CRT_DT >= TO_TIMESTAMP(#{strDt},'YYYY-MM-DD HH24:mi:ss') 
+		]]>
+		</if>
+		<if test="endDt != null and endDt != ''">
+		<![CDATA[
+		   AND MOIB.INQRY_CRT_DT <= TO_TIMESTAMP(#{endDt},'YYYY-MM-DD HH24:mi:ss')
+		]]>
+		</if>
+		<if test="inqryAnsYn != null and inqryAnsYn != ''">
+			AND MOIB.INQRY_ANS_YN = #{inqryAnsYn}
+		</if>
+		<if test="oprtrNm != null and oprtrNm != ''">
+			AND MOO.OPRTRNM LIKE '%' || #{oprtrNm} || '%'
+		</if>
+		<if test="oprtrId != null">
+		   AND MOIB.OPRTR_ID = #{oprtrId}
+		</if>
+	</where>
+	ORDER BY ROWNUM DESC
+	LIMIT 10 OFFSET (#{page} - 1) * 10
+	</select>
+
+	<select id="countBySearchOption" resultType="Long" parameterType="mOpNtcBbs">
+		SELECT 
+			COUNT(*)
+		FROM M_OP_INQRY_BBS MOIB
+		INNER JOIN M_OP_OPERATOR MOO ON MOIB.OPRTR_ID = MOO.OPRTR_ID
+		<where>
+			<if test="strDt != null and strDt != ''">
+			<![CDATA[ 
+			   AND MOIB.INQRY_CRT_DT >= TO_TIMESTAMP(#{strDt},'YYYY-MM-DD HH24:mi:ss') 
+			]]>
+			</if>
+			<if test="endDt != null and endDt != ''">
+			<![CDATA[
+			   AND MOIB.INQRY_CRT_DT <= TO_TIMESTAMP(#{endDt},'YYYY-MM-DD HH24:mi:ss')
+			]]>
+			</if>
+			<if test="inqryAnsYn != null and inqryAnsYn != ''">
+				AND MOIB.INQRY_ANS_YN = #{inqryAnsYn}
+			</if>
+			<if test="oprtrId != null">
+			   AND MOIB.OPRTR_ID = #{oprtrId}
+			</if>
+			<if test="oprtrNm != null and oprtrNm != ''">
+				AND MOO.OPRTRNM LIKE '%' || #{oprtrNm} || '%'
+			</if>
+		</where>
+	</select>
+	
+	<update id="updateInqrySrchCnt" parameterType="mOpInqryBbs">
+		UPDATE M_OP_INQRY_BBS SET
+		 	INQRY_SRCH_CNT = INQRY_SRCH_CNT+1
+		WHERE INQRY_ID = #{inqryId}
+	</update>
+	
+	<select id="findOneByInqryId" resultType="mOpInqryBbs" parameterType="String">
+		SELECT
+			MOIB.INQRY_ID,
+			MOIB.OPRTR_ID,
+			MOIB.INQRY_TITLE,
+			MOIB.INQRY_CNTS,
+			MOIB.INQRY_CRT_DT,
+			MOIB.INQRY_UPDT_DT,
+			MOIB.INQRY_ANS_DT,
+			MOIB.INQRY_SRCH_CNT,
+			MOIB.INQRY_ANS_YN,
+			MOIB.ATCH_FILE_YN,
+			MOIB.ATCH_FILE_NM,
+			MOIB.ATCH_FILE_ORG_NM,
+			MOIB.ATCH_FILE_PATH,
+			MOIB.ATCH_FILE_SIZE,
+			MOO.OPRTR_NM
+		FROM M_OP_INQRY_BBS MOIB
+		INNER JOIN M_OP_OPERATOR MOO ON MOIB.OPRTR_ID = MOO.OPRTR_ID
+		WHERE INQRY_ID = #{inqryId}
+	</select>
+	
+	
+	<update id="updateMOpInqryBbs" parameterType="mOpInqryBbs">
+		UPDATE M_OP_INQRY_BBS SET
+		 	INQRY_TITLE = #{inqryTitle},
+		 	INQRY_CNTS = #{inqryCnts},
+		 	INQRY_UPDT_DT = NOW(),
+			ATCH_FILE_YN = #{atchFileYn},
+			ATCH_FILE_NM = #{atchFileNm},
+			ATCH_FILE_ORG_NM = #{atchFileOrgNm},
+			ATCH_FILE_PATH = #{atchFilePath},
+			ATCH_FILE_SIZE = #{atchFileSize}
+		WHERE INQRY_ID = #{inqryId}
+	</update>
+
+	<update id="updateInqryAnsYnAndInqryAnsDt" parameterType="mOpInqryBbs">
+		UPDATE M_OP_INQRY_BBS SET
+			INQRY_ANS_YN = #{inqryAnsYn},
+			INQRY_ANS_DT = #{inqryAnsDt}
+		WHERE INQRY_ID = #{inqryId}
+	</update>
+	
+	<delete id="deleteMOpInqryBbs" parameterType="mOpInqryBbs">
+		DELETE FROM M_OP_INQRY_BBS
+		WHERE INQRY_ID = #{inqryId}
+	</delete>
+</mapper>

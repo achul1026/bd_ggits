@@ -5,8 +5,13 @@
  */
 const BD_Traffic_Active_Effect_Analysis_Merge = async function(searchOption = ''){
     let list = await self.util.getJsonFormApi("/bigdata/getTrafficActiveEffectAnalysisMerge.ajax?"+searchOption);
+    if(list?.noLogin){
+        return {
+            error : true,
+            noLogin : true
+        }
+    }
     let features = [];
-    console.log(list);
     for(const info of list) {
         const obj = {
             'type': 'Feature',

@@ -14,32 +14,58 @@
 				AND (ltdl.ETL_CLSF LIKE '%' || #{searchContent} || '%')
 			</if>
 		</if>
+		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
+			AND ltdl.CLCT_START_DT 
+			BETWEEN TO_TIMESTAMP(#{strDt}|| ' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}|| ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
+			<![CDATA[
+			AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS')  <= ltdl.CLCT_START_DT
+			]]>
+		</if>
+		<if test="(strDt == '' or strDt == null) and (endDt != '' and endDt != null)">
+			<![CDATA[
+			AND ltdl.CLCT_START_DT <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			]]>
+		</if>
 	</sql>
 	<select id="findAllLTcDataLogTodayListForAlarm" resultType="lTcDataLog">
 		SELECT
 		LTDL.DSET_ID,
 		LTDL.JOB_ID,
-		LTDL.ETL_DT,
 		LTDL.JOB_NM,
 		LTDL.RLTINST_ID,
 		LTDL.ETL_CLSF,
-		LTDL.CLCT_START_DT,
-		LTDL.CLCT_END_DT,
+		max(LTDL.CLCT_START_DT) as CLCT_START_DT,
 		LTDL.CLCT_TBL,
 		LTDL.TRGT_TBL,
-		LTDL.CLCT_DATA_CNT,
 		LTDL.PRGRS_STTS,
-		LTDL.FAIL_RSN,
 		MOC.CD_NM
 		FROM    L_TC_DATA_LOG LTDL
 		INNER 	JOIN M_OP_CODE MOC ON LTDL.RLTINST_ID = MOC.CD_ID
-		<![CDATA[
 		where
-		LTDL.clct_start_dt  >= #{todayStDt}::timestamp
+		prgrs_stts = 'ERROR'
 		and
-		LTDL.clct_start_dt  <= #{todayEndDt}::timestamp
-		]]>
+		(
+		    <![CDATA[
+			LTDL.clct_start_dt  >= #{todayStDt}::timestamp
+			and
+			LTDL.clct_start_dt  <= #{todayEndDt}::timestamp
+			]]>
+		    )
+		group  by
+		LTDL.DSET_ID,
+		LTDL.JOB_ID,
+		LTDL.JOB_NM,
+		LTDL.RLTINST_ID,
+		LTDL.ETL_CLSF,
+		LTDL.CLCT_TBL,
+		LTDL.TRGT_TBL,
+		LTDL.PRGRS_STTS,
+		MOC.CD_NM
 	</select>
+	
 	<select id="findAllLTcDataLogList" parameterType="lTcDataLog" resultType="lTcDataLog">
 		SELECT 
 				ROW_NUMBER() OVER(ORDER BY LTDL.CLCT_START_DT) 		AS rownum,
@@ -57,44 +83,38 @@
 				LTDL.PRGRS_STTS, 
 				LTDL.FAIL_RSN,
 				MOC.CD_NM ,
-				DI.DATA_CLCT_TYPE
+				TO_CHAR(age(clct_end_dt,clct_start_dt),'HH24시간MI분SS초') AS "procTime"
 		FROM    L_TC_DATA_LOG LTDL
-		INNER 	JOIN M_OP_CODE MOC ON LTDL.RLTINST_ID = MOC.CD_ID
-		LEFT JOIN DSET_INFO DI ON DI.DSET_ID = LTDL.DSET_ID
+		LEFT JOIN M_OP_CODE MOC ON LTDL.RLTINST_ID = MOC.CD_ID AND MOC.GRP_CD_ID = 'MNG_INST_CD'
 		WHERE 1=1
 			<if test="strDt != null and strDt != ''">
 			<![CDATA[
-			   AND LTDL.CLCT_START_DT >= TO_TIMESTAMP(#{strDt},'YYYY-MM-DD HH24:mi:ss') 
+			   AND LTDL.CLCT_START_DT >= TO_TIMESTAMP(#{strDt}|| ' 00:00:00','YYYY-MM-DD HH24:mi:ss') 
 			]]>
 			</if>
 			<if test="endDt != null and endDt != ''">
 			<![CDATA[
-			   AND LTDL.CLCT_START_DT <= TO_TIMESTAMP(#{endDt},'YYYY-MM-DD HH24:mi:ss')
+			   AND LTDL.CLCT_START_DT <= TO_TIMESTAMP(#{endDt}|| ' 23:59:59','YYYY-MM-DD HH24:mi:ss')
 			]]>
 			</if>
-			<if test="searchContent != null and searchContent != ''">
-	   			AND MOC.CD_NM LIKE CONCAT('%', #{searchContent}, '%')
-			</if>
 			<choose>
-				<when test="colArr != null">
-					AND DI.DATA_CLCT_TYPE IN
-					<foreach collection="colArr" item="dataClctType" open="(" close=")" separator=",">
-						#{dataClctType}
-					</foreach>
+				<when test="dsetId != null and dsetId != ''">
+					AND (LTDL.DSET_ID LIKE '%' || #{dsetId} || '%' OR ltdl.JOB_NM LIKE '%' || #{dsetId} || '%')
 				</when>
 				<otherwise>
-					<if test="colTyCd != null and colTyCd != ''">
-						AND DI.DATA_CLCT_TYPE = #{colTyCd}
+					<if test="searchContent != null and searchContent != ''">
+			   			AND (MOC.CD_NM LIKE '%' || #{searchContent} || '%' OR ltdl.JOB_NM LIKE '%' || #{searchContent} || '%')
 					</if>
 				</otherwise>
 			</choose>
 			<if test="linkedList != null">
-				AND LTDL.TRGT_TBL IN
-				<foreach collection="linkedList" item="linked" open="(" close=")" separator=",">
-					#{linked}
+				<foreach collection="linkedList" item="linked" open="AND (" close=")" separator=" or ">
+					LTDL.TRGT_TBL LIKE #{linked}||'%'
 				</foreach>
 			</if>
-<!-- 		AND 	LTDLT.ETL_CLSF = #{etlClsf} --> <!-- TODO::데이터 확인 후 주석 해제 필요 -->
+			<if test="prgrsStts != null and prgrsStts != '' and prgrsStts != 'all'">
+				AND 	LTDL.PRGRS_STTS = #{prgrsStts} 
+			</if>
 		ORDER BY ROWNUM DESC 
 		LIMIT 10 OFFSET (#{page} - 1) * 10
 	</select>
@@ -115,11 +135,9 @@
 				LTDL.CLCT_DATA_CNT AS "clctDataCnt",
 				LTDL.PRGRS_STTS AS "prgrsStts", 
 				LTDL.FAIL_RSN AS "failRsn",
-				MOC.CD_NM AS "cdNm",
-				DI.DATA_CLCT_TYPE AS "dataClctType"
+				MOC.CD_NM AS "cdNm"
 		FROM    L_TC_DATA_LOG LTDL
-		INNER 	JOIN M_OP_CODE MOC ON LTDL.RLTINST_ID = MOC.CD_ID
-		LEFT JOIN DSET_INFO DI ON DI.DSET_ID = LTDL.DSET_ID
+		LEFT	JOIN M_OP_CODE MOC ON LTDL.RLTINST_ID = MOC.CD_ID
 		WHERE 1=1
 			<if test="strDt != null and strDt != ''">
 			<![CDATA[
@@ -132,56 +150,49 @@
 			]]>
 			</if>
 			<if test="linkedList != null">
-				AND LTDL.TRGT_TBL IN
-				<foreach collection="linkedList" item="linked" open="(" close=")" separator=",">
-					#{linked}
+				<foreach collection="linkedList" item="linked" open="AND (" close=")" separator=" or ">
+					LTDL.TRGT_TBL LIKE #{linked}||'%'
 				</foreach>
 			</if>
-		AND 	LTDL.PRGRS_STTS = #{prgrsStts} 
+			AND 	LTDL.PRGRS_STTS = #{prgrsStts} 
 		ORDER BY CLCT_START_DT DESC 
 		LIMIT 5
 	</select>
 	
 	<select id="countAll" parameterType="lTcDataLog" resultType="int">
 		SELECT
-				COUNT(*) 
+				COUNT(LTDL.*) 
 		FROM    L_TC_DATA_LOG LTDL
-		INNER 	JOIN M_OP_CODE MOC ON LTDL.RLTINST_ID = MOC.CD_ID
-		LEFT JOIN DSET_INFO DI ON DI.DSET_ID = LTDL.DSET_ID
+		LEFT	JOIN M_OP_CODE MOC ON LTDL.RLTINST_ID = MOC.CD_ID
 		WHERE 1=1
 			<if test="strDt != null and strDt != ''">
 			<![CDATA[
-			   AND LTDL.CLCT_START_DT >= TO_TIMESTAMP(#{strDt},'YYYY-MM-DD HH24:mi:ss') 
+			   AND LTDL.CLCT_START_DT >= TO_TIMESTAMP(#{strDt}|| ' 00:00:00','YYYY-MM-DD HH24:mi:ss') 
 			]]>
 			</if>
 			<if test="endDt != null and endDt != ''">
 			<![CDATA[
-			   AND LTDL.clct_start_dt <= TO_TIMESTAMP(#{endDt},'YYYY-MM-DD HH24:mi:ss')
+			   AND LTDL.clct_start_dt <= TO_TIMESTAMP(#{endDt}|| ' 23:59:59','YYYY-MM-DD HH24:mi:ss')
 			]]>
 			</if>	
-			<if test="searchContent != null and searchContent != ''">
-	   			AND MOC.CD_NM LIKE CONCAT('%', #{searchContent}, '%')
-			</if>
 			<choose>
-				<when test="colArr != null">
-					AND DI.DATA_CLCT_TYPE IN
-					<foreach collection="colArr" item="dataClctType" open="(" close=")" separator=",">
-						#{dataClctType}
-					</foreach>
+				<when test="dsetId != null and dsetId != ''">
+					AND (LTDL.DSET_ID LIKE '%' || #{dsetId} || '%' OR ltdl.JOB_NM LIKE '%' || #{dsetId} || '%')
 				</when>
 				<otherwise>
-					<if test="colTyCd != null and colTyCd != ''">
-						AND DI.DATA_CLCT_TYPE = #{colTyCd}
+					<if test="searchContent != null and searchContent != ''">
+			   			AND (MOC.CD_NM LIKE '%' || #{searchContent} || '%' OR ltdl.JOB_NM LIKE '%' || #{searchContent} || '%')
 					</if>
 				</otherwise>
 			</choose>
 			<if test="linkedList != null">
-				AND LTDL.TRGT_TBL IN
-				<foreach collection="linkedList" item="linked" open="(" close=")" separator=",">
-					#{linked}
+				<foreach collection="linkedList" item="linked" open="AND (" close=")" separator=" or ">
+					LTDL.TRGT_TBL LIKE #{linked}||'%'
 				</foreach>
 			</if>
-		<!-- 		AND 	LTDL.ETL_CLSF = #{etlClsf} --> <!-- TODO::데이터 확인 후 주석 해제 필요 -->
+			<if test="prgrsStts != null and prgrsStts != '' and prgrsStts != 'all'">
+				AND 	LTDL.PRGRS_STTS = #{prgrsStts} 
+			</if>
 	</select>
 	
 	<select id="countDataUseStatsList" parameterType="commonEntity" resultType="int">
@@ -230,22 +241,78 @@
 		SELECT
 			COUNT(*)
 		FROM
-			L_TC_DATA_LOG
+			L_TC_DATA_LOG ltdl
 		WHERE
 			ETL_CLSF = 'KAFKA'
+			<include refid="dataUseStatsList-Where"/>
 	</select>
 
 	<select id="findAllSmcrdDataLogList" parameterType="commonEntity" resultType="lTcDataLog">
 		SELECT
-			ROW_NUMBER() OVER(ORDER BY CLCT_START_DT) AS rownum
-			, JOB_NM
-			, CLCT_START_DT
-			, DSET_ID
+			ROW_NUMBER() OVER(ORDER BY ltdl.CLCT_START_DT) AS rownum
+			, ltdl.JOB_NM
+			, ltdl.CLCT_START_DT
+			, ltdl.DSET_ID
+			, ltdl.ETL_CLSF
 		FROM
-			L_TC_DATA_LOG
+			L_TC_DATA_LOG ltdl
 		WHERE
-			ETL_CLSF = 'KAFKA'
+			ltdl.ETL_CLSF = 'KAFKA'
+			<include refid="dataUseStatsList-Where"/>
 		ORDER BY ROWNUM DESC 
 		LIMIT 10 OFFSET (#{page} - 1) * 10
+	</select>
+	
+	<select id="findAllForMonitoringLinkData" resultType="mapMonitoringLinkDataDTO">
+		SELECT 	
+				SUM(DATA_RESULT_INFO.ERROR_CNT) OVER() AS ERROR_TOTAL_CNT, 
+				SUM(DATA_RESULT_INFO.DATA_CNT) OVER() AS DATA_TOTAL_CNT,
+				DATA_RESULT_INFO.* 
+		FROM (
+			SELECT 	DATA_INFO.JOB_NM , 
+				 	DATA_INFO.RENEW_TIME , 
+					SUM(DATA_INFO.DATA_CNT) AS DATA_CNT ,
+					SUM(DATA_INFO.ERROR_CNT) AS ERROR_CNT 
+			FROM (
+			SELECT
+				LTDL.JOB_ID,
+				COALESCE(SUM(LTDL.CLCT_DATA_CNT) FILTER(WHERE PRGRS_STTS IN ('RUNNING','END')),0) AS DATA_CNT,
+				COUNT(1) filter (WHERE PRGRS_STTS = 'ERROR') AS ERROR_CNT,
+				TO_CHAR(MAX(LTDL.CLCT_START_DT) FILTER(WHERE PRGRS_STTS IN ('RUNNING','END')),'HH24시mi분') AS RENEW_TIME,
+				CASE WHEN LTDL.JOB_ID ='T_ADSI_VDS_COLCT_INFO' THEN 'VDS'
+					WHEN LTDL.JOB_ID ='T_ADSI_DSRC_COLCT_INFO' THEN 'DSRC'
+					WHEN LTDL.JOB_ID IN ('T_ADSI_SMCRSRD_CRSRD_ACS_ROAD_STATS_FIVMIN','T_ADSI_SMCRSRD_CRSRD_DRCT_STATS_FIVMIN') THEN '스마트 교차로'
+					ELSE '기타'
+					END AS JOB_NM
+			FROM L_TC_DATA_LOG LTDL 
+			WHERE LTDL.JOB_ID IN ('T_ADSI_VDS_COLCT_INFO','T_ADSI_DSRC_COLCT_INFO','T_ADSI_SMCRSRD_CRSRD_ACS_ROAD_STATS_FIVMIN','T_ADSI_SMCRSRD_CRSRD_DRCT_STATS_FIVMIN')
+			AND TO_CHAR(LTDL.CLCT_START_DT,'YYYY-MM-DD') = TO_CHAR(NOW(),'YYYY-MM-DD')
+			GROUP BY LTDL.JOB_ID
+			) DATA_INFO
+			GROUP BY DATA_INFO.JOB_NM,DATA_INFO.RENEW_TIME
+		)DATA_RESULT_INFO
+		ORDER BY DATA_RESULT_INFO.JOB_NM DESC
+	</select>
+	<select id="findAllErrorDataForMonitoringLinkData" resultType="mapMonitoringLinkDataDTO">
+		SELECT 	
+				DATA_INFO.RENEW_TIME,
+				DATA_INFO.ERROR_MSG,
+				DATA_INFO.JOB_NM
+		FROM (
+		SELECT
+			TO_CHAR(MAX(LTDL.CLCT_START_DT) FILTER(WHERE PRGRS_STTS IN ('ERROR')),'HH24:mi:SS') AS RENEW_TIME,
+			LTDL.FAIL_RSN AS ERROR_MSG,
+			CASE WHEN LTDL.JOB_ID ='T_ADSI_VDS_COLCT_INFO' THEN 'VDS'
+				WHEN LTDL.JOB_ID ='T_ADSI_DSRC_COLCT_INFO' THEN 'DSRC'
+				WHEN LTDL.JOB_ID IN ('T_ADSI_SMCRSRD_CRSRD_ACS_ROAD_STATS_FIVMIN','T_ADSI_SMCRSRD_CRSRD_DRCT_STATS_FIVMIN') THEN '스마트 교차로'
+				ELSE '기타'
+				END AS JOB_NM
+		FROM L_TC_DATA_LOG LTDL 
+		WHERE LTDL.JOB_ID IN ('T_ADSI_VDS_COLCT_INFO','T_ADSI_DSRC_COLCT_INFO','T_ADSI_SMCRSRD_CRSRD_ACS_ROAD_STATS_FIVMIN','T_ADSI_SMCRSRD_CRSRD_DRCT_STATS_FIVMIN')
+ 		AND TO_CHAR(LTDL.CLCT_START_DT,'YYYY-MM-DD') = TO_CHAR(NOW(),'YYYY-MM-DD') 
+		AND PRGRS_STTS = 'ERROR'
+		GROUP BY LTDL.JOB_ID,LTDL.FAIL_RSN
+		) DATA_INFO
+		ORDER BY DATA_INFO.RENEW_TIME DESC 
 	</select>
 </mapper>

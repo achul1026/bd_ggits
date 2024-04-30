@@ -2,6 +2,58 @@
 <!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.GgbisBusrouteLinkMapper'>
+    <select id="findAllUpDownByRouteId" resultType="ggbisBusrouteLink">
+        SELECT
+        egli.ROUTE_ID
+        ,egli.LINK_ID
+        ,EGBR.ROUTE_NM
+        ,EGBR.ROUTE_TP
+        ,EGBR.ROUTE_LENGTH
+        ,EGBR.ROUTE_INTERVAL
+        ,EGBR.ST_STA_NM
+        ,EGBR.ED_STA_NM
+        ,EGBR.ST_STA_ID
+        ,EGBR.ED_STA_ID
+        ,EGBR.SIDO_CD
+        ,EGBR.MANAGE_TP
+        ,EGBR.PERM_VOL
+        ,EGBR.BEGIN_DATE
+        ,EGBR.CLOSE_DATE
+        ,EGBR.ROUTE_EX
+        ,EGBR.COMPANY_ID
+        ,EGBR.COMPANY_NM
+        ,EGBR.ADMIN_NM
+        ,EGBR.TURN_SEQ
+        ,EGBR.ROUTE_ALLOC
+        ,EGBR.EB_ROUTE_ID
+        ,EGBR.ROUTE_ALLOC_COMPNAY_ID
+        ,EGBR.USE_YN
+        ,EGBR.REMARK
+        ,EGBR.AREA_CD
+        ,EGBR.TURN_STA_ID
+        ,EGBR.TURN_USE_YN
+        ,EGBR.TURNINFO_FLAG
+        ,EGBR.LASTVEH_FLAG
+        ,EGBR.TURNPROCESS_FLAG
+        ,EGBR.FIRSTVEH_FLAG
+        ,ST_ASGEOJSON(ST_LINEMERGE(GCIL.GEOMETRY)) AS GEOJSON
+             <![CDATA[
+        , case when egbs.sta_order < egbr.turn_seq then 'up'
+        when egbs.sta_order >= egbr.turn_seq then 'down'
+        end as updown
+         ]]>
+        ,GCIL.ROAD_NAME
+        FROM
+        bigdata.ext_ggbis_busroute_station egbs
+        inner join bigdata.ext_ggbis_bus_route egbr on egbs.route_id = egbr.route_id
+        inner join bigdata.ext_ggbis_bus_section egbs2 on egbs.station_id = egbs2.ed_sta_id
+        inner join bigdata.ext_ggbis_busroute_infounit egbi on egbs2.section_id = egbi.section_id and egbs.route_id = egbi.route_id
+        inner join bigdata.ext_ggbis_link_infounit egli on egli.unit_section_id = egbi.unit_section_id  and egli.route_id = egbs.route_id
+        INNER JOIN BIGDATA.EXT_GGBIS_LINK_MAPPING EGLM ON egli.LINK_ID = EGLM.LINK_ID
+        INNER JOIN C_GM_STD_LINK GCIL on EGLM.ST_LINK_ID = GCIL.LINK_ID
+        WHERE egbr.ROUTE_ID = #{routeId}
+        ORDER BY egbi.unit_order  asc
+    </select>
     <select id="findAllByRouteId" resultType="ggbisBusrouteLink">
         SELECT
             EGBL.ROUTE_ID
@@ -49,13 +101,140 @@
              ,EGBR.LASTVEH_FLAG
              ,EGBR.TURNPROCESS_FLAG
              ,EGBR.FIRSTVEH_FLAG
-             ,ST_ASGEOJSON(ST_LINEMERGE(GCIL.GEOM)) AS GEOJSON
+             ,ST_ASGEOJSON(ST_LINEMERGE(GCIL.GEOMETRY)) AS GEOJSON
              ,GCIL.ROAD_NAME
         FROM
-            GGBIS_BUSROUTE_LINK EGBL
-                INNER JOIN GGBIS_BUS_ROUTE EGBR ON EGBL.ROUTE_ID = EGBR.ROUTE_ID
-                INNER JOIN GY_COMM_INFO_LINK GCIL ON EGBL.LINK_ID = GCIL.LINK_ID
+            BIGDATA.EXT_GGBIS_BUSROUTE_LINK EGBL
+                INNER JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE EGBR ON
+                EGBL.ROUTE_ID = EGBR.ROUTE_ID
+                INNER JOIN BIGDATA.EXT_GGBIS_LINK_MAPPING EGLM ON EGBL.LINK_ID = EGLM.LINK_ID
+                INNER JOIN C_GM_STD_LINK GCIL ON
+                EGLM.ST_LINK_ID = GCIL.LINK_ID
         WHERE EGBL.ROUTE_ID = #{routeId}
+        ORDER BY EGBL.ROUTE_ID ,EGBL.LINK_ORDER ASC
+    </select>
+
+    <select id="findAllByRouteIdAndForward" resultType="ggbisBusrouteLink">
+        SELECT
+            EGBL.ROUTE_ID
+             ,EGBL.LINK_ID
+             ,EGBL.FNODE_ID
+             ,EGBL.TNODE_ID
+             ,EGBL.FNODE_X
+             ,EGBL.FNODE_Y
+             ,EGBL.TNODE_X
+             ,EGBL.TNODE_Y
+             ,EGBL.ROAD_LENGTH
+             ,EGBL.ROAD_WIDTH
+             ,EGBL.ROUTE_LENGTH
+             ,EGBL.TOTAL_LENGTH
+             ,EGBL.LINK_ORDER
+             ,EGBL.ST_LINK_ID
+             ,EGBL.ST_LINK_ORDER
+             ,EGBR.ROUTE_NM
+             ,EGBR.ROUTE_TP
+             ,EGBR.ROUTE_LENGTH
+             ,EGBR.ROUTE_INTERVAL
+             ,EGBR.ST_STA_NM
+             ,EGBR.ED_STA_NM
+             ,EGBR.ST_STA_ID
+             ,EGBR.ED_STA_ID
+             ,EGBR.SIDO_CD
+             ,EGBR.MANAGE_TP
+             ,EGBR.PERM_VOL
+             ,EGBR.BEGIN_DATE
+             ,EGBR.CLOSE_DATE
+             ,EGBR.ROUTE_EX
+             ,EGBR.COMPANY_ID
+             ,EGBR.COMPANY_NM
+             ,EGBR.ADMIN_NM
+             ,EGBR.TURN_SEQ
+             ,EGBR.ROUTE_ALLOC
+             ,EGBR.EB_ROUTE_ID
+             ,EGBR.ROUTE_ALLOC_COMPNAY_ID
+             ,EGBR.USE_YN
+             ,EGBR.REMARK
+             ,EGBR.AREA_CD
+             ,EGBR.TURN_STA_ID
+             ,EGBR.TURN_USE_YN
+             ,EGBR.TURNINFO_FLAG
+             ,EGBR.LASTVEH_FLAG
+             ,EGBR.TURNPROCESS_FLAG
+             ,EGBR.FIRSTVEH_FLAG
+             ,ST_ASGEOJSON(ST_LINEMERGE(GCIL.GEOMETRY)) AS GEOJSON
+             ,GCIL.ROAD_NAME
+        FROM
+            BIGDATA.EXT_GGBIS_BUSROUTE_LINK EGBL
+                INNER JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE EGBR ON
+                EGBL.ROUTE_ID = EGBR.ROUTE_ID
+                INNER JOIN BIGDATA.EXT_GGBIS_LINK_MAPPING EGLM ON EGBL.LINK_ID = EGLM.LINK_ID
+                INNER JOIN C_GM_STD_LINK GCIL ON
+                EGLM.ST_LINK_ID = GCIL.LINK_ID
+        WHERE EGBL.ROUTE_ID = #{routeId}
+          <![CDATA[
+          AND EGBL.LINK_ORDER < #{turnSeq}
+            ]]>
+        ORDER BY EGBL.ROUTE_ID ,EGBL.LINK_ORDER ASC
+    </select>
+
+    <select id="findAllByRouteIdAndReverse" resultType="ggbisBusrouteLink">
+        SELECT
+            EGBL.ROUTE_ID
+             ,EGBL.LINK_ID
+             ,EGBL.FNODE_ID
+             ,EGBL.TNODE_ID
+             ,EGBL.FNODE_X
+             ,EGBL.FNODE_Y
+             ,EGBL.TNODE_X
+             ,EGBL.TNODE_Y
+             ,EGBL.ROAD_LENGTH
+             ,EGBL.ROAD_WIDTH
+             ,EGBL.ROUTE_LENGTH
+             ,EGBL.TOTAL_LENGTH
+             ,EGBL.LINK_ORDER
+             ,EGBL.ST_LINK_ID
+             ,EGBL.ST_LINK_ORDER
+             ,EGBR.ROUTE_NM
+             ,EGBR.ROUTE_TP
+             ,EGBR.ROUTE_LENGTH
+             ,EGBR.ROUTE_INTERVAL
+             ,EGBR.ST_STA_NM
+             ,EGBR.ED_STA_NM
+             ,EGBR.ST_STA_ID
+             ,EGBR.ED_STA_ID
+             ,EGBR.SIDO_CD
+             ,EGBR.MANAGE_TP
+             ,EGBR.PERM_VOL
+             ,EGBR.BEGIN_DATE
+             ,EGBR.CLOSE_DATE
+             ,EGBR.ROUTE_EX
+             ,EGBR.COMPANY_ID
+             ,EGBR.COMPANY_NM
+             ,EGBR.ADMIN_NM
+             ,EGBR.TURN_SEQ
+             ,EGBR.ROUTE_ALLOC
+             ,EGBR.EB_ROUTE_ID
+             ,EGBR.ROUTE_ALLOC_COMPNAY_ID
+             ,EGBR.USE_YN
+             ,EGBR.REMARK
+             ,EGBR.AREA_CD
+             ,EGBR.TURN_STA_ID
+             ,EGBR.TURN_USE_YN
+             ,EGBR.TURNINFO_FLAG
+             ,EGBR.LASTVEH_FLAG
+             ,EGBR.TURNPROCESS_FLAG
+             ,EGBR.FIRSTVEH_FLAG
+             ,ST_ASGEOJSON(ST_LINEMERGE(GCIL.GEOMETRY)) AS GEOJSON
+             ,GCIL.ROAD_NAME
+        FROM
+            BIGDATA.EXT_GGBIS_BUSROUTE_LINK EGBL
+                INNER JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE EGBR ON
+                EGBL.ROUTE_ID = EGBR.ROUTE_ID
+                INNER JOIN BIGDATA.EXT_GGBIS_LINK_MAPPING EGLM ON EGBL.LINK_ID = EGLM.LINK_ID
+                INNER JOIN C_GM_STD_LINK GCIL ON
+                EGLM.ST_LINK_ID = GCIL.LINK_ID
+        WHERE EGBL.ROUTE_ID = #{routeId}
+        AND EGBL.LINK_ORDER >= #{turnSeq}
         ORDER BY EGBL.ROUTE_ID ,EGBL.LINK_ORDER ASC
     </select>
 
@@ -100,12 +279,14 @@
              ,string_agg(EGBR.LASTVEH_FLAG, '||' order by egbr.route_id) as LASTVEH_FLAGS
              ,string_agg(EGBR.TURNPROCESS_FLAG, '||' order by egbr.route_id) as TURNPROCESS_FLAGS
              ,string_agg(EGBR.FIRSTVEH_FLAG, '||' order by egbr.route_id) as FIRSTVEH_FLAGS
-             ,ST_ASGEOJSON(ST_LINEMERGE(GCIL.GEOM)) as  GEOJSON
+             ,ST_ASGEOJSON(ST_LINEMERGE(GCIL.GEOMETRY)) as  GEOJSON
              ,GCIL.ROAD_NAME
         FROM
-            GGBIS_BUSROUTE_LINK EGBL
-                INNER JOIN GGBIS_BUS_ROUTE EGBR ON EGBL.ROUTE_ID = EGBR.ROUTE_ID
-                INNER JOIN GY_COMM_INFO_LINK GCIL ON EGBL.LINK_ID = GCIL.LINK_ID
+            BIGDATA.EXT_GGBIS_BUSROUTE_LINK EGBL
+                INNER JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE EGBR ON EGBL.ROUTE_ID = EGBR.ROUTE_ID
+                INNER JOIN BIGDATA.EXT_GGBIS_LINK_MAPPING EGLM ON EGBL.LINK_ID = EGLM.LINK_ID
+                INNER JOIN C_GM_STD_LINK GCIL ON
+                EGLM.ST_LINK_ID = GCIL.LINK_ID
         group by
             EGBL.LINK_ID
                ,EGBL.FNODE_ID
@@ -115,5 +296,58 @@
                ,EGBL.TNODE_X
                ,EGBL.TNODE_Y
                ,EGBL.ST_LINK_ID, geojson,GCIL.ROAD_NAME
+    </select>
+
+    <select id="findRouteLinkByStStationIdAndEdStationIdAndRouteId" resultType="GgbisBusrouteLink">
+        SELECT
+        GBI.ROUTE_ID,
+        EGBR.ROUTE_NM ,
+        CGSLT.ROAD_NAME,
+        CGSLT.LINK_ID ,
+        ST_ASGEOJSON(ST_LINEMERGE(CGSLT.GEOMETRY)) AS GEOJSON
+        FROM
+            BIGDATA.EXT_GGBIS_BUSROUTE_INFOUNIT GBI
+        INNER JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE EGBR ON EGBR.ROUTE_ID = GBI.ROUTE_ID
+        INNER JOIN BIGDATA.EXT_GGBIS_BUS_SECTION EGBS ON GBI.SECTION_ID = EGBS.SECTION_ID
+        INNER JOIN (
+        SELECT
+        EGBS.ROUTE_ID
+        ,EGBS.LINK_ID
+        ,EGBS.STATION_ID
+        ,LEAD(EGBS.STATION_ID) OVER (ORDER BY STA_ORDER ASC) AS NEXT_STATION_ID
+        ,EGBS.STA_ORDER
+        FROM
+        BIGDATA.EXT_GGBIS_BUSROUTE_STATION EGBS
+        INNER JOIN (
+        SELECT
+        EGBS.ROUTE_ID,
+        EGBS.STATION_ID AS END_STATION_ID,
+        MAX(EGBS.STA_ORDER) AS END_STA_ORDER,
+        ST_STATION.START_STATION_ID,
+        ST_STATION.START_STA_ORDER
+        FROM
+        BIGDATA.EXT_GGBIS_BUSROUTE_STATION EGBS
+        INNER JOIN (
+        SELECT
+        ROUTE_ID ,
+        STATION_ID AS START_STATION_ID,
+        STA_ORDER AS START_STA_ORDER
+        FROM
+        BIGDATA.EXT_GGBIS_BUSROUTE_STATION EGBS
+        WHERE
+        EGBS.STATION_ID = #{startStationId} -- 출발지 정류장
+        GROUP BY ROUTE_ID , STATION_ID, START_STA_ORDER)
+        ST_STATION ON EGBS.ROUTE_ID = ST_STATION.ROUTE_ID AND EGBS.STA_ORDER > ST_STATION.START_STA_ORDER
+        WHERE EGBS.STATION_ID = #{endStationId} -- 도착지 정류장
+        GROUP BY EGBS.ROUTE_ID, EGBS.STATION_ID, ST_STATION.START_STATION_ID, ST_STATION.START_STA_ORDER)
+        <![CDATA[
+            BUS_ROUTE ON BUS_ROUTE.ROUTE_ID = EGBS.ROUTE_ID AND (BUS_ROUTE.START_STA_ORDER <= EGBS.STA_ORDER AND BUS_ROUTE.END_STA_ORDER >= EGBS.STA_ORDER)
+        ]]>
+        WHERE EGBS.ROUTE_ID = #{routeId}
+        GROUP BY EGBS.ROUTE_ID ,EGBS.LINK_ID ,EGBS.STATION_ID ,EGBS.STA_ORDER
+        ) SECTION_STATION ON SECTION_STATION.STATION_ID = EGBS.ST_STA_ID AND SECTION_STATION.NEXT_STATION_ID = EGBS.ED_STA_ID
+        INNER JOIN BIGDATA.EXT_GGBIS_LINK_MAPPING EGLM ON GBI.LINK_ID = EGLM.LINK_ID
+        INNER JOIN  C_GM_STD_LINK CGSLT ON CGSLT.LINK_ID = EGLM.ST_LINK_ID
+        WHERE GBI.ROUTE_ID = #{routeId}
     </select>
 </mapper>

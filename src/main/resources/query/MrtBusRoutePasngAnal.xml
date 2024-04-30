@@ -5,8 +5,8 @@
 	<sql id="mrtBusRoutePasngAnal-Where">
 		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
 			AND mbrpa.ANLS_DT 
-			BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
-		    	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			BETWEEN TO_TIMESTAMP(#{strDt}|| ' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}|| ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
 		</if>
 		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
 			<![CDATA[
@@ -19,7 +19,10 @@
 			]]>
 		</if>
 		<if test="searchContent != null and searchContent != ''">
-			AND  (gbr.ROUTE_NM LIKE '%' || #{searchContent} || '%' or mbrpa.BUS_ROUTE_ID LIKE '%' || #{searchContent} || '%')
+			AND  (gbr.ROUTE_NM LIKE '%' || #{searchContent} || '%' or gbr.ST_STA_NM LIKE '%' || #{searchContent} || '%' or gbr.ED_STA_NM LIKE '%' || #{searchContent} || '%')
+		</if>
+		<if test="sigunCdId != null and sigunCdId != '' and sigunCdId != 'searchAllLocation'">
+			AND SUBSTRING(gbr.SIDO_CD,0,6) = #{sigunCdId}
 		</if>
 		<if test="dayOfTheWeek != null">
 			AND EXTRACT (ISODOW from mbrpa.ANLS_DT)::varchar(1) IN 
@@ -28,27 +31,799 @@
                 </foreach>
 		</if>
 	</sql>
-	
-	<select id="countBusRoutePasngList" parameterType="commonEntity" resultType="int">
-		SELECT
-			COUNT(*)
-		FROM MRT_BUS_ROUTE_PASNG_ANAL mbrpa
-		LEFT JOIN GGBIS_BUS_ROUTE gbr
-			ON mbrpa.BUS_ROUTE_ID = gbr.ROUTE_ID
-		WHERE
-			1=1
-			<include refid="mrtBusRoutePasngAnal-Where"/>
-	</select>
-	
+
 	<select id="findAllBusRoutePasngMapper" parameterType="commonEntity" resultType="mrtBusRoutePasngAnal">
 		SELECT
-			gbr.ROUTE_NM
-			, mbrpa.BUS_ROUTE_ID
-		FROM MRT_BUS_ROUTE_PASNG_ANAL mbrpa
-		LEFT JOIN GGBIS_BUS_ROUTE gbr
-			ON mbrpa.BUS_ROUTE_ID = gbr.ROUTE_ID
+			gbr.ROUTE_NM ,
+			gbr.ST_STA_NM ,
+			gbr.ED_STA_NM ,
+			mbrpa.BUS_ROUTE_ID ,
+			SUM(mbrpa.PASS_1 + mbrpa.PASS_2 + mbrpa.PASS_3) as totalPasngCnt
+		FROM
+			MRT_BUS_ROUTE_PASNG_ANAL mbrpa
+		LEFT JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE gbr on
+			mbrpa.BUS_ROUTE_ID = gbr.ROUTE_ID
 		WHERE
-			1=1
+			1 = 1
 			<include refid="mrtBusRoutePasngAnal-Where"/>
+		GROUP BY
+			gbr.ROUTE_NM, gbr.ST_STA_NM, gbr.ED_STA_NM, mbrpa.BUS_ROUTE_ID, mbrpa.ANLS_DT
+		ORDER BY mbrpa.ANLS_DT DESC
+		LIMIT 10 OFFSET (#{page} - 1) * 10;
 	</select>
+	
+	<select id="countBusRoutePasng" parameterType="commonEntity" resultType="int">
+		SELECT
+			COUNT(A.ROUTE_NM)
+		FROM (
+			SELECT
+				gbr.ROUTE_NM
+			FROM MRT_BUS_ROUTE_PASNG_ANAL mbrpa
+			INNER JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE gbr
+				ON mbrpa.BUS_ROUTE_ID = gbr.ROUTE_ID
+			WHERE
+				1=1
+			<include refid="mrtBusRoutePasngAnal-Where"/>
+			GROUP BY gbr.ROUTE_NM , gbr.ST_STA_NM, gbr.ED_STA_NM
+		)A
+	</select>
+	
+	<select id="findAllRouteUserRankList" parameterType="mapBigdataSearchDTO" resultType="map">
+		with ROUTE_USER_RANK_LIST as (
+		select
+		A.STTN_INFO ,
+		A.USER_CNT
+		from
+		(
+		select
+		egbr.ST_STA_NM || '-' || egbr.ED_STA_NM as STTN_INFO ,
+		SUM(mbrpa.PASS_1 + mbrpa.PASS_2 + mbrpa.PASS_3) as USER_CNT
+		from
+		MRT_BUS_ROUTE_PASNG_ANAL mbrpa
+		inner join bigdata.ext_ggbis_bus_route egbr  on
+		mbrpa.BUS_ROUTE_ID = egbr.ROUTE_ID
+		<where>
+		<if test="searchTime != null and searchTime != ''">
+			AND TO_CHAR(mbrpa.ANLS_DT, 'YYYY-MM-DD') = #{searchTime}
+		</if>
+		</where>
+		group by
+		egbr.ST_STA_NM,
+		egbr.ED_STA_NM
+		order by
+		USER_CNT desc
+		limit 5 )A
+		group by
+		A.STTN_INFO,
+		A.USER_CNT )
+		select
+		ARRAY_TO_STRING(ARRAY_AGG(STTN_INFO),
+		',') as "sttnInfoArr" ,
+		ARRAY_TO_STRING(ARRAY_AGG(USER_CNT),
+		',') as "userCntArr"
+		from
+		ROUTE_USER_RANK_LIST
+	</select>
+	
+	<select id="findAllDataYears" resultType="map">
+		select
+			generate_series(extract(year from min(anls_dt))::int, extract(year from now())::int) as year
+		from
+			MRT_BUS_ROUTE_PASNG_ANAL
+		order by 1 desc
+	</select>
+	<sql id="listSql">
+		select
+			lndi_mbrpa.bus_route_id ,
+			egbr.route_nm ,
+		CASE WHEN egbr.route_tp ='11' THEN '직행좌석형시내버스'
+			WHEN egbr.route_tp ='12' THEN '좌석형시내버스'
+			WHEN egbr.ROUTE_TP ='13' THEN '일반형시내버스'
+			WHEN egbr.ROUTE_TP ='14' THEN '광역버스'
+			WHEN egbr.ROUTE_TP ='21' THEN '직행좌석형농어촌버스'
+			WHEN egbr.ROUTE_TP ='22' THEN '좌석형농어촌버스'
+			WHEN egbr.ROUTE_TP ='23' THEN '일반형농어촌버스'
+			WHEN egbr.ROUTE_TP ='30' THEN '마을버스'
+			WHEN egbr.ROUTE_TP ='41' THEN '고속형시외버스'
+			WHEN egbr.ROUTE_TP ='42' THEN '좌석형시외버스'
+			WHEN egbr.ROUTE_TP ='43' THEN '일반형시외버스'
+			WHEN egbr.ROUTE_TP ='51' THEN '리무진형공항버스'
+			WHEN egbr.ROUTE_TP ='52' THEN '좌석형공항버스'
+			WHEN egbr.ROUTE_TP ='53' THEN '일반형공항버스'
+		END AS ROUTE_TP,
+		egbr.st_sta_id ,
+		egbr.ed_sta_id ,
+		egbr.st_sta_nm ,
+		egbr.ed_sta_nm,
+		lndi_mbrpa.lndi_passengers,
+		ride_mbrpa.ride_passengers,
+		egd.district_snm,
+		egd.district_gnm,
+		COUNT(1) OVER() AS paging_total_count
+		from
+			(
+				select
+					bus_route_id ,
+					sum(lndi_mbrpa.pass_1+lndi_mbrpa.pass_2+lndi_mbrpa.pass_3 ) as lndi_passengers
+				from
+					mrt_bus_route_pasng_anal lndi_mbrpa
+		where
+		1=1
+		<!-- 기간 검색 -->
+		<if test="(startDate != null and startDate != '') and (endDate != null and endDate != '')">
+			AND lndi_dt between replace(#{startDate},'-','')||'000000' and replace(#{endDate},'-','')||'235959'
+		</if>
+		<!-- 기간구분 검색 -->
+		<if test="searchPeriod != null and searchPeriod != ''">
+			<choose>
+				<when test="searchPeriod == 'weekday' ">
+					AND TO_CHAR(to_timestamp(lndi_dt, 'YYYYMMDDHH24MISS'), 'D') BETWEEN '2' AND '6'
+				</when>
+				<when test="searchPeriod == 'weekend' ">
+					AND (TO_CHAR(to_timestamp(lndi_dt, 'YYYYMMDDHH24MISS'), 'D') = '1' OR TO_CHAR(to_timestamp(lndi_dt, 'YYYYMMDDHH24MISS'), 'D') = '7')
+				</when>
+			</choose>
+		</if>
+		<!-- 시간 검색 -->
+		<if test="searchTime != null and searchTime != ''">
+			<choose>
+				<when test="searchTime == 'workingTime' ">
+					AND TO_CHAR(to_timestamp(lndi_dt, 'YYYYMMDDHH24MISS'), 'HH24') BETWEEN '06' AND '10'
+				</when>
+				<when test="searchTime == 'workingEndTime' ">
+					AND TO_CHAR(to_timestamp(lndi_dt, 'YYYYMMDDHH24MISS'), 'HH24') BETWEEN '17' AND '20'
+				</when>
+				<otherwise>
+					AND TO_CHAR(to_timestamp(lndi_dt, 'YYYYMMDDHH24MISS'), 'HH24') BETWEEN #{startTime} AND #{endTime}
+				</otherwise>
+			</choose>
+		</if>
+				group by bus_route_id
+			) lndi_mbrpa,
+			(select
+				 bus_route_id ,
+				 sum(ride_mbrpa.pass_1+ride_mbrpa.pass_2+ride_mbrpa.pass_3 ) as ride_passengers
+			 from
+				 mrt_bus_route_pasng_anal ride_mbrpa
+		where 1=1
+		<!-- 기간 검색 -->
+		<if test="(startDate != null and startDate != '') and (endDate != null and endDate != '')">
+			AND ride_dt between replace(#{startDate},'-','')||'000000' and replace(#{endDate},'-','')||'235959'
+		</if>
+		<!-- 기간구분 검색 -->
+		<if test="searchPeriod != null and searchPeriod != ''">
+			<choose>
+				<when test="searchPeriod == 'weekday' ">
+					AND TO_CHAR(to_timestamp(ride_dt, 'YYYYMMDDHH24MISS'), 'D') BETWEEN '2' AND '6'
+				</when>
+				<when test="searchPeriod == 'weekend' ">
+					AND (TO_CHAR(to_timestamp(ride_dt, 'YYYYMMDDHH24MISS'), 'D') = '1' OR TO_CHAR(to_timestamp(ride_dt, 'YYYYMMDDHH24MISS'), 'D') = '7')
+				</when>
+			</choose>
+		</if>
+		<!-- 시간 검색 -->
+		<if test="searchTime != null and searchTime != ''">
+			<choose>
+				<when test="searchTime == 'workingTime' ">
+					AND TO_CHAR(to_timestamp(ride_dt, 'YYYYMMDDHH24MISS'), 'HH24') BETWEEN '06' AND '10'
+				</when>
+				<when test="searchTime == 'workingEndTime' ">
+					AND TO_CHAR(to_timestamp(ride_dt, 'YYYYMMDDHH24MISS'), 'HH24') BETWEEN '17' AND '20'
+				</when>
+				<otherwise>
+					AND TO_CHAR(to_timestamp(ride_dt, 'YYYYMMDDHH24MISS'), 'HH24') BETWEEN #{startTime} AND #{endTime}
+				</otherwise>
+			</choose>
+		</if>
+			 group by bus_route_id
+			) ride_mbrpa,
+			(
+				select area_cd ,district_snm , district_gnm  from bigdata.ext_ggbis_district
+				group by area_cd,district_snm , district_gnm
+			) egd,
+		(
+		select  route_id, route_nm , route_tp,  st_sta_id , ed_sta_id , st_sta_nm , ed_sta_nm, area_cd
+		from bigdata.ext_ggbis_bus_route
+		where route_nm LIKE '%' || #{routeNm} || '%'
+		<if test="routeTpList != null">
+			AND EGBR.ROUTE_TP IN
+			<foreach collection="routeTpList" item="routeTp" open="(" close=")" separator=",">
+				#{routeTp}
+			</foreach>
+		</if>
+		) egbr
+		where
+			lndi_mbrpa.bus_route_id = ride_mbrpa.bus_route_id
+		and egbr.area_cd = egd.area_cd
+		and egbr.route_id = ride_mbrpa.bus_route_id
+	</sql>
+	<select id="countPubTrfRouteUserCnt" parameterType="mapBigdataSearchDTO" resultType="int">
+		select count(1)
+		from (
+		    <include refid="listSql"/>
+		<if test="districtGnm != null and districtGnm !=''">
+			AND	EGD.DISTRICT_GNM = #{districtGnm}
+		</if>
+				 ) cnt
+	</select>
+
+	<select id="findAllPubTrfRouteUserCnt" parameterType="mapBigdataSearchDTO" resultType="mrtBusRoutePasngAnal">
+		<include refid="listSql"/>
+		<if test="districtGnm != null and districtGnm !=''">
+			AND	EGD.DISTRICT_GNM = #{districtGnm}
+		</if>
+		order by (case when egbr.route_nm = #{routeNm} then 1 else 2 end, egbr.ROUTE_NM)
+		<if test="page != null and page != '' and page != 0 ">
+			LIMIT 5 OFFSET (#{page} - 1) * 5
+		</if>
+	</select>
+
+	<!--<select id="countPubTrfRouteUserCnt" parameterType="mapBigdataSearchDTO" resultType="int">
+		select
+		count(1)
+		from
+		(
+		select
+		egbr.route_nm ,
+		egbr.st_sta_nm,
+		egbr.ed_sta_nm,
+		egbr.st_sta_id as start_station_id,
+		egbr.ed_sta_id as end_station_id,
+		egbr.route_id as bus_route_id,
+		CASE WHEN egbr.route_tp ='11' THEN '직행좌석형시내버스'
+		WHEN egbr.route_tp ='12' THEN '좌석형시내버스'
+		WHEN egbr.ROUTE_TP ='13' THEN '일반형시내버스'
+		WHEN egbr.ROUTE_TP ='21' THEN '직행좌석형농어촌버스'
+		WHEN egbr.ROUTE_TP ='22' THEN '좌석형농어촌버스'
+		WHEN egbr.ROUTE_TP ='23' THEN '일반형농어촌버스'
+		WHEN egbr.ROUTE_TP ='30' THEN '마을버스'
+		WHEN egbr.ROUTE_TP ='41' THEN '고속형시외버스'
+		WHEN egbr.ROUTE_TP ='42' THEN '좌석형시외버스'
+		WHEN egbr.ROUTE_TP ='43' THEN '일반형시외버스'
+		WHEN egbr.ROUTE_TP ='51' THEN '리무진형공항버스'
+		WHEN egbr.ROUTE_TP ='52' THEN '좌석형공항버스'
+		WHEN egbr.ROUTE_TP ='53' THEN '일반형공항버스'
+		END AS ROUTE_TP,
+		sum(mbrpa.pass_1+mbrpa.pass_2+mbrpa.pass_3 ) as passengers,
+		egd.district_gnm,
+		egd.district_snm
+		from
+		mrt_bus_route_pasng_anal mbrpa
+		inner join bigdata.ext_ggbis_bus_route egbr on egbr.route_id = mbrpa.bus_route_id
+		inner join (
+		select area_cd ,district_snm , district_gnm  from bigdata.ext_ggbis_district
+		group by area_cd,district_snm , district_gnm
+		) egd on egbr.area_cd = egd.area_cd
+		where egbr.route_nm LIKE '%' || #{routeNm} || '%'
+		&lt;!&ndash; 연도별 검색 &ndash;&gt;
+		<if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+			AND TO_CHAR(mbrpa.anls_dt, 'YYYY') = #{searchYear}
+		</if>
+		&lt;!&ndash; 기간 검색 &ndash;&gt;
+		<if test="(startDate != null and startDate != '') and (endDate != null and endDate != '')">
+			AND mbrpa.anls_dt between to_timestamp(#{startDate}||' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') and to_timestamp(#{endDate}||' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		&lt;!&ndash; 기간구분 검색 &ndash;&gt;
+		<if test="searchPeriod != null and searchPeriod != ''">
+			<choose>
+				<when test="searchPeriod == 'weekday' ">
+					AND TO_CHAR(mbrpa.anls_dt, 'D') BETWEEN '2' AND '6'
+				</when>
+				<when test="searchPeriod == 'weekend' ">
+					AND (TO_CHAR(mbrpa.anls_dt, 'D') = '1' OR TO_CHAR(mbrpa.anls_dt, 'D') = '7')
+				</when>
+			</choose>
+		</if>
+		&lt;!&ndash; 시간 검색 &ndash;&gt;
+		<if test="searchTime != null and searchTime != ''">
+			<choose>
+				<when test="searchTime == 'workingTime' ">
+					AND TO_CHAR(mbrpa.anls_dt, 'HH24') BETWEEN '06' AND '10'
+				</when>
+				<when test="searchTime == 'workingEndTime' ">
+					AND TO_CHAR(mbrpa.anls_dt, 'HH24') BETWEEN '17' AND '20'
+				</when>
+				<otherwise>
+					AND TO_CHAR(mbrpa.anls_dt, 'HH24') BETWEEN #{startTime} AND #{endTime}
+				</otherwise>
+			</choose>
+		</if>
+		<if test="districtGnm != null and districtGnm !=''">
+			AND	EGD.DISTRICT_GNM = #{districtGnm}
+		</if>
+		<if test="routeTpList != null">
+			AND EGBR.ROUTE_TP IN
+			<foreach collection="routeTpList" item="routeTp" open="(" close=")" separator=",">
+				#{routeTp}
+			</foreach>
+		</if>
+		group by
+		egbr.route_nm ,
+		egbr.st_sta_nm ,
+		egbr.ed_sta_nm ,
+		egbr.st_sta_id,
+		egbr.ed_sta_id,
+		egbr.route_id ,
+		egbr.route_tp,
+		egd.district_gnm,
+		egd.district_snm
+		    ) cnt
+	</select>
+
+	<select id="findAllPubTrfRouteUserCnt" parameterType="mapBigdataSearchDTO" resultType="mrtBusRoutePasngAnal">
+		select
+			egbr.route_nm ,
+			egbr.st_sta_nm,
+			egbr.ed_sta_nm,
+			egbr.st_sta_id as start_station_id,
+			egbr.ed_sta_id as end_station_id,
+			egbr.route_id as bus_route_id,
+			CASE WHEN egbr.route_tp ='11' THEN '직행좌석형시내버스'
+				 WHEN egbr.route_tp ='12' THEN '좌석형시내버스'
+				 WHEN egbr.ROUTE_TP ='13' THEN '일반형시내버스'
+				WHEN egbr.ROUTE_TP ='14' THEN '광역버스'
+				 WHEN egbr.ROUTE_TP ='21' THEN '직행좌석형농어촌버스'
+				 WHEN egbr.ROUTE_TP ='22' THEN '좌석형농어촌버스'
+				 WHEN egbr.ROUTE_TP ='23' THEN '일반형농어촌버스'
+				 WHEN egbr.ROUTE_TP ='30' THEN '마을버스'
+				 WHEN egbr.ROUTE_TP ='41' THEN '고속형시외버스'
+				 WHEN egbr.ROUTE_TP ='42' THEN '좌석형시외버스'
+				 WHEN egbr.ROUTE_TP ='43' THEN '일반형시외버스'
+				 WHEN egbr.ROUTE_TP ='51' THEN '리무진형공항버스'
+				 WHEN egbr.ROUTE_TP ='52' THEN '좌석형공항버스'
+				 WHEN egbr.ROUTE_TP ='53' THEN '일반형공항버스'
+				END AS ROUTE_TP,
+		sum(mbrpa.pass_1+mbrpa.pass_2+mbrpa.pass_3 ) as passengers,
+		egd.district_gnm,
+		egd.district_snm
+		from
+			mrt_bus_route_pasng_anal mbrpa
+				inner join bigdata.ext_ggbis_bus_route egbr on egbr.route_id = mbrpa.bus_route_id
+		inner join (
+		select area_cd ,district_snm , district_gnm  from bigdata.ext_ggbis_district
+		group by area_cd,district_snm , district_gnm
+		) egd on egbr.area_cd = egd.area_cd
+		where egbr.route_nm LIKE '%' || #{routeNm} || '%'
+		&lt;!&ndash; 연도별 검색 &ndash;&gt;
+		<if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+			AND TO_CHAR(mbrpa.anls_dt, 'YYYY') = #{searchYear}
+		</if>
+		&lt;!&ndash; 기간 검색 &ndash;&gt;
+		<if test="(startDate != null and startDate != '') and (endDate != null and endDate != '')">
+			AND mbrpa.anls_dt between to_timestamp(#{startDate}||' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') and to_timestamp(#{endDate}||' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		&lt;!&ndash; 기간구분 검색 &ndash;&gt;
+		<if test="searchPeriod != null and searchPeriod != ''">
+			<choose>
+				<when test="searchPeriod == 'weekday' ">
+					AND TO_CHAR(mbrpa.anls_dt, 'D') BETWEEN '2' AND '6'
+				</when>
+				<when test="searchPeriod == 'weekend' ">
+					AND (TO_CHAR(mbrpa.anls_dt, 'D') = '1' OR TO_CHAR(mbrpa.anls_dt, 'D') = '7')
+				</when>
+			</choose>
+		</if>
+		&lt;!&ndash; 시간 검색 &ndash;&gt;
+		<if test="searchTime != null and searchTime != ''">
+			<choose>
+				<when test="searchTime == 'workingTime' ">
+					AND TO_CHAR(mbrpa.anls_dt, 'HH24') BETWEEN '06' AND '10'
+				</when>
+				<when test="searchTime == 'workingEndTime' ">
+					AND TO_CHAR(mbrpa.anls_dt, 'HH24') BETWEEN '17' AND '20'
+				</when>
+				<otherwise>
+					AND TO_CHAR(mbrpa.anls_dt, 'HH24') BETWEEN #{startTime} AND #{endTime}
+				</otherwise>
+			</choose>
+		</if>
+		<if test="districtGnm != null and districtGnm !=''">
+			AND	EGD.DISTRICT_GNM = #{districtGnm}
+		</if>
+		<if test="routeTpList != null">
+			AND EGBR.ROUTE_TP IN
+			<foreach collection="routeTpList" item="routeTp" open="(" close=")" separator=",">
+				#{routeTp}
+			</foreach>
+		</if>
+		group by
+			egbr.route_nm ,
+			egbr.st_sta_nm ,
+			egbr.ed_sta_nm ,
+			egbr.st_sta_id,
+			egbr.ed_sta_id,
+			egbr.route_id ,
+			egbr.route_tp,
+		egd.district_gnm,
+		egd.district_snm
+		order by (case when egbr.route_nm = #{routeNm} then 1 else 2 end, egbr.ROUTE_NM)
+		<if test="page != null and page != '' and page != 0 ">
+			LIMIT 5 OFFSET (#{page} - 1) * 5
+		</if>
+	</select>-->
+
+
+
+	<select id="findAllByRideStationId" parameterType="mapBigdataSearchDTO" resultType="mrtBusRoutePasngAnal">
+		select
+			egr.route_nm,
+			mbrpa.bus_route_id,
+			ride_station.station_nm as st_sta_nm,
+			lndi_station.station_nm as ed_sta_nm,
+			sum(pass_1+pass_2+pass_3) as passengers
+		from
+			MRT_BUS_ROUTE_PASNG_ANAL mbrpa
+		left outer join bigdata.ext_ggbis_bus_station ride_station on mbrpa.ride_bstp_id = ride_station.station_id
+		left outer join bigdata.ext_ggbis_bus_station lndi_station on mbrpa.lndi_bstp_id = lndi_station.station_id
+		inner join bigdata.ext_ggbis_bus_route egr on egr.route_id = mbrpa.bus_route_id
+		where
+		mbrpa.bus_route_id= #{routeId}
+		/*and (ride_station.station_id = '202000261' or lndi_station.station_id= '202000261')*/
+		and lndi_station.station_id= #{stStationId}
+		<!-- 연도별 검색 -->
+		<if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+			AND TO_CHAR(mbrpa.anls_dt, 'YYYY') = #{searchYear}
+		</if>
+		<!-- 기간 검색 -->
+		<if test="searchPeriod != null and searchPeriod != ''">
+			<choose>
+				<when test="searchPeriod == 'weekday' ">
+					AND TO_CHAR(mbrpa.anls_dt, 'D') BETWEEN '2' AND '6'
+				</when>
+				<when test="searchPeriod == 'weekend' ">
+					AND (TO_CHAR(mbrpa.anls_dt, 'D') = '1' OR TO_CHAR(mbrpa.anls_dt, 'D') = '7')
+				</when>
+				<otherwise>
+					AND TO_CHAR(mbrpa.anls_dt, 'YYYY-MM-DD') BETWEEN #{startDate} AND #{endDate}
+				</otherwise>
+			</choose>
+		</if>
+		<!-- 시간 검색 -->
+		<if test="searchTime != null and searchTime != ''">
+			<choose>
+				<when test="searchTime == 'workingTime' ">
+					AND TO_CHAR(mbrpa.anls_dt, 'HH24') BETWEEN '06' AND '10'
+				</when>
+				<when test="searchTime == 'workingEndTime' ">
+					AND TO_CHAR(mbrpa.anls_dt, 'HH24') BETWEEN '17' AND '20'
+				</when>
+				<otherwise>
+					AND TO_CHAR(mbrpa.anls_dt, 'HH24') BETWEEN #{startTime} AND #{endTime}
+				</otherwise>
+			</choose>
+		</if>
+		group by
+			egr.route_nm,
+			mbrpa.bus_route_id,
+			ride_station.station_nm,
+			lndi_station.station_nm
+	</select>
+
+	<select id="findAllCntByAllByRouteId" parameterType="mapBigdataSearchDTO" resultType="mrtBusRoutePasngAnal">
+		select
+			lndi_mbrpa.station_nm,
+			lndi_mbrpa.station_id,
+			lndi_mbrpa.mobile_no,
+			lndi_mbrpa.lndi_passengers,
+			ride_mbrpa.ride_passengers,
+			CAST ( LEFT (CAST(lndi_mbrpa.GPS_X AS VARCHAR), 3 ) AS INT) + CAST( SUBSTRING(CAST(lndi_mbrpa.GPS_X AS VARCHAR), 4 ) AS DECIMAL(5,3))/ 60 AS MAP_X,
+			CAST ( LEFT (CAST(lndi_mbrpa.GPS_Y AS VARCHAR), 2 ) AS INT) + CAST( SUBSTRING(CAST(lndi_mbrpa.GPS_Y AS VARCHAR), 3 ) AS DECIMAL(5,3))/ 60 AS MAP_Y
+		from
+			(
+				select
+					egbs.GPS_X,
+					egbs.gps_y,
+					egbs.station_nm,
+					egbs.station_id ,
+					egbs.mobile_no ,
+					sum(lndi_mbrpa.pass_1+lndi_mbrpa.pass_2+lndi_mbrpa.pass_3 ) as lndi_passengers
+				from
+					mrt_bus_route_pasng_anal lndi_mbrpa
+						inner join bigdata.ext_ggbis_bus_station egbs on egbs.station_id = lndi_mbrpa.lndi_bstp_id
+				where lndi_mbrpa.bus_route_id = #{routeId}
+		<!-- 연도별 검색 -->
+		<if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+			AND TO_CHAR(to_timestamp(lndi_dt, 'YYYYMMDDHH24MISS'), 'YYYY') = #{searchYear}
+		</if>
+		<!-- 기간 검색 -->
+		<if test="(startDate != null and startDate != '') and (endDate != null and endDate != '')">
+			AND to_timestamp(lndi_dt, 'YYYYMMDDHH24MISS') between to_timestamp(#{startDate}||' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') and to_timestamp(#{endDate}||' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<!-- 기간구분 검색 -->
+		<if test="searchPeriod != null and searchPeriod != ''">
+			<choose>
+				<when test="searchPeriod == 'weekday' ">
+					AND TO_CHAR(to_timestamp(lndi_dt, 'YYYYMMDDHH24MISS'), 'D') BETWEEN '2' AND '6'
+				</when>
+				<when test="searchPeriod == 'weekend' ">
+					AND (TO_CHAR(to_timestamp(lndi_dt, 'YYYYMMDDHH24MISS'), 'D') = '1' OR TO_CHAR(mbrpa.anls_dt, 'D') = '7')
+				</when>
+			</choose>
+		</if>
+		<!-- 시간 검색 -->
+		<if test="searchTime != null and searchTime != ''">
+			<choose>
+				<when test="searchTime == 'workingTime' ">
+					AND TO_CHAR(to_timestamp(lndi_dt, 'YYYYMMDDHH24MISS'), 'HH24') BETWEEN '06' AND '10'
+				</when>
+				<when test="searchTime == 'workingEndTime' ">
+					AND TO_CHAR(to_timestamp(lndi_dt, 'YYYYMMDDHH24MISS'), 'HH24') BETWEEN '17' AND '20'
+				</when>
+				<otherwise>
+					AND TO_CHAR(to_timestamp(lndi_dt, 'YYYYMMDDHH24MISS') 'HH24') BETWEEN #{startTime} AND #{endTime}
+				</otherwise>
+			</choose>
+		</if>
+				group by
+					egbs.GPS_X,
+					egbs.gps_y,
+					egbs.station_nm,
+					egbs.station_id ,
+					egbs.mobile_no
+			) lndi_mbrpa,
+			(select
+				 egbs.GPS_X,
+				 egbs.gps_y,
+				 egbs.station_nm,
+				 egbs.station_id ,
+				 egbs.mobile_no ,
+				 sum(ride_mbrpa.pass_1+ride_mbrpa.pass_2+ride_mbrpa.pass_3 ) as ride_passengers
+			 from
+				 mrt_bus_route_pasng_anal ride_mbrpa
+					 inner join bigdata.ext_ggbis_bus_station egbs on egbs.station_id = ride_mbrpa.ride_bstp_id
+		where
+		ride_mbrpa.bus_route_id = #{routeId}
+		<!-- 연도별 검색 -->
+		<if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+			AND TO_CHAR(to_timestamp(ride_dt, 'YYYYMMDDHH24MISS'), 'YYYY') = #{searchYear}
+		</if>
+		<!-- 기간 검색 -->
+		<if test="(startDate != null and startDate != '') and (endDate != null and endDate != '')">
+			AND to_timestamp(ride_dt, 'YYYYMMDDHH24MISS') between to_timestamp(#{startDate}||' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') and to_timestamp(#{endDate}||' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<!-- 기간구분 검색 -->
+		<if test="searchPeriod != null and searchPeriod != ''">
+			<choose>
+				<when test="searchPeriod == 'weekday' ">
+					AND TO_CHAR(to_timestamp(ride_dt, 'YYYYMMDDHH24MISS'), 'D') BETWEEN '2' AND '6'
+				</when>
+				<when test="searchPeriod == 'weekend' ">
+					AND (TO_CHAR(to_timestamp(ride_dt, 'YYYYMMDDHH24MISS'), 'D') = '1' OR TO_CHAR(mbrpa.anls_dt, 'D') = '7')
+				</when>
+			</choose>
+		</if>
+		<!-- 시간 검색 -->
+		<if test="searchTime != null and searchTime != ''">
+			<choose>
+				<when test="searchTime == 'workingTime' ">
+					AND TO_CHAR(to_timestamp(ride_dt, 'YYYYMMDDHH24MISS'), 'HH24') BETWEEN '06' AND '10'
+				</when>
+				<when test="searchTime == 'workingEndTime' ">
+					AND TO_CHAR(to_timestamp(ride_dt, 'YYYYMMDDHH24MISS'), 'HH24') BETWEEN '17' AND '20'
+				</when>
+				<otherwise>
+					AND TO_CHAR(to_timestamp(ride_dt, 'YYYYMMDDHH24MISS') 'HH24') BETWEEN #{startTime} AND #{endTime}
+				</otherwise>
+			</choose>
+		</if>
+			 group by
+				 egbs.GPS_X,
+				 egbs.gps_y,
+				 egbs.station_nm,
+				 egbs.station_id ,
+				 egbs.mobile_no
+			) ride_mbrpa
+		where
+			lndi_mbrpa.station_id = ride_mbrpa.station_id
+	</select>
+
+	<!-- 정류장별 이용현황 -->
+	<select id="findAllLndiCntByAll" parameterType="mapBigdataSearchDTO" resultType="mrtBusRoutePasngAnal">
+		with bis_passngr_sum as
+		(
+		select station_id,sum(ride_psgr) as ride_psgr,sum(lndi_psgr) as lndi_psgr
+		from (
+		select ride_bstp_id as station_id,sum(pass_1+pass_2+pass_3) as ride_psgr,'0' as lndi_psgr
+		from mrt_bus_route_pasng_anal
+		<where>
+			<!-- 기간 검색 -->
+			<if test="(startDate != null and startDate != '') and (endDate != null and endDate != '')">
+				and ride_dt between concat(replace(#{startDate},'-',''),'000000') and concat(replace(#{endDate},'-',''),'235959')
+			</if>
+			<!-- 기간구분 검색 -->
+			<if test="searchPeriod != null and searchPeriod != ''">
+				<choose>
+					<when test="searchPeriod == 'weekday' ">
+						AND TO_CHAR(to_timestamp(ride_dt, 'YYYYMMDDHH24MISS'), 'D') BETWEEN '2' AND '6'
+					</when>
+					<when test="searchPeriod == 'weekend' ">
+						AND (TO_CHAR(to_timestamp(ride_dt, 'YYYYMMDDHH24MISS'), 'D') = '1' OR TO_CHAR(to_timestamp(ride_dt, 'YYYYMMDDHH24MISS'), 'D') = '7')
+					</when>
+				</choose>
+			</if>
+			<!-- 시간 검색 -->
+			<if test="searchTime != null and searchTime != ''">
+				<choose>
+					<when test="searchTime == 'workingTime' ">
+						and substring(ride_dt,9,2) between '06' and '10'
+					</when>
+					<when test="searchTime == 'workingEndTime' ">
+						and substring(ride_dt,9,2) between '17' and '20'
+					</when>
+					<otherwise>
+						and substring(ride_dt,9,2) between #{startTime} AND #{endTime}
+					</otherwise>
+				</choose>
+			</if>
+		</where>
+		group by ride_bstp_id
+		union all
+		select lndi_bstp_id as station_id,'0' as ride_psgr,sum(pass_1+pass_2+pass_3) as lndi_psgr
+		from mrt_bus_route_pasng_anal
+		<where>
+			<!-- 기간 검색 -->
+			<if test="(startDate != null and startDate != '') and (endDate != null and endDate != '')">
+				and lndi_dt between concat(replace(#{startDate},'-',''),'000000') and concat(replace(#{endDate},'-',''),'235959')
+			</if>
+
+			<!-- 기간구분 검색 -->
+			<if test="searchPeriod != null and searchPeriod != ''">
+				<choose>
+					<when test="searchPeriod == 'weekday' ">
+						AND TO_CHAR(to_timestamp(lndi_dt, 'YYYYMMDDHH24MISS'), 'D') BETWEEN '2' AND '6'
+					</when>
+					<when test="searchPeriod == 'weekend' ">
+						AND (TO_CHAR(to_timestamp(lndi_dt, 'YYYYMMDDHH24MISS'), 'D') = '1' OR TO_CHAR(to_timestamp(lndi_dt, 'YYYYMMDDHH24MISS'), 'D') = '7')
+					</when>
+				</choose>
+			</if>
+			<!-- 시간 검색 -->
+			<if test="searchTime != null and searchTime != ''">
+				<choose>
+					<when test="searchTime == 'workingTime' ">
+						and substring(lndi_dt,9,2) between '06' and '10'
+					</when>
+					<when test="searchTime == 'workingEndTime' ">
+						and substring(lndi_dt,9,2) between '17' and '20'
+					</when>
+					<otherwise>
+						and substring(lndi_dt,9,2) between #{startTime} AND #{endTime}
+					</otherwise>
+				</choose>
+			</if>
+		</where>
+		group by lndi_bstp_id) bisp
+		group by station_id
+		)
+		select egbs.station_id,egbs.station_nm,egbs.mobile_no,
+		bpsm.ride_psgr as ridePassengers,bpsm.lndi_psgr as lndiPassengers,
+		cast ( left (cast(egbs.GPS_X as VARCHAR),3 ) as INT) + cast( SUBSTRING(cast(egbs.GPS_X as VARCHAR),4 ) as DECIMAL(5,3))/ 60 as MAP_X,
+		cast ( left (cast(egbs.GPS_Y as VARCHAR),2 ) as INT) + cast( SUBSTRING(cast(egbs.GPS_Y as VARCHAR),3 ) as DECIMAL(5,3))/ 60 as MAP_Y
+		from bigdata.ext_ggbis_bus_station egbs
+		left outer join bis_passngr_sum bpsm on egbs.station_id = bpsm.station_id
+		<where>
+		<if test="searchLocation != null and searchLocation != '' ">
+			AND SUBSTRING(egbs.sido_cd,0,5) = SUBSTRING(#{searchLocation},0,5)
+		</if>
+		</where>
+	</select>
+
+	<select id="findAllRideCntByRouteId" parameterType="mapBigdataSearchDTO" resultType="mrtBusRoutePasngAnal">
+		select
+			egr.route_nm,
+			mbrpa.bus_route_id,
+		ride_station.station_nm as ed_sta_nm,
+			CAST ( LEFT (CAST(ride_station.GPS_X AS VARCHAR), 3 ) AS INT) + CAST( SUBSTRING(CAST(ride_station.GPS_X AS VARCHAR), 4 ) AS DECIMAL(5,3))/ 60 AS MAP_X,
+			CAST ( LEFT (CAST(ride_station.GPS_Y AS VARCHAR), 2 ) AS INT) + CAST( SUBSTRING(CAST(ride_station.GPS_Y AS VARCHAR), 3 ) AS DECIMAL(5,3))/ 60 AS MAP_Y,
+		ride_station.station_id,
+			sum(pass_1) + sum(pass_2) + sum(pass_3) as passengers
+		from
+			MRT_BUS_ROUTE_PASNG_ANAL mbrpa
+				left outer join bigdata.ext_ggbis_bus_station ride_station on
+				mbrpa.ride_bstp_id = ride_station.station_id
+				inner join bigdata.ext_ggbis_bus_route egr on
+				egr.route_id = mbrpa.bus_route_id
+		where
+			mbrpa.bus_route_id= #{routeId}
+		<!-- 연도별 검색 -->
+		<if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+			AND TO_CHAR(mbrpa.anls_dt, 'YYYY') = #{searchYear}
+		</if>
+		<!-- 기간 검색 -->
+		<if test="(startDate != null and startDate != '') and (endDate != null and endDate != '')">
+			AND mbrpa.anls_dt between to_timestamp(#{startDate}||' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') and to_timestamp(#{endDate}||' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<!-- 기간구분 검색 -->
+		<if test="searchPeriod != null and searchPeriod != ''">
+			<choose>
+				<when test="searchPeriod == 'weekday' ">
+					AND TO_CHAR(mbrpa.anls_dt, 'D') BETWEEN '2' AND '6'
+				</when>
+				<when test="searchPeriod == 'weekend' ">
+					AND (TO_CHAR(mbrpa.anls_dt, 'D') = '1' OR TO_CHAR(mbrpa.anls_dt, 'D') = '7')
+				</when>
+			</choose>
+		</if>
+		<!-- 시간 검색 -->
+		<if test="searchTime != null and searchTime != ''">
+			<choose>
+				<when test="searchTime == 'workingTime' ">
+					AND TO_CHAR(mbrpa.anls_dt, 'HH24') BETWEEN '06' AND '10'
+				</when>
+				<when test="searchTime == 'workingEndTime' ">
+					AND TO_CHAR(mbrpa.anls_dt, 'HH24') BETWEEN '17' AND '20'
+				</when>
+				<otherwise>
+					AND TO_CHAR(mbrpa.anls_dt, 'HH24') BETWEEN #{startTime} AND #{endTime}
+				</otherwise>
+			</choose>
+		</if>
+		group by
+			egr.route_nm,
+			mbrpa.bus_route_id,
+		ride_station.GPS_X,
+		ride_station.GPS_Y,
+		ride_station.station_nm,
+		ride_station.station_id
+	</select>
+
+	<select id="findAllLndiCntByRouteId" parameterType="mapBigdataSearchDTO" resultType="mrtBusRoutePasngAnal">
+		select
+		egr.route_nm,
+		mbrpa.bus_route_id,
+		lndi_station.station_nm as ed_sta_nm,
+		CAST ( LEFT (CAST(lndi_station.GPS_X AS VARCHAR), 3 ) AS INT) + CAST( SUBSTRING(CAST(lndi_station.GPS_X AS VARCHAR), 4 ) AS DECIMAL(5,3))/ 60 AS MAP_X,
+		CAST ( LEFT (CAST(lndi_station.GPS_Y AS VARCHAR), 2 ) AS INT) + CAST( SUBSTRING(CAST(lndi_station.GPS_Y AS VARCHAR), 3 ) AS DECIMAL(5,3))/ 60 AS MAP_Y,
+		lndi_station.station_id,
+		sum(pass_1) + sum(pass_2) + sum(pass_3) as passengers
+		from
+		MRT_BUS_ROUTE_PASNG_ANAL mbrpa
+		left outer join bigdata.ext_ggbis_bus_station lndi_station on
+		mbrpa.lndi_bstp_id = lndi_station.station_id
+		inner join bigdata.ext_ggbis_bus_route egr on
+		egr.route_id = mbrpa.bus_route_id
+		where
+		mbrpa.bus_route_id= #{routeId}
+		<!-- 연도별 검색 -->
+		<if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+			AND TO_CHAR(to_timestamp(lndi_dt, 'YYYYMMDDHH24MISS'), 'YYYY') = #{searchYear}
+		</if>
+		<!-- 기간 검색 -->
+		<if test="(startDate != null and startDate != '') and (endDate != null and endDate != '')">
+			AND to_timestamp(lndi_dt, 'YYYYMMDDHH24MISS') between to_timestamp(#{startDate}||' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') and to_timestamp(#{endDate}||' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<!-- 기간구분 검색 -->
+		<if test="searchPeriod != null and searchPeriod != ''">
+			<choose>
+				<when test="searchPeriod == 'weekday' ">
+					AND TO_CHAR(to_timestamp(lndi_dt, 'YYYYMMDDHH24MISS'), 'D') BETWEEN '2' AND '6'
+				</when>
+				<when test="searchPeriod == 'weekend' ">
+					AND (TO_CHAR(to_timestamp(lndi_dt, 'YYYYMMDDHH24MISS'), 'D') = '1' OR TO_CHAR(to_timestamp(lndi_dt, 'YYYYMMDDHH24MISS'), 'D') = '7')
+				</when>
+			</choose>
+		</if>
+		<!-- 시간 검색 -->
+		<if test="searchTime != null and searchTime != ''">
+			<choose>
+				<when test="searchTime == 'workingTime' ">
+					AND TO_CHAR(to_timestamp(lndi_dt, 'YYYYMMDDHH24MISS'), 'HH24') BETWEEN '06' AND '10'
+				</when>
+				<when test="searchTime == 'workingEndTime' ">
+					AND TO_CHAR(to_timestamp(lndi_dt, 'YYYYMMDDHH24MISS'), 'HH24') BETWEEN '17' AND '20'
+				</when>
+				<otherwise>
+					AND TO_CHAR(to_timestamp(lndi_dt, 'YYYYMMDDHH24MISS'), 'HH24') BETWEEN #{startTime} AND #{endTime}
+				</otherwise>
+			</choose>
+		</if>
+		group by
+		egr.route_nm,
+		mbrpa.bus_route_id,
+		lndi_station.GPS_X,
+		lndi_station.GPS_Y,
+		lndi_station.station_nm,
+		lndi_station.station_id
+	</select>
+	
 </mapper>

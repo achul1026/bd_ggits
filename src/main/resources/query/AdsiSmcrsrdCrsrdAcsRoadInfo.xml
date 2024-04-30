@@ -2,6 +2,44 @@
 <!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.AdsiSmcrsrdCrsrdAcsRoadInfoMapper'>
+    <!--<select id="findAllOneHourStats" resultType="adsiSmcrsrdCrsrdAcsRoadInfo">
+        select
+            ASCARI.MNG_INST_CD
+             ,ASCARI.CRSRD_ID
+             ,ASCARI.ACS_ROAD_ID
+             ,ASCARI.ACS_ROAD_NM
+             ,ASCARI.LINK_ID
+             ,ASCARI.LANE_CNT
+             ,ASCARI.ANGL
+             ,ASCARI.LON_CRDN
+             ,ASCARI.LAT_CRDN
+             ,ASCARI.MAX_TRFVLM
+             ,ASCARI.MAX_PDST_CNT
+             ,ASCI.CRSRD_NM
+             ,ST_ASGEOJSON(ST_LINEMERGE(GCIL.GEOMETRY)) AS GEOJSON
+             ,GCIL.ROAD_NAME
+             ,ASCARSO.VHCL_TRFVLM
+             ,ASCARSO.PDST_CNT
+             ,ASCARSO.AVG_VHCL_SPEED
+             ,ASCARSO.AVG_PDST_SPEED
+             ,ASCARSO.CTRL_DELAY_TIME
+             ,ASCARSO.CLCT_DT
+        FROM BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO ASCARI
+                 INNER JOIN BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_INFO ASCI ON ASCARI.CRSRD_ID = ASCI.CRSRD_ID
+                 INNER JOIN C_GM_STD_LINK  GCIL ON ASCARI.LINK_ID = GCIL.LINK_ID
+                 LEFT JOIN BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_ACS_ROAD_STATS_ONHR ASCARSO ON ASCARSO.CRSRD_ID = ASCARI.CRSRD_ID AND ASCARSO.ACS_ROAD_ID = ASCARI.ACS_ROAD_ID
+                 LEFT JOIN (
+            SELECT
+                MAX(ASCARSO.CLCT_DT) AS RCT_CLCT_DT
+                 ,ASCARSO.CRSRD_ID
+                 ,ASCARSO.ACS_ROAD_ID
+            FROM
+                BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_ACS_ROAD_STATS_ONHR ASCARSO
+            GROUP BY ASCARSO.CRSRD_ID ,ASCARSO.ACS_ROAD_ID
+        ) RCT_ASCARSO ON RCT_ASCARSO.RCT_CLCT_DT = ASCARSO.CLCT_DT
+        ORDER BY ACS_ROAD_ID ASC
+    </select>-->
+
     <select id="findAllOneHourStats" resultType="adsiSmcrsrdCrsrdAcsRoadInfo">
         select
             ASCARI.MNG_INST_CD
@@ -16,29 +54,23 @@
              ,ASCARI.MAX_TRFVLM
              ,ASCARI.MAX_PDST_CNT
              ,ASCI.CRSRD_NM
-             ,ST_ASGEOJSON(ST_LINEMERGE(GCIL.GEOM)) AS GEOJSON
+             ,ST_ASGEOJSON(ST_LINEMERGE(GCIL.GEOMETRY)) AS GEOJSON
              ,GCIL.ROAD_NAME
-             ,ASCARSO.VHCL_TRFVLM
-             ,ASCARSO.PDST_CNT
-             ,ASCARSO.AVG_VHCL_SPEED
-             ,ASCARSO.AVG_PDST_SPEED
-             ,ASCARSO.CTRL_DELAY_TIME
-             ,ASCARSO.CLCT_DT
-        FROM ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO ASCARI
-                 INNER JOIN ADSI_SMCRSRD_CRSRD_INFO ASCI ON ASCARI.CRSRD_ID = ASCI.CRSRD_ID
-                 INNER JOIN GY_COMM_INFO_LINK GCIL ON ASCARI.LINK_ID = GCIL.LINK_ID
-                 LEFT JOIN ADSI_SMCRSRD_CRSRD_ACS_ROAD_STATS_ONHR ASCARSO ON ASCARSO.CRSRD_ID = ASCARI.CRSRD_ID AND ASCARSO.ACS_ROAD_ID = ASCARI.ACS_ROAD_ID
-                 LEFT JOIN (
-            SELECT
-                MAX(ASCARSO.CLCT_DT) AS RCT_CLCT_DT
-                 ,ASCARSO.CRSRD_ID
-                 ,ASCARSO.ACS_ROAD_ID
-            FROM
-                ADSI_SMCRSRD_CRSRD_ACS_ROAD_STATS_ONHR ASCARSO
-            GROUP BY ASCARSO.CRSRD_ID ,ASCARSO.ACS_ROAD_ID
-        ) RCT_ASCARSO ON RCT_ASCARSO.RCT_CLCT_DT = ASCARSO.CLCT_DT
-        ORDER BY ACS_ROAD_ID ASC
+        FROM BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO ASCARI
+        inner join (
+            select
+                MAX(ASCARI.ETL_DT) as RCT_ETL_DT,
+                ASCARI.CRSRD_ID,
+                ASCARI.ACS_ROAD_ID,
+                ASCARI.MNG_INST_CD
+            from BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO ASCARI
+            group by  ASCARI.CRSRD_ID, ASCARI.ACS_ROAD_ID, ASCARI.MNG_INST_CD
+        ) RCT_ASCARI on  RCT_ASCARI.MNG_INST_CD = ASCARI.MNG_INST_CD AND RCT_ASCARI.RCT_ETL_DT = ASCARI.ETL_DT and RCT_ASCARI.CRSRD_ID = ascari.CRSRD_ID and RCT_ASCARI.ACS_ROAD_ID = ascari.ACS_ROAD_ID
+                 INNER JOIN BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_INFO ASCI ON ASCARI.CRSRD_ID = ASCI.CRSRD_ID
+                 INNER JOIN C_GM_STD_LINK  GCIL ON ASCARI.LINK_ID = GCIL.LINK_ID
+        ORDER BY ACS_ROAD_ID asc
     </select>
+
     <select id="findAllByCrsrdId" parameterType="String" resultType="adsiSmcrsrdCrsrdAcsRoadInfo">
         SELECT
             MNG_INST_CD
@@ -53,7 +85,7 @@
             ,MAX_TRFVLM
             ,MAX_PDST_CNT
         FROM
-            ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO
+            BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO
         WHERE
         CRSRD_ID = #{crsrdId}
     </select>

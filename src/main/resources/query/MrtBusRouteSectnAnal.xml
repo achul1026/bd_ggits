@@ -10,19 +10,311 @@
 		GROUP BY TO_CHAR(ANLS_DT,'YYYY')
 		ORDER BY TO_CHAR(ANLS_DT,'YYYY') DESC  
 	</select>
-	
-	<select id="countAllPubTrfDuplSetAdequacyList" parameterType="mapBigdataSearchDTO" resultType="int">
+
+	<sql id="findList">
 		SELECT
-			COUNT(*)
-		FROM MRT_BUS_ROUTE_SECTN_ANAL
+		egbr.ROUTE_ID as BUS_ROUTE_ID
+		,egbr.ROUTE_NM
+		,egbr.company_nm
+		,CASE WHEN EGBR.ROUTE_TP ='12' OR EGBR.ROUTE_TP ='13' OR EGBR.ROUTE_TP ='23' THEN '일반버스'
+		WHEN EGBR.ROUTE_TP ='11'  OR EGBR.ROUTE_TP ='14' OR EGBR.ROUTE_TP ='21' OR EGBR.ROUTE_TP ='22' THEN '광역버스'
+		WHEN EGBR.ROUTE_TP ='30' THEN '마을버스'
+		WHEN EGBR.ROUTE_TP ='41' OR EGBR.ROUTE_TP ='42' OR EGBR.ROUTE_TP ='43' THEN '시외버스'
+		WHEN EGBR.ROUTE_TP ='51' OR EGBR.ROUTE_TP ='52' OR EGBR.ROUTE_TP ='53' THEN '공항버스'
+		ELSE '일반버스'
+		END AS ROUTE_TP
+		,EGD.DISTRICT_GNM
+		,EGD.DISTRICT_SNM
+		from
+		bigdata.ext_ggbis_bus_route egbr
+		left join mrt_bus_route_sectn_dpcn mbrsd  on egbr.route_id = mbrsd.bus_route_id
+		LEFT JOIN (
+		select area_cd ,district_snm , district_gnm  from bigdata.ext_ggbis_district
+		group by area_cd,district_snm , district_gnm
+		) EGD ON EGBR.AREA_CD = EGD.AREA_CD
+		where 1=1
+			<if test="routeTpList != null">
+				AND EGBR.ROUTE_TP IN
+				<foreach collection="routeTpList" item="routeTp" open="(" close=")" separator=",">
+					#{routeTp}
+				</foreach>
+			</if>
+			<if test="routeNm != null and routeNm != '' ">
+				AND	EGBR.ROUTE_NM LIKE '%' || #{routeNm} || '%'
+			</if>
+			<if test="districtGnm != null and districtGnm !=''">
+				AND	EGD.DISTRICT_GNM = #{districtGnm}
+			</if>
+		GROUP BY egbr.ROUTE_ID ,egbr.ROUTE_NM, egbr.company_nm, egbr.ROUTE_TP,EGD.DISTRICT_GNM, egd.district_snm
+	</sql>
+	<select id="findAllDuplicateSectionInfo" parameterType="mapBigdataSearchDTO" resultType="mrtBusRouteSectnAnal">
+		<include refid="findList"/>
+		<if test="routeNm != null and routeNm != '' ">
+			order by (case when  egbr.route_NM = #{routeNm} then 1 else 2 end,  egbr.route_NM)
+		</if>
+		<if test="page != null and page != '' and page != 0 ">
+			LIMIT 5 OFFSET (#{page} - 1) * 5
+		</if>
+	</select>
+
+	<select id="countDuplicateSectionInfo" parameterType="mapBigdataSearchDTO" resultType="int">
+		select
+		count(1)
+		from(
+		<include refid="findList"/>
+		) cnt
+	</select>
+	<select id="findAllDuplicateSectionInfoGeometry" parameterType="mapBigdataSearchDTO" resultType="mrtBusRouteSectnAnal">
+		select
+			ST_ASGEOJSON(ST_LINEMERGE(GEOMETRY)) as geojson,
+			link_id,
+			road_name,
+			string_agg(st_sta_id||'-'||ed_sta_id, ',') as st_to_ed,
+			coalesce(sum(dupl_cnt),
+					 0) as dupl_cnt
+		from
+			(select
+				 gcil.link_id,
+				 GCIL.GEOMETRY,
+				 gcil.road_name,
+				 egbs.st_sta_id,
+				 egbs.ed_sta_id,
+				 mbrsd_dupl.dupl_cnt
+			 from bigdata.ext_ggbis_busroute_infounit egbi
+					  inner join bigdata.ext_ggbis_bus_section egbs on
+				 egbi.section_id = egbs.section_id
+					  inner join BIGDATA.EXT_GGBIS_LINK_MAPPING EGLM on
+				 egbi.LINK_ID = EGLM.LINK_ID
+					  inner join C_GM_STD_LINK GCIL on
+				 EGLM.ST_LINK_ID = GCIL.LINK_ID
+					  left outer join (
+				 select
+					 mbrsi.start_bstp_id ,
+					 mbrsi.end_bstp_id,
+					 count(1) as dupl_cnt
+				 from
+					 mrt_bus_route_sectn_info mbrsi
+				 group by mbrsi.start_bstp_id ,mbrsi.end_bstp_id) mbrsd_dupl on
+						 egbs.st_sta_id  = mbrsd_dupl.start_bstp_id and egbs.ed_sta_id  = mbrsd_dupl.end_bstp_id
+			 where route_id = #{routeId}
+			 group by 1,2,3,4,5,6
+			 order by gcil.link_id) a group by 1,2,3
 	</select>
 	
-	<select id="findAllPubTrfDuplSetAdequacyList" parameterType="mapBigdataSearchDTO" resultType="mrtBusRouteSectnAnal">
+	<select id="countAllPubTrfDuplSetAdequacyList" parameterType="mapBigdataSearchDTO" resultType="int">
+		select
+			count(*)
+		from(
+				select
+					mbrsa.START_BSTP_ID ,
+					mbrsa.END_BSTP_ID ,
+					egbr.ROUTE_ID ,
+					egbr.ROUTE_NM ,
+					egbr.ROUTE_INTERVAL ,
+					egbs.station_nm  as st_sta_nm ,
+					egbs2.station_nm  as st_sta_nm ,
+					count(*) as  dupl_cnt
+				from
+					MRT_BUS_ROUTE_SECTN_ANAL mbrsa
+						inner join bigdata.ext_ggbis_bus_route egbr on mbrsa.bus_route_id = egbr.route_id
+						left outer join bigdata.ext_ggbis_bus_station egbs on mbrsa.start_bstp_id = egbs.station_id
+						left outer join bigdata.ext_ggbis_bus_station egbs2 on mbrsa.end_bstp_id  = egbs2.station_id
+				where
+					egbs.STATION_NM like '%' || #{startStationNm} || '%'
+				  and egbs2.STATION_NM like '%' ||  #{endStationNm} || '%'
+				group by
+					mbrsa.START_BSTP_ID ,
+					mbrsa.END_BSTP_ID ,
+					egbr.ROUTE_ID ,
+					egbr.ROUTE_NM ,
+					egbr.ROUTE_INTERVAL ,
+					egbs.station_nm,
+					egbs2.station_nm
+				order by dupl_cnt desc
+			) cnt
+	</select>
+	
+	<!--<select id="findAllPubTrfDuplSetAdequacyList" parameterType="mapBigdataSearchDTO" resultType="mrtBusRouteSectnAnal">
 		SELECT
-			gbr.ROUTE_NM
-			,gbr.ROUTE_INTERVAL
+			mbrsa.START_BSTP_ID 
+			, mbrsa.END_BSTP_ID 
+			, gbr.ROUTE_ID
+			, gbr.ROUTE_NM
+			, gbr.ROUTE_INTERVAL
+			, gbr.ST_STA_NM
+			, gbr.ED_STA_NM 
 		FROM MRT_BUS_ROUTE_SECTN_ANAL mbrsa
-		LEFT JOIN GGBIS_BUS_ROUTE gbr
-			ON mbrsa.BUS_ROUTE_ID = gbr.ROUTE_ID
+		INNER JOIN (
+					SELECT
+						EGBS.ROUTE_ID,
+						ST_STATION.START_STATION_ID,
+						ST_STATION.START_STA_ORDER
+					FROM BIGDATA.EXT_GGBIS_BUSROUTE_STATION EGBS
+					INNER JOIN (
+								SELECT
+									ROUTE_ID,
+									STATION_ID AS START_STATION_ID,
+									STA_ORDER AS START_STA_ORDER
+								FROM BIGDATA.EXT_GGBIS_BUSROUTE_STATION EGBS
+								WHERE (egbs.STATION_NM LIKE '%' || #{startStationNm} || '%' OR egbs.STATION_ID LIKE '%' || #{startStationNm} || '%')
+								GROUP BY ROUTE_ID , STATION_ID, START_STA_ORDER
+								)
+								ST_STATION ON EGBS.ROUTE_ID = ST_STATION.ROUTE_ID AND EGBS.STA_ORDER > ST_STATION.START_STA_ORDER
+					WHERE (egbs.STATION_NM LIKE '%' || #{endStationNm} || '%' OR egbs.STATION_ID LIKE '%' || #{endStationNm} || '%')
+					GROUP BY EGBS.ROUTE_ID, EGBS.STATION_ID, ST_STATION.START_STATION_ID, ST_STATION.START_STA_ORDER
+					)
+		BUS_ROUTE ON BUS_ROUTE.ROUTE_ID = mbrsa.BUS_ROUTE_ID
+		LEFT JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE gbr ON mbrsa.BUS_ROUTE_ID = gbr.ROUTE_ID
+	</select>-->
+	<select id="countPubTrfDuplSetAdequacyList" parameterType="mapBigdataSearchDTO" resultType="int">
+		select
+		count(*)
+		from(
+				select
+					mbrsa.START_BSTP_ID ,
+					mbrsa.END_BSTP_ID ,
+					egbr.ROUTE_ID ,
+					egbr.ROUTE_NM ,
+					egbr.ROUTE_INTERVAL ,
+					egbs.station_nm  as st_sta_nm ,
+					egbs2.station_nm  as st_sta_nm ,
+					count(*) as  dupl_cnt
+				from
+					MRT_BUS_ROUTE_SECTN_ANAL mbrsa
+						inner join bigdata.ext_ggbis_bus_route egbr on mbrsa.bus_route_id = egbr.route_id
+						left outer join bigdata.ext_ggbis_bus_station egbs on mbrsa.start_bstp_id = egbs.station_id
+						left outer join bigdata.ext_ggbis_bus_station egbs2 on mbrsa.end_bstp_id  = egbs2.station_id
+				where
+					egbs.STATION_NM like '%' || #{startStationNm} || '%'
+				  and egbs2.STATION_NM like '%' ||  #{endStationNm} || '%'
+				group by
+					mbrsa.START_BSTP_ID ,
+					mbrsa.END_BSTP_ID ,
+					egbr.ROUTE_ID ,
+					egbr.ROUTE_NM ,
+					egbr.ROUTE_INTERVAL ,
+					egbs.station_nm,
+					egbs2.station_nm
+				order by dupl_cnt desc
+				) cnt
+	</select>
+	<select id="findAllPubTrfDuplSetAdequacyList" parameterType="mapBigdataSearchDTO" resultType="mrtBusRouteSectnAnal">
+		select
+			mbrsa.START_BSTP_ID ,
+			mbrsa.END_BSTP_ID ,
+			egbr.ROUTE_ID ,
+			CASE WHEN egbr.ROUTE_TP ='11' THEN '직행좌석형시내버스'
+			WHEN egbr.ROUTE_TP ='12' THEN '좌석형시내버스'
+			WHEN egbr.ROUTE_TP ='13' THEN '일반형시내버스'
+			WHEN egbr.ROUTE_TP ='21' THEN '직행좌석형농어촌버스'
+			WHEN egbr.ROUTE_TP ='22' THEN '좌석형농어촌버스'
+			WHEN egbr.ROUTE_TP ='23' THEN '일반형농어촌버스'
+			WHEN egbr.ROUTE_TP ='30' THEN '마을버스'
+			WHEN egbr.ROUTE_TP ='41' THEN '고속형시외버스'
+			WHEN egbr.ROUTE_TP ='42' THEN '좌석형시외버스'
+			WHEN egbr.ROUTE_TP ='43' THEN '일반형시외버스'
+			WHEN egbr.ROUTE_TP ='51' THEN '리무진형공항버스'
+			WHEN egbr.ROUTE_TP ='52' THEN '좌석형공항버스'
+			WHEN egbr.ROUTE_TP ='53' THEN '일반형공항버스'
+			END AS ROUTE_TP,
+			egbr.ROUTE_NM ,
+			egbr.ROUTE_INTERVAL ,
+			egbs.station_nm  as st_sta_nm ,
+			egbs2.station_nm  as ed_sta_nm ,
+			count(*) as  dupl_cnt
+		from
+			MRT_BUS_ROUTE_SECTN_ANAL mbrsa
+				inner join bigdata.ext_ggbis_bus_route egbr on mbrsa.bus_route_id = egbr.route_id
+				left outer join bigdata.ext_ggbis_bus_station egbs on mbrsa.start_bstp_id = egbs.station_id
+				left outer join bigdata.ext_ggbis_bus_station egbs2 on mbrsa.end_bstp_id  = egbs2.station_id
+			where
+            egbs.STATION_NM like '%' || #{startStationNm} || '%'
+            and egbs2.STATION_NM like '%' ||  #{endStationNm} || '%'
+		group by
+			mbrsa.START_BSTP_ID ,
+			mbrsa.END_BSTP_ID ,
+			egbr.ROUTE_ID ,
+			egbr.ROUTE_NM ,
+			egbr.route_tp,
+			egbr.ROUTE_INTERVAL ,
+			egbs.station_nm,
+			egbs2.station_nm
+		order by dupl_cnt desc
+		<if test="page != null and page != '' and page != 0">
+			LIMIT 10 OFFSET (#{page} - 1) * 10
+		</if>
+	</select>
+
+	<select id="findAllBySectionId" parameterType="String" resultType="mrtBusRouteSectnAnal">
+		select
+			st_egbs.station_nm as st_sta_nm,
+			ed_egbs.station_nm as ed_sta_nm,
+			st_egbs.mobile_no as start_mobile_no,
+			ed_egbs.mobile_no as end_mobile_no,
+			st_egbs.station_id as start_bstp_id,
+			ed_egbs.station_id as end_bstp_id,
+			egbr.route_id as bus_route_id,
+			egbr.route_nm ,
+			CASE WHEN egbr.ROUTE_TP ='11' THEN '직행좌석형시내버스'
+				 WHEN egbr.ROUTE_TP ='12' THEN '좌석형시내버스'
+				 WHEN egbr.ROUTE_TP ='13' THEN '일반형시내버스'
+				WHEN egbr.ROUTE_TP ='14' THEN '광역버스'
+				 WHEN egbr.ROUTE_TP ='21' THEN '직행좌석형농어촌버스'
+				 WHEN egbr.ROUTE_TP ='22' THEN '좌석형농어촌버스'
+				 WHEN egbr.ROUTE_TP ='23' THEN '일반형농어촌버스'
+				 WHEN egbr.ROUTE_TP ='30' THEN '마을버스'
+				 WHEN egbr.ROUTE_TP ='41' THEN '고속형시외버스'
+				 WHEN egbr.ROUTE_TP ='42' THEN '좌석형시외버스'
+				 WHEN egbr.ROUTE_TP ='43' THEN '일반형시외버스'
+				 WHEN egbr.ROUTE_TP ='51' THEN '리무진형공항버스'
+				 WHEN egbr.ROUTE_TP ='52' THEN '좌석형공항버스'
+				 WHEN egbr.ROUTE_TP ='53' THEN '일반형공항버스'
+				END AS ROUTE_TP,
+			egd.district_snm ,
+			egd.district_gnm
+		from
+		mrt_bus_route_sectn_info mbrsd
+				inner join bigdata.ext_ggbis_bus_route egbr on mbrsd.bus_route_id = egbr.route_id
+				LEFT JOIN (
+				select area_cd ,district_snm , district_gnm  from bigdata.ext_ggbis_district
+				group by area_cd,district_snm , district_gnm
+			) EGD ON EGBR.AREA_CD = EGD.AREA_CD
+				left outer join bigdata.ext_ggbis_bus_station st_egbs on mbrsd.start_bstp_id =  st_egbs.station_id
+				left outer join bigdata.ext_ggbis_bus_station ed_egbs on mbrsd.end_bstp_id = ed_egbs.station_id
+		<where>
+			<foreach collection="sectionIds" item="sectionId" open="(" close=")" separator=")OR(">
+				mbrsd.start_bstp_id = #{sectionId.stStaId} and mbrsd.end_bstp_id = #{sectionId.edStaId}
+			</foreach>
+		</where>
+		order by start_bstp_id, end_bstp_id
+	</select>
+
+	<select id="findTop10ByRouteId" parameterType="mapBigdataSearchDTO" resultType="mrtBusRouteSectnAnal">
+		select
+			egbs.st_sta_id as start_bstp_id,
+			st_egbs.station_nm as st_sta_nm,
+			st_egbs.mobile_no as start_mobile_no,
+			egbs.ed_sta_id as end_bstp_id,
+			ed_egbs.station_nm as ed_sta_nm,
+			ed_egbs.mobile_no as end_mobile_no,
+			mbrsd_dupl.dupl_cnt
+		from bigdata.ext_ggbis_busroute_infounit egbi
+				 inner join bigdata.ext_ggbis_bus_section egbs on
+			egbi.section_id = egbs.section_id
+				 left outer join bigdata.ext_ggbis_bus_station st_egbs on egbs.st_sta_id = st_egbs.station_id
+				 left outer join bigdata.ext_ggbis_bus_station ed_egbs on egbs.ed_sta_id  = ed_egbs.station_id
+				 left outer join (
+			select
+				mbrsi.start_bstp_id ,
+				mbrsi.end_bstp_id,
+				count(1) as dupl_cnt
+			from
+				mrt_bus_route_sectn_info mbrsi
+			group by mbrsi.start_bstp_id ,mbrsi.end_bstp_id) mbrsd_dupl on
+					egbs.st_sta_id  = mbrsd_dupl.start_bstp_id and egbs.ed_sta_id  = mbrsd_dupl.end_bstp_id
+		where route_id = #{routeId}
+		group by 1,2,3,4,5,6,7
+		order by mbrsd_dupl.dupl_cnt desc
+			limit 10
 	</select>
 </mapper>

@@ -11,63 +11,63 @@
     </aside>
     <section class="main_section">
         <h2 class="blind">표준노드링크 자료실</h2>
-        <div class="table_btn_wrap clearfix">
+        <div class="contents_wrap table_btn_wrap flex-between mb8">
         	<form id="searchForm" name="searchForm" action="/basicinfo/nodelink/reference/list.do">
-	            <div class="btn_search_wrap float-left">
-               			<input type="text" class="year_picker input_same input_picker" name="searchContent" id="searchContent" placeholder="날짜를 선택해주세요." autocomplete="off" readonly>
-<%-- 	                <input type="text" placeholder="검색어를 입력하세요." id="searchContent" name="searchContent" class="input_same search_box" value="${searchContent ne null and searchContent ne '' ? searchContent :''}"> --%>
-	                <input type="button" id="searchBtn" value="검색" class="input_same search_box2">
+	            <div class="btn_search_wrap float-none">
+	            	<ul>
+	            		<li>
+	            			업데이트 연도 : 
+		           			<select class="selectBox radius" name="aplcnYmd">
+				                <option value="">전체</option>
+					           	<c:forEach var="yearsList" items="${yearsList}">
+					                <option value="<c:out value='${yearsList.year}'/>" ${yearsList.year eq aplcnYmd ? 'selected="selected"' : ''}><c:out value='${yearsList.year}'/>년</option>
+					           	</c:forEach>
+				            </select>
+	            		</li>
+	            		<li>
+	            			<input type="button" id="searchBtn" value="검색" class="input_same search_box2 pointer">
+	            		</li>
+	            	</ul>
+           			
+               		
 	            </div>
         	</form>
-            <div class="float-right mt4">
+            <div class="mj0">
                	<button type="button" id="uploadBtn" class="input_same search_box2">변경사항 업데이트</button>
             </div>
         </div>
         <table>
-            <colgroup>
-                <col style="width:10%">
-                <col style="width:15%">
-                <col style="width:20%">
-                <col style="width:30%">
-                <col style="width:10%">
-                <col style="width:15%">
-            </colgroup>
             <tr>
                 <th scope="col" class="left">
-	                <select class="table-filter">
+	                <select class="table-filter" onchange="fnChangOrderType(this);">
 	                	<option value="">유형</option>
-	                	<option value="NODE">노드</option>
-	                	<option value="LINK">링크</option>
+	                	<option ${searchType eq 'NODE' ? 'selected="selected"' : '' } value="NODE">노드</option>
+	                	<option ${searchType eq 'LINK' ? 'selected="selected"' : '' } value="LINK">링크</option>
 	                </select>
                 </th>
                 <th scope="col">업데이트 일자</th>
                 <th scope="col">제목</th>
                 <th scope="col">업데이트 내용</th>
                 <th scope="col">등록자</th>
-                <th scope="col">작성일</th>
             </tr>
             <c:choose>
             	<c:when test="${not empty referenceList}">
 		            <c:forEach var="referenceList" items="${referenceList}">
-			            <tr onclick="getDetail('${referenceList.stdInfoId}')">
-			                <td class="left">아직컬럼없음</td>
+			            <tr onclick="getDetail('<c:out value="${referenceList.stdInfoId}"/>')" class="pointer">
+			                <td class="left"><c:out value="${referenceList.stdAplcnType}"/></td>
 			                <td>
-					    		<fmt:parseDate value="${referenceList.etlDt}" var="etlDt" pattern="yyyyMMdd"/>
-								<fmt:formatDate value="${etlDt}" pattern="yyyy-MM-dd"/>
+					    		<fmt:parseDate value="${referenceList.aplcnYmd}" var="aplcnYmd" pattern="yyyyMMdd"/>
+								<fmt:formatDate value="${aplcnYmd}" pattern="yyyy-MM-dd"/>
 			                </td>
-			                <td>${referenceList.stdInfoNm}</td>
-			                <td>${referenceList.rmrk}</td>
-			                <td>${referenceList.saveInfo}</td>
-			                <td>
-				    		<fmt:parseDate value="${referenceList.aplcnYmd}" var="aplcnYmd" pattern="yyyyMMdd"/>
-							<fmt:formatDate value="${aplcnYmd}" pattern="yyyy-MM-dd"/>
-			                </td>
+			                <td><c:out value='${referenceList.stdInfoNm}'/></td>
+			                <td><c:out value='${referenceList.rmrk}'/></td>
+			                <td><c:out value='${referenceList.saveInfo}'/></td>
 			            </tr>
 		            </c:forEach>
             	</c:when>
             	<c:otherwise>
 					<tr>
-						<td colspan="4">조회된 결과가 없습니다.</td>
+						<td colspan="5">조회된 결과가 없습니다.</td>
 					</tr>
             	</c:otherwise>
             </c:choose>
@@ -83,7 +83,7 @@
 			var stdInfoNm = $("#stdInfoNm").val();
 			var rmrk = $("#rmrk").val();
 			var refTyCd = $("input[name='refTyCd']:checked").val();
-			var etlDt = $("#etlDt").val() != null ? $("#etlDt").val().replaceAll("-","") : '';
+			var aplcnYmd = $("#aplcnYmd").val() != null ? $("#aplcnYmd").val().replaceAll("-","") : '';
 			
 			if(refTyCd == null || refTyCd == ''){
 				new ModalBuilder().init().alertBoby("자료 유형을 선택해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
@@ -97,13 +97,13 @@
 				return false
 			}
 			
-			if(etlDt == null || etlDt == ''){
+			if(aplcnYmd == null || aplcnYmd == ''){
 				new ModalBuilder().init().alertBoby("날짜를 선택해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
 				modalAlertWrap();
 				return false
 			} else {
 				var regExp = /^[0-9]+$/;
-				if(!regExp.test(etlDt)){
+				if(!regExp.test(aplcnYmd)){
 					new ModalBuilder().init().alertBoby("날짜 형식을 확인해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
 					modalAlertWrap();
 					return false;
@@ -113,9 +113,9 @@
 			
 			var obj = new Object();
 			obj.stdInfoNm = stdInfoNm;
-// 			obj.refTyCd = refTyCd;
+			obj.stdAplcnType = refTyCd;
 			obj.rmrk = rmrk;
-			obj.etlDt = etlDt;
+			obj.aplcnYmd = aplcnYmd;
 			
 			$.ajax({
 				type : "post",
@@ -176,7 +176,7 @@
 			var stdInfoNm = $("#stdInfoNm").val();
 			var rmrk = $("#rmrk").val();
 			var refTyCd = $("input[name='refTyCd']:checked").val();
-			var etlDt = $("#etlDt").val() != null ? $("#etlDt").val().replaceAll("-","") : '';
+			var aplcnYmd = $("#aplcnYmd").val() != null ? $("#aplcnYmd").val().replaceAll("-","") : '';
 			
 			if(refTyCd == null || refTyCd == ''){
 				new ModalBuilder().init().alertBoby("자료 유형을 선택해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
@@ -190,13 +190,13 @@
 				return false
 			}
 			
-			if(etlDt == null || etlDt == ''){
+			if(aplcnYmd == null || aplcnYmd == ''){
 				new ModalBuilder().init().alertBoby("날짜를 선택해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
 				modalAlertWrap();
 				return false
 			} else {
 				var regExp = /^[0-9]+$/;
-				if(!regExp.test(etlDt)){
+				if(!regExp.test(aplcnYmd)){
 					new ModalBuilder().init().alertBoby("날짜 형식을 확인해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
 					modalAlertWrap();
 					return false;
@@ -207,9 +207,9 @@
 			var obj = new Object();
 			obj.stdInfoId = stdInfoId;
 			obj.stdInfoNm = stdInfoNm;
-// 			obj.refTyCd = refTyCd;
+			obj.stdAplcnType = refTyCd;
 			obj.rmrk = rmrk;
-			obj.etlDt = etlDt;
+			obj.aplcnYmd = aplcnYmd;
 			
 			$.ajax({
 				type : "post",
@@ -235,40 +235,8 @@
 		$('.modal_footer').removeClass('none');
 	}
 	
-	
-	$(function(){
-// 		연도만
-		$('.year_picker').datepicker({
-		    yearRange: "c-20:c",
-		    changeMonth: false,
-		    changeYear: true,
-		    showButtonPanel: true,
-		    closeText:'선택하기',
-		    currentText: 'This year',
-// 		    dataFormat:'yy년',
-		    onClose: function(dateText, inst) {
-		      var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
-		      $(this).val($.datepicker.formatDate('yy년', new Date(year, 1, 1)));
-		    }
-		  }).focus(function () {
-			 $(".ui-datepicker-month").hide();
-		    $(".ui-datepicker-calendar").hide();
-		    $(".ui-datepicker-current").hide();
-		    $(".ui-datepicker-prev").hide();
-		    $(".ui-datepicker-next").hide();
-		    $("#ui-datepicker-div").position({
-		      my: "left top",
-		      at: "left bottom",
-		      of: $(this)
-		    });
-		    $('table.ui-datepicker-calendar').hide();
-		    $('.ui-datepicker').css({"width":"210px", "top":"198px"});
-		    $('.ui-datepicker-year').css({"width":"100%","color":"#000","font-size":"1rem","font-family":"Pretendard","border":"1px solid #3e3e3e","border-radius":"0.425rem",});
-		    $('.ui-datepicker .ui-datepicker-title').css({"line-height":"0","text-align":"left",});
-		    $('.ui-widget-content').css({"border":"none"});
-		    $('.ui-datepicker-close').css({"font-size":"0.875rem","font-weight":"700",})
-		  }).attr("readonly", false);
-	})
-
-
+	function fnChangOrderType(_this){
+		var searchType = $(_this).val();
+		window.location.href="${pageContext.request.contextPath}/basicinfo/nodelink/reference/list.do?searchType="+searchType;
+	}
 </script>

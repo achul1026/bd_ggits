@@ -2,4 +2,55 @@
 <!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.AirkrAdsiArqltMsrmtInfoMapper'>
+	<sql id="airkrAdsiArqltMsrmtInfo-Where">
+		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
+			AND aaami.MSRMT_DT 
+			BETWEEN TO_TIMESTAMP(#{strDt}|| ' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}|| ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
+			<![CDATA[
+			AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS')  <= aaami.MSRMT_DT
+			]]>
+		</if>
+		<if test="(strDt == '' or strDt == null) and (endDt != '' and endDt != null)">
+			<![CDATA[
+			AND aaami.MSRMT_DT <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			]]>
+		</if>
+		<if test="searchContent != '' and searchContent != null">
+			AND aaami.MSRMT_POINT_NM LIKE '%' || #{searchContent} || '%'
+		</if>
+		<if test="dayOfTheWeek != null">
+			AND EXTRACT (ISODOW from aaami.MSRMT_DT)::varchar(1) IN 
+				<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+		</if>
+	</sql>
+	<select id="countArqltMsrmtInfo" parameterType="commonEntity" resultType="int">
+		SELECT
+			COUNT(1)
+		FROM BIGDATA.EXT_AIRKR_ADSI_ARQLT_MSRMT_INFO aaami
+		WHERE 1=1
+			<include refid="airkrAdsiArqltMsrmtInfo-Where"/>
+	</select>
+	
+	<select id="findAllArqltMsrmtInfoList" parameterType="commonEntity" resultType="airkrAdsiArqltMsrmtInfo">
+		SELECT 	
+			aaami.msrmt_point_nm
+			,COALESCE(TOT_ARQLT_NCL,0) as TOT_ARQLT_NCL
+			,COALESCE(TOT_ARQLT_IDEX,0) as TOT_ARQLT_IDEX
+			,COALESCE(FPTC_CNCT,0) as FPTC_CNCT
+			,COALESCE(ULFPTC_CNCT,0) as ULFPTC_CNCT
+			,COALESCE(SO2_CNCT,0) as SO2_CNCT
+			,COALESCE(CMO_CNCT,0) as CMO_CNCT
+			,COALESCE(OZ_CNCT,0) as OZ_CNCT
+			,COALESCE(NO2_CNCT,0) as NO2_CNCT
+		FROM BIGDATA.EXT_AIRKR_ADSI_ARQLT_MSRMT_INFO aaami
+		WHERE 1=1
+			<include refid="airkrAdsiArqltMsrmtInfo-Where"/>
+		ORDER BY aaami.msrmt_dt DESC 
+		LIMIT 10 OFFSET (#{page} - 1) * 10
+	</select>
 </mapper>

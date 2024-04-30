@@ -140,6 +140,23 @@
 .ui-menu .ui-state-active {
 	margin: -1px;
 }
+.ui-autocomplete {
+	padding:0.45rem;
+	font-size:0.75rem !important;
+	border:none !important;
+	border-radius:0.188rem;
+	background-color:#414141 !important;
+	z-index:9999;
+}
+.ui-autocomplete .ui-menu-item {
+	margin-top:0.25rem !important;
+	color:#fff !important;
+}
+.ui-autocomplete .ui-state-focus,
+.ui-autocomplete .ui-state-active {
+	font-weight:bold !important;
+	color:var(--key-color-600) !important;
+}
 
 /* icon support */
 .ui-menu-icons {

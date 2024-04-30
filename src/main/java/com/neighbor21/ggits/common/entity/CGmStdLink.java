@@ -1,204 +1,250 @@
 package com.neighbor21.ggits.common.entity;
-public class CGmStdLink {
-    private String    linkId;        
-    private String    fNode;        
-    private String    tNode;        
-    private long    lanes;        
-    private String    roadRank;        
-    private String    roadType;        
-    private String    roadNo;        
-    private String    roadName;        
-    private String    roadUse;        
-    private String    multiLink;        
-    private String    connect;        
-    private long    maxSpd;        
-    private String    restVeh;        
-    private long    restW;        
-    private long    restH;        
-    private String    length;        
-    private String    remark;        
-    private String    aplcnYmd;        
-    private String    geometry;        
-    private String    etlDt;        
+
+public class CGmStdLink extends CommonEntity {
+    private String linkId;
+    private String fNode;
+    private String tNode;
+    private String fNodeNm;
+    private String tNodeNm;
+    private Long lanes;
+    private String roadRank;
+    private String roadType;
+    private String roadNo;
+    private String roadName;
+    private String roadUse;
+    private String multiLink;
+    private String connect;
+    private Long maxSpd;
+    private String restVeh;
+    private Long restW;
+    private Long restH;
+    private String length;
+    private String remark;
+    private String aplcnYmd;
+    private String geometry;
+    private String etlDt;
 
 
-  public String getLinkId() {
-    return linkId;
-  }
+    private double x;    //미보유 컬럼 geometry lag값
+    private double y;    //미보유 컬럼 geometry lng 값
 
-  public void setLinkId(String linkId) {
-    this.linkId = linkId;
-  }
+    private String st;
+    private String ed;
+    private Double angle;
 
+    public String getLinkId() {
+        return linkId;
+    }
 
-  public String getFNode() {
-    return fNode;
-  }
+    public void setLinkId(String linkId) {
+        this.linkId = linkId;
+    }
 
-  public void setFNode(String fNode) {
-    this.fNode = fNode;
-  }
+    public String getfNode() {
+        return fNode;
+    }
 
+    public void setfNode(String fNode) {
+        this.fNode = fNode;
+    }
 
-  public String getTNode() {
-    return tNode;
-  }
+    public String gettNode() {
+        return tNode;
+    }
 
-  public void setTNode(String tNode) {
-    this.tNode = tNode;
-  }
+    public void settNode(String tNode) {
+        this.tNode = tNode;
+    }
 
+    public String getfNodeNm() {
+        return fNodeNm;
+    }
 
-  public long getLanes() {
-    return lanes;
-  }
+    public void setfNodeNm(String fNodeNm) {
+        this.fNodeNm = fNodeNm;
+    }
 
-  public void setLanes(long lanes) {
-    this.lanes = lanes;
-  }
+    public String gettNodeNm() {
+        return tNodeNm;
+    }
 
+    public void settNodeNm(String tNodeNm) {
+        this.tNodeNm = tNodeNm;
+    }
 
-  public String getRoadRank() {
-    return roadRank;
-  }
+    public Long getLanes() {
+        return lanes;
+    }
 
-  public void setRoadRank(String roadRank) {
-    this.roadRank = roadRank;
-  }
+    public void setLanes(Long lanes) {
+        this.lanes = lanes;
+    }
 
+    public String getRoadRank() {
+        return roadRank;
+    }
 
-  public String getRoadType() {
-    return roadType;
-  }
+    public void setRoadRank(String roadRank) {
+        this.roadRank = roadRank;
+    }
 
-  public void setRoadType(String roadType) {
-    this.roadType = roadType;
-  }
+    public String getRoadType() {
+        return roadType;
+    }
 
+    public void setRoadType(String roadType) {
+        this.roadType = roadType;
+    }
 
-  public String getRoadNo() {
-    return roadNo;
-  }
+    public String getRoadNo() {
+        return roadNo;
+    }
 
-  public void setRoadNo(String roadNo) {
-    this.roadNo = roadNo;
-  }
+    public void setRoadNo(String roadNo) {
+        this.roadNo = roadNo;
+    }
 
+    public String getRoadName() {
+        return roadName;
+    }
 
-  public String getRoadName() {
-    return roadName;
-  }
+    public void setRoadName(String roadName) {
+        this.roadName = roadName;
+    }
 
-  public void setRoadName(String roadName) {
-    this.roadName = roadName;
-  }
+    public String getRoadUse() {
+        return roadUse;
+    }
 
+    public void setRoadUse(String roadUse) {
+        this.roadUse = roadUse;
+    }
 
-  public String getRoadUse() {
-    return roadUse;
-  }
+    public String getMultiLink() {
+        return multiLink;
+    }
 
-  public void setRoadUse(String roadUse) {
-    this.roadUse = roadUse;
-  }
+    public void setMultiLink(String multiLink) {
+        this.multiLink = multiLink;
+    }
 
+    public String getConnect() {
+        return connect;
+    }
 
-  public String getMultiLink() {
-    return multiLink;
-  }
+    public void setConnect(String connect) {
+        this.connect = connect;
+    }
 
-  public void setMultiLink(String multiLink) {
-    this.multiLink = multiLink;
-  }
+    public Long getMaxSpd() {
+        return maxSpd;
+    }
 
+    public void setMaxSpd(Long maxSpd) {
+        this.maxSpd = maxSpd;
+    }
 
-  public String getConnect() {
-    return connect;
-  }
+    public String getRestVeh() {
+        return restVeh;
+    }
 
-  public void setConnect(String connect) {
-    this.connect = connect;
-  }
+    public void setRestVeh(String restVeh) {
+        this.restVeh = restVeh;
+    }
 
+    public Long getRestW() {
+        return restW;
+    }
 
-  public long getMaxSpd() {
-    return maxSpd;
-  }
+    public void setRestW(Long restW) {
+        this.restW = restW;
+    }
 
-  public void setMaxSpd(long maxSpd) {
-    this.maxSpd = maxSpd;
-  }
+    public Long getRestH() {
+        return restH;
+    }
 
+    public void setRestH(Long restH) {
+        this.restH = restH;
+    }
 
-  public String getRestVeh() {
-    return restVeh;
-  }
+    public String getLength() {
+        return length;
+    }
 
-  public void setRestVeh(String restVeh) {
-    this.restVeh = restVeh;
-  }
+    public void setLength(String length) {
+        this.length = length;
+    }
 
+    public String getRemark() {
+        return remark;
+    }
 
-  public long getRestW() {
-    return restW;
-  }
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }
 
-  public void setRestW(long restW) {
-    this.restW = restW;
-  }
+    public String getAplcnYmd() {
+        return aplcnYmd;
+    }
 
+    public void setAplcnYmd(String aplcnYmd) {
+        this.aplcnYmd = aplcnYmd;
+    }
 
-  public long getRestH() {
-    return restH;
-  }
+    public String getGeometry() {
+        return geometry;
+    }
 
-  public void setRestH(long restH) {
-    this.restH = restH;
-  }
+    public void setGeometry(String geometry) {
+        this.geometry = geometry;
+    }
 
+    public String getEtlDt() {
+        return etlDt;
+    }
 
-  public String getLength() {
-    return length;
-  }
+    public void setEtlDt(String etlDt) {
+        this.etlDt = etlDt;
+    }
 
-  public void setLength(String length) {
-    this.length = length;
-  }
+    public double getX() {
+        return x;
+    }
 
+    public void setX(double x) {
+        this.x = x;
+    }
 
-  public String getRemark() {
-    return remark;
-  }
+    public double getY() {
+        return y;
+    }
 
-  public void setRemark(String remark) {
-    this.remark = remark;
-  }
+    public void setY(double y) {
+        this.y = y;
+    }
 
+    public String getSt() {
+        return st;
+    }
 
-  public String getAplcnYmd() {
-    return aplcnYmd;
-  }
+    public void setSt(String st) {
+        this.st = st;
+    }
 
-  public void setAplcnYmd(String aplcnYmd) {
-    this.aplcnYmd = aplcnYmd;
-  }
+    public String getEd() {
+        return ed;
+    }
 
+    public void setEd(String ed) {
+        this.ed = ed;
+    }
 
-  public String getGeometry() {
-    return geometry;
-  }
+    public Double getAngle() {
+        return angle;
+    }
 
-  public void setGeometry(String geometry) {
-    this.geometry = geometry;
-  }
-
-
-  public String getEtlDt() {
-    return etlDt;
-  }
-
-  public void setEtlDt(String etlDt) {
-    this.etlDt = etlDt;
-  }
-
+    public void setAngle(Double angle) {
+        this.angle = angle;
+    }
 }

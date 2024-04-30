@@ -23,6 +23,14 @@ public interface MOpAuthorityMapper {
 	 * @Method 설명 : 목록 카운트 조회
 	 */
 	public int countAllBySearchOption(MOpAuthority mOpAutority);
+
+	/**
+	 * @Method Name : countByAuthCd
+	 * @작성일 : 2023. 12. 20.
+	 * @작성자 : KY.LEE
+	 * @Method 설명 : authCd로 카운트 조회
+	 */
+	public int countByAuthCd(String authCd);
 	
 	/**
 	 * @Method Name : findAuthIdNextVal

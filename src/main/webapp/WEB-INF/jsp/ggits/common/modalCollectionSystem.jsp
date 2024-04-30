@@ -6,17 +6,17 @@
 	<div class="flex-center gap16 mt16">
 		<div class="flex-column modal_input_box">
 			<label class="modal_input_label">수집 시스템명</label>
-			<div class="modal_input">${lTcDataLog.jobNm}</div>
+			<div class="modal_input"><c:out value='${lTcDataLog.jobNm}'/></div>
 		</div>
 		<div class="flex-column modal_input_box">
 			<label class="modal_input_label">수집 시스템 ID</label>
-			<div class="modal_input">${lTcDataLog.jobId}</div> 
+			<div class="modal_input"><c:out value='${lTcDataLog.jobId}'/></div> 
 		</div>
 	</div>
 	<div class="flex-center gap16 mt16">
 		<div class="flex-column modal_input_box">
 			<label class="modal_input_label">실패사유</label>
-			<div class="modal_input">${lTcDataLog.failRsn}</div> 
+			<div class="modal_input"><c:out value='${lTcDataLog.failRsn}'/></div> 
 		</div>
 	</div>
 </div>

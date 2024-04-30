@@ -2,16 +2,34 @@
 <!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.ExtGgitsLinkStd1mMapper'>
-	<select id="countTrafficInfoStats" parameterType="commonEntity" resultType="int">
-		SELECT
-			COUNT(*)
-		FROM BIGDATA.EXT_GGITS_LINK_STD_1M
-		GROUP BY TO_CHAR(PROC_DATE, 'YYYY-MM-DD');
-	</select>
-	<select id="findAllTrafficInfoStats" parameterType="commonEntity" resultType="extGgitsLinkStd1m">
-		SELECT
-			LINK_ID
-		FROM BIGDATA.EXT_GGITS_LINK_STD_1M
-		GROUP BY TO_CHAR(PROC_DATE, 'YYYY-MM-DD'), LINK_ID;
+	<select id="findAllByRecent" resultType="extGgitsLinkStd1m">
+
+		select
+			egtsc.proc_date as coll_date,
+			/*egtsc.route_id,*/
+			egtsc.link_id,
+			/*egtsc.link_nm,
+			egtsc.route_kornm,
+			egtsc.start_node_id,
+			egtsc.start_node_nm,
+			egtsc.end_node_id,
+			egtsc.end_node_nm,*/
+			egtsc.spd,
+			egtsc.vol,
+			egtsc.trvl_time,
+			egtsc.cong_grade,
+			egtsc.tfinfo_cre_tp_cd
+			/*egtsc.route_way,
+			egtsc.route_seq,
+			egtsc.route_no,
+			egtsc.road_rank,
+			egtsc.link_length,
+			egtsc.trafficsmth_basic_trvlspd,
+			egtsc.congest_basic_trvlspd,
+			egtsc.link_length_1,
+			egtsc.org_code,
+			egtsc.etl_dt*/
+		from
+			bigdata.ext_ggits_traffic_std_cur egtsc
 	</select>
 </mapper>

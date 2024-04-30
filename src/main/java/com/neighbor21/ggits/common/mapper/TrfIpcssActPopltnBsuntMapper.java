@@ -3,28 +3,11 @@ import java.util.List;
 
 import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
 
+import com.neighbor21.ggits.common.dto.TrfvlmStatisticsDTO;
 import com.neighbor21.ggits.common.entity.TrfIpcssActPopltnBsunt;
 
 @Mapper
 public interface TrfIpcssActPopltnBsuntMapper {
-	
-	/**
-	 * @Method Name : countTrafficImpactList
-	 * @작성일 : 2023. 10. 06.
-	 * @작성자 : KC.KIM
-	 * @Method 설명 : 교통영향평가 리스트 개수 조회
-	 * @param trfIpcssActPopltnBsunt
-	 */
-	int countTrafficImpactList(TrfIpcssActPopltnBsunt trfIpcssActPopltnBsunt);
-
-	/**
-	 * @Method Name : findAllTrafficImpactList
-	 * @작성일 : 2023. 10. 06.
-	 * @작성자 : KC.KIM
-	 * @Method 설명 : 교통영향평가 리스트 조회
-	 * @param trfIpcssActPopltnBsunt
-	 */
-	List<TrfIpcssActPopltnBsunt> findAllTrafficImpactList(TrfIpcssActPopltnBsunt trfIpcssActPopltnBsunt);
 	
 	/**
 	 * @Method Name : deleteTrafficImpactReportByIpcssMngNo
@@ -34,5 +17,50 @@ public interface TrfIpcssActPopltnBsuntMapper {
 	 * @param ipcssMngNo
 	 */
 	void deleteTrafficImpactReportByIpcssMngNo(String ipcssMngNo);
+
+	/**
+	 * @Method Name : saveActPopltnBsunt
+	 * @작성일 : 2023. 11. 15.
+	 * @작성자 : KC.KIM
+	 * @Method 설명 : 교통영향평가 유사시설 활동인구 원단위 저장
+	 * @param actPopltnBsunt
+	 */
+	void saveActPopltnBsunt(TrfIpcssActPopltnBsunt actPopltnBsunt);
+
+	/**
+	 * @Method Name : findAllActPopltnBsuntList
+	 * @작성일 : 2023. 11. 21.
+	 * @작성자 : KC.KIM
+	 * @Method 설명 : 교통영향평가 유사시설 활동인구 원단위 리스트 조회
+	 * @param commonEntity
+	 */
+	List<TrfIpcssActPopltnBsunt> findAllActPopltnBsuntList(TrfvlmStatisticsDTO trfvlmStatisticsDTO);
+
+	/**
+	 * @Method Name : findOneActPopltnBsuntInfo
+	 * @작성일 : 2023. 11. 21.
+	 * @작성자 : KC.KIM
+	 * @Method 설명 : 교통영향평가 유사시설 활동인구 원단위 상세 리스트 조회
+	 * @param actPopltnBsunt
+	 */
+	List<TrfIpcssActPopltnBsunt> findOneActPopltnBsuntInfo(TrfIpcssActPopltnBsunt actPopltnBsunt);
+
+	/**
+	 * @Method Name : findAllusgNoList
+	 * @작성일 : 2023. 11. 24.
+	 * @작성자 : KC.KIM
+	 * @Method 설명 : 교통영향평가 유사시설 활동인구 원단위 용도 리스트 조회
+	 * @param actPopltnBsunt
+	 */
+	List<TrfIpcssActPopltnBsunt> findAllusgNoList(TrfvlmStatisticsDTO trfvlmStatisticsDTO);
+
+	/**
+	 * @Method Name : findAllusgNoList
+	 * @작성일 : 2023. 11. 24.
+	 * @작성자 : KC.KIM
+	 * @Method 설명 : 교통영향평가 유사시설 활동인구 원단위 통계 데이터 조회
+	 * @param actPopltnBsunt
+	 */
+	TrfIpcssActPopltnBsunt findAllChartData(TrfvlmStatisticsDTO trfvlmStatisticsDTO);
 
 }

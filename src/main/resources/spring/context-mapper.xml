@@ -12,15 +12,31 @@
 	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionFactoryBean">
         <property name="dataSource" ref="dataSource" />
         <property name="configLocation" value="classpath:/mybatis/mybatis-config.xml" />
-        <property name="mapperLocations">
-        	<array>
-        		<value>classpath:query/*.xml</value>
-        	</array>
-        </property>
+        <property name="mapperLocations" value="classpath:/query/*.xml" />
     </bean>
     <bean class="org.egovframe.rte.psl.dataaccess.mapper.MapperConfigurer">
 		<property name="basePackage" value="com.neighbor21.ggits.common.mapper" />
 		<property name="sqlSessionFactoryBeanName" value="sqlSession" />
+	</bean>
+
+	<bean id="hciSqlSession" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource-hci" />
+		<property name="configLocation" value="classpath:/mybatis/mybatis-config.xml" />
+		<property name="mapperLocations" value="classpath:/hci/query/*.xml" />
+	</bean>
+	<bean class="org.egovframe.rte.psl.dataaccess.mapper.MapperConfigurer">
+		<property name="basePackage" value="com.neighbor21.ggits.common.hcisql.mapper" />
+		<property name="sqlSessionFactoryBeanName" value="hciSqlSession" />
+	</bean>
+	
+	<bean id="hiveSqlSession" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="hiveDataSource" />
+        <property name="configLocation" value="classpath:/mybatis/mybatis-config.xml" />
+        <property name="mapperLocations" value="classpath:/hivesql/query/*.xml" />
+    </bean>
+    <bean class="org.egovframe.rte.psl.dataaccess.mapper.MapperConfigurer">
+		<property name="basePackage" value="com.neighbor21.ggits.common.hivesql.mapper" />
+		<property name="sqlSessionFactoryBeanName" value="hiveSqlSession" />
 	</bean>
 	
 </beans>

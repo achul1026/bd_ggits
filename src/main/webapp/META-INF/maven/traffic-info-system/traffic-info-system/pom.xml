@@ -291,7 +291,14 @@
         	<artifactId>poi-ooxml</artifactId>
         	<version>3.11</version>
     	</dependency>
-    </dependencies>
+    	<dependency>
+    		<groupId>mcash-cipher</groupId>
+    		<artifactId>mcash-cipher</artifactId>
+			<version>1.0.0</version>
+			<scope>system</scope>
+			<systemPath>${basedir}/lib/mcash-cipher-1.0.0.jar</systemPath>
+    	</dependency>
+	</dependencies>
 
 	<build>
         <defaultGoal>install</defaultGoal>

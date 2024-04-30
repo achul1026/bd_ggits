@@ -4,13 +4,27 @@
 <mapper namespace='com.neighbor21.ggits.common.mapper.GimsMngInciDetailMapper'>
 
 	<select id="findAllWarningList" parameterType="map" resultType="gimsMngInciDetail">
-		SELECT 	
+		SELECT
+		distinct
 				gmid.MNG_ID,
 				gmid.DETAIL_SEQ,
 				gmid.UPDATE_CATE,
-				gmid.INCI_CATE,
-				gmid.BEGIN_DATE,
-				gmid.END_DATE,
+				CASE WHEN INCI_CATE ='1' THEN '추가정보필요'
+					WHEN INCI_CATE ='2' THEN '차량사고'
+					WHEN INCI_CATE ='3' THEN '기상관련사고'
+					WHEN INCI_CATE ='4' THEN '차량고장'
+					WHEN INCI_CATE ='5' THEN '차량화재'
+					WHEN INCI_CATE ='6' THEN '장애물'
+					WHEN INCI_CATE ='7' THEN '위험물질방출'
+					WHEN INCI_CATE ='8' THEN '지진'
+					WHEN INCI_CATE ='9' THEN '산사태'
+					WHEN INCI_CATE ='10' THEN '홍수'
+					WHEN INCI_CATE ='11' THEN '태풍'
+					WHEN INCI_CATE ='12' THEN '예고되지않은 시위집회'
+					WHEN INCI_CATE ='13' THEN '차량의 급격한 증가'
+					END AS INCI_CATE,
+				TO_CHAR(TO_TIMESTAMP(SUBSTRING(gmid.BEGIN_DATE,1, 12), 'YYYYMMDDHH24MISS'), 'YYYY년 MM월 DD일 HH24시 MI분') as BEGIN_DATE,
+				TO_CHAR(TO_TIMESTAMP(SUBSTRING(gmid.END_DATE,1, 12), 'YYYYMMDDHH24MISS'), 'YYYY년 MM월 DD일 HH24시 MI분') as END_DATE,
 				gmid.OCCURRED_LANE,
 				gmid.CLOSED_LANE,
 				gmid.SEVERITY_LVL,
@@ -24,47 +38,301 @@
 				gmid.SUBWAY_CALL_NUM,
 				TO_CHAR(TO_TIMESTAMP(gmid.BEGIN_DATE,'YYYYMMDDHH24miss'),'HH24'||'시 '||'mi'||'분') AS TIME_DATA,
 				gmim.INFO_SRC_ORG
-		FROM	GIMS_MNG_INCI_DETAIL gmid
-		LEFT JOIN GIMS_MNG_INCI_MASTER gmim
-			ON gmid.MNG_ID = gmim.MNG_ID
+		FROM	BIGDATA.EXT_GIMS_MNG_INCI_DETAIL gmid
+		LEFT JOIN BIGDATA.EXT_GIMS_MNG_INCI_MASTER gmim
+			ON gmid.INCI_CATE = gmim.info_cate
+		WHERE 1=1
 		<if test="(startToday != null and startToday != '') and (endToday != null and endToday != '')">
-		WHERE	<![CDATA[	
-    			TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss')  >= TO_TIMESTAMP(#{startToday},'YYYY-MM-DD HH24:mi:ss') 
-		AND 	TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss') <= TO_TIMESTAMP(#{endToday},'YYYY-MM-DD HH24:mi:ss')
+			<![CDATA[	
+    	AND	TO_TIMESTAMP(gmid.BEGIN_DATE,'YYYYMMDDHH24miss')  >= TO_TIMESTAMP(#{startToday}|| ' 00:00:00','YYYY-MM-DD HH24:mi:ss') 
+		AND 	TO_TIMESTAMP(gmid.BEGIN_DATE,'YYYYMMDDHH24miss') <= TO_TIMESTAMP(#{endToday}|| ' 23:59:59','YYYY-MM-DD HH24:mi:ss')
 				]]>
 		</if>
 		<if test="(startToday != '' and startToday != null) and (endToday == '' or endToday == null)">
 			<![CDATA[
-			AND TO_TIMESTAMP(#{startToday}, 'YYYY-MM-DD HH24:MI:SS')  <= TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss')
+			AND TO_TIMESTAMP(#{startToday}, 'YYYY-MM-DD HH24:MI:SS')  <= TO_TIMESTAMP(gmid.BEGIN_DATE,'YYYYMMDDHH24miss')
 			]]>
+		</if>
+		<if test="searchContent != null and searchContent != ''">
+			AND (gmid.DESCRIPTION LIKE '%' || #{searchContent} || '%' or INCI_CATE LIKE '%' || #{searchContent} || '%')
 		</if>
 		<if test="(startToday == '' or startToday == null) and (endToday != '' and endToday != null)">
 			<![CDATA[
-			AND TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss') <= TO_TIMESTAMP(#{endToday}, 'YYYY-MM-DD HH24:MI:SS')
+			AND TO_TIMESTAMP(gmid.BEGIN_DATE,'YYYYMMDDHH24miss') <= TO_TIMESTAMP(#{endToday}, 'YYYY-MM-DD HH24:MI:SS')
 			]]>
 		</if>
+		<if test="(selInciCate != null and selInciCate != '') and selInciCate != 'all'">
+			AND gmid.INCI_CATE = ${selInciCate}::TEXT
+		</if>
 		<if test="dayOfTheWeek != null">
-			AND EXTRACT (ISODOW from BEGIN_DATE)::varchar(1) IN 
+			AND EXTRACT (ISODOW from TO_TIMESTAMP(gmid.BEGIN_DATE, 'YYYYMMDDHH24MISS'))::varchar(1) IN 
 				<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
                     #{item}
                 </foreach>
 		</if>
-    	ORDER BY TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss') DESC 
+    	ORDER BY BEGIN_DATE desc
     	<if test="page != null and page != ''">
     		LIMIT 10 OFFSET (#{page} - 1) * 10
     	</if>
-    			
-		
+	</select>
+	
+	<select id="countByMonitoringWaringInfo" parameterType="gimsMngInciDetail" resultType="map">
+	SELECT 	
+  		COALESCE(COUNT(A.*),0) as "runningCnt",
+   		COALESCE(B.CNT,0) as "completeCnt" ,
+   		COALESCE(COUNT(A.*),0)+COALESCE(B.CNT,0) as "totalCnt"
+ 	FROM 
+	  	(
+		SELECT
+			DISTINCT
+			GMID.MNG_ID
+			 ,GMID.DETAIL_SEQ
+			 ,GMID.UPDATE_CATE
+			 ,GMID.INCI_CATE
+			 ,GMID.BEGIN_DATE
+			 ,TO_CHAR(TO_TIMESTAMP(GMID.BEGIN_DATE,'YYYYMMDDHH24MISS'),'YYYY년 MM월 DD일 HH24시 MI분') AS TIME_DATA
+			 ,GMID.END_DATE
+			 ,GMID.OCCURRED_LANE
+			 ,GMID.CLOSED_LANE
+			 ,GMID.SEVERITY_LVL
+			 ,GMID.GPS_X
+			 ,GMID.GPS_Y
+			 ,GMID.DESCRIPTION
+			 ,GMID.OPER_ID
+			 ,GMID.LOG_DATE
+			 ,GMID.IS_AUTO_TERM
+			 ,GMID.ROADWAY_NM
+			 ,GMID.SUBWAY_CALL_NUM
+		FROM
+			BIGDATA.EXT_GIMS_MNG_INCI_DETAIL GMID,
+			(SELECT MAX(GMID.DETAIL_SEQ) AS RECENT_DETAIL_SEQ
+				  , GMID.MNG_ID
+			 FROM BIGDATA.EXT_GIMS_MNG_INCI_DETAIL GMID
+			 GROUP BY MNG_ID) RCT,
+			(SELECT MNG_ID,CUR_STATUS FROM BIGDATA.EXT_GIMS_MNG_INCI_MASTER WHERE CUR_STATUS != '3' ) GMIM
+		WHERE
+			GMID.MNG_ID = GMIM.MNG_ID
+		  AND GMID.MNG_ID  = RCT.MNG_ID
+		  AND GMID.DETAIL_SEQ  = RCT.RECENT_DETAIL_SEQ
+		  AND GMID.UPDATE_CATE  != 'TERM'
+		) A,
+		(
+		SELECT
+			COUNT(*) AS CNT
+		FROM
+			BIGDATA.EXT_GIMS_MNG_INCI_DETAIL GMID,
+			(SELECT MAX(GMID.DETAIL_SEQ) AS RECENT_DETAIL_SEQ
+				  , GMID.MNG_ID
+			 FROM BIGDATA.EXT_GIMS_MNG_INCI_DETAIL GMID
+			 GROUP BY MNG_ID) RCT
+		WHERE
+			GMID.MNG_ID  = RCT.MNG_ID
+		AND GMID.DETAIL_SEQ  = RCT.RECENT_DETAIL_SEQ
+		AND GMID.UPDATE_CATE = 'TERM'
+		<![CDATA[
+			AND TO_TIMESTAMP(GMID.END_DATE, 'YYYYMMDDHH24miss') >= TO_TIMESTAMP(#{strDt},'YYYY-MM-DD HH24:MI:SS')
+			AND TO_TIMESTAMP(GMID.END_DATE, 'YYYYMMDDHH24miss') <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+		]]>
+	  ) B
+	  GROUP BY B.CNT
 	</select>
 
+	<select id="findAllUTICWarningListForMapMarker" resultType="gimsMngInciDetail">
+		select
+			max(etl_dt),
+			st_asgeojson(ST_GeomFromText(locationdata)) as geojson,
+			moc.cd_nm as inci_cate_nm,
+			incidentid as mngId,
+		   1 as  detail_seq,
+		    case when incidentetypecd = '1' then '2'		/* 사고 */
+		    		when incidentetypecd = '2' then '6' 	/* 공사 */
+		    		when incidentetypecd = '3' then '12'		/* 행사 */
+		    		when incidentetypecd = '4' then '3'		/* 기상 */
+		    		when incidentetypecd = '5' then '13'		/* 통제 */
+		    		when incidentetypecd = '6' then '8'		/* 재난 */
+		    		ELSE '1'	/* 기타 */ END AS inci_cate,
+			TO_CHAR(startdate,'YYYY년 MM월 DD일 hh24시 mi분') AS TIME_DATA,
+			incidentesubtypecd,
+		   roadname AS roadway_nm,
+		   lane as 	occurred_lane,
+		   lane as closed_lane,
+			addressjibun ,
+			locationdatax AS gps_x,
+			locationdatay AS gps_y,
+			incidenttitle AS description,
+			startdate AS begin_date,
+			enddate AS end_date,
+			'UTIC' AS INFO_SRC_ORG
+		from bigdata.ext_utic_trf_unxp_info eutui
+		 inner join m_op_code moc on moc.grp_cd_id ='incidentesubtypecd' and moc.cd_id = eutui.incidentetypecd ||'-'||eutui.incidentesubtypecd
+		where
+			addressjibuncd  like '41%'
+		  and startdate is not null
+		  and (enddate is null or enddate >= now())
+		  and locationdata is not null
+		  and moc.cd_nm != '도로파손'
+		group by
+			moc.cd_nm,
+			incidentid ,
+			locationdata,
+			incidentetypecd ,
+			incidentesubtypecd,
+			roadname,
+			lane,
+			addressjibun ,
+			locationdatax ,
+			locationdatay ,
+			incidenttitle ,
+			startdate ,
+			enddate
+			order by startdate desc
+	</select>
 	<!-- 돌발상황 마커 그리기를 위한 데이터 -->
-	<select id="findAllWarningListForMapMarker"  resultType="gimsMngInciDetail">
+	<select id="findAllWarningListForMapMarker" resultType="gimsMngInciDetail">
 		select
 			GMID.mng_id
 			 ,GMID.detail_seq
 			 ,GMID.update_cate
 			 ,GMID.inci_cate
 			 ,GMID.begin_date
+			 ,TO_CHAR(TO_TIMESTAMP(GMID.begin_date,'YYYYMMDDHH24MISS'),'YYYY년 MM월 DD일 hh24시 mi분') AS TIME_DATA
+			 ,GMID.end_date
+			 ,GMID.occurred_lane
+			 ,GMID.closed_lane
+			 ,GMID.severity_lvl
+			 ,GMID.gps_x
+			 ,GMID.gps_y
+			 ,GMID.description
+			 ,GMID.oper_id
+			 ,GMID.log_date
+			 ,GMID.is_auto_term
+			 ,GMID.roadway_nm
+			 ,GMID.subway_call_num
+			 ,GMIM.INFO_SRC_ORG
+		from
+			BIGDATA.EXT_gims_mng_inci_detail GMID,
+			(SELECT MAX(GMID.DETAIL_SEQ) as RECENT_DETAIL_SEQ
+				  , MAX(GMID.etl_dt) as RECENT_ETL_DT
+				  , GMID.mng_id
+			 FROM BIGDATA.EXT_gims_mng_inci_detail GMID
+			 GROUP BY MNG_ID) RCT,
+			(SELECT MNG_ID,CUR_STATUS,INFO_SRC_ORG FROM BIGDATA.EXT_gims_mng_inci_master WHERE CUR_STATUS != '3' ) GMIM
+		where
+			GMID.MNG_ID = GMIM.MNG_ID
+		  AND GMID.mng_id  = RCT.MNG_ID
+		  and GMID.detail_seq  = RCT.RECENT_detail_seq
+		  and gmid.etl_dt = RCT.RECENT_ETL_DT
+		  and GMID.update_cate  != 'TERM'
+	</select>
+	
+	<select id="findAllWarningListForList"  resultType="gimsMngInciDetail">
+		SELECT
+		GMID.mng_id
+		,GMID.detail_seq
+		,GMID.update_cate
+		,GMID.inci_cate
+		,GMID.begin_date
+		,TO_CHAR(TO_TIMESTAMP(GMID.begin_date,'YYYYMMDDHH24MISS'),'YYYY년 MM월 DD일 hh24시 mi분') AS TIME_DATA
+		,GMID.end_date
+		,GMID.occurred_lane
+		,GMID.gps_x
+		,GMID.gps_y
+		,GMID.description
+		,GMID.roadway_nm
+		,GMIM.INFO_SRC_ORG
+		FROM
+		BIGDATA.EXT_GIMS_MNG_INCI_DETAIL GMID
+		INNER JOIN BIGDATA.EXT_GIMS_MNG_INCI_MASTER GMIM ON GMID.MNG_ID = GMIM.MNG_ID
+		WHERE UPDATE_CATE = 'INIT'
+		  <![CDATA[
+		  AND BEGIN_DATE  >= TO_CHAR(NOW(),'YYYYMMDD0000') AND BEGIN_DATE <= TO_CHAR(NOW(),'YYYYMMDD2359')
+		]]>
+		GROUP BY GMID.mng_id,
+		GMID.detail_seq,
+		GMID.begin_date,
+		GMID.inci_cate,
+		GMID.roadway_nm,
+		GMID.end_date,
+		GMID.occurred_lane,
+		GMID.update_cate,
+		GMID.gps_x,
+		GMID.gps_y,
+		GMID.description,
+		GMIM.INFO_SRC_ORG
+		UNION all
+		SELECT
+		incidentid as mng_id,
+		1 as  detail_seq,
+		incidenttypecd||'-'||incidentsubtypecd AS update_cate,
+		CASE WHEN incidenttypecd = '1' THEN '2'      /* 사고 */
+		WHEN incidenttypecd = '2' THEN '6'    /* 공사 */
+		WHEN incidenttypecd = '3' THEN '12'      /* 행사 */
+		WHEN incidenttypecd = '4' THEN '3'      /* 기상 */
+		WHEN incidenttypecd = '5' THEN '13'      /* 통제 */
+		WHEN incidenttypecd = '6' THEN '8'      /* 재난 */
+		ELSE '1'   /* 기타 */ END AS inci_cate,
+		TO_CHAR(startdate,'YYYYMMDDHH24MISS') AS begin_date,
+		TO_CHAR(startdate,'YYYY년 MM월 DD일 hh24시 mi분') AS TIME_DATA,
+		TO_CHAR(enddate,'YYYYMMDDHH24MISS') AS end_date,
+		lane as    occurred_lane,
+		locationdatax  AS gps_x,
+		locationdatay AS gps_y,
+		incidenttitle AS description,
+		roadname AS roadway_nm,
+		'UTIC' AS INFO_SRC_ORG
+		FROM ggits.utic_trf_unxp_info_cur eutui
+		INNER JOIN m_op_code moc on moc.grp_cd_id ='incidentesubtypecd' AND moc.cd_id = eutui.incidenttypecd  ||'-'||eutui.incidentsubtypecd
+		WHERE addressjibuncd  like '41%'
+		AND startdate >= CURRENT_DATE
+		AND locationdata is not null
+		AND moc.cd_nm != '도로파손'
+		GROUP BY
+		moc.cd_nm,
+		incidentid ,
+		locationdata,
+		incidenttypecd  ,
+		incidentsubtypecd,
+		roadname,
+		lane,
+		addressjibun ,
+		locationdatax ,
+		locationdatay ,
+		incidenttitle ,
+		startdate ,
+		enddate
+	</select>
+	
+	<select id="findWarningTabInfo" resultType="map" parameterType="gimsMngInciDetail">
+	  SELECT
+	  		DISTINCT GMID.MNG_ID AS "mngId",
+	  		TO_CHAR(TO_TIMESTAMP(GMID.BEGIN_DATE,'YYYYMMDDHH24miss'),'MM월DD일 HH24시mi분') AS "beginDate",
+	  		TO_CHAR(TO_TIMESTAMP(GMID.END_DATE,'YYYYMMDDHH24miss'),'MM월DD일 HH24시mi분') AS "endDate",
+			GMID.INCI_CATE AS "inciCate", 
+	  		GMID.DESCRIPTION AS "discription",
+	  		GMID.ROADWAY_NM AS "roadwayNm"
+		FROM
+			BIGDATA.EXT_GIMS_MNG_INCI_DETAIL GMID,
+			(SELECT MAX(GMID.DETAIL_SEQ) AS RECENT_DETAIL_SEQ
+				  , MAX(GMID.etl_dt) as RECENT_ETL_DT
+				  , GMID.MNG_ID
+			 FROM BIGDATA.EXT_GIMS_MNG_INCI_DETAIL GMID
+			 GROUP BY MNG_ID) RCT,
+			(SELECT MNG_ID,CUR_STATUS FROM BIGDATA.EXT_GIMS_MNG_INCI_MASTER WHERE CUR_STATUS != '3' ) GMIM
+		WHERE
+			GMID.MNG_ID = GMIM.MNG_ID
+		  AND GMID.MNG_ID  = RCT.MNG_ID
+		  AND GMID.DETAIL_SEQ  = RCT.RECENT_DETAIL_SEQ
+		  and gmid.etl_dt = RCT.RECENT_ETL_DT
+		  AND GMID.UPDATE_CATE  != 'TERM'
+	</select>
+
+	<select id="findAllDailyWarningAlarmList" resultType="gimsMngInciDetail">
+		select
+			GMID.mng_id
+			 ,GMID.detail_seq
+			 ,GMID.update_cate
+			 ,GMID.inci_cate
+			,TO_CHAR(TO_TIMESTAMP(GMID.BEGIN_DATE,'YYYYMMDDHH24miss'),'yyyy-MM-dd HH:mm:ss') AS "beginDate"
 			 ,GMID.end_date
 			 ,GMID.occurred_lane
 			 ,GMID.closed_lane
@@ -78,96 +346,34 @@
 			 ,GMID.roadway_nm
 			 ,GMID.subway_call_num
 		from
-			gims_mng_inci_detail GMID,
+			BIGDATA.EXT_gims_mng_inci_detail GMID,
 			(SELECT MAX(GMID.DETAIL_SEQ) as RECENT_DETAIL_SEQ
+				  , MAX(GMID.etl_dt) as RECENT_ETL_DT
 				  , GMID.mng_id
-			 FROM gims_mng_inci_detail GMID
-			 GROUP BY MNG_ID) RCT
+			 FROM BIGDATA.EXT_gims_mng_inci_detail GMID
+			 GROUP BY MNG_ID) RCT,
+			(SELECT MNG_ID,CUR_STATUS FROM BIGDATA.EXT_gims_mng_inci_master WHERE CUR_STATUS != '3' ) GMIM
 		where
-			GMID.mng_id  = RCT.MNG_ID
+			GMID.MNG_ID = GMIM.MNG_ID
+		  AND GMID.mng_id  = RCT.MNG_ID
 		  and GMID.detail_seq  = RCT.RECENT_detail_seq
+		  and gmid.etl_dt = RCT.RECENT_ETL_DT
 		  and GMID.update_cate  != 'TERM'
-	</select>
-	
-	<select id="findTop3GimsMngInciDetailByBeginDateAndEndDate" resultType="map" parameterType="gimsMngInciDetail">
-	  SELECT
-	  		TO_CHAR(TO_TIMESTAMP(GMID.BEGIN_DATE,'YYYYMMDDHH24miss'),'HH24:mi') AS "beginDate",
-	  		TO_CHAR(TO_TIMESTAMP(GMID.END_DATE,'YYYYMMDDHH24miss'),'HH24:mi') AS "endDate",
-	  		GMID.INCI_CATE AS "inciCate", 
-	  		GMID.DESCRIPTION AS "discription",
-	  		GMID.ROADWAY_NM AS "roadwayNm"
-	  FROM	GIMS_MNG_INCI_DETAIL GMID
-	  WHERE 1=1
-	  	<![CDATA[
-			AND TO_TIMESTAMP(#{beginDate}, 'YYYY-MM-DD HH24:MI:SS')  <= TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss')
-			AND TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss') <= TO_TIMESTAMP(#{endDate}, 'YYYY-MM-DD HH24:MI:SS')
-		]]>
-	  ORDER BY GMID.BEGIN_DATE DESC
-	  LIMIT 3 
+		and GMID.LOG_DATE::date >= now()::date
 	</select>
 
-	<select id="findAllDailyWarningAlarmList" resultType="gimsMngInciDetail">
-		SELECT
-			GMID.MNG_ID ,
-			GMID.DETAIL_SEQ,
-			GMID.UPDATE_CATE,
-			GMID.INCI_CATE ,
-			GMID.CLOSED_LANE ,
-			GMID.SEVERITY_LVL ,
-			GMID.SUBWAY_CALL_NUM ,
-			GMID.OPER_ID ,
-			GMIL.LINK_ID ,
-			GMID.GPS_X ,
-			GMID.GPS_Y ,
-			GMID.DESCRIPTION,
-			TO_CHAR(TO_TIMESTAMP(GMID.BEGIN_DATE,'YYYYMMDDHH24miss'),'yyyy-MM-dd HH:mm:ss') AS "beginDate",
-			GMID.OCCURRED_LANE ,
-			GMID.ROADWAY_NM
-		FROM	GIMS_MNG_INCI_DETAIL GMID
-					INNER JOIN GIMS_MNG_INCI_LINKS GMIL ON GMID.MNG_ID = GMIL.MNG_ID AND GMID.DETAIL_SEQ = GMIL.DETAIL_SEQ
-		WHERE GMID.LOG_DATE::date >= now()::date
-	</select>
 
-	<select id="findAllDailyWarningList" parameterType="map" resultType="gimsMngInciDetail">
-		SELECT
-				GMID.MNG_ID ,
-				GMID.DETAIL_SEQ,
-				GMID.UPDATE_CATE,
-				GMID.INCI_CATE ,
-				GMID.CLOSED_LANE ,
-				GMID.SEVERITY_LVL ,
-				GMID.SUBWAY_CALL_NUM ,
-				GMID.OPER_ID ,
-				GMIL.LINK_ID ,
-				GMID.GPS_X ,
-				GMID.GPS_Y ,
-				GMID.DESCRIPTION,
-				TO_CHAR(TO_TIMESTAMP(GMID.BEGIN_DATE,'YYYYMMDDHH24miss'),'yyyy-MM-dd HH:mm:ss') AS "beginDate",
-				GMID.OCCURRED_LANE ,
-				GMID.ROADWAY_NM
-		FROM	GIMS_MNG_INCI_DETAIL GMID
-		INNER JOIN GIMS_MNG_INCI_LINKS GMIL ON GMID.MNG_ID = GMIL.MNG_ID AND GMID.DETAIL_SEQ = GMIL.DETAIL_SEQ 
-		<if test="(startToday != null and startToday != '') and (endToday != null and endToday != '')">
-		WHERE	<![CDATA[	
-    			TO_TIMESTAMP(GMID.BEGIN_DATE,'YYYYMMDDHH24miss')  >= TO_TIMESTAMP(#{startToday},'YYYY-MM-DD HH24:mi:ss') 
-		AND 	TO_TIMESTAMP(GMID.BEGIN_DATE,'YYYYMMDDHH24miss') <= TO_TIMESTAMP(#{endToday},'YYYY-MM-DD HH24:mi:ss')
-				]]>
-		</if>
-		
-	</select>
-
-	
 	<select id="countGimsMngInciDetailList" parameterType="map" resultType="int">
 		SELECT
 			COUNT(*)
-		FROM GIMS_MNG_INCI_DETAIL gmid
-		LEFT JOIN GIMS_MNG_INCI_MASTER gmim
-			ON gmid.MNG_ID = gmim.MNG_ID
+		FROM BIGDATA.EXT_GIMS_MNG_INCI_DETAIL gmid
+		LEFT JOIN BIGDATA.EXT_GIMS_MNG_INCI_MASTER gmim
+			ON gmid.INCI_CATE = gmim.INFO_CATE
 		WHERE 1=1
 		<if test="(startToday != null and startToday != '') and (endToday != null and endToday != '')">
 		AND	<![CDATA[	
-				TO_TIMESTAMP(gmid.BEGIN_DATE,'YYYYMMDDHH24miss')  >= TO_TIMESTAMP(#{startToday},'YYYY-MM-DD HH24:mi:ss') 
-		AND 	TO_TIMESTAMP(gmid.BEGIN_DATE,'YYYYMMDDHH24miss') <= TO_TIMESTAMP(#{endToday},'YYYY-MM-DD HH24:mi:ss')
+				TO_TIMESTAMP(gmid.BEGIN_DATE,'YYYYMMDDHH24miss')  >= TO_TIMESTAMP(#{startToday}|| ' 00:00:00','YYYY-MM-DD HH24:mi:ss') 
+		AND 	TO_TIMESTAMP(gmid.BEGIN_DATE,'YYYYMMDDHH24miss') <= TO_TIMESTAMP(#{endToday}|| ' 23:59:59','YYYY-MM-DD HH24:mi:ss')
 				]]>
 		</if>
 		<if test="(startToday != '' and startToday != null) and (endToday == '' or endToday == null)">
@@ -180,72 +386,149 @@
 			AND gmid.BEGIN_DATE <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
 			]]>
 		</if>
+		<if test="(selInciCate != null and selInciCate != '') and selInciCate != 'all'">
+			AND gmid.INCI_CATE = ${selInciCate}::TEXT
+		</if>
+		<if test="searchContent != null and searchContent != ''">
+			AND (gmid.DESCRIPTION LIKE '%' || #{searchContent} || '%' or INCI_CATE LIKE '%' || #{searchContent} || '%')
+		</if>
 		<if test="dayOfTheWeek != null">
-			AND EXTRACT (ISODOW from gmid.BEGIN_DATE)::varchar(1) IN 
+			AND EXTRACT (ISODOW from TO_TIMESTAMP(gmid.BEGIN_DATE, 'YYYYMMDDHH24MISS'))::varchar(1) IN 
 				<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
                     #{item}
                 </foreach>
 		</if>
 	</select>
 	
-	<select id="countByBeginDateAndEndDate" parameterType="gimsMngInciDetail" resultType="int">
+	<select id="findByMonitoringChartData" resultType="map" parameterType="gimsMngInciDetail">
+	   WITH GIMS_MNG_INCI_DETAIL_ARRAY_LIST AS (
+	   		SELECT  
+	        	COUNT(A.INCI_CATE) as RATEVALUE,
+	        	A.INCI_CATE
+	     	FROM (
+	    		SELECT
+	        		CASE WHEN INCI_CATE ='1' THEN '추가정보필요'
+					WHEN INCI_CATE ='2' THEN '차량사고'
+					WHEN INCI_CATE ='3' THEN '기상관련사고'
+					WHEN INCI_CATE ='4' THEN '차량고장'
+					WHEN INCI_CATE ='5' THEN '차량화재'
+					WHEN INCI_CATE ='6' THEN '장애물'
+					WHEN INCI_CATE ='7' THEN '위험물질방출'
+					WHEN INCI_CATE ='8' THEN '지진'
+					WHEN INCI_CATE ='9' THEN '산사태'
+					WHEN INCI_CATE ='10' THEN '홍수'
+					WHEN INCI_CATE ='11' THEN '태풍'
+					WHEN INCI_CATE ='12' THEN '예고되지않은 시위집회'
+					WHEN INCI_CATE ='13' THEN '차량의 급격한 증가'
+					END AS INCI_CATE
+				FROM
+					BIGDATA.EXT_GIMS_MNG_INCI_DETAIL GMID,
+					(SELECT MAX(GMID.DETAIL_SEQ) AS RECENT_DETAIL_SEQ
+						  , GMID.MNG_ID
+					 FROM BIGDATA.EXT_GIMS_MNG_INCI_DETAIL GMID
+					 GROUP BY MNG_ID) RCT,
+					(SELECT MNG_ID,CUR_STATUS FROM BIGDATA.EXT_GIMS_MNG_INCI_MASTER WHERE CUR_STATUS != '3' ) GMIM
+				WHERE
+					GMID.MNG_ID = GMIM.MNG_ID
+				  AND GMID.MNG_ID  = RCT.MNG_ID
+				  AND GMID.DETAIL_SEQ  = RCT.RECENT_DETAIL_SEQ
+				  AND GMID.UPDATE_CATE  != 'TERM'
+			 	 UNION ALL
+ 	    		SELECT
+	        		CASE WHEN INCI_CATE ='1' THEN '추가정보필요'
+					WHEN INCI_CATE ='2' THEN '차량사고'
+					WHEN INCI_CATE ='3' THEN '기상관련사고'
+					WHEN INCI_CATE ='4' THEN '차량고장'
+					WHEN INCI_CATE ='5' THEN '차량화재'
+					WHEN INCI_CATE ='6' THEN '장애물'
+					WHEN INCI_CATE ='7' THEN '위험물질방출'
+					WHEN INCI_CATE ='8' THEN '지진'
+					WHEN INCI_CATE ='9' THEN '산사태'
+					WHEN INCI_CATE ='10' THEN '홍수'
+					WHEN INCI_CATE ='11' THEN '태풍'
+					WHEN INCI_CATE ='12' THEN '예고되지않은 시위집회'
+					WHEN INCI_CATE ='13' THEN '차량의 급격한 증가'
+					END AS INCI_CATE
+		            FROM
+						BIGDATA.EXT_GIMS_MNG_INCI_DETAIL GMID,
+			           (
+			           SELECT 
+				           	MAX(GMID.DETAIL_SEQ) as RECENT_DETAIL_SEQ,
+				           	GMID.mng_id
+						FROM BIGDATA.EXT_gims_mng_inci_detail GMID
+					    GROUP BY MNG_ID
+					    ) RCT
+				WHERE
+					GMID.mng_id  = RCT.MNG_ID
+			 	 AND GMID.detail_seq  = RCT.RECENT_detail_seq
+			 	 AND GMID.UPDATE_CATE = 'TERM'
+				<![CDATA[
+					AND TO_TIMESTAMP(GMID.END_DATE, 'YYYYMMDDHH24miss') >= TO_TIMESTAMP(#{strDt},'YYYY-MM-DD HH24:MI:SS')
+					AND TO_TIMESTAMP(GMID.END_DATE, 'YYYYMMDDHH24miss') <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+				]]>
+	         	)A
+	   		GROUP BY A.INCI_CATE
+		) 
 		SELECT
-			COUNT(*)
-		FROM GIMS_MNG_INCI_DETAIL
-		WHERE 1=1
-		<![CDATA[
-			AND TO_TIMESTAMP(#{beginDate}, 'YYYY-MM-DD HH24:MI:SS')  <= TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss')
-			AND TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss') <= TO_TIMESTAMP(#{endDate}, 'YYYY-MM-DD HH24:MI:SS')
-		]]>
-	</select>
-	
-	<select id="countByBeginDateAndEndDateAndInUpdateCate" parameterType="gimsMngInciDetail" resultType="int">
-		SELECT
-			COUNT(*)
-		FROM GIMS_MNG_INCI_DETAIL
-		WHERE 1=1
-		<![CDATA[
-			AND TO_TIMESTAMP(#{beginDate}, 'YYYY-MM-DD HH24:MI:SS')  <= TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss')
-			AND TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss') <= TO_TIMESTAMP(#{endDate}, 'YYYY-MM-DD HH24:MI:SS')
-		]]>
-		AND UPPER(UPDATE_CATE) IN (UPPER(#{updateCate}))
-	</select>
-	
-	<select id="countByBeginDateAndEndDateAndNotInUpdateCate" parameterType="gimsMngInciDetail" resultType="int">
-		SELECT
-			COUNT(*)
-		FROM GIMS_MNG_INCI_DETAIL
-		WHERE 1=1
-		<![CDATA[
-			AND TO_TIMESTAMP(#{beginDate}, 'YYYY-MM-DD HH24:MI:SS')  <= TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss')
-			AND TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss') <= TO_TIMESTAMP(#{endDate}, 'YYYY-MM-DD HH24:MI:SS')
-		]]>
-		AND UPPER(UPDATE_CATE) NOT IN (UPPER(#{updateCate}))
+			ARRAY_TO_STRING(ARRAY_AGG(RATEVALUE),',') AS "uneptSitnRateDataArray", 
+			ARRAY_TO_STRING(ARRAY_AGG(INCI_CATE),',') AS "uneptSitnRateLabelArray" 
+		FROM 
+			GIMS_MNG_INCI_DETAIL_ARRAY_LIST
 	</select>
 	
 	<select id="findOneGimsStatsRateInfo" parameterType="map" resultType="map">
    WITH GIMS_MNG_INCI_DETAIL_ARRAY_LIST AS (
    		SELECT  
-        	ROUND(100.0*COUNT(A.INCI_CATE) / (SELECT COUNT(INCI_CATE) FROM GIMS_MNG_INCI_DETAIL 
+        	ROUND(100.0*COUNT(A.INCI_CATE) / (SELECT COUNT(INCI_CATE) FROM BIGDATA.EXT_GIMS_MNG_INCI_DETAIL
         		<if test="(startToday != null and startToday != '') and (endToday != null and endToday != '')">
         		WHERE 
-            	TO_CHAR(TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss'),'YYYYMMDD HH24') between #{startToday} and #{endToday}
+            	TO_CHAR(TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss'),'YYYYMMDD HH24') between #{startToday} || ' 00' and #{endToday} || ' 23'
         		</if>
             	 )::numeric,2) as RATEVALUE,
         	A.INCI_CATE
      	FROM (
         		SELECT
-        		CASE WHEN INCI_CATE ='66' THEN '공사'
-				WHEN INCI_CATE ='77' THEN '행사'
-				WHEN INCI_CATE ='88' THEN '통제'
-				WHEN INCI_CATE ='99' THEN '사고'
-				END AS INCI_CATE
+        		CASE WHEN INCI_CATE ='1' THEN '추가정보필요'
+					WHEN INCI_CATE ='2' THEN '차량사고'
+					WHEN INCI_CATE ='3' THEN '기상관련사고'
+					WHEN INCI_CATE ='4' THEN '차량고장'
+					WHEN INCI_CATE ='5' THEN '차량화재'
+					WHEN INCI_CATE ='6' THEN '장애물'
+					WHEN INCI_CATE ='7' THEN '위험물질방출'
+					WHEN INCI_CATE ='8' THEN '지진'
+					WHEN INCI_CATE ='9' THEN '산사태'
+					WHEN INCI_CATE ='10' THEN '홍수'
+					WHEN INCI_CATE ='11' THEN '태풍'
+					WHEN INCI_CATE ='12' THEN '예고되지않은 시위집회'
+					WHEN INCI_CATE ='13' THEN '차량의 급격한 증가'
+					END AS INCI_CATE
             FROM
-               GIMS_MNG_INCI_DETAIL
+				BIGDATA.EXT_GIMS_MNG_INCI_MASTER egmim
+			INNER JOIN BIGDATA.EXT_GIMS_MNG_INCI_DETAIL egmid 
+				ON egmim.INFO_CATE = egmid.INCI_CATE 
+            WHERE 1=1
             <if test="(startToday != null and startToday != '') and (endToday != null and endToday != '')">
-            WHERE 
-               TO_CHAR(TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss'),'YYYYMMDD HH24') between #{startToday} and #{endToday}
-            </if>
+				<![CDATA[	
+		    	AND		TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss')  >= TO_TIMESTAMP(#{startToday}|| ' 00:00:00','YYYY-MM-DD HH24:mi:ss') 
+				AND 	TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss') <= TO_TIMESTAMP(#{endToday}|| ' 23:59:59','YYYY-MM-DD HH24:mi:ss')
+						]]>
+			</if>
+			<if test="(startToday != '' and startToday != null) and (endToday == '' or endToday == null)">
+				<![CDATA[
+				AND TO_TIMESTAMP(#{startToday}, 'YYYY-MM-DD HH24:MI:SS')  <= TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss')
+				]]>
+			</if>
+			<if test="(startToday == '' or startToday == null) and (endToday != '' and endToday != null)">
+				<![CDATA[
+				AND TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss') <= TO_TIMESTAMP(#{endToday}, 'YYYY-MM-DD HH24:MI:SS')
+				]]>
+			</if>
+			<if test="dayOfTheWeek != null">
+				AND EXTRACT (ISODOW from TO_TIMESTAMP(BEGIN_DATE, 'YYYYMMDDHH24MISS'))::varchar(1) IN 
+					<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+	                    #{item}
+	                </foreach>
+			</if> 
          	)A
    		GROUP BY A.INCI_CATE
 	) 
@@ -262,18 +545,46 @@
 	        	COUNT(A.INCI_CATE) as RATEVALUE,
 	        	A.INCI_CATE
 	     	FROM (
-	        		SELECT
-	        		CASE WHEN INCI_CATE ='66' THEN '공사'
-					WHEN INCI_CATE ='77' THEN '행사'
-					WHEN INCI_CATE ='88' THEN '통제'
-					WHEN INCI_CATE ='99' THEN '사고'
-					END AS INCI_CATE
+        		SELECT
+        		CASE WHEN INCI_CATE ='1' THEN '추가정보필요'
+				WHEN INCI_CATE ='2' THEN '차량사고'
+				WHEN INCI_CATE ='3' THEN '기상관련사고'
+				WHEN INCI_CATE ='4' THEN '차량고장'
+				WHEN INCI_CATE ='5' THEN '차량화재'
+				WHEN INCI_CATE ='6' THEN '장애물'
+				WHEN INCI_CATE ='7' THEN '위험물질방출'
+				WHEN INCI_CATE ='8' THEN '지진'
+				WHEN INCI_CATE ='9' THEN '산사태'
+				WHEN INCI_CATE ='10' THEN '홍수'
+				WHEN INCI_CATE ='11' THEN '태풍'
+				WHEN INCI_CATE ='12' THEN '예고되지않은 시위집회'
+				WHEN INCI_CATE ='13' THEN '차량의 급격한 증가'
+				END AS INCI_CATE
 	            FROM
-	               GIMS_MNG_INCI_DETAIL
+					BIGDATA.EXT_GIMS_MNG_INCI_DETAIL
+	            WHERE 1=1
 	            <if test="(startToday != null and startToday != '') and (endToday != null and endToday != '')">
-	            WHERE 
-	               TO_CHAR(TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss'),'YYYYMMDDHH24miss') between #{startToday} and #{endToday}
-	            </if>
+					<![CDATA[	
+			    	AND		TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss')  >= TO_TIMESTAMP(#{startToday},'YYYY-MM-DD HH24:mi:ss') 
+					AND 	TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss') <= TO_TIMESTAMP(#{endToday},'YYYY-MM-DD HH24:mi:ss')
+							]]>
+				</if>
+				<if test="(startToday != '' and startToday != null) and (endToday == '' or endToday == null)">
+					<![CDATA[
+					AND TO_TIMESTAMP(#{startToday}, 'YYYY-MM-DD HH24:MI:SS')  <= TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss')
+					]]>
+				</if>
+				<if test="(startToday == '' or startToday == null) and (endToday != '' and endToday != null)">
+					<![CDATA[
+					AND TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss') <= TO_TIMESTAMP(#{endToday}, 'YYYY-MM-DD HH24:MI:SS')
+					]]>
+				</if>
+				<if test="dayOfTheWeek != null">
+					AND EXTRACT (ISODOW from TO_TIMESTAMP(BEGIN_DATE, 'YYYYMMDDHH24MISS'))::varchar(1) IN 
+						<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+		                    #{item}
+		                </foreach>
+				</if> 
 	         	)A
 	   		GROUP BY A.INCI_CATE
 		) 
@@ -295,19 +606,40 @@
 			) TIME_DATA
 		LEFT JOIN (
 			SELECT
-			COUNT(DETAIL_SEQ) as SEQ_CNT
-		, TO_CHAR(TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss'),'HH24') as TIME_DATA
+			COUNT(EGMID.DETAIL_SEQ) as SEQ_CNT
+		, TO_CHAR(TO_TIMESTAMP(EGMID.BEGIN_DATE,'YYYYMMDDHH24miss'),'HH24') as TIME_DATA
 		FROM
-			GIMS_MNG_INCI_DETAIL
+				BIGDATA.EXT_GIMS_MNG_INCI_MASTER EGMIM
+		INNER JOIN BIGDATA.EXT_GIMS_MNG_INCI_DETAIL EGMID 
+			on egmim.info_cate = egmid.inci_cate 
 		WHERE 1=1
 		<if test="(startToday != null and startToday != '') and (endToday != null and endToday != '')">
-			AND TO_CHAR(TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss'),'YYYYMMDDHH24') between #{startToday} and #{endToday}
+			<![CDATA[	
+			AND  	TO_TIMESTAMP(EGMID.BEGIN_DATE,'YYYYMMDDHH24miss')  >= TO_TIMESTAMP(#{startToday}|| ' 00:00:00','YYYY-MM-DD HH24:mi:ss') 
+			AND TO_TIMESTAMP(EGMID.BEGIN_DATE,'YYYYMMDDHH24miss') <= TO_TIMESTAMP(#{endToday}|| ' 23:59:59','YYYY-MM-DD HH24:mi:ss')
+			]]>
 		</if>
+		<if test="(startToday != '' and startToday != null) and (endToday == '' or endToday == null)">
+			<![CDATA[
+				AND TO_TIMESTAMP(#{startToday}, 'YYYY-MM-DD HH24:MI:SS')  <= TO_TIMESTAMP(EGMID.BEGIN_DATE,'YYYYMMDDHH24miss')
+			]]>
+		</if>
+		<if test="(startToday == '' or startToday == null) and (endToday != '' and endToday != null)">
+			<![CDATA[
+				AND TO_TIMESTAMP(EGMID.BEGIN_DATE,'YYYYMMDDHH24miss') <= TO_TIMESTAMP(#{endToday}, 'YYYY-MM-DD HH24:MI:SS')
+			]]>
+		</if>
+		<if test="dayOfTheWeek != null">
+			AND EXTRACT (ISODOW from TO_TIMESTAMP(EGMID.BEGIN_DATE, 'YYYYMMDDHH24MISS'))::varchar(1) IN 
+				<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+                	#{item}
+              </foreach>
+		</if> 
 		<if test="inciCate != null and inciCate != ''">
-				AND INCI_CATE = #{inciCate}
+			AND EGMID.INCI_CATE = #{inciCate}
 		</if>
 		GROUP BY
-			TO_CHAR(TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss'),'HH24')         
+			TO_CHAR(TO_TIMESTAMP(EGMID.BEGIN_DATE,'YYYYMMDDHH24miss'),'HH24')         
   	) GRAPH_DATA on TIME_DATA.GRAPH_TIME = GRAPH_DATA.TIME_DATA
 		ORDER BY
 		TIME_DATA.GRAPH_TIME ASC
@@ -323,8 +655,148 @@
 	<select id="findOneInciCateList" resultType="String">
 		SELECT 
 			INCI_CATE 
-		FROM GIMS_MNG_INCI_DETAIL
+		FROM BIGDATA.EXT_GIMS_MNG_INCI_DETAIL
 		GROUP BY INCI_CATE 
 	</select>
-
+	
+	<select id="findOneDataCntForMonitoring" resultType="mapMonitoringLinkDataDTO">
+		SELECT
+			COUNT(*) as DATA_CNT,
+			COALESCE(TO_CHAR(MAX(TO_TIMESTAMP(BEGIN_DATE ,'YYYYMMDDHH24miss')),'hh24시mi분'),'-') as RENEW_TIME
+		FROM
+			BIGDATA.EXT_gims_mng_inci_detail
+		WHERE TO_CHAR(TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss'),'YYYY-MM-DD') = TO_CHAR(NOW(),'YYYY-MM-DD')
+	</select>
+	
+	
+	<select id="findWarningByMnginstcd" resultType="gimsMngInciDetail">
+		SELECT
+		GMIM.INFO_SRC_ORG,
+		COUNT(1) AS TOTAL_CNT
+		FROM BIGDATA.EXT_GIMS_MNG_INCI_DETAIL GMID
+		INNER JOIN BIGDATA.EXT_GIMS_MNG_INCI_MASTER GMIM ON GMID.MNG_ID = GMIM.MNG_ID
+		WHERE
+		UPDATE_CATE = 'INIT'
+		  <![CDATA[
+		  AND BEGIN_DATE  >= TO_CHAR(NOW(),'YYYYMMDD0000') AND BEGIN_DATE <= TO_CHAR(NOW(),'YYYYMMDD2359')
+		]]>
+		GROUP BY INFO_SRC_ORG
+		union all
+		SELECT
+		'UTIC' as INFO_SRC_ORG,
+		COUNT(1)
+		FROM (
+		SELECT
+		MAX(utuic.etl_dt),
+		moc.cd_nm as inci_cate_nm,
+		utuic.incidentid as mngId,
+		1 as  detail_seq,
+		utuic.incidentsubtypecd,
+		utuic.roadname AS roadway_nm,
+		utuic.lane as    occurred_lane,
+		utuic.lane as closed_lane,
+		utuic.addressjibun ,
+		utuic.locationdatax AS gps_x,
+		utuic.locationdatay AS gps_y,
+		utuic.incidenttitle AS description,
+		utuic.startdate AS begin_date,
+		utuic.enddate AS end_date,
+		'UTIC' AS INFO_SRC_ORG
+		FROM ggits.utic_trf_unxp_info_cur utuic
+		left outer JOIN m_op_code moc ON moc.grp_cd_id ='incidentesubtypecd' AND moc.cd_id = utuic.incidenttypecd ||'-'||utuic.incidentsubtypecd
+		WHERE utuic.addressjibuncd  between '41111129' and '41830410'
+		AND utuic.locationdata is not null
+		AND moc.cd_nm != '도로파손'
+		GROUP BY
+		moc.cd_nm,
+		utuic.incidentid ,
+		utuic.locationdata,
+		utuic.incidenttypecd ,
+		utuic.incidentsubtypecd,
+		utuic.roadname,
+		utuic.lane,
+		utuic.addressjibun ,
+		utuic.locationdatax ,
+		utuic.locationdatay ,
+		utuic.incidenttitle ,
+		utuic.startdate ,
+		utuic.enddate
+		) CNT
+	</select>
+	<select id="findAllWarningInfoToday" resultType="gimsMngInciDetail">
+		SELECT
+		GMID.mng_id
+		,GMID.detail_seq
+		,GMID.update_cate
+		,GMID.inci_cate
+		,GMID.begin_date
+		,TO_CHAR(TO_TIMESTAMP(GMID.begin_date,'YYYYMMDDHH24MISS'),'YYYY년 MM월 DD일 hh24시 mi분') AS TIME_DATA
+		,GMID.end_date
+		,GMID.occurred_lane
+		,GMID.gps_x
+		,GMID.gps_y
+		,GMID.description
+		,GMID.roadway_nm
+		,GMIM.INFO_SRC_ORG
+		FROM
+		BIGDATA.EXT_GIMS_MNG_INCI_DETAIL GMID
+		INNER JOIN BIGDATA.EXT_GIMS_MNG_INCI_MASTER GMIM ON GMID.MNG_ID = GMIM.MNG_ID
+		WHERE UPDATE_CATE = 'INIT'
+		  <![CDATA[
+		  AND BEGIN_DATE  >= TO_CHAR(NOW(),'YYYYMMDD0000') AND BEGIN_DATE <= TO_CHAR(NOW(),'YYYYMMDD2359')
+		]]>
+		GROUP BY GMID.mng_id,
+		GMID.detail_seq,
+		GMID.begin_date,
+		GMID.inci_cate,
+		GMID.roadway_nm,
+		GMID.end_date,
+		GMID.occurred_lane,
+		GMID.update_cate,
+		GMID.gps_x,
+		GMID.gps_y,
+		GMID.description,
+		GMIM.INFO_SRC_ORG
+		UNION all
+		SELECT
+		incidentid as mng_id,
+		1 as  detail_seq,
+		incidenttypecd||'-'||incidentsubtypecd AS update_cate,
+		CASE WHEN incidenttypecd = '1' THEN '2'      /* 사고 */
+		WHEN incidenttypecd = '2' THEN '6'    /* 공사 */
+		WHEN incidenttypecd = '3' THEN '12'      /* 행사 */
+		WHEN incidenttypecd = '4' THEN '3'      /* 기상 */
+		WHEN incidenttypecd = '5' THEN '13'      /* 통제 */
+		WHEN incidenttypecd = '6' THEN '8'      /* 재난 */
+		ELSE '1'   /* 기타 */ END AS inci_cate,
+		TO_CHAR(startdate,'YYYYMMDDHH24MISS') AS begin_date,
+		TO_CHAR(startdate,'YYYY년 MM월 DD일 hh24시 mi분') AS TIME_DATA,
+		TO_CHAR(enddate,'YYYYMMDDHH24MISS') AS end_date,
+		lane as    occurred_lane,
+		locationdatax  AS gps_x,
+		locationdatay AS gps_y,
+		incidenttitle AS description,
+		roadname AS roadway_nm,
+		'UTIC' AS INFO_SRC_ORG
+		FROM ggits.utic_trf_unxp_info_cur eutui
+		INNER JOIN m_op_code moc on moc.grp_cd_id ='incidentesubtypecd' AND moc.cd_id = eutui.incidenttypecd  ||'-'||eutui.incidentsubtypecd
+		WHERE addressjibuncd  like '41%'
+		AND startdate >= CURRENT_DATE
+		AND locationdata is not null
+		AND moc.cd_nm != '도로파손'
+		GROUP BY
+		moc.cd_nm,
+		incidentid ,
+		locationdata,
+		incidenttypecd  ,
+		incidentsubtypecd,
+		roadname,
+		lane,
+		addressjibun ,
+		locationdatax ,
+		locationdatay ,
+		incidenttitle ,
+		startdate ,
+		enddate
+	</select>
 </mapper>

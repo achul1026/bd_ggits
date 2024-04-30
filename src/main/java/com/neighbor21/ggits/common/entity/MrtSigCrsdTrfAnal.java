@@ -37,6 +37,9 @@ public class MrtSigCrsdTrfAnal extends CommonEntity{
     private String remark;
     private String geom;
     private String geojson;
+    private String yyyymmdd;
+
+    private Long pagingTotalCount;
 
 
     public String getMngInstCd() {
@@ -277,5 +280,21 @@ public class MrtSigCrsdTrfAnal extends CommonEntity{
 
     public void setGeojson(String geojson) {
         this.geojson = geojson;
+    }
+
+    public String getYyyymmdd() {
+        return yyyymmdd;
+    }
+
+    public void setYyyymmdd(String yyyymmdd) {
+        this.yyyymmdd = yyyymmdd;
+    }
+
+    public Long getPagingTotalCount() {
+        return pagingTotalCount;
+    }
+
+    public void setPagingTotalCount(Long pagingTotalCount) {
+        this.pagingTotalCount = pagingTotalCount;
     }
 }

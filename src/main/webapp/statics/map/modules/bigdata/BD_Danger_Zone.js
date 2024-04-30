@@ -5,6 +5,12 @@
  */
 const BD_Danger_Zone = async function(){
     let list = await self.util.getJsonFormApi("/bigdata/getCityAccidentInfo.ajax");
+    if(list?.noLogin){
+        return {
+            error : true,
+            noLogin : true
+        }
+    }
     let features = [];
     for(const point of list) {
         const obj = {

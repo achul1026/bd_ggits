@@ -2,219 +2,23 @@
 <!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.AdsiVdsColctInfoMapper'>
-
 	<select id="findRecentListByVdsID" resultType="adsiVdsColctInfo">
-		SELECT
-			AVCI.MNG_INST_CD
-			 ,AVCI.CLCT_DT
-			 ,AVCI.VDS_ID
-			 ,AVCI.LANE_NO
-			 ,AVCI.AVG_SPEED
-			 ,AVCI.TRFVLM
-			 ,AVCI.OCCP_RT
-		FROM
-			ADSI_VDS_COLCT_INFO AVCI
-				INNER JOIN (
-				SELECT
-					MAX(AVCI.CLCT_DT) AS CLCT_DT
-					 ,VDS_ID
-					 ,LANE_NO
-				FROM ADSI_VDS_COLCT_INFO AVCI
-				WHERE AVCI.VDS_ID = #{vdsId}
-				GROUP BY VDS_ID, LANE_NO
-			) RCT ON AVCI.CLCT_DT = RCT.CLCT_DT AND AVCI.VDS_ID = RCT.VDS_ID AND AVCI.LANE_NO = RCT.LANE_NO
-		WHERE AVCI.VDS_ID = #{vdsId}
-		GROUP BY AVCI.MNG_INST_CD ,AVCI.CLCT_DT,AVCI.VDS_ID ,AVCI.LANE_NO ,AVCI.AVG_SPEED ,AVCI.TRFVLM ,AVCI.OCCP_RT
-	</select>
 
-	<select id="findOneTrafficVolumeCntByTimeZone" parameterType="mapMonitoringMenuDTO" resultType="mapMonitoringMenuDTO">
-		SELECT 	COALESCE(TRAFFIC_CNT_INFO.TODAY_TRFVLM,0) AS "averageCnt", 
-				COALESCE(ROUND((TRAFFIC_CNT_INFO.TODAY_TRFVLM - TRAFFIC_CNT_INFO.YESTERDAY_TRFVLM)/TRAFFIC_CNT_INFO.YESTERDAY_TRFVLM*100,0),0) AS "compareCnt"
-		FROM (
-				SELECT
-						COALESCE(SUM(TRFVLM),0) AS TODAY_TRFVLM , 
-						(	SELECT 
-									SUM(TRFVLM) 
-							FROM 	ADSI_VDS_COLCT_INFO
-	                     	WHERE 	<![CDATA[
-	                     				CLCT_DT >= TO_TIMESTAMP(#{beforeTime},'YYYY-MM-DD HH24')+ INTERVAL  '-1 days' 
-	                        AND 		CLCT_DT <= TO_TIMESTAMP(#{currentTime},'YYYY-MM-DD HH24')+ INTERVAL  '-1 days'
-	                        		]]>
-	                  	) AS YESTERDAY_TRFVLM
-            	FROM
-            	
-						ADSI_VDS_COLCT_INFO 
-            	WHERE	<![CDATA[
-            				CLCT_DT >= TO_TIMESTAMP(#{beforeTime},'YYYY-MM-DD HH24') 
-            	AND 		CLCT_DT <= TO_TIMESTAMP(#{currentTime},'YYYY-MM-DD HH24')
-            			]]>
-            	AND 	MNG_INST_CD = #{mngInstCd}
-            ) TRAFFIC_CNT_INFO
+		select
+			MNG_INST_CD ,
+			VDS_ID ,
+			LANE_NO ,
+			sum(TRFVLM) as TRFVLM,
+			avg(AVG_SPEED) as AVG_SPEED
+		from
+			adsi_vds_colct_info_cur avcic
+		where
+			VDS_ID = #{vdsId}
+		  and mng_inst_cd = #{mngInstCd}
+		  and
+			clct_dt >= now() - interval '1 hour'
+		group by MNG_INST_CD ,
+			VDS_ID ,
+			LANE_NO
 	</select>
-	
-	<select id="findOneTrafficVolumeGraphByTimeZone" parameterType="mapMonitoringMenuDTO" resultType="mapMonitoringMenuDTO">
-		WITH TRAFFIC_GRAPH_DATA AS (
-			SELECT 
-					TO_CHAR(TO_TIMESTAMP(TIME_DATA.GRAPH_TIME,'YYYY-MM-DD HH24'),'HH24'||'시') AS TIME_DATA,
-					COALESCE(SUM(GRAPH_DATA.TRFVLM),0) AS CNT_DATA
-			FROM (
-				SELECT 
-						TO_CHAR(
-								GENERATE_SERIES(TO_TIMESTAMP(#{currentTime},'YYYY-MM-DD HH24')+ INTERVAL  '-5 hours',
-												TO_TIMESTAMP(#{currentTime},'YYYY-MM-DD HH24')+ INTERVAL  '-1 hours', '1 hours')
-												,'YYYY-MM-DD HH24') AS GRAPH_TIME 
-				
-			)  TIME_DATA
-			LEFT JOIN
-					(
-						SELECT
-								AVCI.TRFVLM,
-								TO_CHAR(AVCI.CLCT_DT,'YYYY-MM-DD HH24') AS CLCT_TIME
-						FROM
-								ADSI_VDS_COLCT_INFO AVCI
-						WHERE 	<![CDATA[
-								AVCI.CLCT_DT >= TO_TIMESTAMP(#{currentTime},'YYYY-MM-DD HH24')+ INTERVAL  '-6 hours' 
-						AND		AVCI.CLCT_DT < TO_TIMESTAMP(#{currentTime},'YYYY-MM-DD HH24')
-								]]>
-						AND 	AVCI.MNG_INST_CD = #{mngInstCd}
-					)GRAPH_DATA
-			ON GRAPH_DATA.CLCT_TIME = TIME_DATA.GRAPH_TIME 
-			GROUP BY TIME_DATA.GRAPH_TIME
-		)
-		SELECT 
-				ARRAY_TO_STRING(ARRAY_AGG(TIME_DATA ORDER BY TIME_DATA ASC),',') AS "graphTime", 
-				ARRAY_TO_STRING(ARRAY_AGG(CNT_DATA ORDER BY TIME_DATA ASC),',') AS "graphCnt" 
-		FROM 	TRAFFIC_GRAPH_DATA 
-	</select>
-	
-	<select id="findAllTrafficVolumeTableByTimeZone" parameterType="mapMonitoringMenuDTO" resultType="com.neighbor21.ggits.common.dto.MapMonitoringMenuDTO$TrafficInfo">
-		SELECT 
-			AVCI.TOTAL_TRFVLM AS "totalCnt", 
-			AVSI.VDS_SCTN_NM 
-		FROM(	
-				SELECT
-						SUM(TRFVLM) AS TOTAL_TRFVLM,
-						VDS_ID 
-				FROM
-						ADSI_VDS_COLCT_INFO
-				WHERE	<![CDATA[
-						CLCT_DT >= TO_TIMESTAMP(#{beforeTime},'YYYY-MM-DD HH24')
-				AND 	CLCT_DT <= TO_TIMESTAMP(#{currentTime},'YYYY-MM-DD HH24')
-						]]>
-				AND 	MNG_INST_CD = #{mngInstCd}
-				GROUP BY VDS_ID
-		) AVCI
-		INNER JOIN ADSI_VDS_SCTN_INFO AVSI ON AVCI.VDS_ID = AVSI.VDS_ID
-		ORDER BY AVCI.TOTAL_TRFVLM DESC 
-		LIMIT 5 
-	</select>
-	
-	<select id="findOneTrafficAvgSpeedByTimeZone" parameterType="mapMonitoringMenuDTO" resultType="mapMonitoringMenuDTO">
-		SELECT 	COALESCE(ROUND(TRAFFIC_AVG_SPEED_INFO.TODAY_AVG_SPEED,2),0) AS "averageCnt", 
-				COALESCE(ROUND((TRAFFIC_AVG_SPEED_INFO.TODAY_AVG_SPEED - TRAFFIC_AVG_SPEED_INFO.YESTERDAY_AVG_SPEED)/TRAFFIC_AVG_SPEED_INFO.YESTERDAY_AVG_SPEED*100,2),0) AS "compareCnt"
-		FROM (
-				SELECT
-						AVG(AVG_SPEED) AS TODAY_AVG_SPEED , 
-						(	SELECT 
-									AVG(AVG_SPEED) AS AVG_SPEED  
-							FROM 	ADSI_VDS_COLCT_INFO
-	                     	WHERE 	<![CDATA[
-	                     				CLCT_DT >= TO_TIMESTAMP(#{beforeTime},'YYYY-MM-DD HH24')+ INTERVAL  '-1 days' 
-	                        AND 		CLCT_DT <= TO_TIMESTAMP(#{currentTime},'YYYY-MM-DD HH24')+ INTERVAL  '-1 days'
-	                        		]]>
-	                  	) AS YESTERDAY_AVG_SPEED
-            	FROM
-            	
-						ADSI_VDS_COLCT_INFO 
-            	WHERE	<![CDATA[
-            				CLCT_DT >= TO_TIMESTAMP(#{beforeTime},'YYYY-MM-DD HH24') 
-            	AND 		CLCT_DT <= TO_TIMESTAMP(#{currentTime},'YYYY-MM-DD HH24')
-            			]]>
-            	AND 	MNG_INST_CD = #{mngInstCd}
-            ) TRAFFIC_AVG_SPEED_INFO
-	</select>
-	
-	<select id="findOneTrafficAvgSpeedGraphByTimeZone" parameterType="mapMonitoringMenuDTO" resultType="mapMonitoringMenuDTO">
-		WITH TRAFFIC_GRAPH_DATA AS (
-			SELECT 
-					TO_CHAR(TO_TIMESTAMP(TIME_DATA.GRAPH_TIME,'YYYY-MM-DD HH24'),'HH24'||'시') AS TIME_DATA,
-					COALESCE(ROUND(AVG(GRAPH_DATA.AVG_SPEED),2),0) AS CNT_DATA
-			FROM (
-				SELECT 
-						TO_CHAR(
-								GENERATE_SERIES(TO_TIMESTAMP(#{currentTime},'YYYY-MM-DD HH24')+ INTERVAL  '-5 hours',
-												TO_TIMESTAMP(#{currentTime},'YYYY-MM-DD HH24')+ INTERVAL  '-1 hours', '1 hours')
-												,'YYYY-MM-DD HH24') AS GRAPH_TIME 
-				
-			)  TIME_DATA
-			LEFT JOIN
-					(
-						SELECT
-								AVCI.AVG_SPEED,
-								TO_CHAR(AVCI.CLCT_DT,'YYYY-MM-DD HH24') AS CLCT_TIME
-						FROM
-								ADSI_VDS_COLCT_INFO AVCI
-						WHERE 	<![CDATA[
-								AVCI.CLCT_DT >= TO_TIMESTAMP(#{currentTime},'YYYY-MM-DD HH24')+ INTERVAL  '-6 hours' 
-						AND		AVCI.CLCT_DT < TO_TIMESTAMP(#{currentTime},'YYYY-MM-DD HH24')
-								]]>
-						AND 	AVCI.MNG_INST_CD = #{mngInstCd}
-					)GRAPH_DATA
-			ON GRAPH_DATA.CLCT_TIME = TIME_DATA.GRAPH_TIME 
-			GROUP BY TIME_DATA.GRAPH_TIME
-		)
-		SELECT 
-				ARRAY_TO_STRING(ARRAY_AGG(TIME_DATA ORDER BY TIME_DATA ASC),',') AS "graphTime", 
-				ARRAY_TO_STRING(ARRAY_AGG(CNT_DATA ORDER BY TIME_DATA ASC),',') AS "graphCnt" 
-		FROM 	TRAFFIC_GRAPH_DATA 
-	</select>
-	
-	<select id="findAllTrafficAvgSpeedTableByTimeZone" parameterType="mapMonitoringMenuDTO" resultType="com.neighbor21.ggits.common.dto.MapMonitoringMenuDTO$TrafficInfo">
-		SELECT 
-			AVCI.TOTAL_AVG_SPEED AS "totalCnt" , 
-			AVSI.VDS_SCTN_NM 
-		FROM(	
-				SELECT
-						COALESCE(ROUND(AVG(AVG_SPEED),2),0) AS TOTAL_AVG_SPEED,
-						VDS_ID 
-				FROM
-						ADSI_VDS_COLCT_INFO
-				WHERE	<![CDATA[
-						CLCT_DT >= TO_TIMESTAMP(#{beforeTime},'YYYY-MM-DD HH24')
-				AND 	CLCT_DT <= TO_TIMESTAMP(#{currentTime},'YYYY-MM-DD HH24')
-						]]>
-				AND 	MNG_INST_CD = #{mngInstCd}
-				GROUP BY VDS_ID
-		) AVCI
-		INNER JOIN ADSI_VDS_SCTN_INFO AVSI ON AVCI.VDS_ID = AVSI.VDS_ID
-		ORDER BY AVCI.TOTAL_AVG_SPEED DESC 
-		LIMIT 5 
-	</select>
-	
-	<select id="findOneCumulativeTrafficVolumeByTimeZoneAndRoad" parameterType="mapMonitoringMenuDTO" resultType="com.neighbor21.ggits.common.dto.MapMonitoringMenuDTO$TrafficInfo">
-		SELECT 	
-				ROW_NUMBER() OVER(ORDER BY AVCI.CLCT_DT DESC) 		AS rownum,
-				AVCI.TRFVLM AS "totalCnt" ,
-				AVSI.VDS_SCTN_NM  
-		FROM 	ADSI_VDS_COLCT_INFO AVCI
-		INNER JOIN ADSI_VDS_SCTN_INFO AVSI ON AVCI.VDS_ID = AVSI.VDS_ID
-		WHERE	<![CDATA[
-				CLCT_DT >= TO_TIMESTAMP(#{beforeTime},'YYYY-MM-DD HH24')
-		AND 	CLCT_DT <= TO_TIMESTAMP(#{currentTime},'YYYY-MM-DD HH24')
-				]]>
-	</select>
-	
-	<select id="findOneAverageEntrainmentSpeedByTimeZoneAndRoad" parameterType="mapMonitoringMenuDTO" resultType="com.neighbor21.ggits.common.dto.MapMonitoringMenuDTO$TrafficInfo">
-		SELECT 	
-				ROW_NUMBER() OVER(ORDER BY AVCI.CLCT_DT DESC) 		AS rownum,
-				AVCI.AVG_SPEED AS "totalCnt" ,
-				AVSI.VDS_SCTN_NM  
-		FROM 	ADSI_VDS_COLCT_INFO AVCI
-		INNER JOIN ADSI_VDS_SCTN_INFO AVSI ON AVCI.VDS_ID = AVSI.VDS_ID
-		WHERE	<![CDATA[
-				CLCT_DT >= TO_TIMESTAMP(#{beforeTime},'YYYY-MM-DD HH24')
-		AND 	CLCT_DT <= TO_TIMESTAMP(#{currentTime},'YYYY-MM-DD HH24')
-				]]>
-	</select>
-	
 </mapper>

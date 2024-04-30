@@ -2,6 +2,110 @@
 <!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.TrfIpcssNboplMapper'>
+	
+	<select id="findAllNboplList" parameterType="trfvlmStatisticsDTO" resultType="trfIpcssNbopl">
+		SELECT 
+			IPCSS_MNG_NO
+			, SMLFACT_NM
+			, SMLFACT_ADDR
+			, SCALE
+			, TOTFRAR
+			, EXMN_DIV_NM
+			, EXMN_YMD
+			, EXMN_DOC_NM
+		FROM TRF_IPCSS_NBOPL
+		WHERE IPCSS_MNG_NO = #{ipcssMngNo}
+			<if test="dwellYn != '' and dwellYn != null">
+				<if test='"Y".equals(dwellYn)'>
+					AND USG_CD IN ('001','101','103','106','109','111','112')
+				</if>
+				<if test='"N".equals(dwellYn)'>
+					AND USG_CD NOT IN ('001','101','103','106','109','111','112')
+				</if>				
+			</if>
+		GROUP BY IPCSS_MNG_NO, SMLFACT_NM, SMLFACT_ADDR, SCALE, TOTFRAR, EXMN_DIV_NM, EXMN_YMD, EXMN_DOC_NM, NBOPL_NO 
+		ORDER BY NBOPL_NO::NUMERIC  
+	</select>
+	
+	<select id="findOneNboplInfoForDwell" parameterType="trfIpcssNbopl" resultType="trfIpcssNbopl">
+		SELECT 
+			moc.CD_NM 
+			, tin.USG_NO
+			, tin.TRF_USE_CD
+			, tin.TRF_MEAN_VHCCLS
+			, tin.NBOPL_CNT
+		FROM TRF_IPCSS_NBOPL tin
+		INNER JOIN M_OP_CODE moc
+			ON tin.USG_CD = moc.CD_ID AND moc.GRP_CD_ID = 'USG_CD'
+		WHERE tin.SMLFACT_NM = #{smlfactNm} AND tin.SMLFACT_ADDR = #{smlfactAddr} AND tin.IPCSS_MNG_NO = #{ipcssMngNo} 
+			AND tin.TRF_USE_CD in ('1','2','3','4') AND tin.TRF_MEAN_VHCCLS in ('1','2')
+		GROUP BY moc.CD_NM, tin.TRF_USE_CD, tin.TRF_MEAN_VHCCLS, tin.NBOPL_CNT,NBOPL_NO,usg_no
+		ORDER BY USG_NO::NUMERIC 
+	</select>
+	
+	<select id="findOneNboplInfoForNonDwell" parameterType="trfIpcssNbopl" resultType="trfIpcssNbopl">
+		SELECT 
+			moc.CD_NM 
+			, tin.USG_NO
+			, tin.TRF_USE_CD
+			, tin.TRF_MEAN_VHCCLS
+			, tin.NBOPL_CNT
+		FROM TRF_IPCSS_NBOPL tin
+		INNER JOIN M_OP_CODE moc
+			ON tin.USG_CD = moc.CD_ID AND moc.GRP_CD_ID = 'USG_CD'
+		WHERE tin.SMLFACT_NM = #{smlfactNm} AND tin.SMLFACT_ADDR = #{smlfactAddr} and tin.IPCSS_MNG_NO = #{ipcssMngNo} 
+			AND tin.TRF_USE_CD IN ('5','6') AND tin.TRF_MEAN_VHCCLS in ('1','2')
+		GROUP BY moc.CD_NM, tin.TRF_USE_CD, tin.TRF_MEAN_VHCCLS, tin.NBOPL_CNT, tin.USG_NO
+		ORDER BY USG_NO::NUMERIC 
+	</select>
+	
+	<select id="findAllChartData" parameterType="map" resultType="map">
+		WITH NBOPL_DATA_LIST AS(
+						SELECT 
+							tin.TRF_MEAN_VHCCLS
+							, SUM(tin.NBOPL_CNT) as NBOPL_CNT 
+						FROM TRF_IPCSS_NBOPL tin 
+						WHERE tin.IPCSS_MNG_NO = #{ipcssMngNo} AND tin.TRF_USE_CD = #{trfUseCd}
+						GROUP BY tin.TRF_MEAN_VHCCLS
+						ORDER BY tin.TRF_MEAN_VHCCLS
+		)
+		SELECT 	
+			ARRAY_TO_STRING(ARRAY_AGG(NBOPL_CNT ORDER BY TRF_MEAN_VHCCLS), ',') as  nboplCntArr
+		FROM NBOPL_DATA_LIST
+	</select>
+	
+	<insert id="saveNbopl" parameterType="trfIpcssNbopl">
+		INSERT INTO TRF_IPCSS_NBOPL(
+			IPCSS_MNG_NO, 
+			SMLFACT_NM, 
+			SMLFACT_ADDR, 
+			SCALE, 
+			TOTFRAR, 
+			EXMN_DIV_NM, 
+			EXMN_YMD, 
+			EXMN_DOC_NM, 
+			USG_CD, 
+			TRF_USE_CD, 
+			TRF_MEAN_VHCCLS, 
+			NBOPL_CNT,
+			USG_NO,
+			NBOPL_NO
+			)VALUES(
+			#{ipcssMngNo}, 
+			#{smlfactNm}, 
+			#{smlfactAddr}, 
+			#{scale}, 
+			#{totfrar}, 
+			#{exmnDivNm},
+			#{exmnYmd}, 
+			#{exmnDocNm}, 
+			#{usgCd}, 
+			#{trfUseCd}, 
+			#{trfMeanVhccls}, 
+			#{nboplCnt},
+			#{usgNo},
+			#{nboplNo})
+	</insert>
 
 	<delete id="deleteTrafficImpactReportByIpcssMngNo" parameterType="String">
 		DELETE 
@@ -9,5 +113,20 @@
 			TRF_IPCSS_NBOPL 
 		WHERE
 			IPCSS_MNG_NO = #{ipcssMngNo}
+	</delete>
+	
+	<delete id="deleteTrafficImpactReportForUsg" parameterType="trfvlmStatisticsDTO">
+		DELETE
+			FROM TRF_IPCSS_NBOPL
+		WHERE
+			IPCSS_MNG_NO = #{ipcssMngNo}
+		<if test="dwellYn != '' and dwellYn != null">
+			<if test='"Y".equals(dwellYn)'>
+				AND USG_CD IN ('001','101','103','106','109','111','112')
+			</if>
+			<if test='"N".equals(dwellYn)'>
+				AND USG_CD NOT IN ('001','101','103','106','109','111','112')
+			</if>				
+		</if>
 	</delete>
 </mapper>

@@ -3,7 +3,7 @@
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.AdsiDsrcSctnStlinkMppgMapper'>
 
-    <select id="findAllDSRCSectionLinkInfo" resultType="adsiDsrcSctnStlinkMppg">
+    <!--<select id="findAllDSRCSectionLinkInfo" resultType="adsiDsrcSctnStlinkMppg">
         SELECT
             ADSI.DSRC_SCTN_ID,
             ADSI.DSRC_SCTN_NM,
@@ -15,19 +15,49 @@
             GCIL.ROAD_USE ,
             GCIL.LANES ,
             ADCI.SPEED,
-            ST_ASGEOJSON(ST_LINEMERGE(GCIL.GEOM)) AS GEOJSON
-        FROM ADSI_DSRC_SCTN_STLINK_MPPG ADSSM
-                 INNER JOIN ADSI_DSRC_SCTN_INFO ADSI ON ADSSM.DSRC_SCTN_ID = ADSI.DSRC_SCTN_ID
-                 INNER JOIN GY_COMM_INFO_LINK GCIL ON ADSSM.STD_LINK_ID = GCIL.LINK_ID
-                 INNER JOIN ADSI_DSRC_COLCT_INFO ADCI ON ADSI.DSRC_SCTN_ID = ADCI.DSRC_SCTN_ID
+            ST_ASGEOJSON(ST_LINEMERGE(GCIL.GEOMETRY)) AS GEOJSON
+        FROM BIGDATA.EXT_ADSI_DSRC_SCTN_STLINK_MPPG ADSSM
+                 INNER JOIN BIGDATA.EXT_ADSI_DSRC_SCTN_INFO ADSI ON ADSSM.DSRC_SCTN_ID = ADSI.DSRC_SCTN_ID
+                 INNER JOIN C_GM_STD_LINK GCIL ON ADSSM.STD_LINK_ID = GCIL.LINK_ID
+                 INNER JOIN BIGDATA.EXT_ADSI_DSRC_COLCT_INFO ADCI ON ADSI.DSRC_SCTN_ID = ADCI.DSRC_SCTN_ID
                  INNER JOIN (
             SELECT
                 MAX(ADCI.CLCT_DT) AS RCT_CLCT_DT
                  ,ADCI.DSRC_SCTN_ID
-            FROM ADSI_DSRC_COLCT_INFO ADCI
+            FROM BIGDATA.EXT_ADSI_DSRC_COLCT_INFO ADCI
             GROUP BY ADCI.DSRC_SCTN_ID
         ) RCT ON RCT.DSRC_SCTN_ID = ADCI.DSRC_SCTN_ID AND RCT.RCT_CLCT_DT = ADCI.CLCT_DT
         GROUP BY ADSI.DSRC_SCTN_ID,ADSI.DSRC_SCTN_NM,ADSSM.SQNO,GCIL.LINK_ID , GCIL.ROAD_NAME ,GCIL.ROAD_RANK ,GCIL.ROAD_TYPE ,GCIL.ROAD_USE,GCIL.LANES,ADCI.SPEED,GEOJSON
         ORDER BY ADSI.DSRC_SCTN_ID , ADSSM.SQNO ASC
+    </select>-->
+
+    <select id="findAllDSRCSectionLinkInfo" resultType="adsiDsrcSctnStlinkMppg">
+        SELECT
+            ADSI.DSRC_SCTN_ID,
+            ADSI.MNG_INST_CD,
+            ADSI.DSRC_SCTN_NM,
+            ADSSM.SQNO ,
+            GCIL.LINK_ID,
+            GCIL.ROAD_NAME ,
+            GCIL.ROAD_RANK ,
+            GCIL.ROAD_TYPE ,
+            GCIL.ROAD_USE ,
+            GCIL.LANES ,
+            ROUND(adcic.speed,0) AS  speed,
+            ST_ASGEOJSON(ST_LINEMERGE(GCIL.GEOMETRY)) AS GEOJSON
+        FROM BIGDATA.EXT_ADSI_DSRC_SCTN_STLINK_MPPG ADSSM
+                 INNER JOIN BIGDATA.EXT_ADSI_DSRC_SCTN_INFO ADSI ON ADSSM.DSRC_SCTN_ID = ADSI.DSRC_SCTN_ID and adssm.mng_inst_cd = adsi.mng_inst_cd
+                 INNER JOIN C_GM_STD_LINK GCIL ON ADSSM.STD_LINK_ID = GCIL.LINK_ID
+                 left join (
+            select
+                MNG_INST_CD ,
+                dsrc_sctn_id ,
+                avg(SPEED) as SPEED
+            from
+                adsi_dsrc_colct_info_cur adcic
+            group by MNG_INST_CD , dsrc_sctn_id
+        ) adcic on adcic.mng_inst_cd = adssm.mng_inst_cd and adcic.dsrc_sctn_id = adssm.dsrc_sctn_id
+        GROUP BY ADSI.DSRC_SCTN_ID,ADSI.MNG_INST_CD,ADSI.DSRC_SCTN_NM,ADSSM.SQNO,GCIL.LINK_ID , GCIL.ROAD_NAME ,GCIL.ROAD_RANK ,GCIL.ROAD_TYPE ,GCIL.ROAD_USE,GCIL.LANES,GEOJSON, speed
+        ORDER BY ADSI.DSRC_SCTN_ID , ADSSM.SQNO asc
     </select>
 </mapper>

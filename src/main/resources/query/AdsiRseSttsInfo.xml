@@ -2,4 +2,57 @@
 <!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.AdsiRseSttsInfoMapper'>
+	<sql id="eqpLogList-Where">
+		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
+			AND CLCT_DT
+			BETWEEN TO_TIMESTAMP(#{strDt}|| ' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}|| ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
+			<![CDATA[
+			AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS')  <= CLCT_DT
+			]]>
+		</if>
+		<if test="(strDt == '' or strDt == null) and (endDt != '' and endDt != null)">
+			<![CDATA[
+			AND CLCT_DT <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			]]>
+		</if>
+		<if test="searchContent != '' and searchContent != null">
+			AND (arsi.RSE_ID LIKE '%' || #{searchContent} || '%' or amfd.RSE_NM LIKE '%' || #{searchContent} || '%')
+		</if>
+		<if test="dayOfTheWeek != null">
+			AND EXTRACT (ISODOW from CLCT_DT)::varchar(1) IN 
+				<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+		</if>
+	</sql>
+
+	<select id="countRseInfoList" parameterType="commonEntity" resultType="int">
+		SELECT 		
+			count(1)
+		FROM bigdata.EXT_ADSI_RSE_STTS_INFO arsi
+		INNER JOIN bigdata.EXT_ADSI_M_FA_DSRC amfd
+			ON arsi.RSE_ID = amfd.RSE_ID 
+		WHERE 1=1
+		<include refid="eqpLogList-Where"/>
+	</select>
+	
+	<select id="findAllRseInfoList" parameterType="commonEntity" resultType="eqpLogDTO">
+		SELECT 		
+			arsi.CLCT_DT as clctDt
+			, arsi.RSE_ID as id 
+			, arsi.RSE_STTS as stts
+			, amfd.RSE_NM as name
+		FROM bigdata.EXT_ADSI_RSE_STTS_INFO arsi
+		INNER JOIN bigdata.EXT_ADSI_M_FA_DSRC amfd
+			ON arsi.RSE_ID = amfd.RSE_ID 
+		WHERE 1=1
+		<include refid="eqpLogList-Where"/>
+		ORDER BY arsi.CLCT_DT  DESC
+		<if test="page != null and page != '' and page != 0">
+		LIMIT 10 OFFSET (#{page} - 1) * 10
+		</if>
+	</select>
 </mapper>

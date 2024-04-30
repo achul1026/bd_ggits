@@ -3,87 +3,75 @@
 
 <div class="tab_bigbox_close">
     <div class="original_box clearfix">
-    	<form id="searchForm" method="get">
+    	<form id="searchForm" method="get" class="result_change">
     		<input type="hidden" id="mapPage" name="page" value="1"/>
-	        <div class="tab_item_box flex-center">
-	            <h5 class="tab_item_title">연도별</h5>
-	            <input type="hidden" id="startYear" value="${yearsList[fn:length(yearsList) -1].year}">
-            	<input type="hidden" id="endYear" value="${yearsList[0].year}">
-	            <select class="selectBox radius" name="searchYear" id="searchYear">
-	                <option value="searchAllYear">전체</option>
-	           		<c:forEach var="yearsList" items="${yearsList}" varStatus="status">
-	                	<option value="${yearsList.year}">${yearsList.year}년</option>
-	           		</c:forEach>
-	            </select>
-	        </div>
+			<input type="hidden" name="routeId" id="routeId" value=""/>
+			<input type="hidden" name="pageType" value="<c:out value='${type}'/>">
 	        <div class="tab_item_box">
-	            <div class="flex-center">
-	                <h5 class="tab_item_title">기간</h5>
-	                <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" name="searchPeriod" class="none" value="weekdays">평일</label>
-	                <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" name="searchPeriod" class="none" value="weekend">주말</label>
-	                <label class="group_btn_item is-dark-btn radius inpd direct"><input type="checkbox" id="dateChk" class="none">직접입력</label>
-	            </div>
-	            <div class="calendar direct_time none">
-		            <input type="text" class="date_picker input_same mr8 input_picker" name="startDate" id="startDate" placeholder="날짜를 선택해주세요.">
-		            ~
-		            <div class="end_calendar_box">
-						<div class="date_picker_block"></div>								            
-			            <input type="text" class="end_date_picker input_same mr8 ml8 input_picker" name="endDate" id="endDate" placeholder="날짜를 선택해주세요.">
-			        </div>	            
+				<div class="flex-center">
+					<h5 class="tab_item_title">날짜<span class="required-alert">*</span></h5>
+					<div class="calendar" id="directDate">
+						<input type="text" class="date_picker input_same mr8 input_picker" name="startDate" placeholder="날짜를 선택해주세요." autocomplete="off">
+					</div>
 				</div>
-	        </div>
-	        <div class="tab_item_box">
-	            <div class="flex-center">
-	                <h5 class="tab_item_title">시간</h5>
-	                <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" id="toWork" class="none" name="peekAndOffPeek" value="peek">출근 <span class="group_btn_span">(06시~10시)</span></label>
-	                <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" id="offWork" class="none" name="peekAndOffPeek" value="offPeek">퇴근 <span class="group_btn_span">(17시~20시)</span></label>
-	                <label class="group_btn_item is-dark-btn radius inpd direct"><input type="checkbox" class="none">직접 입력</label>
-	            </div>
-	            <div class="calendar direct_time none">
-					<select class="selectBox selectTime" id="startTime" name="startTime"></select>
-	                ~
-					<select class="selectBox selectTime" id="endTime" name="endTime"></select>
-	            </div>
-	        </div>
-	        <div class="tab_item_box flex-center">
-	            <h5 class="tab_item_title">지역별</h5>
-	            <select class="selectBox radius">
-	                <option value="searchAllLocation">전체 지역</option>
-					<c:forEach var="sggCdList" items="${sggCdList}">
-	                	<option value="${sggCdList.cdId}">${sggCdList.cdNm}</option>
-					</c:forEach>
-	            </select>
-	        </div>
-			<div class="tab_item_box flex-center border-none">
-		        <h5 class="tab_item_title">노선</h5>
-		        <input type="text" placeholder="노선을 입력해주세요." name="routeNm" id="routeNm" class="input_same search_box radius">
-		        <button type="button" class="is-darkgreen-btn ml8" onclick="fnSearchList();">검색</button>
+			</div>
+			<div class="tab_item_box flex-center">
+				<h5 class="tab_item_title">유형</h5>
+				<select class="selectBox radius" name="collectType">
+					<option value="quickAccel">급가속</option>
+					<option value="quickDecel">급감속</option>
+					<option value="quickDecel">급정지</option>
+					<option value="quickStart">급출발</option>
+					<option value="quickRouteChange">급진로변경</option>
+					<option value="quickOvertake">급앞지르기</option>
+					<option value="quickLfrtTurn">급좌우회전</option>
+					<option value="quickUturn">급유턴</option>
+				</select>
+			</div>
+<%--			<div class="tab_item_box flex-center">--%>
+<%--				<h5 class="tab_item_title">운수회사</h5>--%>
+<%--				<select class="selectBox radius" name="companyNm">--%>
+<%--					<option value="">전체 회사</option>--%>
+<%--					<c:forEach var="company" items="${companyList}">--%>
+<%--						<c:if test="${company.company_id != null}">--%>
+<%--						<option value="<c:out value='${company.company_id}'/>"><c:out value='${company.company_nm}'/></option>--%>
+<%--						</c:if>--%>
+<%--					</c:forEach>--%>
+<%--				</select>--%>
+<%--			</div>--%>
+			<div class="tab_item_box flex-center">
+		        <h5 class="tab_item_title">차량번호</h5>
+		        <input type="text" placeholder="차량번호를 입력해주세요." name="routeNm" id="routeNm" class="input_same search_box radius">
+		        <button type="button" class="is-darkgreen-btn ml8" onclick="fnSearchList(true);">검색</button>
 	        </div>
         </form>
 		<div class="tab_item_box flex-center pt8 none" id="tableHeader">
 			<h5 class="tab_item_title"></h5>
 			<div class="gis_table_scroll" style="width:430px;">
 				<div class="table_search_number tableTitle">
-                	<span>"${paging.totalCount eq null || paging.totalCount eq '' ? '0' : ''}개"</span>의 검색결과를 찾았습니다.
+                	<span id="totalCnt"><c:out value='${paging.totalCount eq null || paging.totalCount eq "" ? "0" : paging.totalCount}'/></span>개의 검색결과를 찾았습니다.
                 </div>			
-				<table>
+				<table id="modalTable" class="result_change">
 				    <colgroup>
-				        <col style="width:20%">
-				        <col style="width:20%">
-				        <col style="width:20%">
-				        <col style="width:20%">
-				        <col style="width:20%">
+				        <col style="width:10%">
+				        <col style="width:18%">
+				        <%--<col style="width:18%">--%>
 				    </colgroup>
 				    <thead>
 				        <tr>
-				            <th scope="col">버스번호</th>
-				            <th scope="col">출발지</th>
-				            <th scope="col">종착지</th>
-				            <th scope="col">버스유형</th>
-				            <th scope="col">평균 환승 횟수</th>
+				            <th scope="col">선택</th>
+							<th scope="col">차량번호</th>
+				            <%--<th scope="col">운수회사</th>--%>
 				        </tr>
 				    </thead>
 				    <tbody>
+						<c:forEach var="busItem" items="${resultList}" varStatus="status">
+							<tr onclick="setRouteId('${busItem.plateNo}')">
+								<td><input type="radio" id="listItem${status.index}" name="listItem" class="bigdata_input_radio"></td>
+								<td><label for="listItem${status.index}">${busItem.plateNo}</label></td>
+								<%--<td><label for="listItem${status.index}">${busItem.companyNm}</label></td>--%>
+								</tr>
+						</c:forEach>
 				    </tbody>
 				</table>
 		        <div id="modalPaging">
@@ -101,102 +89,112 @@
 	gisCheckInit();
 	datePickerInit();
 	dateTiemInit();
-	tabTitleCss();
-	resultRemove();
-
+	settingBigdataSearchParam("BD_BUS_DANGER_002");
+	var dataTotalCnt = '<c:out value="${paging.totalCount eq null || paging.totalCount eq '' ? '0' : ''}"/>';
+	$("#totalCnt").text(numberComma(dataTotalCnt))
+	
     function publicTransferSafetyAnalysis(){
-        map.bigdata.getPublicTransferDangerSectionInfo();
+		var routeId = $("#routeId").val();
+		var startDate = $("input[name='startDate']").val();
+		if(isNull(routeId) || routeId == ''){
+			new ModalBuilder().init().alertBoby("차량번호를 선택해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
+			modalAlertWrap();
+			return;
+		}
+		if(isNull(startDate) || startDate == ''){
+			new ModalBuilder().init().alertBoby("날짜를 선택해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
+			modalAlertWrap();
+			return;
+		}
+		
+        map.bigdata.getPublicTransferDangerSectionInfo($("#searchForm").serialize());
+        bigdataSearchForm = $("#searchForm").serializeObject();
         
-        var remarksItem = $(`
+        /*var remarksItem = $(`
         <div class="remarks_container">
 	        <div class="remarks_title_box">
 	            <h6 class="remarks_title">범례 - 위험 등급 발생 빈도</h6>
 	        </div>
-        	<div class="remarks_wrap tab-none">
+        	<div class="remarks_wrap">
             	<div>
-	                <div class="check_line_container">
-	                    <button type="button" class="check_line_box remarks-dark-purple">41이하</button>
-		                <button type="button" class="check_line_box remarks-light-purple">21이상 - 30이하</button>
-		                <button type="button" class="check_line_box remarks-dark-orange">11이상 - 20이하</button>
-		                <button type="button" class="check_line_box remarks-middle-orange">5이상 - 10이하</button>
-		                <button type="button" class="check_line_box remarks-bright-orange">4이하</button>
-	                </div>
+	                <ul class="check_line_container">
+	                    <li class="check_line_box remarks-set2-1">41이하</li>
+		                <li class="check_line_box remarks-set2-2">21이상 - 30이하</li>
+		                <li class="check_line_box remarks-set2-3">11이상 - 20이하</li>
+		                <li class="check_line_box remarks-set2-4">5이상 - 10이하</li>
+		                <li class="check_line_box remarks-set2-5">4이하</li>
+	                </ul>
             	</div>
 	            <div class="unit">단위 : (회)</div>
         	</div>
-    	</div>`)        
+    	</div>`)
+		$('#map-container').find(".remarks_container").remove();
 	    $('#map-container').append(remarksItem);
-	    legendToggle();
+	    legendToggle();*/
+	    
+	    resultChange();
     }
+
     
-	$(document).ready(function() {
-		if(!isNull($("#startDate").val())){
-			$('.date_picker_block').remove();
-		}
-	})
-    
-    $("#toWork").on('click', function(){
-    	if($(this).is(":checked")){
-    		$("#startTime").val("06").prop("selected", true);
-    		$("#endTime").val("10").prop("selected", true);
-    	}
-    })
-    
-    $("#offWork").on('click', function(){
-    	if($(this).is(":checked")){
-    		$("#startTime").val("17").prop("selected", true);
-    		$("#endTime").val("20").prop("selected", true);
-    	}
-    })
-    
-    function fnSearchList(){
-    	if(!$("#dateChk").is(":checked")){
-	    	if($("#searchYear :selected").val() == 'searchAllYear'){
-				$("#startDate").val($("#startYear").val() + "-01-01");
-				$("#endDate").val($("#endYear").val() + "-12-31");
-			}else{
-				$("#startDate").val($("#searchYear :selected").val() + "-01-01");
-				$("#endDate").val($("#searchYear :selected").val() + "-12-31");
-			}
-    	}
-    	
-    	$("table>tbody > tr").remove();
+    function fnSearchList(reset = false){
+
+		$("#modalTable>tbody > tr").remove();
     	$("#modalPaging > .dashboard-pg-wrap").remove();
+		var startDate = $("input[name='startDate']").val();
+		if(isNull(startDate) || startDate == ''){
+			new ModalBuilder().init().alertBoby("날짜를 선택해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
+			modalAlertWrap();
+			return;
+		}
+		if(reset){
+			$("#mapPage").val("1");
+		}
     	var page = $("#mapPage").val();
     	
     	$.ajax({
     		type : "get",
     		data : $("#searchForm").serialize(),
     		url : "${pageContext.request.contextPath}/map/bigdata/bus/danger/BD_BUS_DANGER_002/data.ajax",
+    		beforeSend : function(){
+    			startLoading();
+    		},
     		success : function(result){
     			var html = '';
     			var title = '';
     			var startDate = '';
     			var endDate = '';
-    			if(result.data.resultList.length > 0){
-    				$("#tableHeader").removeClass("none");
-    			}
-    			$(result.data.resultList).each(function(index, item){
+    			if(result.data.resultList.length == 0){
     				html += '<tr>' +
-    							'<td>' + item.routeNm + '</td>' +
-    							'<td>' + item.stStaNm + '</td>' +
-    							'<td>' + item.edStaNm + '</td>' + 									
-    							'<td>-</td>' +
-    							'<td>-</td>' +
-    						'</tr>';
-    			})
-    			$("table>tbody").append(html);
+								'<td colspan="3">차량정보를 찾을 수 없습니다.</td>' +
+							'</tr>';
+    			}else{
+	    			$(result.data.resultList).each(function(index, item){
+	    				html += '<tr onclick="setRouteId(\'' + item.plateNo+ '\')">' +
+									'<td>' + '<input type="radio" id="listItem'+index+'" name="listItem" class="bigdata_input_radio">' + '</td>' +
+									'<td>' + '<label for="listItem'+index+'">' + item.plateNo + '</label>' + '</td>' +
+									/*'<td>' + '<label for="listItem'+index+'">' + item.companyNm + '</label>' + '</td>' +*/
+	    						'</tr>';
+	    						
+	    			})
+    			}
+    			$("#tableHeader").removeClass("none");
+    			$("#modalTable>tbody").append(html);
     			var paging = result.data.paging;
     			if(paging != null && paging != ''){
-    				title += '<span>'+paging.totalCount+'개</span>의 검색결과를 찾았습니다.';
+    				title += '<span id="totalCnt2">'+numberComma(paging.totalCount)+'</span>개의 검색결과를 찾았습니다.';
     				$("#modalPaging").append(getGisPagingHtml(paging, page));
     			};
     			$(".tableTitle").html(title);
-    			startDate = result.data.searchOption.startDate;
-    			endDate = result.data.searchOption.endDate;
-    			$("#startDate").val(startDate.substring(0,10));
-    			$("#endDate").val(endDate.substring(0,10));
+//    				$("#totalCnt2").text(numberComma(dataTotalCnt2))
+    		},
+    		complete : function(){
+    			endLoading();
     		}
+    		
     	});
     }
+	
+	function setRouteId(routeId){
+		$("#routeId").val(routeId);
+	}
 </script>

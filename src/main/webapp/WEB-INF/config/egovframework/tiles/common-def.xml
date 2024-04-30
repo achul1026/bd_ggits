@@ -17,12 +17,24 @@
         <put-attribute name="head" value="/WEB-INF/jsp/_tiles/_template/head.jsp" />
         <put-attribute name="gnb" value="/WEB-INF/jsp/_tiles/_template/gnb.jsp" />
     </definition>
+
+    <definition name="vip_base" template="/WEB-INF/jsp/_tiles/_layout/vipLayout.jsp">
+        <put-attribute name="head" value="/WEB-INF/jsp/_tiles/_template/head.jsp" />
+    </definition>
     
     <definition name="modal_base" template="/WEB-INF/jsp/_tiles/_layout/modalLayout.jsp">
+    </definition>
+    
+    <definition name="module_base" template="/WEB-INF/jsp/_tiles/_layout/moduleLayout.jsp">
     </definition>
 
     <!--  예시 경로 site/aaa/bbb -->
     <definition name="view/*/*" extends="site_base">
+        <put-attribute name="content" value="/WEB-INF/jsp/ggits/{1}/{2}.jsp" />
+    </definition>
+
+    <!--  예시 경로 vip/aaa/bbb -->
+    <definition name="vip/*/*" extends="vip_base">
         <put-attribute name="content" value="/WEB-INF/jsp/ggits/{1}/{2}.jsp" />
     </definition>
 
@@ -39,6 +51,11 @@
     <!--  모달 경로 -->
     <definition name="modal/*/*" extends="modal_base">
         <put-attribute name="content" value="/WEB-INF/jsp/ggits/{1}/{2}.jsp" />
+    </definition>
+
+    <!--  모니터링 모듈 경로 -->
+    <definition name="monitoring/module/*" extends="module_base">
+        <put-attribute name="content" value="/WEB-INF/jsp/ggits/monitoring/module/{1}.jsp"/>
     </definition>
 
     <!--  지도 서브컨텐츠 경로 -->

@@ -33,7 +33,8 @@ public class GgbisBusRoute {
     private String    turninfoFlag;        
     private String    lastvehFlag;        
     private String    turnprocessFlag;        
-    private String    firstvehFlag;        
+    private String    firstvehFlag;
+    private String etlDt;
 
 
   public String getRouteId() {
@@ -312,4 +313,11 @@ public class GgbisBusRoute {
     this.firstvehFlag = firstvehFlag;
   }
 
+  public String getEtlDt() {
+    return etlDt;
+  }
+
+  public void setEtlDt(String etlDt) {
+    this.etlDt = etlDt;
+  }
 }

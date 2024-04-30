@@ -12,13 +12,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.neighbor21.ggits.common.entity.CGmStdLink;
+import com.neighbor21.ggits.common.entity.CGmStdNode;
 import com.neighbor21.ggits.common.entity.CommonResponse;
-import com.neighbor21.ggits.common.entity.GyCommInfoLink;
-import com.neighbor21.ggits.common.entity.GyCommInfoNode;
 import com.neighbor21.ggits.common.entity.Paging;
 import com.neighbor21.ggits.common.enums.NodeLinkMapSubMenuCd;
-import com.neighbor21.ggits.common.mapper.GyCommInfoLinkMapper;
-import com.neighbor21.ggits.common.mapper.GyCommInfoNodeMapper;
+import com.neighbor21.ggits.common.mapper.CGmStdLinkMapper;
+import com.neighbor21.ggits.common.mapper.CGmStdNodeMapper;
 
 /**
  * 연계 시설물 조회 맵 서브메뉴 컨트로러
@@ -28,10 +28,10 @@ import com.neighbor21.ggits.common.mapper.GyCommInfoNodeMapper;
 public class MapBasicInfoController {
 	
 	@Autowired
-	GyCommInfoNodeMapper gyCommInfoNodeMapper;
+	CGmStdLinkMapper cGmStdLinkMapper;
 	
 	@Autowired
-	GyCommInfoLinkMapper gyCommInfoLinkMapper;
+	CGmStdNodeMapper cGmStdNodeMapper; 
 
     /**
      * 연계 시설물 조회 맵  viewpage 호출
@@ -45,15 +45,15 @@ public class MapBasicInfoController {
 		case NODE_SEARCH:
 	    	paging.setPageNo(1);
 	    	paging.setPageSize(5);
-	    	paging.setTotalCount(gyCommInfoNodeMapper.countAll());
-    		model.addAttribute("nodeList", gyCommInfoNodeMapper.findAllNodeList());
+	    	paging.setTotalCount(cGmStdNodeMapper.countAll());
+    		model.addAttribute("nodeList", cGmStdNodeMapper.findAllNodeList());
     		model.addAttribute("paging", paging);
 			break;
 		case LINK_SEARCH:
 			paging.setPageNo(1);
 			paging.setPageSize(5);
-			paging.setTotalCount(gyCommInfoLinkMapper.countAll());
-			model.addAttribute("linkList", gyCommInfoLinkMapper.findAllGyCommInfoLink());
+			paging.setTotalCount(cGmStdLinkMapper.countAll());
+			model.addAttribute("linkList", cGmStdLinkMapper.findAllGyCommInfoLink());
 			model.addAttribute("paging", paging);
 			break;
 		case NODE_LINK_CURRENT_SITUATION:
@@ -74,14 +74,14 @@ public class MapBasicInfoController {
 	 * @return
 	 */
 	@GetMapping(value ="/node/search/list.ajax")
-    public @ResponseBody CommonResponse<?> searchNodeList(GyCommInfoNode gyCommInfoNode){
+    public @ResponseBody CommonResponse<?> searchNodeList(CGmStdNode cGmStdNode){
 		Map<String,Object> resultMap = new HashMap<String, Object>();
 		
-    	List<GyCommInfoNode> gyCommInfoNodeList = gyCommInfoNodeMapper.findNodeListByNodeIdAndNodeName(gyCommInfoNode);
-    	int totalCnt = gyCommInfoNodeMapper.countByNodeNmAndNodeNo(gyCommInfoNode);
+    	List<CGmStdNode> gyCommInfoNodeList = cGmStdNodeMapper.findNodeListByNodeIdAndNodeName(cGmStdNode);
+    	int totalCnt = cGmStdNodeMapper.countByNodeNmAndNodeNo(cGmStdNode);
 		
 		Paging paging = new Paging();
-		paging.setPageNo(gyCommInfoNode.getPage());
+		paging.setPageNo(cGmStdNode.getPage());
 		paging.setPageSize(5);
 		paging.setTotalCount(totalCnt);
     	resultMap.put("list", gyCommInfoNodeList);
@@ -98,17 +98,17 @@ public class MapBasicInfoController {
 	 * @return
 	 */
 	@GetMapping(value ="/link/search/list.ajax")
-	public @ResponseBody CommonResponse<?> searchLinkList(GyCommInfoLink gyCommInfoLink){
+	public @ResponseBody CommonResponse<?> searchLinkList(CGmStdLink CGmStdLink){
 		Map<String,Object> resultMap = new HashMap<String, Object>();
 		
-		List<GyCommInfoLink> gyCommInfoLinkList = gyCommInfoLinkMapper.findLinkListByLinkId(gyCommInfoLink);
-		int totalCnt = gyCommInfoLinkMapper.countByLinkId(gyCommInfoLink);
+		List<CGmStdLink> cGmStdLinkList = cGmStdLinkMapper.findLinkListByLinkId(CGmStdLink);
+		int totalCnt = cGmStdLinkMapper.countByLinkId(CGmStdLink);
 		
 		Paging paging = new Paging();
-		paging.setPageNo(gyCommInfoLink.getPage());
+		paging.setPageNo(CGmStdLink.getPage());
 		paging.setPageSize(5);
 		paging.setTotalCount(totalCnt);
-		resultMap.put("list", gyCommInfoLinkList);
+		resultMap.put("list", cGmStdLinkList);
 		resultMap.put("paging", paging);
 		
 		return CommonResponse.successToData(resultMap,"");

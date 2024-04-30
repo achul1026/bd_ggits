@@ -5,8 +5,8 @@
 	<sql id="mrtBusTotMoveInfo-Where">
 		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
 			AND mbtmi.ANLS_DT 
-			BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
-		    	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			BETWEEN TO_TIMESTAMP(#{strDt}|| ' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}|| ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
 		</if>
 		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
 			<![CDATA[
@@ -27,13 +27,20 @@
 	</sql>
 
 	<select id="countBusTotMoveInfoList" parameterType="commonEntity" resultType="int">
-		SELECT
-			COUNT(*)
+		SELECT 
+			COUNT(1)
 		FROM MRT_BUS_TOT_MOVE_INFO mbtmi
-		LEFT JOIN GGBIS_BUS_STATION gbs1
-			ON mbtmi.RIDE_STTN_ID = gbs1.STATION_ID
-		LEFT JOIN GGBIS_BUS_STATION gbs2
-			ON mbtmi.LNDI_STTN_ID = gbs2.STATION_ID
+		INNER JOIN (
+		SELECT
+		EGAP.ROUTE_ID,
+		EGAP.EB_ROUTE_ID
+		FROM
+		BIGDATA.EXT_GGBIS_ALLOCATION_PLAN EGAP
+		GROUP BY
+		EGAP.ROUTE_ID,
+		EGAP.EB_ROUTE_ID
+		) EBINFO ON MBTMI.BUS_ROUTE_ID = EBINFO.ROUTE_ID
+		INNER JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE EGBR ON EBINFO.ROUTE_ID = EGBR.ROUTE_ID
 		WHERE 
 			1=1
 			<include refid="mrtBusTotMoveInfo-Where"/>
@@ -41,18 +48,26 @@
 	
 	<select id="findAllMrtBusToMoveInfo" parameterType="commonEntity" resultType="mrtBusTotMoveInfo">
 		SELECT
-			mbtmi.BUS_ROUTE_ID
-			, gbs1.STATION_NM as rideSttnNm
-			, gbs2.STATION_NM as lndiSttnNm
-			, mbtmi.BUS_USE_CNT
-		FROM MRT_BUS_TOT_MOVE_INFO mbtmi
-		LEFT JOIN GGBIS_BUS_STATION gbs1
-			ON mbtmi.RIDE_STTN_ID = gbs1.STATION_ID
-		LEFT JOIN GGBIS_BUS_STATION gbs2
-			ON mbtmi.LNDI_STTN_ID = gbs2.STATION_ID
+			egbr.ROUTE_NM
+			, egbr.ST_STA_NM
+			, egbr.ED_STA_NM
+			, mbtmi.MVMN_DSTNE
+		FROM MRT_BUS_TOT_MOVE_INFO MBTMI
+		INNER JOIN (
+		SELECT
+		EGAP.ROUTE_ID,
+		EGAP.EB_ROUTE_ID
+		FROM
+		BIGDATA.EXT_GGBIS_ALLOCATION_PLAN EGAP
+		GROUP BY
+		EGAP.ROUTE_ID,
+		EGAP.EB_ROUTE_ID
+		) EBINFO ON MBTMI.BUS_ROUTE_ID = EBINFO.ROUTE_ID
+		INNER JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE EGBR ON EBINFO.ROUTE_ID = EGBR.ROUTE_ID
 		WHERE 
 			1=1
 			<include refid="mrtBusTotMoveInfo-Where"/>
 		ORDER BY mbtmi.ANLS_DT DESC
+		LIMIT 10 OFFSET (#{page} - 1) * 10
 	</select>
 </mapper>

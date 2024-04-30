@@ -3,11 +3,129 @@
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.TrfIpcssMeanShareRtMapper'>
 	
+	<select id="findAllMeanShareRtList" parameterType="trfvlmStatisticsDTO" resultType="trfIpcssMeanShareRt">
+		SELECT 
+			IPCSS_MNG_NO
+			, SMLFACT_NM
+			, SMLFACT_ADDR
+			, SCALE
+			, TOTFRAR
+			, EXMN_DIV_NM
+			, EXMN_YMD
+			, EXMN_DOC_NM
+		FROM TRF_IPCSS_MEAN_SHARE_RT
+		WHERE IPCSS_MNG_NO = #{ipcssMngNo}
+			<if test="dwellYn != '' and dwellYn != null">
+				<if test='"Y".equals(dwellYn)'>
+					AND USG_CD IN ('001','101','103','106','109','111','112')
+				</if>
+				<if test='"N".equals(dwellYn)'>
+					AND USG_CD NOT IN ('001','101','103','106','109','111','112')
+				</if>				
+			</if>
+		GROUP BY IPCSS_MNG_NO, SMLFACT_NM, SMLFACT_ADDR, SCALE, TOTFRAR, EXMN_DIV_NM, EXMN_YMD, EXMN_DOC_NM, MEAN_SHARE_NO
+		ORDER BY MEAN_SHARE_NO::NUMERIC 
+	</select>
+	
+	<select id="findOneMeanShareRtInfoForDwell" parameterType="trfIpcssMeanShareRt" resultType="trfIpcssMeanShareRt">
+		SELECT 
+			moc.CD_NM 
+			, timsr.TRF_USE_CD
+			, timsr.TRF_MEAN_VHCCLS
+			, timsr.SHARE_RT
+		FROM TRF_IPCSS_MEAN_SHARE_RT timsr
+		INNER JOIN M_OP_CODE moc
+			ON timsr.USG_CD = moc.CD_ID AND moc.GRP_CD_ID = 'USG_CD'
+		WHERE timsr.SMLFACT_NM = #{smlfactNm} AND timsr.SMLFACT_ADDR = #{smlfactAddr} AND timsr.IPCSS_MNG_NO = #{ipcssMngNo} 
+			AND timsr.TRF_USE_CD in ('1','2','3','4') AND timsr.TRF_MEAN_VHCCLS in ('1','2','3','4','5')
+		GROUP BY moc.CD_NM, timsr.TRF_USE_CD, timsr.TRF_MEAN_VHCCLS, timsr.SHARE_RT, timsr.USG_NO
+		ORDER BY timsr.USG_NO::NUMERIC 
+	</select>
+
+	<select id="findOneMeanShareRtInfoForNonDwell" parameterType="trfIpcssMeanShareRt" resultType="trfIpcssMeanShareRt">
+		SELECT 
+			moc.CD_NM 
+			, timsr.TRF_USE_CD
+			, timsr.TRF_MEAN_VHCCLS
+			, timsr.SHARE_RT
+		FROM TRF_IPCSS_MEAN_SHARE_RT timsr
+		INNER JOIN M_OP_CODE moc
+			ON timsr.USG_CD = moc.CD_ID AND moc.GRP_CD_ID = 'USG_CD'
+		WHERE timsr.SMLFACT_NM = #{smlfactNm} AND timsr.SMLFACT_ADDR = #{smlfactAddr} AND timsr.IPCSS_MNG_NO = #{ipcssMngNo}  
+			AND timsr.TRF_USE_CD in ('5','6') AND timsr.TRF_MEAN_VHCCLS in ('1','2','3','4','5')
+		GROUP BY moc.CD_NM, timsr.TRF_USE_CD, timsr.TRF_MEAN_VHCCLS, timsr.SHARE_RT, timsr.USG_NO
+		ORDER BY timsr.USG_NO::NUMERIC 
+	</select>
+	
+	<select id="findAllChartData" parameterType="map" resultType="map">
+		WITH MEAN_SHARE_RT_LIST AS(
+				SELECT 
+					tims.TRF_MEAN_VHCCLS
+					, ROUND(SUM(tims.share_rt) / COUNT(trf_mean_vhccls),2) AS meanShareRt
+				FROM TRF_IPCSS_MEAN_SHARE_RT tims 
+				WHERE tims.IPCSS_MNG_NO = #{ipcssMngNo} AND tims.TRF_USE_CD = #{trfUseCd}
+				GROUP BY tims.TRF_MEAN_VHCCLS
+				ORDER BY tims.TRF_MEAN_VHCCLS
+		)
+		SELECT 	
+			ARRAY_TO_STRING(ARRAY_AGG(meanShareRt ORDER BY TRF_MEAN_VHCCLS), ',') as  meanShareRtArr
+		FROM MEAN_SHARE_RT_LIST
+	</select>
+	
+	<insert id="saveMeanShareRt" parameterType="trfIpcssMeanShareRt">
+		INSERT INTO TRF_IPCSS_MEAN_SHARE_RT(
+			IPCSS_MNG_NO
+			, SMLFACT_NM
+			, SMLFACT_ADDR
+			, SCALE
+			, TOTFRAR
+			, EXMN_DIV_NM
+			, EXMN_YMD
+			, EXMN_DOC_NM
+			, USG_CD
+			, TRF_USE_CD
+			, TRF_MEAN_VHCCLS
+			, SHARE_RT
+			, USG_NO
+			, MEAN_SHARE_NO
+			)VALUES(
+			#{ipcssMngNo}, 
+			#{smlfactNm}, 
+			#{smlfactAddr}, 
+			#{scale}, 
+			#{totfrar}, 
+			#{exmnDivNm}, 
+			#{exmnYmd}, 
+			#{exmnDocNm}, 
+			#{usgCd}, 
+			#{trfUseCd}, 
+			#{trfMeanVhccls}, 
+			#{shareRt},
+			#{usgNo},
+			#{meanShareNo});
+	</insert>
+	
 	<delete id="deleteTrafficImpactReportByIpcssMngNo" parameterType="String">
 		DELETE 
 		FROM 
 			TRF_IPCSS_MEAN_SHARE_RT 
 		WHERE
 			IPCSS_MNG_NO = #{ipcssMngNo}
+	</delete>
+	
+	<delete id="deleteTrafficImpactReportForUsg" parameterType="trfvlmStatisticsDTO">
+		DELETE 
+		FROM 
+			TRF_IPCSS_MEAN_SHARE_RT 
+		WHERE
+			IPCSS_MNG_NO = #{ipcssMngNo}
+		<if test="dwellYn != '' and dwellYn != null">
+			<if test='"Y".equals(dwellYn)'>
+				AND USG_CD IN ('001','101','103','106','109','111','112')
+			</if>
+			<if test='"N".equals(dwellYn)'>
+				AND USG_CD NOT IN ('001','101','103','106','109','111','112')
+			</if>				
+		</if>
 	</delete>
 </mapper>

@@ -1,8 +1,13 @@
 package com.neighbor21.ggits.common.dto;
 
+import java.util.List;
+
 public class MapBigdataSearchDTO {
 
     String searchYear;
+    String searchMonth;
+    String searchDay;
+    String searchHour;
     String searchPeriod;
     String startDate;
     String endDate;
@@ -15,17 +20,39 @@ public class MapBigdataSearchDTO {
     String searchCrossroadsLinkId;
     String searchCrossroadsNodeId;
     String searchRoadRank;
+    String searchLocationNm;
     String menuCode;
-
+    String dataOption;	//쿼리 param 경용 추가
+    String collectType;
+    String type;
+    String linkId;
+    
+    Long limit;
     int page = 1;            	//pageNum
     String routeNm;            	//노선 명
     String[] dayOfTheWeek;    	// 기간 검색용
-    String startNodeNm;        	// 출발지
-    String endNodeNm;        	// 도착지
+    String startStationId;		// 출발지 아이디
+    String startStationNm;		// 출발지 명
+    String endStationId;		// 도착지 아이디
+    String endStationNm;		// 도착지 명
     String peekAndOffPeek;    	// 출퇴근 시간 검색용
     String searchContent;		// text 검색용
-
+    String sigunCdId;			// 시군 코드 아이디
+    String routeTp;				// 노선 유형
+    List<String> routeTpList;
+    
+    String stStationId;			// 출발지 아이디
+    String edStationId;			// 도착지 아이디
+    
     String accidentType;
+    String dangerType; // 도로안전 유형
+    String[] dangerTypeList;
+    String routeId;
+    String pageType;
+    String[] timeArray = new String[]{"00","01","02","03","04","05","06","07","08","09","10","11","12","13","14","15","16","17","18","19","20","21","22","23",};
+    String districtGnm;
+    String companyNm;
+
 
     public String getSearchYear() {
         return searchYear;
@@ -163,23 +190,22 @@ public class MapBigdataSearchDTO {
         this.dayOfTheWeek = dayOfTheWeek;
     }
 
-    public String getStartNodeNm() {
-        return startNodeNm;
-    }
+	public String getStartStationId() {
+		return startStationId;
+	}
 
-    public void setStartNodeNm(String startNodeNm) {
-        this.startNodeNm = startNodeNm;
-    }
+	public void setStartStationId(String startStationId) {
+		this.startStationId = startStationId;
+	}
+	public String getEndStationId() {
+		return endStationId;
+	}
 
-    public String getEndNodeNm() {
-        return endNodeNm;
-    }
+	public void setEndStationId(String endStationId) {
+		this.endStationId = endStationId;
+	}
 
-    public void setEndNodeNm(String endNodeNm) {
-        this.endNodeNm = endNodeNm;
-    }
-
-    public String getPeekAndOffPeek() {
+	public String getPeekAndOffPeek() {
         return peekAndOffPeek;
     }
 
@@ -202,5 +228,189 @@ public class MapBigdataSearchDTO {
 	public void setSearchContent(String searchContent) {
 		this.searchContent = searchContent;
 	}
-    
+
+	public String getSigunCdId() {
+		return sigunCdId;
+	}
+
+	public void setSigunCdId(String sigunCdId) {
+		this.sigunCdId = sigunCdId;
+	}
+
+	public String getRouteTp() {
+		return routeTp;
+	}
+
+	public void setRouteTp(String routeTp) {
+		this.routeTp = routeTp;
+	}
+
+    public String getRouteId() {
+        return routeId;
+    }
+
+    public void setRouteId(String routeId) {
+        this.routeId = routeId;
+    }
+
+    public String[] getTimeArray() {
+        return timeArray;
+    }
+
+    public void setTimeArray(String[] timeArray) {
+        this.timeArray = timeArray;
+    }
+
+	public String getStStationId() {
+		return stStationId;
+	}
+
+	public void setStStationId(String stStationId) {
+		this.stStationId = stStationId;
+	}
+
+	public String getEdStationId() {
+		return edStationId;
+	}
+
+	public void setEdStationId(String edStationId) {
+		this.edStationId = edStationId;
+	}
+
+	public String getStartStationNm() {
+		return startStationNm;
+	}
+
+	public void setStartStationNm(String startStationNm) {
+		this.startStationNm = startStationNm;
+	}
+
+	public String getEndStationNm() {
+		return endStationNm;
+	}
+
+	public void setEndStationNm(String endStationNm) {
+		this.endStationNm = endStationNm;
+	}
+
+	public Long getLimit() {
+		return limit;
+	}
+
+	public void setLimit(Long limit) {
+		this.limit = limit;
+	}
+
+	public String getDataOption() {
+		return dataOption;
+	}
+
+	public void setDataOption(String dataOption) {
+		this.dataOption = dataOption;
+	}
+
+	public String getSearchLocationNm() {
+		return searchLocationNm;
+	}
+
+	public void setSearchLocationNm(String searchLocationNm) {
+		this.searchLocationNm = searchLocationNm;
+	}
+
+    public String getDangerType() {
+        return dangerType;
+    }
+
+    public void setDangerType(String dangerType) {
+        this.dangerType = dangerType;
+    }
+
+	public String getPageType() {
+		return pageType;
+	}
+
+	public void setPageType(String pageType) {
+		this.pageType = pageType;
+	}
+
+    public String getCollectType() {
+        return collectType;
+    }
+
+    public void setCollectType(String collectType) {
+        this.collectType = collectType;
+    }
+
+	public String[] getDangerTypeList() {
+		return dangerTypeList;
+	}
+
+	public void setDangerTypeList(String[] dangerTypeList) {
+		this.dangerTypeList = dangerTypeList;
+	}
+
+
+    public String getSearchMonth() {
+        return searchMonth;
+    }
+
+    public void setSearchMonth(String searchMonth) {
+        this.searchMonth = searchMonth;
+    }
+
+    public String getSearchDay() {
+        return searchDay;
+    }
+
+    public void setSearchDay(String searchDay) {
+        this.searchDay = searchDay;
+    }
+
+    public String getSearchHour() {
+        return searchHour;
+    }
+
+    public void setSearchHour(String searchHour) {
+        this.searchHour = searchHour;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getDistrictGnm() {
+        return districtGnm;
+    }
+
+    public void setDistrictGnm(String districtGnm) {
+        this.districtGnm = districtGnm;
+    }
+
+    public List<String> getRouteTpList() {
+        return routeTpList;
+    }
+
+    public void setRouteTpList(List<String> routeTpList) {
+        this.routeTpList = routeTpList;
+    }
+
+    public String getLinkId() {
+        return linkId;
+    }
+
+    public void setLinkId(String linkId) {
+        this.linkId = linkId;
+    }
+
+    public String getCompanyNm() {
+        return companyNm;
+    }
+
+    public void setCompanyNm(String companyNm) {
+        this.companyNm = companyNm;
+    }
 }

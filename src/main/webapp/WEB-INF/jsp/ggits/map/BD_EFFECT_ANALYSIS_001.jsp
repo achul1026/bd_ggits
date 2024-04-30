@@ -2,10 +2,10 @@
 	pageEncoding="UTF-8"%>
 <div class="bigdata_wrap">
     <div class="sub_data_list tab_set mj0">
-    	<div class="tab_fc mt16 mb8">
+    	<div class="tab_fc pd16">
 	        <ul>
-	            <li><button type="button" class="sub_data_btn" data-index="1">정체 개선 순위</button></li>
-	            <li><button type="button" class="sub_data_btn" data-index="2">주요 긴급차량<br>이동 도로 분석</button></li>
+	            <li><button type="button" class="sub_data_btn dataCtgryBtn" data-value="delay" data-index="1">정체 개선 순위</button></li>
+	            <li><button type="button" class="sub_data_btn dataCtgryBtn" data-value="emergency" data-index="2">광역 긴급차량<br>이동 도로 분석</button></li>
 	        </ul>
     	</div>
         <div class="tab_area">
@@ -23,36 +23,35 @@
 					</div>	            
 	                <div class="result_item">
 	                	<div>
-	                		<button type="button" class="prev_text mb8 mt8"><span class="prev_arrow">←</span> 이전</button>
+	                		<button type="button" class="prev_text rollbackBtn"><span class="prev_arrow">←</span> 이전</button>
 	                	</div>
 	                    <div class="tab_item_box flex-center">
 	                        <h5 class="tab_item_title">기준</h5>
-	                        <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" class="none">시군 별</label>
-	                        <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" class="none">읍면동 별</label>
-	                        <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" class="none">교차로 별</label>
-	                        <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" class="none">도로 별</label>
+	                        <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" name="delayDataOption" class="none" value="city">시군 별</label>
+	                        <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" name="delayDataOption" class="none" value="town">읍면동 별</label>
+	                        <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" name="delayDataOption" class="none" value="cross">교차로 별</label>
+	                        <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" name="delayDataOption" class="none" value="link">도로 별</label>
 	                    </div>
 	                    <div class="tab_item_box flex-center">
 	                        <h5 class="tab_item_title">항목</h5>
-	                        <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" class="none">혼잡강도</label>
-	                        <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" class="none">교통량</label>
-	                        <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" class="none">평균속도</label>
-	                        <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" class="none">돌발위험</label>
+	                        <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" name="delayDataType" class="none" value="confusion">혼잡강도</label>
+	                        <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" name="delayDataType" class="none" value="trfVlm">교통량</label>
+	                        <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" name="delayDataType" class="none" value="speed">평균속도</label>
+	                        <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" name="delayDataType" class="none" value="outbreak">돌발위험</label>
 	                    </div>
 	                    <div class="tab_item_box flex-center list_tab_button">
 	                        <h5 class="tab_item_title">차트 유형</h5>
-	                        <label class="group_btn_item is-dark-btn is-darkgreen-btn radius inpd" data-tab="1"><input type="checkbox" class="" checked="checked">그래프</label>
-	                        <label class="group_btn_item is-dark-btn radius inpd" data-tab="2"><input type="checkbox" class="">표</label>
+	                        <label class="group_btn_item is-dark-btn radius inpd" data-tab="1"><input type="checkbox" name="delayChartType" class="none" value="graph">그래프</label>
+	                        <label class="group_btn_item is-dark-btn radius inpd" data-tab="2"><input type="checkbox" name="delayChartType" class="none" value="table">표</label>
 	                    </div>
 	                    <div class="list_tab_area">
 		                    <div class="tab_item_box list_tab1">
-	                            <select class="selectBox radius block">
-	                                <option>첨두</option>
-	                                <option>테스트</option>
-	                                <option>테스트</option>
-	                                <option>테스트</option>
+	                            <select id="delayChartOption" class="selectBox radius block">
+	                                <option value="all">전체</option>
+	                                <option value="max">첨두</option>
+	                                <option value="min">비첨두</option>
 	                            </select>
-	                            <div class="mt8" style="width:400px;">
+	                            <div class="mt8" style="width:400px; height:260px;">
 			                        <canvas id="tab1"></canvas>
 	                            </div>	                    
 		                    </div>
@@ -121,7 +120,7 @@
         	<div class="tab tab2 tab-none">
 	            <div>
 					<div class="tab_box_sub_header">
-						<div class="tab_box_title">주요 긴급차량 이동 도로 분석</div>
+						<div class="tab_box_title">광역 긴급차량 이동 도로 분석</div>
 						<div class="tab_box_close">
 							<div class="opa_slider ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all">
 								<div class="ui-slider-range ui-widget-header ui-corner-all ui-slider-range-min" style="width: 100%;"></div>
@@ -132,30 +131,30 @@
 					</div>	            
 	                <div class="result_item">
 	                	<div>
-	                		<button type="button" class="prev_text mb8 mt8"><span class="prev_arrow">←</span> 이전</button>
+	                		<button type="button" class="prev_text rollbackBtn"><span class="prev_arrow">←</span> 이전</button>
 	                	</div>	                
 	                    <div class="tab_item_box flex-center">
 	                        <h5 class="tab_item_title">기준</h5>
-	                        <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" class="none">시군 별</label>
-	                        <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" class="none">읍면동 별</label>
-	                        <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" class="none">교차로 별</label>
-	                        <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" class="none">도로 별</label>
+	                        <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" name="emergencyDataOption" class="none" value="city">시군 별</label>
+	                        <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" name="emergencyDataOption" class="none" value="town">읍면동 별</label>
+	                        <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" name="emergencyDataOption" class="none" value="cross">교차로 별</label>
+	                        <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" name="emergencyDataOption" class="none" value="link">도로 별</label>
 	                    </div>
 	                    <div class="tab_item_box">
-							<div class="btn_search_wrap float-none mb16 flex-between">
-                                <input type="text" placeholder="도로명을 입력해주세요." class="input_same search_box wd100">
+							<div class="btn_search_wrap float-none flex-between">
+                                <input type="text" id="searchConents" placeholder="도로명을 입력해주세요." class="input_same search_box wd100">
                                 <input type="button" value="검색" class="input_same search_box2">
                             </div>
 	                    </div>
 	                    <div class="tab_item_box">
-							<button type="button" class="map_on_button is-dark-btn radius mb8">지도에 표시</button>
+							<button type="button" class="map_on_button is-dark-btn radius mb12">지도에 표시</button>
 							<div class="bigdata_table">
 		                        <table>
 		                            <colgroup>
 		                                <col style="width:10%">
-		                                <col style="width:16%">
 		                                <col style="width:26%">
-		                                <col style="width:48%">
+		                                <col style="width:36%">
+		                                <col style="width:28%">
 		                            </colgroup>
 		                            <thead>
 		                                <tr>
@@ -238,7 +237,6 @@
             fill: false,
     })
     .setTicksStep(100)
-    .setLabelDisplay(false)
     .setAxis('y')
     .setBarGridY(false)
     .setBarGridX(true)
@@ -260,5 +258,78 @@
                 }
             }
         });
-    });		
+    });
+	
+	$(".dataCtgryBtn").on('click',function(){
+		var $this = $(this);
+		
+		//초기세팅
+		switch($this.data('value')){
+		case "delay":
+			var dataOptionFirstChild = $("input[name='delayDataOption']").eq(0);
+			var dataTypeFirstChild = $("input[name='delayDataType']").eq(0);
+			var delayChartType = $("input[name='delayChartType']").eq(0);
+			var delayChartOption = $("#delayChartOption").val();
+			
+			dataOptionFirstChild.prop("checked",true);
+			dataOptionFirstChild.parent('label').addClass('is-darkgreen-btn');
+
+			
+			dataTypeFirstChild.prop("checked",true);
+			dataTypeFirstChild.parent('label').addClass('is-darkgreen-btn');
+			
+			delayChartType.prop("checked",true);
+			delayChartType.parent('label').addClass('is-darkgreen-btn');
+			
+			delayChartGraphInit(dataOptionFirstChild.val(), dataTypeFirstChild.val(),delayChartOption);
+			
+			break;
+		case "emergency":
+			var dataOptionFirstChild = $("input[name='emergencyDataOption']").eq(0);
+			
+			dataOptionFirstChild.prop("checked",true);
+			dataOptionFirstChild.parent('label').addClass('is-darkgreen-btn');
+
+			emergencyTableInit(dataOptionFirstChild.val());
+			break;
+		}
+	});
+	
+	function delayChartGraphInit(dataOption,dataType,chartOption){
+		console.log(dataOption);
+		console.log(dataType);
+		
+		 $.ajax ({
+	            type : "post",
+	            data : {
+	            	"dataOption" : dataOption,
+	            	"dataType"	 : dataType,
+	            	"chartOption" : chartOption
+	            },
+	            url : "${pageContext.request.contextPath}/map/bigdata/loadDangerousData.ajax",
+	            cache : false,
+	            dataType : "json",
+	            success : function(result) {
+	            	
+	            }
+		 })
+	}
+	
+	function emergencyTableInit(dataOption){
+		 var searchConent = $("#searchConents").val();
+		 
+		 $.ajax ({
+	            type : "post",
+	            data : {
+	            	"dataOption" : dataOption,
+	            	"searchContent" : searchContent
+	            },
+	            url : "${pageContext.request.contextPath}/map/bigdata/loadTrafficAnalysisEmergency.ajax",
+	            cache : false,
+	            dataType : "json",
+	            success : function(result) {
+	            	
+	            }
+		 })
+	}
 </script>

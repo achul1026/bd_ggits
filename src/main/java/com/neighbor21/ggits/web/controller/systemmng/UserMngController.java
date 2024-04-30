@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpSession;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -21,13 +23,17 @@ import com.neighbor21.ggits.common.component.validate.ValidateChecker;
 import com.neighbor21.ggits.common.component.validate.ValidateResult;
 import com.neighbor21.ggits.common.entity.CommonResponse;
 import com.neighbor21.ggits.common.entity.MOpAuthority;
+import com.neighbor21.ggits.common.entity.MOpCode;
 import com.neighbor21.ggits.common.entity.MOpGrpInfo;
 import com.neighbor21.ggits.common.entity.MOpOperator;
+import com.neighbor21.ggits.common.entity.MOpUserCntnSystemMenu;
 import com.neighbor21.ggits.common.entity.Paging;
 import com.neighbor21.ggits.common.mapper.MOpAuthorityMapper;
 import com.neighbor21.ggits.common.mapper.MOpGrpInfoMapper;
 import com.neighbor21.ggits.common.mapper.MOpOperatorMapper;
+import com.neighbor21.ggits.common.mapper.MOpUserCntnSystemMenuMapper;
 import com.neighbor21.ggits.common.util.GgitsCommonUtils;
+import com.neighbor21.ggits.common.util.LoginSessionUtils;
 import com.neighbor21.ggits.common.util.PasswordUtils;
 import com.neighbor21.ggits.support.exception.CommonException;
 import com.neighbor21.ggits.support.exception.ErrorCode;
@@ -49,6 +55,9 @@ public class UserMngController {
 	@Autowired
 	MOpGrpInfoMapper mOpGrpInfoMapper;
 	
+	@Autowired
+	MOpUserCntnSystemMenuMapper mOpUserCntnSystemMenuMapper;
+	
     /**
       * @Method Name : userList
       * @작성일 : 2023. 8. 22.
@@ -57,13 +66,20 @@ public class UserMngController {
       * @return
       */
 	@GetMapping("/user/list.do")
-    public String userList(Model model,MOpOperator mOpOperator){		
+    public String userList(Model model,MOpOperator mOpOperator,HttpSession session){
+		
+		MOpOperator mOpOperatorInfo = (MOpOperator) session.getAttribute("mOpOperatorInfo");
+		
 		model.addAttribute("strDt", mOpOperator.getStrDt());
 		model.addAttribute("endDt", mOpOperator.getEndDt());
 		
 		mOpOperator.setStrDt(GgitsCommonUtils.removeHyphen(mOpOperator.getStrDt()));
 		mOpOperator.setEndDt(GgitsCommonUtils.removeHyphen(mOpOperator.getEndDt()));
-
+		
+		//2023-11-11 일반 관리자 기관별 목록 조회 추가
+		mOpOperator.setMngInstCd(mOpOperatorInfo.getMngInstCd());
+		mOpOperator.setOprtrGrd(mOpOperatorInfo.getOprtrGrd());
+		
 		List<MOpOperator> userList = mOpOperatorMapper.findAllUserList(mOpOperator);
 		int totalCnt = mOpOperatorMapper.countAll(mOpOperator);
 		
@@ -76,6 +92,7 @@ public class UserMngController {
     	model.addAttribute("searchContent", mOpOperator.getSearchContent());
     	model.addAttribute("searchType", mOpOperator.getSearchType());
     	model.addAttribute("oprtrSttsCd", mOpOperator.getOprtrSttsCd());
+    	model.addAttribute("oprtrGrd", mOpOperatorInfo.getOprtrGrd());
     	
         return "view/systemmng/userList";
     }
@@ -111,8 +128,10 @@ public class UserMngController {
 	 * @return
 	 */
 	@GetMapping("/user/save.do")
-	public String userSave(){
-		
+	public String userSave(Model model){
+		Long oprtrId = LoginSessionUtils.getOprtrId();
+		MOpOperator userDetail = userMngService.findOneUserDetailByOprtrId(oprtrId);
+		model.addAttribute("mOpOperatorInfo", userDetail);
 		return "view/systemmng/userSave";
 	}
 	
@@ -131,7 +150,7 @@ public class UserMngController {
 		   		   .addRule("oprtrNm", new ValidateChecker().setRequired().setMaxLength(50, "관리자 명은 50자를 넘을 수 없습니다."))
 		   		   .addRule("oprtrPswd", new ValidateChecker().setRequired().setPassword().setMaxLength(256, "관리자 비밀번호는 256자를 넘을 수 없습니다."))
 	   			   .addRule("addngCd", new ValidateChecker().setRequired())
-	   			   .addRule("grpNm", new ValidateChecker().setRequired());
+	   			   .addRule("grpId", new ValidateChecker().setRequired());
 	   
 	   ValidateResult dtoValidatorResult = dtoValidator.isValid();
 	   
@@ -176,9 +195,10 @@ public class UserMngController {
 		
 		dtoValidator.addRule("oprtrEmail", new ValidateChecker().setEmail().setRequired().setMaxLength(40, "관리자 이메일은 40자를 넘을 수 없습니다."))
 					.addRule("oprtrNm", new ValidateChecker().setRequired().setMaxLength(50, "관리자 명은 50자를 넘을 수 없습니다."))
-			   		.addRule("addngCd", new ValidateChecker().setRequired())
-			   		.addRule("grpNm", new ValidateChecker().setRequired());
-		
+			   		/*.addRule("addngCd", new ValidateChecker().setRequired())*/
+			   		.addRule("oprtrId", new ValidateChecker().setRequired())
+			   		.addRule("grpId", new ValidateChecker().setRequired());
+
 	   ValidateResult dtoValidatorResult = dtoValidator.isValid();
 	   
 	   if(!dtoValidatorResult.isSuccess()) {
@@ -188,7 +208,7 @@ public class UserMngController {
 		try {
 			userMngService.updateUserInfo(mOpOperator);
 		}catch (CommonException e) {
-	 	    return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST , e.getMessage());
+	 	    return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST ,"유저 정보가 수정되지 않았습니다.");
 		}
 		return CommonResponse.ResponseCodeAndMessage(HttpStatus.OK , "유저 정보가 수정되었습니다.");
     }
@@ -220,7 +240,7 @@ public class UserMngController {
 			mOpOperator.setOprtrId(oprtrId);
 			userMngService.deleteUserInfo(mOpOperator);
 		}catch (CommonException e) {
-			return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST , e.getMessage());
+			return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST , "유저 정보 삭제 중 오류가 발생했습니다.");
 		}
 		return CommonResponse.ResponseCodeAndMessage(HttpStatus.OK , "유저 정보가 삭제되었습니다.");
 	}
@@ -252,7 +272,7 @@ public class UserMngController {
 		   mOpOperator.setOprtrPswd(oprtrPswd);
 		   userMngService.updateUserPswd(mOpOperator);
 	   }catch (CommonException e) {
-		   return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST , e.getMessage());
+		   return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST , "비밀번호 변경을 실패 했습니다.");
 		}		
 		return CommonResponse.ResponseCodeAndMessage(HttpStatus.OK , "비밀번호가 변경 되었습니다.");
 	}
@@ -287,6 +307,46 @@ public class UserMngController {
 	}
 	
 	/**
+	 * @Method Name : userMenuUpdate
+	 * @작성일 : 2023. 12. 27.
+	 * @작성자 : KY.LEE
+	 * @Method 설명 : 시스템관리 > 사용자 관리 -> 권한부여 -> 진입 메뉴 권한 관리 -> 수정 버튼
+	 * @return
+	 */
+	@PostMapping("/user/menu/update.ajax")
+	public @ResponseBody CommonResponse<?> userMenuUpdate(
+			@RequestParam(value = "oprtrId", required = true) Long oprtrId,
+			@RequestParam(value = "useArr", required = false) String useArr,
+			@RequestParam(value = "notUseArr", required = false) String notUseArr
+			){
+		MOpUserCntnSystemMenu mOpUserCntnSystemMenu = new MOpUserCntnSystemMenu();
+		mOpUserCntnSystemMenu.setOprtrId(oprtrId);
+		
+		if(!GgitsCommonUtils.isNull(useArr)) {
+			mOpUserCntnSystemMenu.setUseYn("Y");
+			if(useArr.contains(",")) {
+				mOpUserCntnSystemMenu.setCntnSystemCdArr(useArr.split(","));
+			} else {
+				mOpUserCntnSystemMenu.setCntnSystemCd(useArr);
+			}
+			mOpUserCntnSystemMenuMapper.updateMOpUserCntnSystemMenuUseYn(mOpUserCntnSystemMenu);
+		}
+
+		if(!GgitsCommonUtils.isNull(notUseArr)) {
+			mOpUserCntnSystemMenu.setUseYn("N");
+			if(notUseArr.contains(",")) {
+				mOpUserCntnSystemMenu.setCntnSystemCdArr(notUseArr.split(","));
+			} else {
+				mOpUserCntnSystemMenu.setCntnSystemCdArr(null);
+				mOpUserCntnSystemMenu.setCntnSystemCd(notUseArr);
+			}
+			mOpUserCntnSystemMenuMapper.updateMOpUserCntnSystemMenuUseYn(mOpUserCntnSystemMenu);
+		}
+		
+		return CommonResponse.ResponseCodeAndMessage(HttpStatus.OK , "진입 메뉴 권한이 수정 되었습니다.");
+	}
+	
+	/**
      * @Method Name : groupList
      * @작성일 : 2023. 8. 22.
      * @작성자 : NK.KIM
@@ -294,7 +354,7 @@ public class UserMngController {
      * @return
      */
 	@GetMapping("/user/group/list.do")
-	public String groupList(MOpGrpInfo mOpGrpInfo,Model model){
+	public String groupList(MOpGrpInfo mOpGrpInfo,Model model,HttpSession session){
 		model.addAttribute("searchContent", mOpGrpInfo.getSearchContent());
 		model.addAttribute("strDt", mOpGrpInfo.getStrDt());
 		model.addAttribute("endDt", mOpGrpInfo.getEndDt());
@@ -305,6 +365,10 @@ public class UserMngController {
 		if(!GgitsCommonUtils.isNull(mOpGrpInfo.getEndDt())) {
 			mOpGrpInfo.setEndDt(mOpGrpInfo.getEndDt() + " 23:59:59");
 		}
+		//2023-11-11 일반 관리자 기관별 목록 조회 추가
+		MOpOperator mOpOperatorInfo = (MOpOperator) session.getAttribute("mOpOperatorInfo");
+		mOpGrpInfo.setMngInstCd(mOpOperatorInfo.getMngInstCd());
+		mOpGrpInfo.setOprtrGrd(mOpOperatorInfo.getOprtrGrd());
 		List<MOpGrpInfo> groupList = mOpGrpInfoMapper.findAllGroupList(mOpGrpInfo);
 		int grpListTotalCnt = mOpGrpInfoMapper.countAll(mOpGrpInfo);
 		model.addAttribute("groupList",groupList);
@@ -457,7 +521,7 @@ public class UserMngController {
 			  
     		userMngService.updateGrpInfo(mOpGrpInfo,strOprtrIdArr);
     	}catch (CommonException e) {
-     	    return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST , e.getMessage());
+     	    return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST , "그룹 정보 수정을 실패했습니다.");
 		}
 		
 		return CommonResponse.ResponseCodeAndMessage(HttpStatus.OK , "그룹 정보가 수정되었습니다.");
@@ -504,7 +568,7 @@ public class UserMngController {
 			
 			userMngService.saveGrpInfo(mOpGrpInfo,strOprtrIdArr);
 		}catch (CommonException e) {
-			return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST , e.getMessage());
+			return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST , "그룹 정보 등록을 실패했습니다.");
 		}
 		
 		return CommonResponse.ResponseCodeAndMessage(HttpStatus.OK , "그룹 정보가 등록되었습니다.");
@@ -538,7 +602,7 @@ public class UserMngController {
 		try {
 			userMngService.deleteGrpInfo(mOpGrpInfo,strOprtrIdArr);
 		}catch (CommonException e) {
-			return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST , e.getMessage());
+			return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST , "그룹 정보 삭제를 실패했습니다.");
 		}
 		
 		return CommonResponse.ResponseCodeAndMessage(HttpStatus.OK , "그룹 정보가 삭제되었습니다.");

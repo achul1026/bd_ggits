@@ -2,16 +2,20 @@ package com.neighbor21.ggits.common.entity;
 
 import java.sql.Timestamp;
 
-public class ScsEmrgVhclLogInfo {
+public class ScsEmrgVhclLogInfo extends CommonEntity {
     private Timestamp    date;        
     private String    serviceid;        
     private String    evno;        
     private double    currentlat;        
     private double    currentlng;        
-    private long    speed;        
+    private long    speed;    
     
-    private long arrivaltime;
-
+    private Timestamp arrivalDate;   
+    private String arrivaltimeFormat;
+    private String emrgCurSttsCd;
+    private String ocrtype;
+    private Double kilometer;
+    
   public Timestamp getDate() {
     return date;
   }
@@ -65,12 +69,44 @@ public class ScsEmrgVhclLogInfo {
     this.speed = speed;
   }
 
-  public long getArrivaltime() {
-	return arrivaltime;
-  }
+public Timestamp getArrivalDate() {
+	return arrivalDate;
+}
 
-  public void setArrivaltime(long arrivaltime) {
-	this.arrivaltime = arrivaltime;
-  }
+public void setArrivalDate(Timestamp arrivalDate) {
+	this.arrivalDate = arrivalDate;
+}
+
+public String getArrivaltimeFormat() {
+	return arrivaltimeFormat;
+}
+
+public void setArrivaltimeFormat(String arrivaltimeFormat) {
+	this.arrivaltimeFormat = arrivaltimeFormat;
+}
+
+public String getEmrgCurSttsCd() {
+	return emrgCurSttsCd;
+}
+
+public void setEmrgCurSttsCd(String emrgCurSttsCd) {
+	this.emrgCurSttsCd = emrgCurSttsCd;
+}
+
+public String getOcrtype() {
+	return ocrtype;
+}
+
+public void setOcrtype(String ocrtype) {
+	this.ocrtype = ocrtype;
+}
+
+public Double getKilometer() {
+	return kilometer;
+}
+
+public void setKilometer(Double kilometer) {
+	this.kilometer = kilometer;
+}
 
 }

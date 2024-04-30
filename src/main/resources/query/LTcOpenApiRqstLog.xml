@@ -18,9 +18,9 @@
 	</sql>
 	<select id="countDataUseStatsList" parameterType="commonEntity" resultType="int">
 		SELECT
-			COUNT(*)
+			COUNT(ltoarl.*)
 		FROM L_TC_OPEN_API_RQST_LOG ltoarl
-		LEFT JOIN M_OP_OPERATOR mop
+		INNER JOIN M_OP_OPERATOR mop
 			ON ltoarl.oprtr_id = mop.oprtr_id
 		WHERE
 			1=1
@@ -30,15 +30,20 @@
 	<select id="findAllDataUseStatsList" parameterType="commonEntity" resultType="lTcOpenApiRqstLog">
 		SELECT
 			ROW_NUMBER() OVER(ORDER BY ltoarl.CLCT_DT) AS rownum
+			, ltoarl.OPEN_API_LOG_ID
 			, ltoarl.CLCT_DT
 			, ltoarl.OPRTR_ID
 			, ltoarl.API_RQST_LOG
-			, ltoarl.SRCH_CNT
-			, ltoarl.DWNLD_CNT
+			, COALESCE(ltoarl.SRCH_CNT,0) as SRCH_CNT
+			, COALESCE(ltoarl.DWNLD_CNT,0) as DWNLD_CNT
+			, ltoarl.API_CALL_URL
+			, ltoarl.PARAMETER_VALUE
+			, ltoarl.RESULT_STATUS
+			, ltoarl.RESPONSE_CNT
 			, mop.OPRTR_NM || '(' || mop.OPRTR_EMAIL || ')' as oprtrIdStr
 		FROM 
 			L_TC_OPEN_API_RQST_LOG ltoarl
-		LEFT JOIN M_OP_OPERATOR mop
+		INNER JOIN M_OP_OPERATOR mop
 			ON ltoarl.oprtr_id = mop.oprtr_id
 		WHERE
 			1=1
@@ -69,6 +74,7 @@
 	<select id="findAllLTcOpenApiRqstLogList" parameterType="lTcOpenApiRqstLog" resultType="lTcOpenApiRqstLog">
 		SELECT
 			ROW_NUMBER() OVER(ORDER BY ltoarl.CLCT_DT) AS rownum
+			, ltoarl.OPEN_API_LOG_ID
 			, ltoarl.CLCT_DT
 			, ltoarl.API_ID
 			, ltoarl.FILEXT_ID
@@ -78,6 +84,10 @@
 			, ltoarl.API_RQST_LOG
 			, ltoarl.SRCH_CNT
 			, ltoarl.DWNLD_CNT
+			, ltoarl.API_CALL_URL
+			, ltoarl.PARAMETER_VALUE
+			, ltoarl.RESULT_STATUS
+			, ltoarl.RESPONSE_CNT
 			, moo.OPRTR_NM
 			, moo.OPRTR_EMAIL
 		FROM 
@@ -101,5 +111,59 @@
 		</if>
 		ORDER BY ROWNUM DESC 
 		LIMIT 10 OFFSET (#{page} - 1) * 10
+	</select>
+	
+	<insert id="saveLTcOpenApiRqstLog" parameterType="lTcOpenApiRqstLog">
+		INSERT INTO L_TC_OPEN_API_RQST_LOG ( 
+			OPEN_API_LOG_ID,
+			CLCT_DT,
+			API_ID,
+			FILEXT_ID,
+			TAG_ID,
+			AUTH_CD,
+			OPRTR_ID,
+			API_RQST_LOG,
+			SRCH_CNT,
+			DWNLD_CNT,
+			API_CALL_URL,
+			PARAMETER_VALUE,
+			RESULT_STATUS,
+			RESPONSE_CNT
+		) VALUES (
+			#{openApiLogId},
+			now(),
+			#{apiId},
+			#{filextId},
+			#{tagId},
+			#{authCd},
+			#{oprtrId},
+			#{apiRqstLog},
+			#{srchCnt},
+			#{dwnldCnt},
+			#{apiCallUrl},
+			#{parameterValue},
+			#{resultStatus},
+			#{responseCnt}
+		)
+	</insert>
+	
+	<select id="findOneByOpenApiLogId" parameterType="String" resultType="lTcOpenApiRqstLog">
+	SELECT 
+		CLCT_DT,
+		API_ID,
+		FILEXT_ID,
+		TAG_ID,
+		AUTH_CD,
+		OPRTR_ID,
+		API_RQST_LOG,
+		SRCH_CNT,
+		DWNLD_CNT,
+		API_CALL_URL,
+		PARAMETER_VALUE,
+		RESULT_STATUS,
+		RESPONSE_CNT,
+		OPEN_API_LOG_ID
+	FROM L_TC_OPEN_API_RQST_LOG
+	WHERE OPEN_API_LOG_ID = #{openApiLogId}
 	</select>
 </mapper>

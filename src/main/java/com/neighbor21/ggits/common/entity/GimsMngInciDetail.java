@@ -2,12 +2,17 @@ package com.neighbor21.ggits.common.entity;
 
 import java.sql.Timestamp;
 
-public class GimsMngInciDetail {
+import com.neighbor21.ggits.common.enums.InciCateCd;
+import com.neighbor21.ggits.common.util.BDStringUtil;
+import com.neighbor21.ggits.common.util.GgitsCommonUtils;
+
+public class GimsMngInciDetail extends CommonEntity {
 
 	private String mngId; // 돌발정보관리ID
-	private long detailSeq; // 상세(이력) 순차번호(MNG_ID 기준으로 1,2,3...)
+	private Long detailSeq; // 상세(이력) 순차번호(MNG_ID 기준으로 1,2,3...)
 	private String updateCate; // 갱신사유유형[INIT(최초등록) | TIME(시각) | LANE(차선) | DESC(부연설명) | LOCA(위치) | TERM(종료)
 	private String inciCate; // 돌발유형(교통정보교환 기술기준 준용)
+	private String inciCateNm; // 돌발유형명(교통정보교환 기술기준 준용)
 	private String beginDate; // 시작(개시, 발생) 일시
 	private String endDate; // 종료(예정) 일시
 	private String occurredLane; // 발생 차로
@@ -30,6 +35,12 @@ public class GimsMngInciDetail {
 	
 	private String infoSrcOrg; // 정보 출처 기관
 	
+	//none col
+	private Long totalCnt;
+	private String addressjibun;
+	private String inciTyNm;
+	private String geojson;
+	
 	public String getMngId() {
 		return mngId;
 	}
@@ -38,11 +49,11 @@ public class GimsMngInciDetail {
 		this.mngId = mngId;
 	}
 
-	public long getDetailSeq() {
+	public Long getDetailSeq() {
 		return detailSeq;
 	}
 
-	public void setDetailSeq(long detailSeq) {
+	public void setDetailSeq(Long detailSeq) {
 		this.detailSeq = detailSeq;
 	}
 
@@ -60,6 +71,12 @@ public class GimsMngInciDetail {
 
 	public void setInciCate(String inciCate) {
 		this.inciCate = inciCate;
+		if(!GgitsCommonUtils.isNull(inciCate)) {
+			String inciCateNm = InciCateCd.getCodeName(inciCate);
+			if(!BDStringUtil.isNull(inciCateNm)) {
+				this.inciCateNm	= inciCateNm;
+			}
+		}
 	}
 
 	public String getBeginDate() {
@@ -189,5 +206,44 @@ public class GimsMngInciDetail {
 	public void setInfoSrcOrg(String infoSrcOrg) {
 		this.infoSrcOrg = infoSrcOrg;
 	}
-	
+
+	public String getInciCateNm() {
+		return inciCateNm;
+	}
+
+	public Long getTotalCnt() {
+		return totalCnt;
+	}
+
+	public void setTotalCnt(Long totalCnt) {
+		this.totalCnt = totalCnt;
+	}
+
+	public void setInciCateNm(String inciCateNm) {
+		this.inciCateNm = inciCateNm;
+	}
+
+	public String getAddressjibun() {
+		return addressjibun;
+	}
+
+	public void setAddressjibun(String addressjibun) {
+		this.addressjibun = addressjibun;
+	}
+
+	public String getInciTyNm() {
+		return inciTyNm;
+	}
+
+	public void setInciTyNm(String inciTyNm) {
+		this.inciTyNm = inciTyNm;
+	}
+
+	public String getGeojson() {
+		return geojson;
+	}
+
+	public void setGeojson(String geojson) {
+		this.geojson = geojson;
+	}
 }

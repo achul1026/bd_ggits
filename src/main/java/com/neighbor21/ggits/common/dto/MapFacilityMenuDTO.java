@@ -8,6 +8,7 @@ public class MapFacilityMenuDTO {
 	String stts;		
 	String nodeId;		//노드 아이디		
 	String nodeName;	//노드명		
+	String linkId;		//링크 아이디		
 	String mngInstNm;	//기관명		
 	double lon;			//경도(x축)
 	double lat;			//위도(y축)
@@ -48,6 +49,12 @@ public class MapFacilityMenuDTO {
 	}
 	public void setNodeName(String nodeName) {
 		this.nodeName = nodeName;
+	}
+	public String getLinkId() {
+		return linkId;
+	}
+	public void setLinkId(String linkId) {
+		this.linkId = linkId;
 	}
 	public String getMngInstNm() {
 		return mngInstNm;

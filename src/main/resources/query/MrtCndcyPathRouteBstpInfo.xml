@@ -2,4 +2,20 @@
 <!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.MrtCndcyPathRouteBstpInfoMapper'>
+    <select id="findAllByCandRouteId" resultType="mrtCndcyPathRouteBstpInfo">
+        SELECT
+            MCPRBI.CAND_ROUTE_ID
+             ,MCPRBI.STATION_SEQ
+             ,EGBS.STATION_ID
+             ,EGBS.STATION_NM
+             ,CAST ( LEFT (CAST(GPS_X AS VARCHAR), 3 ) AS INT) + CAST( SUBSTRING(CAST(GPS_X AS VARCHAR), 4 ) AS DECIMAL(5,3))/ 60 AS MAP_X
+             ,CAST ( LEFT (CAST(GPS_Y AS VARCHAR), 2 ) AS INT) + CAST( SUBSTRING(CAST(GPS_Y AS VARCHAR), 3 ) AS DECIMAL(5,3))/ 60 AS MAP_Y
+        FROM
+            MRT_CNDCY_PATH_ROUTE_BSTP_INFO MCPRBI
+                INNER JOIN BIGDATA.EXT_GGBIS_BUS_STATION EGBS ON MCPRBI.STATION_ID  = EGBS.STATION_ID
+        WHERE
+            MCPRBI.CAND_ROUTE_ID = #{candRouteId}
+          AND MCPRBI.BASEYM = #{baseym}
+          AND MCPRBI.BTC_ID = #{btcId}
+    </select>
 </mapper>

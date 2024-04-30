@@ -12,6 +12,7 @@ public class ScsTConIntlc {
     private double    intLng;        //교차로경도
     private double    intLat;        //교차로위도
     private long    ppcType;        //ppc타입
+    private String intGeom;			//정보
 
 
   public long getIntLcno() {
@@ -121,4 +122,11 @@ public class ScsTConIntlc {
     this.ppcType = ppcType;
   }
 
+  public String getIntGeom() {
+	return intGeom;
+  }
+
+  public void setIntGeom(String intGeom) {
+	this.intGeom = intGeom;
+  }
 }

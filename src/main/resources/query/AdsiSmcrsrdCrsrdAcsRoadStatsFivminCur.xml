@@ -1,0 +1,97 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.AdsiSmcrsrdCrsrdAcsRoadStatsFivminCurMapper'>
+	<sql id="smcrsrdInfo-Where">
+		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
+			AND ascarsfc.CLCT_DT 
+			BETWEEN TO_TIMESTAMP(#{strDt}|| ' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}|| ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
+			<![CDATA[
+			AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS')  <= ascarsfc.CLCT_DT
+			]]>
+		</if>
+		<if test="(strDt == '' or strDt == null) and (endDt != '' and endDt != null)">
+			<![CDATA[
+			AND ascarsfc.CLCT_DT <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			]]>
+		</if>
+		<if test="searchContent != null and searchContent != ''">
+			AND (asci.CAMERA_NM LIKE '%' || #{searchContent} || '%' ) OR (cgslam.ROAD_NAME LIKE '%' || #{searchContent} || '%')
+		</if>
+		<if test="(sigunCdId != null and sigunCdId != '') and sigunCdId != 'searchAllLocation'">
+			AND CGSLAM.ADSTDG_CD LIKE SUBSTRING(#{sigunCdId}, 0, 5) || '%'
+		</if>
+	</sql>
+	
+	<select id="findAdsiSmcrsrdColctInfoList" parameterType="adsiSmcrsrdCrsrdAcsRoadStatsFivminCur" resultType="adsiSmcrsrdCrsrdAcsRoadStatsFivminCur">
+		SELECT 
+			cgslam.ROAD_NAME
+			,asci.CAMERA_NM
+			, SUM(ascarsfc.VHCL_TRFVLM ) AS SUM_TRFVLM
+			, ROUND(SUM(ascarsfc.VHCL_TRFVLM) / COUNT(cgslam.ROAD_NAME),2) AS AVG_TRFVLM
+			, COALESCE(ROUND(SUM(ascarsfc.AVG_VHCL_SPEED) / count(cgslam.ROAD_NAME),0), 0)as AVG_SPD
+		FROM ADSI_SMCRSRD_CRSRD_ACS_ROAD_STATS_FIVMIN_CUR ascarsfc
+		INNER JOIN bigdata.ext_ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO ascari
+			ON ascarsfc.CRSRD_ID = ascari.CRSRD_ID 
+				AND ascarsfc.ACS_ROAD_ID = ascari.ACS_ROAD_ID 
+		INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam 
+			ON ascari.LINK_ID = cgslam.LINK_ID 
+		INNER JOIN bigdata.ext_ADSI_SMCRSRD_CAMERA_INFO asci
+			ON ascarsfc.CRSRD_ID = asci.CRSRD_ID 
+				AND ascarsfc.ACS_ROAD_ID = asci.ACS_ROAD_ID 
+		WHERE 1=1
+			and cgslam.ROAD_NAME <![CDATA[<>]]> '-'
+		<include refid="smcrsrdInfo-Where"/>
+		GROUP BY cgslam.ROAD_NAME ,asci.CAMERA_NM
+		ORDER BY cgslam.ROAD_NAME 
+		<if test="page != null and page != '' and page != 0">
+			LIMIT 10 OFFSET (#{page} - 1) * 10	
+	    </if>
+	</select>
+	
+	<select id="countsmcrsrdColctInfo" parameterType="adsiSmcrsrdCrsrdAcsRoadStatsFivminCur" resultType="int">
+		SELECT
+			COUNT(A.ROAD_NAME)
+		FROM (
+			SELECT 
+				cgslam.ROAD_NAME
+			FROM ADSI_SMCRSRD_CRSRD_ACS_ROAD_STATS_FIVMIN_CUR ascarsfc
+			INNER JOIN bigdata.ext_ADSI_SMCRSRD_CRSRD_ACS_ROAD_INFO ascari
+				ON ascarsfc.CRSRD_ID = ascari.CRSRD_ID 
+					AND ascarsfc.ACS_ROAD_ID = ascari.ACS_ROAD_ID 
+			INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam 
+				ON ascari.LINK_ID = cgslam.LINK_ID 
+			INNER JOIN bigdata.ext_ADSI_SMCRSRD_CAMERA_INFO asci
+				ON ascarsfc.CRSRD_ID = asci.CRSRD_ID 
+					AND ascarsfc.ACS_ROAD_ID = asci.ACS_ROAD_ID 
+			WHERE 1=1
+				and cgslam.ROAD_NAME <![CDATA[<>]]> '-'
+			<include refid="smcrsrdInfo-Where"/>
+			GROUP BY cgslam.ROAD_NAME, asci.CAMERA_NM
+		)A
+	</select>
+	
+	<select id="findSmcrdTop10Info" resultType="adsiSmcrsrdCrsrdAcsRoadStatsFivminCur">
+		SELECT
+			MOC.CD_NM AS MNG_INST_CD,
+			EASCARI.CRSRD_NM ,
+			SUM(VHCL_TRFVLM) AS VHCL_TRFVLM
+		FROM
+			ADSI_SMCRSRD_CRSRD_ACS_ROAD_STATS_FIVMIN_CUR ASCARSFC
+		INNER JOIN BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_INFO EASCARI ON
+			ASCARSFC.MNG_INST_CD = EASCARI.MNG_INST_CD AND ASCARSFC.CRSRD_ID = EASCARI.CRSRD_ID
+		INNER JOIN M_OP_CODE MOC ON MOC.GRP_CD_ID = 'MNG_INST_CD' AND
+			ASCARSFC.MNG_INST_CD = MOC.CD_ID
+		WHERE
+			ASCARSFC.CLCT_DT >= CURRENT_DATE
+		GROUP BY
+			MOC.CD_NM,
+			EASCARI.CRSRD_NM
+		ORDER BY
+			VHCL_TRFVLM DESC
+		LIMIT 10
+	</select>
+</mapper>

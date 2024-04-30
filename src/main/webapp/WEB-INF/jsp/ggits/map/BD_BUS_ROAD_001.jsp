@@ -1,10 +1,10 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-	pageEncoding="UTF-8"%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>   
 <div class="bigdata_wrap">
     <div class="sub_data_list tab_set mj0">
-    	<div class="tab_fc mt16 mb8">
+    	<div class="tab_fc pd16">
 	        <ul>
-	            <li><button type="button" class="sub_data_btn" data-index="1">노선구간별 승하차/재차<br>승객수 집계</button></li>
+	            <li><button type="button" class="sub_data_btn" data-index="1">노선구간별<br>승하차/재차<br>승객수 집계</button></li>
 	            <li><button type="button" class="sub_data_btn" data-index="2">노선구간별 수용성<br>및 굴곡도 분석</button></li>
 	        </ul>
     	</div>
@@ -22,24 +22,18 @@
 						</div>
 					</div>	            
 	                <div class="result_item">
-	                	<div>
-	                		<button type="button" class="prev_text mb8 mt8"><span class="prev_arrow">←</span> 이전</button>
-	                	</div>
-                        <div class="tab_item_box flex-center">
-                            <h5 class="tab_item_title">일자</h5>
-							<input type="text" class="date_picker input_same mr8 input_picker" placeholder="날짜를 선택해주세요.">
-                        </div>
-						<div class="tab_item_box flex-center">
-	                        <h5 class="tab_item_title">유형</h5>
-	                        <select class="selectBox radius selectbox_width">
-	                            <option value="" selected="selected">전체통행</option>
-	                            <option value="option2">테스트</option>
-	                            <option value="option3">테스트</option>
-	                            <option value="option4">테스트</option>
-	                        </select>
-	                    </div>                     
-                        <div class="tab_item_box" style="width:400px; height:300px;">
-                            <canvas id="tab1"></canvas>
+	                	<form id="searchForm1" method="get" class="wd100">
+		                	<div>
+		                		<button type="button" class="prev_text rollbackBtn prevIndexBtn"><span class="prev_arrow">←</span> 이전</button>
+		                	</div>
+	                        <div class="tab_item_box flex-center">
+	                            <h5 class="tab_item_title">일자</h5>
+								<input type="text" class="date_picker input_same mr8 input_picker end_date_check today searchTrgt"name="searchTime" placeholder="날짜를 선택해주세요." autocomplete="off">
+	                        	<input type="hidden" class="todayTxt">
+	                        </div>       
+	                    </form>             
+                        <div class="tab_item_box chartBox1" style="width:400px; height:300px;">
+                            <canvas id="tab1" class="chartCan1"></canvas>
                         </div>	  
 	                </div>
 	            </div>
@@ -58,7 +52,7 @@
 					</div>	            
 	                <div class="result_item">
 	                	<div>
-	                		<button type="button" class="prev_text mb8 mt8"><span class="prev_arrow">←</span> 이전</button>
+	                		<button type="button" class="prev_text rollbackBtn"><span class="prev_arrow">←</span> 이전</button>
 	                	</div>                    
                         <div class="tab_item_box" style="width:400px; height:300px;">
                             <canvas id="tab2"></canvas>
@@ -77,34 +71,94 @@
 	bigdataPopupClose();
 	datePickerInit();
 	
+	let endDate = $('.end_date_check').val();
+	$(".todayTxt").val(endDate);
+	
+	$(".prevIndexBtn").on("click", function(){
+		$(".chartCan1").remove();
+		$(".chartBox1").append(
+				 '<canvas id="tab1" class="chartCan1"></canvas>'
+		)
+		$(".today").val($(".todayTxt").val());
+		var sttnInfoArr = '<c:out value="${sttnInfoArr}"/>';
+		var userCntArr = '<c:out value="${userCntArr}"/>';
+		settingChart(sttnInfoArr, userCntArr, 1);
+	})
+	
+	$(".searchTrgt").on("change", function(){
+		$(".chartCan1").remove();
+		$(".chartBox1").append(
+				 '<canvas id="tab1" class="chartCan1"></canvas>'
+		)
+		fnSearchList();
+	})
+	
+	function fnSearchList(){
+		$.ajax({
+    		type : "get",
+    		data : $("#searchForm1").serialize(),
+    		url : "${pageContext.request.contextPath}/map/bigdata/bus/road/BD_BUS_ROAD_001/data.ajax",
+    		success : function(result){
+    		    //tab1
+    		    var sttnInfoArr = result.data.sttnInfoArr; 
+    			var userCntArr = result.data.userCntArr; 
+    			settingChart(sttnInfoArr, userCntArr, 1);	
+    			
+    		}
+    	})
+	}
+	
+	function settingChart(sttnInfoArr, userCntArr, chartNum){
+		//tab1
+	    var sttnInfoArr = sttnInfoArr;
+	    var userCntArr = userCntArr;
+	    new GITSChart(GITSChartType.BAR).init("tab1")
+	    .setData({
+	             labels: sttnInfoArr.split(','),
+	             datasets: [{
+	            	 label:'승차',
+	            	 data:userCntArr.split(','),
+	            	 backgroundColor:'#00BCB1'
+	             }]
+	         })	
+	    .setTickStepX(20)
+	    .setAxis('y')
+	    .setBarGridX(true)
+	    .draw();
+	}
+	
     //tab1
+	var sttnInfoArr = '<c:out value="${sttnInfoArr}"/>';
+	var userCntArr = '<c:out value="${userCntArr}"/>';
+
     new GITSChart(GITSChartType.BAR).init("tab1")
-    .setDataSetLabel('정류장1 - 정류장2', '정류장3 - 정류장4', '정류장5 - 정류장6', '정류장7 - 정류장8')
-    .setDataSet({
-        label:'환승승차',
-        data:[40, 60, 80, 40],
-        backgroundColor:'#3CBC00'
-    },{
-        label:'환승하차',
-        data:[80, 40, 50, 100],
-        backgroundColor:'#F90'
-    })
+    .setData({
+             labels: sttnInfoArr.split(','),
+             datasets: [{
+            	 label:'승차',
+            	 data:userCntArr.split(','),
+            	 backgroundColor:'#00BCB1'
+             }]
+         })	
     .setTickStepX(20)
     .setAxis('y')
     .setBarGridX(true)
     .draw();
 
     //tab2
+	var busUseRouteIdArr = '<c:out value="${busUseRouteIdArr}"/>';
+	var busUserCntArr = '<c:out value="${busUserCntArr}"/>';
     new GITSChart(GITSChartType.BAR).init("tab2")
-    .setDataSetLabel('89번', '112번', '112-5번', '70번')
-    .setDataSet({
-        label:'굴곡도',
-        data:[40, 60, 80, 40],
-        backgroundColor:'#FF5454'
-    })
-    .setTickStepX(20)
+    .setData({
+             labels: busUseRouteIdArr.split(','),
+             datasets: [{
+            	 label:'굴곡도',
+            	 data:busUserCntArr.split(','),
+            	 backgroundColor:'#00BCB1'
+             }]
+         })	
+    .setTickStepX(1)
     .setAxis('y')
     .setBarGridX(true)
-    .setLabelDisplay(false)
     .draw();
 </script>

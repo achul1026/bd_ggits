@@ -16,9 +16,8 @@ public class MrtRoadAccntAnal {
 	private String roadName;				// 도로명
 	private String cdNm;					// 공통 코드 명
 	private long ftltyRate;					// 치사율
-	private String strRoadName;				// 시작도로명
-	private String endRoadName;				// 종착 도로명
-	
+	private String roadRank;				// 도로유형
+	private long maxAcdntCnt;				// 주요 사고 건수
 	
 	public Timestamp getInfoOccurDt() {
 		return infoOccurDt;
@@ -86,18 +85,17 @@ public class MrtRoadAccntAnal {
 	public void setFtltyRate(long ftltyRate) {
 		this.ftltyRate = ftltyRate;
 	}
-	public String getStrRoadName() {
-		return strRoadName;
+	public String getRoadRank() {
+		return roadRank;
 	}
-	public void setStrRoadName(String strRoadName) {
-		this.strRoadName = strRoadName;
+	public void setRoadRank(String roadRank) {
+		this.roadRank = roadRank;
 	}
-	public String getEndRoadName() {
-		return endRoadName;
+	public long getMaxAcdntCnt() {
+		return maxAcdntCnt;
 	}
-	public void setEndRoadName(String endRoadName) {
-		this.endRoadName = endRoadName;
+	public void setMaxAcdntCnt(long maxAcdntCnt) {
+		this.maxAcdntCnt = maxAcdntCnt;
 	}
-	
-	
+
 }

@@ -4,9 +4,10 @@
 <mapper namespace='com.neighbor21.ggits.common.mapper.MrtAccntLogMapper'>
 	<sql id="mrtAccntLog-where">
 		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
-			AND mal.ANLS_DT 
-			BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
-		    	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			<![CDATA[
+			AND	mal.ANLS_DT  >= TO_TIMESTAMP(#{strDt}|| ' 00:00:00','YYYY-MM-DD HH24:mi:ss') 
+				AND mal.ANLS_DT <= TO_TIMESTAMP(#{endDt}|| ' 23:59:59','YYYY-MM-DD HH24:mi:ss')
+			]]>
 		</if>
 		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
 			<![CDATA[
@@ -18,8 +19,11 @@
 			AND mal.ANLS_DT <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
 			]]>
 		</if>
+		<if test="sigunCdId != null and sigunCdId != '' and sigunCdId != 'searchAllLocation'">
+			AND SUBSTRING(cgslam.ADSTDG_CD,0,5) = SUBSTRING(#{sigunCdId},0,5)
+		</if>
 		<if test="searchContent != '' and searchContent != null">
-			AND gcil.ROAD_NAME LIKE '%' || #{searchContent} || '%'
+			AND cgslam.ROAD_NAME LIKE '%' || #{searchContent} || '%'
 		</if>
 		<if test="dayOfTheWeek != null">
 			AND EXTRACT (ISODOW from mal.ANLS_DT)::varchar(1) IN 
@@ -29,36 +33,102 @@
 		</if>
 	</sql>
 	
-	<select id="countAcdntGenLogInfo" parameterType="commonEntity" resultType="int">
-	WITH MRT_ACCNT_LOG_CNT AS (
-		SELECT
-			COUNT(*)
-		FROM MRT_ACCNT_LOG mal
-		LEFT JOIN GY_COMM_INFO_LINK gcil
-			ON mal.ACDNT_DSTRCT_IDENTIFIER = gcil.LINK_ID 
-		WHERE
-			1=1
-			<include refid="mrtAccntLog-where"/>
-		GROUP by gcil.ROAD_NAME
-	)
-	SELECT 
-		count(*)
-	FROM MRT_ACCNT_LOG_CNT
-	</select>
-	
 	<select id="findAllAcdntGenLogInfo" parameterType="commonEntity" resultType="mrtAccntLog">
 		SELECT
-			gcil.ROAD_NAME as roadName
+			cgslam.ROAD_NAME as roadName
 			, SUM(mal.ACDNT_CNT) as acdntCnt
 			, SUM(mal.DCSD_CNT) + SUM(mal.INJPSN_CNT) as dcsdCnt
 			, SUM(mal.POPLTN_100K_ACDNT_CNT) as popltn100kAcdntCnt
 			, SUM(mal.VHCL_10K_ACDNT_CNT) as vhcl10kAcdntCnt
 		FROM MRT_ACCNT_LOG mal
-		LEFT JOIN GY_COMM_INFO_LINK gcil
-			ON mal.ACDNT_DSTRCT_IDENTIFIER = gcil.LINK_ID 
-		WHERE 
+		INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam
+			ON mal.ACDNT_DSTRCT_IDENTIFIER = cgslam.LINK_ID
+		WHERE
 			1=1
 			<include refid="mrtAccntLog-where"/>
-		GROUP BY mal.ACDNT_DSTRCT_IDENTIFIER, gcil.ROAD_NAME
+		GROUP BY mal.ACDNT_DSTRCT_IDENTIFIER, cgslam.ROAD_NAME
+		<if test="page != null and page !='' and page != 0">
+			LIMIT 10 OFFSET (#{page} - 1) * 10;
+		</if>
+	</select>
+	
+	<select id="countAcdntGenLog" parameterType="commonEntity" resultType="int">
+		SELECT
+			COUNT(A.roadName)
+		FROM(
+			SELECT
+				cgslam.ROAD_NAME as roadName
+			FROM MRT_ACCNT_LOG mal
+			INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam
+				ON mal.ACDNT_DSTRCT_IDENTIFIER = cgslam.LINK_ID
+			WHERE
+				1=1
+				<include refid="mrtAccntLog-where"/>
+			GROUP BY mal.ACDNT_DSTRCT_IDENTIFIER, cgslam.ROAD_NAME
+		)A
+	</select>
+	
+	<select id="findAllTrafficAcdntGenLogMap" parameterType="commonEntity" resultType="map">
+		WITH ACDNT_GEN_LOG_LIST AS (
+							SELECT
+								COMM_CD.CD_NM
+								, COMM_CD.SORT_NO
+								,COALESCE(SUM(GRAPH_DATA.acdntCnt),'0') as acdntCnt
+								,COALESCE(SUM(GRAPH_DATA.dcsdCnt),'0') as dcsdCnt
+								,COALESCE(SUM(GRAPH_DATA.popltn100kAcdntCnt),'0') as popltn100kAcdntCnt
+								,COALESCE(SUM(GRAPH_DATA.vhcl10kAcdntCnt),'0') as vhcl10kAcdntCnt
+							FROM(
+								SELECT CD_ID, CD_NM, SORT_NO FROM M_OP_CODE MOC WHERE GRP_CD_ID = 'SGG_CD' ORDER BY SORT_NO 
+								) COMM_CD
+							LEFT JOIN (
+										SELECT
+											cgslam.ADSTDG_CD 
+											, SUM(mal.ACDNT_CNT) as acdntCnt
+											, SUM(mal.DCSD_CNT) + SUM(mal.INJPSN_CNT) as dcsdCnt
+											, SUM(mal.POPLTN_100K_ACDNT_CNT) as popltn100kAcdntCnt
+											, SUM(mal.VHCL_10K_ACDNT_CNT) as vhcl10kAcdntCnt
+										FROM MRT_ACCNT_LOG mal
+										INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam
+											ON mal.ACDNT_DSTRCT_IDENTIFIER = cgslam.LINK_ID
+										WHERE 1=1
+										<include refid="mrtAccntLog-where"/>
+										GROUP BY cgslam.ADSTDG_CD
+  									) GRAPH_DATA 
+  							ON SUBSTRING(GRAPH_DATA.ADSTDG_CD,0,5) = SUBSTRING(comm_cd.CD_ID,0,5)
+  							GROUP BY COMM_CD.CD_NM, COMM_CD.SORT_NO
+							ORDER BY COMM_CD.SORT_NO ASC
+						) 
+		SELECT 	
+			ARRAY_TO_STRING(ARRAY_AGG(cd_nm ORDER BY SORT_NO), ',') AS "cdNmArr"
+			,ARRAY_TO_STRING(ARRAY_AGG(acdntCnt order by SORT_NO), ',') AS "acdntCntArr"
+			,ARRAY_TO_STRING(ARRAY_AGG(dcsdCnt ORDER BY SORT_NO), ',') AS "dcsdCntArr"
+			,ARRAY_TO_STRING(ARRAY_AGG(popltn100kAcdntCnt ORDER BY SORT_NO), ',') AS "popltn100kAcdntCntArr"
+			,ARRAY_TO_STRING(ARRAY_AGG(vhcl10kAcdntCnt ORDER BY SORT_NO), ',') AS "vhcl10kAcdntCntArr"
+		FROM 
+			ACDNT_GEN_LOG_LIST
+	</select>
+	
+	<select id="findTrafficAccidentStatistics" parameterType="trafficAccidentStatisticsRequest" resultType="trafficAccidentStatisticsResponse">
+		SELECT 
+			ACDNT_DSTRCT_IDENTIFIER,
+			ACDNT_DSTRCT_ID,
+			ACDNT_CNT,
+			DCSD_CNT,
+			INJPSN_CNT,
+			TOT_ACDNT_CNT,
+			TOT_DCSD_CNT,
+			TOT_INJPSN_CNT,
+			POPLTN_100K_ACDNT_CNT,
+			VHCL_10K_ACDNT_CNT
+		FROM MRT_ACCNT_LOG
+		<trim prefix="WHERE" prefixOverrides="AND">
+			<if test="acdntDstrctIdentifier != null and acdntDstrctIdentifier != ''">
+				AND ACDNT_DSTRCT_IDENTIFIER = #{acdntDstrctIdentifier}
+			</if>
+			<if test="date != null and date != ''">
+				AND ANLS_DT BETWEEN TO_TIMESTAMP(#{date}||' 00:00:00', 'YYYYMMDD HH24:MI:SS') 
+				AND TO_TIMESTAMP(#{date}||' 23:59:59', 'YYYYMMDD HH24:MI:SS')
+			</if>
+		</trim>
 	</select>
 </mapper>

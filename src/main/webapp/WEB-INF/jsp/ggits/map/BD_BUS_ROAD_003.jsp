@@ -4,81 +4,41 @@
 
 <div class="tab_bigbox_close">
     <div class="original_box clearfix">
-    	<form id="searchForm" method="get">
+    	<form id="searchForm" method="get" class="result_change">
     		<input type="hidden" id="mapPage" name="page" value="1"/>
-	        <div class="tab_item_box flex-center">
-	            <h5 class="tab_item_title">연도별</h5>
-	            <input type="hidden" id="startYear" value="${yearsList[fn:length(yearsList) -1].year}">
-            	<input type="hidden" id="endYear" value="${yearsList[0].year}">
-	            <select class="selectBox radius" name="searchYear" id="searchYear">
-	                <option value="searchAllYear">전체</option>
-	           		<c:forEach var="yearsList" items="${yearsList}" varStatus="status">
-	                	<option value="${yearsList.year}">${yearsList.year}년</option>
-	           		</c:forEach>
-	            </select>
-	        </div>
-	        <div class="tab_item_box">
-	            <div class="flex-center">
-	                <h5 class="tab_item_title">기간</h5>
-	                <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" name="searchPeriod" class="none" value="weekdays">평일</label>
-	                <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" name="searchPeriod" class="none" value="weekend">주말</label>
-	                <label class="group_btn_item is-dark-btn radius inpd direct"><input type="checkbox" id="dateChk" class="none">직접입력</label>
-	            </div>
-	            <div class="calendar direct_time none">
-		            <input type="text" class="date_picker input_same mr8 input_picker" name="startDate" id="startDate" placeholder="날짜를 선택해주세요." autocomplete="off">
-		            ~
-		            <div class="end_calendar_box">
-						<div class="date_picker_block"></div>								            
-			            <input type="text" class="end_date_picker input_same mr8 ml8 input_picker" name="endDate" id="endDate" placeholder="날짜를 선택해주세요." autocomplete="off">
-			        </div>	  	            
-				</div>
-	        </div>
-	        <div class="tab_item_box">
-	            <div class="flex-center">
-	                <h5 class="tab_item_title">시간</h5>
-	                <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" id="toWork" name="peekAndOffPeek" class="none" value="peek">출근 <span class="group_btn_span">(06시~10시)</span></label>
-	                <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" id="offWork" name="peekAndOffPeek" class="none" value="offPeek">퇴근 <span class="group_btn_span">(17시~20시)</span></label>
-	                <label class="group_btn_item is-dark-btn radius inpd direct"><input type="checkbox" class="none">직접 입력</label>
-	            </div>
-	            <div class="calendar direct_time none">
-					<select class="selectBox selectTime" id="startTime" name="startTime"></select>
-	                ~
-					<select class="selectBox selectTime" id="endTime" name="endTime"></select>
-	            </div>
-	        </div>
-			<div class="tab_item_box flex-center border-none">
-		        <h5 class="tab_item_title">노선찾기</h5>
-		        <input type="text" id="inputChange1" name="startNodeNm" placeholder="출발지 입력" class="input_same search_box tab_box_input radius">
-		        <button type="button" class="tab_box_change_img" onclick="transferValue()"><img src="${pageContext.request.contextPath}/statics/images/change.png" alt="체인지"></button>
-		        <input type="text" id="inputChange2" name="endNodeNm" placeholder="도착지 입력" class="input_same search_box tab_box_input radius">
-	       		<button type="button" class="is-darkgreen-btn ml8" onclick="fnSearchList();">검색</button>
+			<input type="hidden" name="routeId" id="routeId" value="">
+			<input type="hidden" name="startStationId" id="startStationId" value="">
+			<input type="hidden" name="endStationId" id="endStationId" value="">
+			<input type="hidden" name="pageType" value="<c:out value='${type}'/>">
+			<div class="tab_item_box flex-center">
+				<h5 class="tab_item_title">노선<span class="required-alert">*</span></h5>
+				<input type="text" placeholder="노선을 입력해주세요." name="routeNm" id="routeNm" class="input_same search_box radius">
+				<button type="button" class="is-darkgreen-btn ml8" onclick="fnSearchList();">검색</button>
 	        </div>
         </form>
 		<div class="tab_item_box flex-center pt8 none" id="tableHeader">
 			<h5 class="tab_item_title"></h5>
-			<div class="gis_table_scroll" style="width:440px;">
+			<div class="gis_table_scroll" style="width:500px;">
 				<div class="table_search_number tableTitle">
-                	<span>"${paging.totalCount eq null || paging.totalCount eq '' ? '0' : ''}개"</span>의 검색결과를 찾았습니다.
+                	<span id="totalCnt"><c:out value='${paging.totalCount eq null || paging.totalCount eq "" ? "0" : ""}'/></span>개의 검색결과를 찾았습니다.
                 </div>			
-				<table class="all_center">
+				<table class="all_center result_change" id="modalTable">
 				    <colgroup>
+				        <col style="width:10%">
+						<col style="width:15%">
+						<col style="width:10%">
 				        <col style="width:20%">
-				        <col style="width:20%">
-				        <col style="width:20%">
-				        <col style="width:20%">
-				        <col style="width:20%">
+				        <col style="width:10%">
+				        <col style="width:10%">
+				        <col style="width:10%">
 				    </colgroup>
 				    <thead>
 				        <tr>
-				            <th scope="col" rowspan="3">노선번호</th>
-				            <th scope="col" colspan="4">시-종점</th>
-				        </tr>
-				        <tr>
-				            <th scope="col" colspan="4">수원여대입구 - 조원뉴타운</th>
-				        </tr>
-				        <tr>
-				            <th>노선거리</th>
-				            <th>총 이용 고객수</th>
+							<th>선택</th>
+							<th>버스유형</th>
+							<th>버스번호</th>
+							<th>지역</th>
+				            <th>노선길이(km)</th>
 				            <th>정류장 수</th>
 				            <th>굴곡도</th>
 				        </tr>
@@ -102,100 +62,180 @@
 	gisCheckInit();
 	datePickerInit();
 	dateTiemInit();
-	tabTitleCss();
-	resultRemove();
-	
+	settingBigdataSearchParam("BD_BUS_ROAD_003");
+	var dataTotalCnt = '<c:out value="${paging.totalCount eq null || paging.totalCount eq '' ? '0' : ''}"/>';
+
+	$("#totalCnt").text(numberComma(dataTotalCnt))
 	
 	$(document).ready(function() {
 		if(!isNull($("#startTime").val())){
 			$('.date_picker_block').remove();
 		}
+		
+		$('#routeNm').keydown(function() {
+			if (event.keyCode === 13) {
+				event.preventDefault();
+			}
+		});
 	})
 	
-	$("#toWork").on('click', function(){
-    	if($(this).is(":checked")){
-    		$("#startTime").val("06").prop("selected", true);
-    		$("#endTime").val("10").prop("selected", true);
-    	}
-    })
-    
-    $("#offWork").on('click', function(){
-    	if($(this).is(":checked")){
-    		$("#startTime").val("17").prop("selected", true);
-    		$("#endTime").val("20").prop("selected", true);
-    	}
-    })
-	
 	function fnSearchList(){
-		if(!$("#dateChk").is(":checked")){
-			if($("#searchYear :selected").val() == 'searchAllYear'){
-				$("#startDate").val($("#startYear").val() + "-01-01");
-				$("#endDate").val($("#endYear").val() + "-12-31");
-			}else{
-				$("#startDate").val($("#searchYear :selected").val() + "-01-01");
-				$("#endDate").val($("#searchYear :selected").val() + "-12-31");
-			}
-		}
-		
-		$("table>tbody > tr").remove();
+		$("#modalTable>tbody > tr").remove();
     	$("#modalPaging > .dashboard-pg-wrap").remove();
     	var page = $("#mapPage").val();
-    	
+    	var routeId = $("#routeId").val()
+		var endStationId = $("#endStationId").val()
+		var startStationId = $("#startStationId").val()
+		
     	$.ajax({
     		type : "get",
     		data : $("#searchForm").serialize(),
     		url : "${pageContext.request.contextPath}/map/bigdata/bus/road/BD_BUS_ROAD_003/data.ajax",
+    		beforeSend : function(){
+    			startLoading();
+    		},
     		success : function(result){
-    			var html = '';
-    			var title = '';
-    			var startDate = '';
-    			var endDate = '';
-    			if(result.data.resultList.length > 0){
-    				$("#tableHeader").removeClass("none");
+    			if(result.code == 200){
+	    			var html = '';
+	    			var title = '';
+	    			var stStaNm = '';
+	    			var edStaNm	= '';
+	    			var startDate = '';
+	    			var endDate = '';
+	    			if(result.data.resultList.length >= 0){
+	    				$("#tableHeader").removeClass("none");
+	    			}
+	    			$(result.data.resultList).each(function(index, item){
+	    				var checedAttr = '';
+						if(	item.routeId == routeId && 
+							item.startStationId == startStationId && 
+							item.endStationId == endStationId){
+							checedAttr = 'checked="checked"';
+						}
+	    				html += '<tr onclick="setRouteId(' + item.busRouteId + '\,'+ item.startStationId + '\,' + item.endStationId + ')">' +
+									'<td>' + '<input type="radio" id="listItem'+index+'" name="listItem" class="bigdata_input_radio" value="' + item.routeId + '" data-start-station-id="' + item.startStationId  + '" data-end-station-id="' + item.endStationId + '" '+checedAttr+'>' + '</td>' +
+									'<td>' + '<label for="listItem'+index+'">' + item.routeTp + '</label>' + '</td>' +
+									'<td>' + '<label for="listItem'+index+'">' + item.routeNm + '</label>' + '</td>' +
+									'<td>' + '<label for="listItem'+index+'">' + (item.districtGnm ? item.districtGnm : item.districtSnm) + '</label>' + '</td>' +
+									'<td>' + '<label for="listItem'+index+'">' + item.routeLen + '</label>' + '</td>' +
+									'<td>' + '<label for="listItem'+index+'">' + item.totBstpCnt + '</label>' + '</td>' +
+									'<td>' + '<label for="listItem'+index+'">' + item.curvt + '</label>' + '</td>' +								
+								'</tr>';
+	    			});
+	    			
+	    			$("#sttnInfo").text(result.data.searchOption.startStationId + '(출발) - ' + result.data.searchOption.endStationId + '(도착)');
+	    			$("#modalTable>tbody").append(html);
+	    			var paging = result.data.paging;
+	    			if(paging != null && paging != ''){
+	    				title += '<span id="totalCnt2">'+paging.totalCount+'</span>개의 검색결과를 찾았습니다.';
+	    				$("#modalPaging").append(getGisPagingHtml(paging, page));
+	    				var dataTotalCnt2 = '+paging.totalCount+';
+	    				$("#totalCnt2").text(numberComma(dataTotalCnt2))
+	    			};
+	    			$(".tableTitle").html(title);
+	    			startDate = result.data.searchOption.startDate;
+	    			endDate = result.data.searchOption.endDate;
+	    			$("#startDate").val(startDate.substring(0,10));
+	    			$("#endDate").val(endDate.substring(0,10));
+    			}else{
+    				endLoading();
+    				new ModalBuilder().init().alertBoby("노선정보 조회에 실패 하였습니다.").footer(4,'확인',function(button, modal){modal.close();}).open();
+					modalAlertWrap();
     			}
-    			$(result.data.resultList).each(function(index, item){
-    				html += '<tr>' +
-								'<td>' + item.routeNm + '</td>' +
-								'<td>' + item.routeLen + '</td>' +
-								'<td>' + item.totUserCnt + '</td>' + 									
-								'<td>' + item.totBstpCnt + '</td>' +
-								'<td>' + item.curvt + '</td>' +
-							'</tr>';
-    			});
-    			$("table>tbody").append(html);
-    			var paging = result.data.paging;
-    			if(paging != null && paging != ''){
-    				title += '<span>'+paging.totalCount+'개</span>의 검색결과를 찾았습니다.';
-    				$("#modalPaging").append(getGisPagingHtml(paging, page));
-    			};
-    			$(".tableTitle").html(title);
-    			startDate = result.data.searchOption.startDate;
-    			endDate = result.data.searchOption.endDate;
-    			$("#startDate").val(startDate.substring(0,10));
-    			$("#endDate").val(endDate.substring(0,10));
+    		},
+    		complete : function(){
+    			endLoading();
     		}
     	})
 	}
 	
-	function sectionResult(){	
-        var remarksItem = $(`
+	function sectionResult(){
+		var routeId = $("#routeId").val();
+		if(isNull(routeId) || routeId == ''){
+			new ModalBuilder().init().alertBoby("노선을 선택해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
+			modalAlertWrap();
+			return;
+		}
+        /*var remarksItem = $(`
         <div class="remarks_container">
 	        <div class="remarks_title_box">
 	            <h6 class="remarks_title">범례 - 노선 수요성</h6>
 	        </div>
         	<div class="remarks_wrap tab-none">
             	<div>
-	            	<div class="check_line_container">
-	                    <button type="button" class="check_line_box remarks-red">포화</button>
-		                <button type="button" class="check_line_box remarks-orange">혼잡</button>
-		                <button type="button" class="check_line_box remarks-light-orange">만석</button>
-		                <button type="button" class="check_line_box remarks-green">여유</button>
-		            </div>
+	            	<ul class="check_line_container">
+	                    <li class="check_line_box remarks-red">포화</li>
+		                <li class="check_line_box remarks-orange">혼잡</li>
+		                <li class="check_line_box remarks-light-orange">만석</li>
+		                <li class="check_line_box remarks-green">여유</li>
+		            </ul>
 	        	</div>
 	            <div class="unit">단위 : 이용량 치수 단계</div>
         	</div>
     	</div>`)        
 	    $('#map-container').append(remarksItem);
-	    legendToggle();
+	    legendToggle();*/
+		let param = $("#searchForm").serialize(); // routeId(필수)
+		window.map.bigdata.getPublicTransferRouteCurveAnalysis(param);
+		bigdataSearchForm = $("#searchForm").serializeObject();
+		resultChange();
 	}		
+	
+	function setRouteId(routeId){
+		$("#routeId").val(routeId);
+	}
+	
+	$('#inputChange1').autocomplete({
+		source : function(request, response) {
+		     $.ajax({
+		           url : "${pageContext.request.contextPath}/map/bigdata/ajax/autocomplete.ajax"   
+		         , type : "POST"
+		         , dataType: "JSON"
+		         , data : {value: request.term}	// 검색 키워드
+		         , success : function(data){ 	// 성공
+		             response(
+		                 $.map(data.resultList, function(item) {
+		                     return {
+		                    	     label : item.search_word
+		                           , value : item.search_word
+		                           , idx : item.SEQ 
+		                     };
+		                 })
+		             );
+		         }
+		     });
+		}
+		,focus : function(event, ui) {return false;}
+		,minLength: 2
+		,autoFocus : true
+		,delay: 2000
+		,select : function(evt, ui) {}
+	});
+	
+	$('#inputChange2').autocomplete({
+		source : function(request, response) {
+		     $.ajax({
+		           url : "${pageContext.request.contextPath}/map/bigdata/ajax/autocomplete.ajax"   
+		         , type : "POST"
+		         , dataType: "JSON"
+		         , data : {value: request.term}	// 검색 키워드
+		         , success : function(data){ 	// 성공
+		             response(
+		                 $.map(data.resultList, function(item) {
+		                     return {
+		                    	     label : item.search_word
+		                           , value : item.search_word
+		                           , idx : item.SEQ 
+		                     };
+		                 })
+		             );
+		         }
+		     });
+		}
+		,focus : function(event, ui) {return false;}
+		,minLength: 2
+		,autoFocus : true
+		,delay: 2000
+		,select : function(evt, ui) {}
+	});
 </script>

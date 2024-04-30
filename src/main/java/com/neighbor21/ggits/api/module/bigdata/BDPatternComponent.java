@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.neighbor21.ggits.common.entity.MrtSmcAbnLos;
+import com.neighbor21.ggits.common.mapper.MrtSmcAbnLosMapper;
+import com.neighbor21.ggits.common.mapper.MrtTrfHlctcCngstnSctnMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,12 +28,15 @@ public class BDPatternComponent extends BaseMapDataComponent {
 
     @Autowired
     MrtSmcTrfPatMapper mrtSmcTrfPatMapper;
+
+    @Autowired
+    MrtSmcAbnLosMapper mrtSmcAbnLosMapper;
     
     /**
      * 교통량조회
      */
     public List<MrtSmcTrfPat> getTrafficQuantityInfo(MapBigdataSearchDTO mapBigdataSearchDTO){
-    	List<MrtSmcTrfPat> result = new ArrayList<MrtSmcTrfPat>();
+    	List<MrtSmcTrfPat> result = new ArrayList<>();
     	
     	//교차로별 지도에서 선택일 경우 
     	if(!GgitsCommonUtils.isNull(mapBigdataSearchDTO.getSearchCrossroadsType()) 
@@ -40,6 +46,18 @@ public class BDPatternComponent extends BaseMapDataComponent {
     		result = mrtSmcTrfPatMapper.findAllGroupByLinkId(mapBigdataSearchDTO);
     	}
     	
+        return result;
+    }
+
+    /**
+     * 정체구간조회
+     */
+    public List<MrtSmcAbnLos> getTrafficAbnLos(MapBigdataSearchDTO mapBigdataSearchDTO){
+
+        //교차로별 지도에서 선택일 경우
+        List<MrtSmcAbnLos> result = mrtSmcAbnLosMapper.findAllSmcAbnLosListForMap(mapBigdataSearchDTO);
+
+
         return result;
     }
     

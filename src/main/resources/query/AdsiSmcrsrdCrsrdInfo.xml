@@ -3,7 +3,7 @@
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.AdsiSmcrsrdCrsrdInfoMapper'>
 
-	<select id="findAllOneHourStats" resultType="adsiSmcrsrdCrsrdInfo">
+	<select id="findAllOneHourStats" resultType="adsiSmcrsrdCrsrdInfo" parameterType="String">
 		SELECT
 			ASCI.MNG_INST_CD
 			 ,ASCI.CRSRD_ID
@@ -14,27 +14,31 @@
 			 ,ASCI.MAX_TRFVLM
 			 ,ASCI.MAX_PDST_CNT
 			 ,GCIN.NODE_NAME
-			 ,GCIN.X
-			 ,GCIN.Y
-			 ,ST_ASGEOJSON(GCIN.GEOM) AS GEOJSON
-			 ,SUM(ASCARSO.VHCL_TRFVLM) AS VHCL_TRFVLM
-			 ,SUM(ASCARSO.PDST_CNT) AS PDST_CNT
-			 ,AVG(ASCARSO.AVG_VHCL_SPEED) AS AVG_VHCL_SPEED
-			 ,AVG(ASCARSO.AVG_PDST_SPEED) AS AVG_PDST_SPEED
+			 ,ST_X(GCIN.GEOMETRY)
+			 ,ST_Y(GCIN.GEOMETRY)
+			 ,ST_ASGEOJSON(GCIN.GEOMETRY) AS GEOJSON
+			 ,SUM(ascarsfc.vhcl_trfvlm) AS VHCL_TRFVLM
+			 ,SUM(ascarsfc.PDST_CNT) AS PDST_CNT
+			 ,AVG(ascarsfc.AVG_VHCL_SPEED) AS AVG_VHCL_SPEED
+			 ,AVG(ascarsfc.AVG_PDST_SPEED) AS AVG_PDST_SPEED
 		FROM
-			ADSI_SMCRSRD_CRSRD_INFO ASCI
-				INNER JOIN GY_COMM_INFO_NODE GCIN ON ASCI.NODE_ID = GCIN.NODE_ID
-				LEFT JOIN ADSI_SMCRSRD_CRSRD_ACS_ROAD_STATS_ONHR ASCARSO ON ASCARSO.CRSRD_ID = ASCI.CRSRD_ID
+			BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_INFO ASCI
+				LEFT JOIN C_GM_STD_NODE GCIN ON ASCI.NODE_ID = GCIN.NODE_ID
 				LEFT JOIN (
-				SELECT
-					MAX(ASCARSO.CLCT_DT) AS RCT_CLCT_DT
-					 ,ASCARSO.CRSRD_ID
-					 ,ASCARSO.ACS_ROAD_ID
-				FROM
-					ADSI_SMCRSRD_CRSRD_ACS_ROAD_STATS_ONHR ASCARSO
-				GROUP BY ASCARSO.CRSRD_ID ,ASCARSO.ACS_ROAD_ID
-			) RCT_ASCARSO ON RCT_ASCARSO.RCT_CLCT_DT = ASCARSO.CLCT_DT
-		GROUP BY ASCI.MNG_INST_CD,ASCI.CRSRD_ID,ASCI.CRSRD_NM,ASCI.NODE_ID,ASCI.LON_CRDN	 ,ASCI.LAT_CRDN,ASCI.MAX_TRFVLM,ASCI.MAX_PDST_CNT,GCIN.NODE_NAME,GCIN.X,GCIN.Y,GEOJSON
+				select
+					*
+				from
+					adsi_smcrsrd_crsrd_acs_road_stats_fivmin_cur ascarsfc
+				where
+					ascarsfc.clct_dt >= now() - interval '1 hour'
+			)
+				ascarsfc on asci.crsrd_id = ascarsfc.crsrd_id and asci.mng_inst_cd = ascarsfc.mng_inst_cd
+		<where>
+			<if test="mngInstCd != null and mngInstCd != ''">
+				ASCI.MNG_INST_CD = #{mngInstCd}
+			</if>
+		</where>
+		GROUP BY ASCI.MNG_INST_CD,ASCI.CRSRD_ID,ASCI.CRSRD_NM,ASCI.NODE_ID,ASCI.LON_CRDN	 ,ASCI.LAT_CRDN,ASCI.MAX_TRFVLM,ASCI.MAX_PDST_CNT,GCIN.NODE_NAME,ST_X(GCIN.GEOMETRY),ST_Y(GCIN.GEOMETRY),GEOJSON
 	</select>
     <select id="findAll" resultType="adsiSmcrsrdCrsrdInfo">
 		SELECT
@@ -47,33 +51,46 @@
 			 ,ASCI.MAX_TRFVLM
 			 ,ASCI.MAX_PDST_CNT
 			 ,GCIN.NODE_NAME
-			 ,GCIN.X
-			 ,GCIN.Y
-			 ,ST_ASGEOJSON(GCIN.GEOM) AS GEOJSON
+			 ,ST_X(GCIN.GEOMETRY)
+			 ,ST_Y(GCIN.GEOMETRY)
+			 ,ST_ASGEOJSON(GCIN.GEOMETRY) AS GEOJSON
 		FROM
-			ADSI_SMCRSRD_CRSRD_INFO ASCI
-				INNER JOIN GY_COMM_INFO_NODE GCIN ON ASCI.NODE_ID = GCIN.NODE_ID
+			BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_INFO ASCI
+				INNER JOIN (
+				SELECT MAX(ASCI.ETL_DT) AS RCT_ETL_DT
+					 , ASCI.CRSRD_ID
+					 , ASCI.MNG_INST_CD
+				FROM BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_INFO ASCI
+				GROUP BY MNG_INST_CD, CRSRD_ID
+			) RCT_ASCI ON RCT_ASCI.MNG_INST_CD = ASCI.MNG_INST_CD and RCT_ASCI.CRSRD_ID = asci.CRSRD_ID AND RCT_ASCI.RCT_ETL_DT = ASCI.ETL_DT
+				INNER JOIN C_GM_STD_NODE GCIN ON ASCI.NODE_ID = GCIN.NODE_ID
     </select>
     
     
     <select id="findAllSmartForFacility" parameterType="mapFacilityMenuDTO" resultType="mapFacilityMenuDTO">
 		SELECT
-				ASCI.CRSRD_NM							as "name",
-				ASCI.CRSRD_ID							as "id",
-				ASCI.NODE_ID							as "nodeId",
-				ST_X(ST_ASTEXT(ST_CENTROID(GCIN.GEOM))) AS "lon",
-				ST_Y(ST_ASTEXT(ST_CENTROID(GCIN.GEOM))) AS "lat"
-		FROM ADSI_SMCRSRD_CRSRD_INFO ASCI
-		INNER JOIN GY_COMM_INFO_NODE GCIN ON ASCI.NODE_ID = GCIN.NODE_ID
+				ASCI.CRSRD_NM							AS "name",
+				ASCI.CRSRD_ID							AS "id",
+				ASCI.NODE_ID							AS "nodeId",
+				ASCI.LON_CRDN							AS "lon",
+			 	ASCI.LAT_CRDN							AS "lat"
+		FROM BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_INFO ASCI
+		INNER JOIN (
+		SELECT MAX(ASCI.ETL_DT) AS RCT_ETL_DT
+		, ASCI.CRSRD_ID
+		, ASCI.MNG_INST_CD
+		FROM BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_INFO ASCI
+		GROUP BY MNG_INST_CD, CRSRD_ID
+		) RCT_ASCI ON RCT_ASCI.MNG_INST_CD = ASCI.MNG_INST_CD and RCT_ASCI.CRSRD_ID = asci.CRSRD_ID AND RCT_ASCI.RCT_ETL_DT = ASCI.ETL_DT
 		WHERE 
 				1=1
-			<if test="nodeName != null and nodeName != ''">
-				AND GCIN.NODE_NAME LIKE '%' 		|| #{nodeName} || '%'
+			<if test="name != null and name != ''">
+				AND ASCI.CRSRD_NM LIKE '%' || #{name} || '%'
 			</if>  
 			<if test="id != null and id != ''">
 				AND ASCI.CRSRD_ID = #{id}
 			</if>  
-		ORDER BY ASCI.CRSRD_NM DESC
+		ORDER BY ASCI.CRSRD_ID DESC
 		<if test="page != null and page != '' and page != 0 ">
 		LIMIT 5 OFFSET (#{page} - 1) * 5  	
 		</if> 				
@@ -82,13 +99,19 @@
 	<select id="countSmartForFacility" parameterType="mapFacilityMenuDTO" resultType="int">
 		SELECT
 				COUNT(*)
-		FROM 	ADSI_SMCRSRD_CRSRD_INFO ASCI
-		INNER JOIN GY_COMM_INFO_NODE GCIN ON ASCI.NODE_ID = GCIN.NODE_ID
+		FROM 	BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_INFO ASCI
+		INNER JOIN (
+		SELECT MAX(ASCI.ETL_DT) AS RCT_ETL_DT
+		, ASCI.CRSRD_ID
+		, ASCI.MNG_INST_CD
+		FROM BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_INFO ASCI
+		GROUP BY MNG_INST_CD, CRSRD_ID
+		) RCT_ASCI ON RCT_ASCI.MNG_INST_CD = ASCI.MNG_INST_CD and RCT_ASCI.CRSRD_ID = asci.CRSRD_ID AND RCT_ASCI.RCT_ETL_DT = ASCI.ETL_DT
 		WHERE 
 				1=1
-			<if test="nodeName != null and nodeName != ''">
-				AND GCIN.NODE_NAME LIKE '%' 		|| #{nodeName} || '%'
-			</if>
+			<if test="name != null and name != ''">
+				AND ASCI.CRSRD_NM LIKE '%' || #{name} || '%'
+			</if>  
 			<if test="id != null and id != ''">
 				AND ASCI.CRSRD_ID = #{id}
 			</if>  
@@ -109,7 +132,14 @@
 			            ,MAX_TRFVLM
 			            ,MAX_PDST_CNT
 			        FROM
-			            ADSI_SMCRSRD_CRSRD_INFO ASCI
+						BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_INFO ASCI
+		INNER JOIN (
+		SELECT MAX(ASCI.ETL_DT) AS RCT_ETL_DT
+		, ASCI.CRSRD_ID
+		, ASCI.MNG_INST_CD
+		FROM BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_INFO ASCI
+		GROUP BY MNG_INST_CD, CRSRD_ID
+		) RCT_ASCI ON RCT_ASCI.MNG_INST_CD = ASCI.MNG_INST_CD and RCT_ASCI.CRSRD_ID = asci.CRSRD_ID AND RCT_ASCI.RCT_ETL_DT = ASCI.ETL_DT
 			        WHERE 1=1
 			        <if test="crsrdNm != null and crsrdNm != ''">
 					AND ASCI.CRSRD_NM LIKE '%' 		|| #{crsrdNm} || '%'
@@ -126,7 +156,14 @@
         SELECT
             COUNT(*)
         FROM
-            ADSI_SMCRSRD_CRSRD_INFO
+			BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_INFO ASCI
+		INNER JOIN (
+		SELECT MAX(ASCI.ETL_DT) AS RCT_ETL_DT
+		, ASCI.CRSRD_ID
+		, ASCI.MNG_INST_CD
+		FROM BIGDATA.EXT_ADSI_SMCRSRD_CRSRD_INFO ASCI
+		GROUP BY MNG_INST_CD, CRSRD_ID
+		) RCT_ASCI ON RCT_ASCI.MNG_INST_CD = ASCI.MNG_INST_CD and RCT_ASCI.CRSRD_ID = asci.CRSRD_ID AND RCT_ASCI.RCT_ETL_DT = ASCI.ETL_DT
         WHERE 1=1
         <if test="crsrdNm != null and crsrdNm != ''">
 		AND CRSRD_NM LIKE '%' 		|| #{crsrdNm} || '%'

@@ -4,12 +4,12 @@
 <div class="tab_bigbox_close">
     <div class="original_box clearfix">
         <form id="searchForm">
+        <input type="hidden" name="pageType" value="<c:out value='${type}'/>">
 	        <div class="tab_item_box flex-center">
 	            <h5 class="tab_item_title">연도별</h5>
 	            <select class="selectBox radius" name="searchYear">
-	                <option value="searchAllYear">전체</option>
 	           	<c:forEach var="yearsList" items="${yearsList}">
-	                <option value="${yearsList.year}">${yearsList.year}년</option>
+	                <option value="<c:out value='${yearsList.year}'/>"><c:out value='${yearsList.year}'/>년</option>
 	           	</c:forEach>
 	            </select>
 	        </div>
@@ -21,12 +21,12 @@
 	<!-- 	                <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" class="none" name="searchPeriod" value="holiday">공휴일</label> -->
 	                <label class="group_btn_item is-dark-btn radius inpd direct"><input type="checkbox" class="none" name="searchPeriod" value="directDate">직접입력</label>
 	            </div>
-	            <div class="calendar direct_time none">
-		            <input type="text" class="date_picker input_same mr8 input_picker" name="startDate" placeholder="날짜를 선택해주세요.">
+	            <div class="calendar direct_time none" id="directDate">
+		            <input type="text" class="date_picker input_same mr8 input_picker" name="startDate" placeholder="날짜를 선택해주세요." autocomplete="off">
 		            ~
 		            <div class="end_calendar_box">
 						<div class="date_picker_block"></div>								            
-			            <input type="text" class="end_date_picker input_same mr8 ml8 input_picker" name="endDate" placeholder="날짜를 선택해주세요.">
+			            <input type="text" class="end_date_picker input_same mr8 ml8 input_picker" name="endDate" placeholder="날짜를 선택해주세요." autocomplete="off">
 			        </div>	  		            
 				</div>
 	        </div>
@@ -37,7 +37,7 @@
 	                <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" class="none" name="searchTime" value="workingEndTime">퇴근 <span class="group_btn_span">(17시~20시)</span></label>
 	                <label class="group_btn_item is-dark-btn radius inpd direct"><input type="checkbox" class="none" name="searchTime" value="directTime">시간 설정</label>
 	            </div>
-	            <div class="calendar direct_time none">
+	            <div class="calendar direct_time none" id="directTime">
 					<select class="selectBox selectTime" name="startTime" id="startTime"></select>
 	                ~
 					<select class="selectBox selectTime" name="endTime" id="endTime"></select>
@@ -45,54 +45,16 @@
 	        </div>
 	        <div class="tab_item_box flex-center">
 	            <h5 class="tab_item_title">지역별</h5>
-	            <select class="selectBox radius">
+	            <select class="selectBox radius" name="searchLocation">
 	                <option value="searchAllLocation">전체 지역</option>
 					<c:forEach var="sggCdList" items="${sggCdList}">
-	                	<option value="${sggCdList.cdId}">${sggCdList.cdNm}</option>
+	                	<option value="<c:out value='${sggCdList.cdId}'/>"><c:out value='${sggCdList.cdNm}'/></option>
 					</c:forEach>
 	            </select>
 	        </div>
-        	<div class="tab_item_box flex-center">
-	            <h5 class="tab_item_title">교차로별</h5>
-	            <label class="group_btn_item is-dark-btn radius inpd is-darkgreen-btn"><input type="checkbox" class="none" id="selectMap" name="searchCrossroadsType" value="all" checked="checked">전체</label>
-	            <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" class="none" id="selectList" name="crossroadsType" value="list">리스트에서 선택</label>
-	        </div>
-	        <div class="tab_item_box flex-center pt8 none" id="crossroadsListDiv">
-				<h5 class="tab_item_title"></h5>
-				<div class="gis_table_scroll">
-					<div class="mt16">
-					    <div class="dashboard_sub_title">교차로명으로 찾기</div>
-					    <input type="text" class="dashboard_input" id="searchCrsrdNm" placeholder="교차로명을 입력해주세요.">
-					    <input type="hidden" id="mapPage" name="page" value="1"/>
-					</div>
-					<div class="dashboard_btn_box">
-					    <button type="button" class="is-darkgreen-btn modal_input_srbtn" id="searchCrossBtn">찾기</button>
-					</div>
-					<div class="mt16">
-						<table>
-						    <colgroup>
-						        <col style="width:10%">
-						        <col style="width:10%">
-						        <col style="width:80%">
-						    </colgroup>
-						    <thead>
-						        <tr>
-						            <th scope="col"></th>
-						            <th scope="col">번호</th>
-						            <th scope="col">교차로명</th>
-						        </tr>
-						    </thead>
-						    <tbody id="crossroadsListBody">
-						    </tbody>
-						</table>
-					</div>
-					<div id="pagingDiv">
-					</div>
-				</div>
-	        </div>
 	    </form>  
         <div class="bottom_btn">
-            <button type="button" class="is-darkgreen-btn radius original_result_btn">결과보기</button>
+            <button type="button" class="is-darkgreen-btn radius original_result_btn" onclick="linkResultEvent();">결과보기</button>
         </div>
     </div>
 </div>
@@ -101,8 +63,7 @@
 	gisCheckInit();
 	datePickerInit();
 	dateTiemInit();
-	tabTitleCss();
-	resultRemove();
+	settingBigdataSearchParam("BD_LINK_002");
 	
 	$("#searchCrossBtn").on('click', function(){
 		$("#mapPage").val("1");
@@ -118,4 +79,8 @@
 		$("#crossroadsListDiv").addClass("none");
 	})
 	
+	function linkResultEvent(){
+		bigdataSearchForm = $("#searchForm").serializeObject();
+		//TODO::어떻게 진행 될건지 확인중
+	}
 </script>

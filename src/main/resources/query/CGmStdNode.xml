@@ -2,4 +2,61 @@
 <!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.CGmStdNodeMapper'>
+	<select id="countByNodeNmAndNodeNo" resultType="int" parameterType="cGmStdNode">
+		SELECT COUNT(CGSN.*)
+		FROM C_GM_STD_NODE CGSN
+		WHERE 1=1 
+		<if test="nodeId != null and nodeId != ''">
+			AND CGSN.NODE_ID LIKE CONCAT('%',#{nodeId},'%')
+		</if>
+		<if test="nodeName != null and nodeName != ''">
+			AND CGSN.NODE_NAME LIKE CONCAT('%',#{nodeName},'%')
+		</if>
+	</select>
+	
+	<select id="countAll" resultType="int">
+		SELECT COUNT(CGSN.*)
+		FROM C_GM_STD_NODE CGSN
+	</select>
+
+	<select id="findAllNodeList" resultType="cGmStdNode">
+		SELECT
+			ROW_NUMBER() OVER(ORDER BY CGSN.NODE_ID) AS rownum,
+			CGSN.NODE_ID,
+			CGSN.NODE_TYPE,
+			CGSN.NODE_NAME,
+			CGSN.TURN_P,
+			CGSN.REMARK,
+			ST_X(ST_ASTEXT(ST_CENTROID(CGSN.GEOMETRY))) AS "X",
+			ST_Y(ST_ASTEXT(ST_CENTROID(CGSN.GEOMETRY))) AS "Y",
+			CGSN.GEOMETRY
+		FROM
+			C_GM_STD_NODE CGSN
+		ORDER BY rownum DESC
+		LIMIT 5
+	</select>
+
+	<select id="findNodeListByNodeIdAndNodeName" resultType="cGmStdNode" parameterType="cGmStdNode">
+		SELECT
+			ROW_NUMBER() OVER(ORDER BY CGSN.NODE_ID) AS ROWNUM,
+			CGSN.NODE_ID,
+			CGSN.NODE_TYPE,
+			CGSN.NODE_NAME,
+			CGSN.TURN_P,
+			CGSN.REMARK,
+			ST_X(ST_ASTEXT(ST_CENTROID(CGSN.GEOMETRY))) AS "X",
+			ST_Y(ST_ASTEXT(ST_CENTROID(CGSN.GEOMETRY))) AS "Y",
+			CGSN.GEOMETRY
+		FROM
+			C_GM_STD_NODE CGSN
+		WHERE 1=1 
+		<if test="nodeId != null and nodeId != ''">
+			AND CGSN.NODE_ID LIKE CONCAT('%',#{nodeId},'%')
+		</if>
+		<if test="nodeName != null and nodeName != ''">
+			AND CGSN.NODE_NAME LIKE CONCAT('%',#{nodeName},'%')
+		</if>
+			ORDER BY ROWNUM DESC
+			LIMIT 5 OFFSET (#{page} - 1) * 5
+	</select>	
 </mapper>

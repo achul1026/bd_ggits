@@ -39,15 +39,5 @@ public interface MrtTrfFcltsSttsAnlsMapper {
      * @return
      */
 	int countTrfFcltsEqpLog(CommonEntity commonEntity);
-
-    /**
-     * @Method Name : findAllTrfFcltsEqpLogList
-     * @작성일 : 2023. 10. 17.
-     * @작성자 : KC.KIM
-     * @Method 설명 : 교통정보 통계 분석 > 교통시설물 통계 > 교통시설물 장비 로그 상세 리스트 조회
-     * @param : commonEntity
-     * @return
-     */
-	List<MrtTrfFcltsSttsAnls> findAllTrfFcltsEqpLogList(CommonEntity commonEntity);
 	
 }

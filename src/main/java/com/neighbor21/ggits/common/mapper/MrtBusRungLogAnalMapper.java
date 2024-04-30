@@ -41,23 +41,22 @@ public interface MrtBusRungLogAnalMapper {
      */
 	List<Map<String, Object>> findAllDataYears();
 
-	/**
-     * @Method Name : findAllSttnPbTrfUseStatsAnsl
-     * @작성일 : 2023. 10. 25.
-     * @작성자 : KC.KIM
-     * @Method 설명 : 빅데이터 분석 > 대중교통 위험운영 구간 분석 > 기종점 대중교통 이용량 개수 조회
-     * @param : 
-     * @return
-     */
-	int countAllSttnPbTrfUseStatsAnal(MapBigdataSearchDTO mapBigdataSearchDTO);
 
 	/**
-     * @Method Name : findAllSttnPbTrfUseStatsAnsl
-     * @작성일 : 2023. 10. 25.
-     * @작성자 : KC.KIM
-     * @Method 설명 : 빅데이터 분석 > 대중교통 위험운영 구간 분석 > 기종점 대중교통 이용량 리스트 조회
-     * @param : 
-     * @return
-     */
-	List<MrtBusRungLogAnal> findAllSttnPbTrfUseStatsAnsl(MapBigdataSearchDTO mapBigdataSearchDTO);
+	 * 맵용 링크정보 조회
+	 * @param mapBigdataSearchDTO
+	 * @return
+	 */
+	List<MrtBusRungLogAnal> findAllByRouteId(MapBigdataSearchDTO mapBigdataSearchDTO);
+
+	/**
+	 * 권역별,버스타입별 대중교통 이용현황 조회
+	 * @param mapBigdataSearchDTO
+	 * @return
+	 */
+	List<MrtBusRungLogAnal> findAllGroupBySGGAndRouteTp(MapBigdataSearchDTO mapBigdataSearchDTO);
+
+	Integer countByRouteNmPaging(MapBigdataSearchDTO mapBigdataSearchDTO);
+
+	List<MrtBusRungLogAnal> findListByRouteNmPaging(MapBigdataSearchDTO mapBigdataSearchDTO);
 }

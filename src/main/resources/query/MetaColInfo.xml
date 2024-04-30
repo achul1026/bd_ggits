@@ -3,9 +3,11 @@
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.MetaColInfoMapper'>
 
-	<select id="findColsqnoNextVal" resultType="int">
+	<select id="findColsqnoNextVal" resultType="int" parameterType="metaColInfo">
 		SELECT COALESCE(MAX(COL_SQNO),0)
 		FROM META_COL_INFO
+		WHERE TBL_ID = #{tblId}
+			AND DSET_ID = #{dsetId}
 	</select>
 	
 	<insert id="saveMetaColInfo" parameterType="metaColInfo">
@@ -105,4 +107,24 @@
 			AND COL_SQNO = #{colSqno} 
 			AND DSET_ID = #{dsetId}
 	</update>
+	
+	<select id="findAllByTblIdAndDsetId" parameterType="metaColInfo" resultType="map">
+		SELECT
+			COL_SQNO AS "colSqNo",
+			COL_ENG_NM AS "colEngNm",
+			COL_KOREAN_NM AS "colKoreanNm",
+			DATA_TYPE AS "dataType",
+			DATA_LEN AS "dataLen",
+			NN_YN AS "nnYn"
+		FROM META_COL_INFO
+		<where>
+			<if test="dsetId != null and dsetId != ''">
+				AND DSET_ID = #{dsetId}
+			</if>
+			<if test="tblId != null and tblId != ''">
+				AND TBL_ID = #{tblId}
+			</if>
+		</where>
+		ORDER BY COL_SQNO
+	</select>
 </mapper>

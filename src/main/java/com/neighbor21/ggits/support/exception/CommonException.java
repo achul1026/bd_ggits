@@ -29,6 +29,7 @@ public class CommonException extends RuntimeException{
 		this.errorCode = errorCode;
 	}
 
+	@Override
 	public String getMessage() {
 		return message;
 	}

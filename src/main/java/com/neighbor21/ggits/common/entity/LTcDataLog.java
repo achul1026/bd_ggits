@@ -21,12 +21,13 @@ public class LTcDataLog extends CommonEntity{
     private String    	failRsn;     	//실패사유
     
     private String 		cdNm;			//유관기관명
-    
+    private String 		procTime;       //처리시간
     //parameter
     private String 		linkedType;		//연계기관 타입
     private List<String> linkedList; 	//연계기관 목록
     private String 		colTyCd;		//컬럼 미추가 수집상태 코드
     private String[]    colArr;			//수집상태코드 Array
+    private String 		colName;		//요청명
     
     //#DsetInfo
     private String dataClctType; 		//데이터 수집유형코드
@@ -51,6 +52,12 @@ public class LTcDataLog extends CommonEntity{
 	}
 	public String getJobNm() {
 		return jobNm;
+	}
+	public String getColName() {
+		return colName;
+	}
+	public void setColName(String colName) {
+		this.colName = colName;
 	}
 	public void setJobNm(String jobNm) {
 		this.jobNm = jobNm;
@@ -128,10 +135,22 @@ public class LTcDataLog extends CommonEntity{
 		this.dataClctType = dataClctType;
 	}
 	public String[] getColArr() {
-		return colArr;
+	    String[] colArrCopy = null;
+	    if(this.colArr != null) {
+	      colArrCopy = new String[colArr.length];
+	      for (int i = 0; i < colArr.length; i++) {
+	        colArrCopy[i] = this.colArr[i];
+	      }
+	    }
+	    return colArrCopy;
 	}
 	public void setColArr(String[] colArr) {
-		this.colArr = colArr;
+	  if(colArr != null) {
+	    this.colArr = new String[colArr.length];
+	    for (int i = 0; i <colArr.length; i++) {
+	      this.colArr[i] = colArr[i];
+	    }
+	  }
 	}
 	public String getLinkedType() {
 		return linkedType;
@@ -145,4 +164,11 @@ public class LTcDataLog extends CommonEntity{
 	public void setLinkedList(List<String> linkedList) {
 		this.linkedList = linkedList;
 	}
+	public String getProcTime() {
+		return procTime;
+	}
+	public void setProcTime(String procTime) {
+		this.procTime = procTime;
+	}
+
 }

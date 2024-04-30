@@ -2,4 +2,223 @@
 <!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.GbmsBusUseCalcInfoMapper'>
+    <select id="countAllBySearchOption" parameterType="mapBigdataSearchDTO" resultType="int">
+        SELECT
+        COUNT(1)
+        FROM
+        (SELECT
+        CASE WHEN EGBR.ROUTE_TY ='11' THEN '직행좌석형시내버스'
+        WHEN EGBR.ROUTE_TY ='12' THEN '좌석형시내버스'
+        WHEN EGBR.ROUTE_TY ='13' THEN '일반형시내버스'
+        WHEN EGBR.ROUTE_TY ='14' THEN '광역버스'
+        WHEN EGBR.ROUTE_TY ='21' THEN '직행좌석형농어촌버스'
+        WHEN EGBR.ROUTE_TY ='22' THEN '좌석형농어촌버스'
+        WHEN EGBR.ROUTE_TY ='23' THEN '일반형농어촌버스'
+        WHEN EGBR.ROUTE_TY ='30' THEN '마을버스'
+        WHEN EGBR.ROUTE_TY ='41' THEN '고속형시외버스'
+        WHEN EGBR.ROUTE_TY ='42' THEN '좌석형시외버스'
+        WHEN EGBR.ROUTE_TY ='43' THEN '일반형시외버스'
+        WHEN EGBR.ROUTE_TY ='51' THEN '리무진형공항버스'
+        WHEN EGBR.ROUTE_TY ='52' THEN '좌석형공항버스'
+        WHEN EGBR.ROUTE_TY ='53' THEN '일반형공항버스'
+        END AS ROUTE_TY ,
+        /*EGBUCI.CLCT_YMD ,*/
+        EGBUCI.CO_NM,
+        /*EGBUCI.CARD_APPR_TYPE ,*/
+        EGBR.ROUTE_ID,
+        EGBR.EB_ROUTE_ID,
+        EGBUCI.BUS_ROUTE_NO,
+        egd.district_snm , 
+        egd.district_gnm
+        FROM
+        BIGDATA.EXT_GBMS_BUS_USE_CALC_INFO EGBUCI
+        INNER JOIN
+        (
+        SELECT
+        DISTINCT ON (ROUTE_ID)
+        EGBR.ROUTE_ID
+        ,EGBR.ROUTE_TY
+        ,egbr.area_code as area_cd
+        ,EBINFO.EB_ROUTE_ID
+        FROM
+        BIGDATA.EXT_GBMS_ROUTE EGBR
+        INNER JOIN (
+        SELECT
+        EGAP.ROUTE_ID AS ORG_ROUTE_ID,
+        EGAP.EB_ROUTE_ID
+        FROM
+        BIGDATA.EXT_GGBIS_ALLOCATION_PLAN EGAP
+        GROUP BY
+        EGAP.ROUTE_ID,
+        EGAP.EB_ROUTE_ID
+        ) EBINFO ON EGBR.ROUTE_ID = EBINFO.ORG_ROUTE_ID
+        ) EGBR
+        ON EGBUCI.BUS_ROUTE_ID = EGBR.EB_ROUTE_ID
+        inner join (
+        select area_cd ,district_snm , district_gnm  from bigdata.ext_ggbis_district
+        group by area_cd,district_snm , district_gnm
+        ) egd on egbr.area_cd = egd.area_cd
+        <where>
+            <if test="routeNm != null and routeNm != ''">
+                AND EGBUCI.BUS_ROUTE_NO  LIKE '%' ||  #{routeNm} || '%'
+            </if>
+            <!-- 연도별 검색 -->
+            <if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+                AND TO_CHAR(TO_DATE(EGBUCI.CLCT_YMD,'YYYYMMDD'), 'YYYY') = #{searchYear}
+            </if>
+            <!-- 기간 검색 -->
+            <if test="searchPeriod != null and searchPeriod != ''">
+                <choose>
+                    <when test="searchPeriod == 'weekday' ">
+                        AND TO_CHAR(TO_DATE(EGBUCI.CLCT_YMD,'YYYYMMDD'), 'D') BETWEEN '2' AND '6'
+                    </when>
+                    <when test="searchPeriod == 'weekend' ">
+                        AND (TO_CHAR(TO_DATE(EGBUCI.CLCT_YMD,'YYYYMMDD'), 'D') = '1' OR TO_CHAR(TO_DATE(EGBUCI.CLCT_YMD,'YYYYMMDD'), 'D') = '7')
+                    </when>
+                    <otherwise>
+                        AND TO_CHAR(TO_DATE(EGBUCI.CLCT_YMD,'YYYYMMDD'), 'YYYY-MM-DD') BETWEEN #{startDate} AND #{endDate}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="districtGnm != null and districtGnm !=''">
+                AND	EGD.DISTRICT_GNM = #{districtGnm}
+            </if>
+            <if test="routeTpList != null">
+                AND EGBR.ROUTE_TY IN
+                <foreach collection="routeTpList" item="routeTp" open="(" close=")" separator=",">
+                    #{routeTp}
+                </foreach>
+            </if>
+        </where>
+        GROUP BY
+        EGBR.ROUTE_TY ,
+        /*EGBUCI.CLCT_YMD ,*/
+        EGBUCI.CO_NM,
+        /*EGBUCI.CARD_APPR_TYPE ,*/
+        EGBR.ROUTE_ID,
+        EGBR.EB_ROUTE_ID,
+        EGBUCI.BUS_ROUTE_NO,
+        egd.district_snm ,
+        egd.district_gnm
+            ) tot
+    </select>
+    <select id="findAllBySearchOption" parameterType="mapBigdataSearchDTO" resultType="gbmsBusUseCalcInfo">
+        SELECT
+        CASE WHEN EGBR.ROUTE_TY ='11' THEN '직행좌석형시내버스'
+        WHEN EGBR.ROUTE_TY ='12' THEN '좌석형시내버스'
+        WHEN EGBR.ROUTE_TY ='13' THEN '일반형시내버스'
+        WHEN EGBR.ROUTE_TY ='14' THEN '광역버스'
+        WHEN EGBR.ROUTE_TY ='21' THEN '직행좌석형농어촌버스'
+        WHEN EGBR.ROUTE_TY ='22' THEN '좌석형농어촌버스'
+        WHEN EGBR.ROUTE_TY ='23' THEN '일반형농어촌버스'
+        WHEN EGBR.ROUTE_TY ='30' THEN '마을버스'
+        WHEN EGBR.ROUTE_TY ='41' THEN '고속형시외버스'
+        WHEN EGBR.ROUTE_TY ='42' THEN '좌석형시외버스'
+        WHEN EGBR.ROUTE_TY ='43' THEN '일반형시외버스'
+        WHEN EGBR.ROUTE_TY ='51' THEN '리무진형공항버스'
+        WHEN EGBR.ROUTE_TY ='52' THEN '좌석형공항버스'
+        WHEN EGBR.ROUTE_TY ='53' THEN '일반형공항버스'
+        END AS ROUTE_TY ,
+            /*EGBUCI.CLCT_YMD ,*/
+            EGBUCI.CO_NM,
+            /*EGBUCI.CARD_APPR_TYPE ,*/
+            EGBR.ROUTE_ID,
+            EGBR.EB_ROUTE_ID,
+            SUM(EGBUCI.BUS_USER_CNT) AS BUS_USER_CNT,
+            SUM(EGBUCI.BUS_USE_TOT_AMT) AS BUS_USE_TOT_AMT,
+            SUM(EGBUCI.BUS_USE_TOT_AMT) FILTER (WHERE CARD_APPR_TYPE = '선불카드') AS CARD_1,
+            SUM(EGBUCI.BUS_USE_TOT_AMT) FILTER (WHERE CARD_APPR_TYPE = '후불카드') AS CARD_2,
+            SUM(EGBUCI.BUS_USE_TOT_AMT) FILTER (WHERE CARD_APPR_TYPE = '조합카드') AS CARD_3,
+            SUM(EGBUCI.BUS_USE_TOT_AMT) FILTER (WHERE CARD_APPR_TYPE NOT IN  ('선불카드','후불카드','조합카드')) AS ETC,
+            SUM(EGBUCI.BUS_USER_CNT) FILTER (WHERE CARD_APPR_TYPE = '선불카드') AS USER_1,
+            SUM(EGBUCI.BUS_USER_CNT) FILTER (WHERE CARD_APPR_TYPE = '후불카드') AS USER_2,
+            SUM(EGBUCI.BUS_USER_CNT) FILTER (WHERE CARD_APPR_TYPE = '조합카드') AS USER_3,
+            SUM(EGBUCI.BUS_USER_CNT) FILTER (WHERE CARD_APPR_TYPE NOT IN  ('선불카드','후불카드','조합카드')) AS USER_ETC,
+            EGBUCI.BUS_ROUTE_NO,
+               egd.district_gnm,
+               egd.district_snm
+        FROM
+            BIGDATA.EXT_GBMS_BUS_USE_CALC_INFO EGBUCI
+                INNER JOIN
+            (
+                SELECT
+                    DISTINCT ON (ROUTE_ID)
+                    EGBR.ROUTE_ID
+                    ,EGBR.ROUTE_TY
+                    ,egbr.area_code as area_cd
+                    ,EBINFO.EB_ROUTE_ID
+                FROM
+                    BIGDATA.EXT_GBMS_ROUTE EGBR
+                    INNER JOIN (
+                    SELECT
+                    EGAP.ROUTE_ID AS ORG_ROUTE_ID,
+                    EGAP.EB_ROUTE_ID
+                    FROM
+                    BIGDATA.EXT_GGBIS_ALLOCATION_PLAN EGAP
+                    GROUP BY
+                    EGAP.ROUTE_ID,
+                    EGAP.EB_ROUTE_ID
+                    ) EBINFO ON EGBR.ROUTE_ID = EBINFO.ORG_ROUTE_ID
+            ) EGBR
+            ON EGBUCI.BUS_ROUTE_ID = EGBR.EB_ROUTE_ID
+        inner join (
+        select area_cd ,district_snm , district_gnm  from bigdata.ext_ggbis_district
+        group by area_cd,district_snm , district_gnm
+        ) egd on egbr.area_cd = egd.area_cd
+        <where>
+        <if test="routeNm != null and routeNm != ''">
+            AND EGBUCI.BUS_ROUTE_NO  LIKE '%' ||  #{routeNm} || '%'
+        </if>
+        <!-- 연도별 검색 -->
+        <if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+            AND TO_CHAR(TO_DATE(EGBUCI.CLCT_YMD,'YYYYMMDD'), 'YYYY') = #{searchYear}
+        </if>
+        <!-- 기간 검색 -->
+        <if test="searchPeriod != null and searchPeriod != ''">
+            <choose>
+                <when test="searchPeriod == 'weekday' ">
+                    AND TO_CHAR(TO_DATE(EGBUCI.CLCT_YMD,'YYYYMMDD'), 'D') BETWEEN '2' AND '6'
+                </when>
+                <when test="searchPeriod == 'weekend' ">
+                    AND (TO_CHAR(TO_DATE(EGBUCI.CLCT_YMD,'YYYYMMDD'), 'D') = '1' OR TO_CHAR(TO_DATE(EGBUCI.CLCT_YMD,'YYYYMMDD'), 'D') = '7')
+                </when>
+                <otherwise>
+                    AND TO_CHAR(TO_DATE(EGBUCI.CLCT_YMD,'YYYYMMDD'), 'YYYY-MM-DD') BETWEEN #{startDate} AND #{endDate}
+                </otherwise>
+            </choose>
+        </if>
+            <if test="districtGnm != null and districtGnm !=''">
+                AND	EGD.DISTRICT_GNM = #{districtGnm}
+            </if>
+            <if test="routeTpList != null">
+                AND EGBR.ROUTE_TY IN
+                <foreach collection="routeTpList" item="routeTp" open="(" close=")" separator=",">
+                    #{routeTp}
+                </foreach>
+            </if>
+        </where>
+        GROUP BY
+            EGBR.ROUTE_TY ,
+            /*EGBUCI.CLCT_YMD ,*/
+            EGBUCI.CO_NM,
+            /*EGBUCI.CARD_APPR_TYPE ,*/
+            EGBR.ROUTE_ID,
+            EGBR.EB_ROUTE_ID,
+            EGBUCI.BUS_ROUTE_NO,
+        egd.district_snm ,
+        egd.district_gnm
+        <if test="routeNm != null and routeNm != ''">
+            order by (case when EGBUCI.BUS_ROUTE_NO = #{routeNm} then 1 else 2 end,  EGBUCI.BUS_ROUTE_NO)
+        </if>
+        LIMIT 5 OFFSET (#{page} - 1) * 5
+    </select>
+    
+    <select id="findAllDataYears" resultType="map">
+   		SELECT
+			TO_CHAR(TO_DATE(CLCT_YMD ,'YYYYMMDD'),'YYYY') AS "year"
+		FROM
+			BIGDATA.EXT_GBMS_BUS_USE_CALC_INFO
+		GROUP BY TO_CHAR(TO_DATE(CLCT_YMD ,'YYYYMMDD'),'YYYY')
+		ORDER BY TO_CHAR(TO_DATE(CLCT_YMD ,'YYYYMMDD'),'YYYY') DESC
+    </select>
 </mapper>

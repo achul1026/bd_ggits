@@ -1,6 +1,9 @@
 target
+target/*
 .idea
 .idea/*
 *.class
 src/main/webapp/WEB-INF/classes/*
-/.metadata/
+/.classpath
+/.project
+/.springBeans

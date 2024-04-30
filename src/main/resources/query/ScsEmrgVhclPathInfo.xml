@@ -2,21 +2,223 @@
 <!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.ScsEmrgVhclPathInfoMapper'>
-
 	<select id="findAllEmergencyList" parameterType="map" resultType="scsEmrgVhclPathInfo">
-		SELECT 	
-				SERVICEID,
-				EVNO,
-				CURRENTLAT,
-				CURRENTLNG,
-				SERVICENAME,
-				ARRIVALLAT,
-				ARRIVALLNG,
-				ROUTE,
-				VEHICLELENGTH,
-				OCRNO,
-				OCRTYPE,
-				ARRIVALTIME
-		FROM	SCS_EMRG_VHCL_PATH_INFO
+		WITH 
+			EMRG_CUR_INFO_CHK 
+		AS (
+			SELECT 
+					COUNT(SEVCI.SERVICEID) AS CUR_INF_CNT,
+					SEVCI.SERVICEID
+			FROM SCS_EMRG_VHCL_CUR_INFO SEVCI
+			GROUP BY SEVCI.SERVICEID 
+		)
+		SELECT 
+				EMRG_INFO.EVNO, 
+				EMRG_INFO.SERVICEID, 
+				EMRG_INFO.START_DATE,
+				EMRG_INFO.SERVICENAME,
+				EMRG_INFO.PREDICTED_ARRIVAL_DATE,
+				EMRG_INFO.ARRIVAL_DATE, 
+				EMRG_INFO.ARRIVALTIME_FORMAT, 
+				DATE_PART('MINUTE',EMRG_INFO.PREDICTED_ARRIVAL_DATE - EMRG_INFO.ARRIVAL_DATE)||'분'||ROUND(DATE_PART('SECOND',EMRG_INFO.PREDICTED_ARRIVAL_DATE - EMRG_INFO.ARRIVAL_DATE)::numeric)||'초'AS TIME_DIFFERENCE,
+				EMRG_LOG.CURRENTLAT ,
+				EMRG_LOG.CURRENTLNG ,
+				CASE WHEN  COALESCE(EMRG_CUR_INFO_CHK.CUR_INF_CNT,0) = 0 THEN 'CUS001' ELSE 'CUS002' END AS EMRG_CUR_STTS_CD
+				
+		FROM (
+				SELECT
+					   SEVPI.EVNO,
+					   SEVPI.SERVICEID ,
+						SEVPI.servicename,
+					   MAX(SEVLI.COLLECTDT)  AS ARRIVAL_DATE,
+					   MIN(SEVLI.COLLECTDT)  AS START_DATE,
+					   MIN(SEVLI.COLLECTDT)  + MAX(SEVPI.ARRIVALTIME) * interval '1 second' AS PREDICTED_ARRIVAL_DATE,
+					   <![CDATA[
+					   CASE WHEN MAX(SEVPI.ARRIVALTIME) >= 3600 THEN TO_CHAR(MAX(SEVPI.ARRIVALTIME) * INTERVAL '1 SECOND', 'HH24시 MI분 SS초')
+							 WHEN (MAX(SEVPI.ARRIVALTIME) < 3600 AND MAX(SEVPI.ARRIVALTIME) > 60) THEN  TO_CHAR(MAX(SEVPI.ARRIVALTIME) * INTERVAL '1 SECOND', 'MI분 SS초')
+							 WHEN MAX(SEVPI.ARRIVALTIME) <= 60 THEN  TO_CHAR(MAX(SEVPI.ARRIVALTIME) * INTERVAL '1 SECOND', 'SS초')
+							 ELSE '0'
+							 END
+						AS ARRIVALTIME_FORMAT
+						]]>
+				FROM
+					(select
+		max(sevpl.collectdt)
+		,sevpl.serviceid
+		,sevpl.evno
+		,sevpl.currentlat
+		,sevpl.currentlng
+		,sevpl.servicename
+		,sevpl.arrivallat
+		,sevpl.arrivallng
+		,sevpl.route
+		,sevpl.vehiclelength
+		,sevpl.ocrno
+		,sevpl.ocrtype
+		,sevpl.arrivaltime
+		from scs_emrg_vhcl_path_log sevpl
+		group by
+		sevpl.serviceid
+		,sevpl.evno
+		,sevpl.currentlat
+		,sevpl.currentlng
+		,sevpl.servicename
+		,sevpl.arrivallat
+		,sevpl.arrivallng
+		,sevpl.route
+		,sevpl.vehiclelength
+		,sevpl.ocrno
+		,sevpl.ocrtype
+		,sevpl.arrivaltime) SEVPI
+				INNER JOIN
+					SCS_EMRG_VHCL_LOG_INFO SEVLI ON SEVPI.SERVICEID = SEVLI.SERVICEID
+				LEFT JOIN SCS_EMRG_VHCL_CUR_INFO SEVCI ON SEVPI.SERVICEID = SEVCI.SERVICEID
+				GROUP BY 	SEVPI.EVNO,
+							SEVPI.SERVICEID,
+							sevpi.servicename
+		)EMRG_INFO			
+		LEFT JOIN
+			 SCS_EMRG_VHCL_LOG_INFO EMRG_LOG ON EMRG_INFO.SERVICEID = EMRG_LOG.SERVICEID AND EMRG_LOG.COLLECTDT = EMRG_INFO.ARRIVAL_DATE
+		LEFT JOIN  EMRG_CUR_INFO_CHK ON EMRG_CUR_INFO_CHK.SERVICEID = EMRG_INFO.SERVICEID
+		WHERE 1=1
+		<if test="(startToday != null and startToday != '') and (endToday != null and endToday != '')">
+			<![CDATA[
+		    	AND	EMRG_LOG.COLLECTDT >= TO_TIMESTAMP(#{startToday},'YYYY-MM-DD HH24:mi:ss') 
+				AND EMRG_LOG.COLLECTDT <= TO_TIMESTAMP(#{endToday},'YYYY-MM-DD HH24:mi:ss')
+			]]>
+		</if>
+		ORDER BY EMRG_INFO.START_DATE DESC   
+	</select>
+	
+	<select id="findAllEmergencyListForToday" resultType="scsEmrgVhclPathInfo">
+		WITH 
+			EMRG_CUR_INFO_CHK 
+		AS (
+			SELECT 
+					COUNT(SEVCI.SERVICEID) AS CUR_INF_CNT,
+					SEVCI.SERVICEID
+			FROM SCS_EMRG_VHCL_CUR_INFO SEVCI
+			GROUP BY SEVCI.SERVICEID 
+		)
+		SELECT 
+				EMRG_INFO.EVNO, 
+				EMRG_INFO.SERVICEID, 
+				EMRG_INFO.START_DATE,
+				EMRG_INFO.SERVICENAME,
+				EMRG_INFO.PREDICTED_ARRIVAL_DATE,
+				EMRG_INFO.ARRIVAL_DATE, 
+				EMRG_INFO.ARRIVALTIME_FORMAT, 
+				DATE_PART('MINUTE',EMRG_INFO.PREDICTED_ARRIVAL_DATE - EMRG_INFO.ARRIVAL_DATE)||'분'||ROUND(DATE_PART('SECOND',EMRG_INFO.PREDICTED_ARRIVAL_DATE - EMRG_INFO.ARRIVAL_DATE)::numeric)||'초'AS TIME_DIFFERENCE,
+				EMRG_LOG.CURRENTLAT ,
+				EMRG_LOG.CURRENTLNG ,
+				CASE WHEN  COALESCE(EMRG_CUR_INFO_CHK.CUR_INF_CNT,0) = 0 THEN 'CUS001' ELSE 'CUS002' END AS EMRG_CUR_STTS_CD,
+				SEVMI.FIRENAME
+		FROM (
+				SELECT
+					   SEVPI.EVNO,
+					   SEVPI.SERVICEID ,
+						SEVPI.servicename,
+					   MAX(SEVLI.COLLECTDT)  AS ARRIVAL_DATE,
+					   MIN(SEVLI.COLLECTDT)  AS START_DATE,
+					   MIN(SEVLI.COLLECTDT)  + MAX(SEVPI.ARRIVALTIME) * interval '1 second' AS PREDICTED_ARRIVAL_DATE,
+					   <![CDATA[
+					   CASE WHEN MAX(SEVPI.ARRIVALTIME) >= 3600 THEN TO_CHAR(MAX(SEVPI.ARRIVALTIME) * INTERVAL '1 SECOND', 'HH24시 MI분 SS초')
+							 WHEN (MAX(SEVPI.ARRIVALTIME) < 3600 AND MAX(SEVPI.ARRIVALTIME) > 60) THEN  TO_CHAR(MAX(SEVPI.ARRIVALTIME) * INTERVAL '1 SECOND', 'MI분 SS초')
+							 WHEN MAX(SEVPI.ARRIVALTIME) <= 60 THEN  TO_CHAR(MAX(SEVPI.ARRIVALTIME) * INTERVAL '1 SECOND', 'SS초')
+							 ELSE '0'
+							 END
+						AS ARRIVALTIME_FORMAT
+						]]>
+				FROM
+					(select
+		max(sevpl.collectdt)
+		,sevpl.serviceid
+		,sevpl.evno
+		,sevpl.currentlat
+		,sevpl.currentlng
+		,sevpl.servicename
+		,sevpl.arrivallat
+		,sevpl.arrivallng
+		,sevpl.route
+		,sevpl.vehiclelength
+		,sevpl.ocrno
+		,sevpl.ocrtype
+		,sevpl.arrivaltime
+		from scs_emrg_vhcl_path_log sevpl
+		group by
+		sevpl.serviceid
+		,sevpl.evno
+		,sevpl.currentlat
+		,sevpl.currentlng
+		,sevpl.servicename
+		,sevpl.arrivallat
+		,sevpl.arrivallng
+		,sevpl.route
+		,sevpl.vehiclelength
+		,sevpl.ocrno
+		,sevpl.ocrtype
+		,sevpl.arrivaltime) SEVPI
+				INNER JOIN
+					SCS_EMRG_VHCL_LOG_INFO SEVLI ON SEVPI.SERVICEID = SEVLI.SERVICEID
+				LEFT JOIN SCS_EMRG_VHCL_CUR_INFO SEVCI ON SEVPI.SERVICEID = SEVCI.SERVICEID
+				GROUP BY 	SEVPI.EVNO,
+							SEVPI.SERVICEID,
+							sevpi.servicename
+		)EMRG_INFO			
+		LEFT JOIN
+			 SCS_EMRG_VHCL_LOG_INFO EMRG_LOG ON EMRG_INFO.SERVICEID = EMRG_LOG.SERVICEID AND EMRG_LOG.COLLECTDT = EMRG_INFO.ARRIVAL_DATE
+		LEFT JOIN  EMRG_CUR_INFO_CHK ON EMRG_CUR_INFO_CHK.SERVICEID = EMRG_INFO.SERVICEID
+		INNER JOIN SCS_EMRG_VHCL_MST_INFO SEVMI ON EMRG_INFO.EVNO = SEVMI.EVNO
+		WHERE
+			EMRG_LOG.COLLECTDT > CURRENT_DATE
+			/* 경용 추가 시작한지 5초 미만 데이터 제거 */
+			AND ROUND(EXTRACT(DAY    FROM EMRG_INFO.ARRIVAL_DATE - EMRG_INFO.START_DATE) *24*60*60
+		     + EXTRACT(HOUR   FROM EMRG_INFO.ARRIVAL_DATE - EMRG_INFO.START_DATE) *60*60
+		     + EXTRACT(MINUTE FROM EMRG_INFO.ARRIVAL_DATE - EMRG_INFO.START_DATE) *60
+		     + EXTRACT(SECOND FROM EMRG_INFO.ARRIVAL_DATE - EMRG_INFO.START_DATE)) > 5
+		ORDER BY EMRG_INFO.START_DATE DESC
+	</select>
+	
+	
+	<select id="findOneByServiceid" parameterType="String" resultType="scsEmrgVhclPathInfo">
+		SELECT
+			SEVPI.SERVICEID,
+			SEVPI.EVNO,
+			SEVPI.CURRENTLAT,
+			SEVPI.CURRENTLNG,
+			SEVPI.arrivallng,
+			SEVPI.arrivallat,
+			SEVPI.SERVICENAME,
+			SEVPI.ROUTE,
+			ST_ASGEOJSON(SEVPI.ROUTE) AS ROUTE_GEOJSON
+		FROM 	(select
+					 max(sevpl.collectdt)
+					  ,sevpl.serviceid
+					  ,sevpl.evno
+					  ,sevpl.currentlat
+					  ,sevpl.currentlng
+					  ,sevpl.servicename
+					  ,sevpl.arrivallat
+					  ,sevpl.arrivallng
+					  ,sevpl.route
+					  ,sevpl.vehiclelength
+					  ,sevpl.ocrno
+					  ,sevpl.ocrtype
+					  ,sevpl.arrivaltime
+				 from scs_emrg_vhcl_path_log sevpl
+				 group by
+					 sevpl.serviceid
+						,sevpl.evno
+						,sevpl.currentlat
+						,sevpl.currentlng
+						,sevpl.servicename
+						,sevpl.arrivallat
+						,sevpl.arrivallng
+						,sevpl.route
+						,sevpl.vehiclelength
+						,sevpl.ocrno
+						,sevpl.ocrtype
+						,sevpl.arrivaltime) SEVPI
+		WHERE 	SEVPI.SERVICEID = #{serviceid}
 	</select>
 </mapper>

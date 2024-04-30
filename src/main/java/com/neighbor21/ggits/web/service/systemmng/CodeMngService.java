@@ -43,16 +43,18 @@ public class CodeMngService{
 		for(MOpCodeGrp codeGrp : codeGrpList) {
 			// 등록 및 수정자 정보 조회
 			Pattern pt = Pattern.compile("^[0-9]*$");
-			Matcher crtusrIdMc = pt.matcher(codeGrp.getCrtusrId());
-			Matcher uptusrIdMc = pt.matcher(codeGrp.getUptusrId());
-	
-			if(!GgitsCommonUtils.isNull(codeGrp.getCrtusrId()) && crtusrIdMc.find()) {
-				String crtusrId = mOpOperatorMapper.findOneMOpoperatorByOprtrId(Long.parseLong(codeGrp.getCrtusrId()));				
-				codeGrp.setCrtusrId(crtusrId);
-			}
-			if(!GgitsCommonUtils.isNull(codeGrp.getUptusrId()) && uptusrIdMc.find()) {
-				String uptusrId = mOpOperatorMapper.findOneMOpoperatorByOprtrId(Long.parseLong(codeGrp.getUptusrId()));				
-				codeGrp.setUptusrId(uptusrId);
+			if(codeGrp.getUptusrId() != null && codeGrp.getCrtusrId() != null) {
+				Matcher crtusrIdMc = pt.matcher(codeGrp.getCrtusrId());
+				Matcher uptusrIdMc = pt.matcher(codeGrp.getUptusrId());
+
+				if (!GgitsCommonUtils.isNull(codeGrp.getCrtusrId()) && crtusrIdMc.find()) {
+					String crtusrId = mOpOperatorMapper.findOneMOpoperatorByOprtrId(Long.parseLong(codeGrp.getCrtusrId()));
+					codeGrp.setCrtusrId(crtusrId);
+				}
+				if (!GgitsCommonUtils.isNull(codeGrp.getUptusrId()) && uptusrIdMc.find()) {
+					String uptusrId = mOpOperatorMapper.findOneMOpoperatorByOprtrId(Long.parseLong(codeGrp.getUptusrId()));
+					codeGrp.setUptusrId(uptusrId);
+				}
 			}
 		}
 		

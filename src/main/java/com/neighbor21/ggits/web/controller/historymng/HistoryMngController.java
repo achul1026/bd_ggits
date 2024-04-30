@@ -11,13 +11,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.neighbor21.ggits.common.entity.LTcDataLog;
-import com.neighbor21.ggits.common.entity.LTcOpenApiRqstLog;
+import com.neighbor21.ggits.common.entity.OpenApiPvsnLog;
 import com.neighbor21.ggits.common.entity.Paging;
 import com.neighbor21.ggits.common.enums.LinkedTableInfo;
 import com.neighbor21.ggits.common.enums.ServerMngType;
 import com.neighbor21.ggits.common.mapper.LTcDataLogMapper;
-import com.neighbor21.ggits.common.mapper.LTcOpenApiRqstLogMapper;
 import com.neighbor21.ggits.common.mapper.MOpCodeMapper;
+import com.neighbor21.ggits.common.mapper.OpenApiPvsnLogMapper;
+import com.neighbor21.ggits.common.util.BDDateFormatUtil;
 import com.neighbor21.ggits.common.util.GgitsCommonUtils;
 import com.neighbor21.ggits.web.service.historymng.HistoryMngService;
 
@@ -33,9 +34,9 @@ public class HistoryMngController {
 	
 	@Autowired
 	MOpCodeMapper mOpCodeMapper;
-	
+
 	@Autowired
-	LTcOpenApiRqstLogMapper lTcOpenApiRqstLogMapper;
+	OpenApiPvsnLogMapper openApiPvsnLogMapper;
 	
     /**
       * @Method Name : viewCollectList
@@ -57,26 +58,13 @@ public class HistoryMngController {
     	if(GgitsCommonUtils.isNull(lTcDataLog.getTabNum())) {
 			lTcDataLog.setTabNum("1");
 		}
-		String startToday = "";
-		String endToday = "";
-		if(!GgitsCommonUtils.isNull(lTcDataLog.getStrDt())) {
-			startToday = GgitsCommonUtils.dateToDatetimeStr(lTcDataLog.getStrDt(), "startDate");
-			if(!GgitsCommonUtils.isNull(lTcDataLog.getStartTime())) {
-				int startTime = Integer.parseInt(lTcDataLog.getStartTime());
-				startToday = GgitsCommonUtils.setDateTimeToDateString(startToday,startTime,"yyyy-MM-dd HH:mm:ss",Calendar.HOUR);
-			}
-			lTcDataLog.setStrDt(startToday);
-		}
-		if(!GgitsCommonUtils.isNull(lTcDataLog.getEndDt())) {
-			endToday = GgitsCommonUtils.dateToDatetimeStr(lTcDataLog.getEndDt(), "endDate");			
-			if(!GgitsCommonUtils.isNull(lTcDataLog.getEndTime())) {
-				int endTime = Integer.parseInt(lTcDataLog.getEndTime());
-				endToday = GgitsCommonUtils.setDateTimeToDateString(endToday,endTime,"yyyy-MM-dd HH:mm:ss",Calendar.HOUR);
-			}
-			lTcDataLog.setEndDt(endToday);
+    	// 처음 접근 시
+		if(GgitsCommonUtils.isNull(lTcDataLog.getStrDt()) && GgitsCommonUtils.isNull(lTcDataLog.getEndDt())) {
+			lTcDataLog.setStrDt(BDDateFormatUtil.isDateCal("yyyy-MM-dd", -7));
+			lTcDataLog.setEndDt(BDDateFormatUtil.isNowStr("yyyy-MM-dd"));
 		}
     	
-    	lTcDataLog.setEtlClsf("KAFKA"); //TODO::KAFKA(카프카) 가 수집이력인지 확인필요
+		lTcDataLog.setPrgrsStts("END"); //수집완료 상태
     	List<LTcDataLog> collectList = historyMngService.findAllLTcDataLogList(lTcDataLog);
 		int totalCnt = lTcDataLogMapper.countAll(lTcDataLog);
 		
@@ -114,34 +102,27 @@ public class HistoryMngController {
 			lTcDataLog.setTabNum("1");
 		}
     	
-		String startToday = "";
-		String endToday = "";
-		if(!GgitsCommonUtils.isNull(lTcDataLog.getStrDt())) {
-			startToday = GgitsCommonUtils.dateToDatetimeStr(lTcDataLog.getStrDt(), "startDate");
-			if(!GgitsCommonUtils.isNull(lTcDataLog.getStartTime())) {
-				int startTime = Integer.parseInt(lTcDataLog.getStartTime());
-				startToday = GgitsCommonUtils.setDateTimeToDateString(startToday,startTime,"yyyy-MM-dd HH:mm:ss",Calendar.HOUR);
-			}
-			lTcDataLog.setStrDt(startToday);
-		}
-		if(!GgitsCommonUtils.isNull(lTcDataLog.getEndDt())) {
-			endToday = GgitsCommonUtils.dateToDatetimeStr(lTcDataLog.getEndDt(), "endDate");			
-			if(!GgitsCommonUtils.isNull(lTcDataLog.getEndTime())) {
-				int endTime = Integer.parseInt(lTcDataLog.getEndTime());
-				endToday = GgitsCommonUtils.setDateTimeToDateString(endToday,endTime,"yyyy-MM-dd HH:mm:ss",Calendar.HOUR);
-			}
-			lTcDataLog.setEndDt(endToday);
+    	// 처음 접근 시
+		if(GgitsCommonUtils.isNull(lTcDataLog.getStrDt()) && GgitsCommonUtils.isNull(lTcDataLog.getEndDt())) {
+			lTcDataLog.setStrDt(BDDateFormatUtil.isDateCal("yyyy-MM-dd", -7));
+			lTcDataLog.setEndDt(BDDateFormatUtil.isNowStr("yyyy-MM-dd"));
 		}
 		
-//    	lTcDataLog.setEtlClsf(""); //TODO::서버 제어 이력명 예제 필요
+		if(!GgitsCommonUtils.isNull(lTcDataLog.getSearchContent())){
+			lTcDataLog.setDsetId(lTcDataLog.getSearchContent());
+		}
 		
     	List<LTcDataLog> collectStatusList = historyMngService.findAllLTcDataLogList(lTcDataLog);
+    	for(LTcDataLog item : collectStatusList) {
+    		item.setColName(LinkedTableInfo.getCodeName(item.getTrgtTbl()));
+    	}
     	int totalCnt = lTcDataLogMapper.countAll(lTcDataLog);
 		
 		Paging paging = new Paging();
 		paging.setPageNo(lTcDataLog.getPage());
     	paging.setTotalCount(totalCnt);
     	
+		model.addAttribute("searchOption",lTcDataLog);
     	model.addAttribute("linkedType", linkedType.getCode());
     	model.addAttribute("paging", paging);
     	model.addAttribute("collectStatusList",collectStatusList);
@@ -169,28 +150,24 @@ public class HistoryMngController {
     	if(GgitsCommonUtils.isNull(lTcDataLog.getTabNum())) {
 			lTcDataLog.setTabNum("1");
 		}
-		String startToday = "";
-		String endToday = "";
-		if(!GgitsCommonUtils.isNull(lTcDataLog.getStrDt())) {
-			startToday = GgitsCommonUtils.dateToDatetimeStr(lTcDataLog.getStrDt(), "startDate");
-			if(!GgitsCommonUtils.isNull(lTcDataLog.getStartTime())) {
-				int startTime = Integer.parseInt(lTcDataLog.getStartTime());
-				startToday = GgitsCommonUtils.setDateTimeToDateString(startToday,startTime,"yyyy-MM-dd HH:mm:ss",Calendar.HOUR);
-			}
-			lTcDataLog.setStrDt(startToday);
+		
+    	// 처음 접근 시
+		if(GgitsCommonUtils.isNull(lTcDataLog.getStrDt()) && GgitsCommonUtils.isNull(lTcDataLog.getEndDt())) {
+			lTcDataLog.setStrDt(BDDateFormatUtil.isDateCal("yyyy-MM-dd", -7));
+			lTcDataLog.setEndDt(BDDateFormatUtil.isNowStr("yyyy-MM-dd"));
 		}
-		if(!GgitsCommonUtils.isNull(lTcDataLog.getEndDt())) {
-			endToday = GgitsCommonUtils.dateToDatetimeStr(lTcDataLog.getEndDt(), "endDate");			
-			if(!GgitsCommonUtils.isNull(lTcDataLog.getEndTime())) {
-				int endTime = Integer.parseInt(lTcDataLog.getEndTime());
-				endToday = GgitsCommonUtils.setDateTimeToDateString(endToday,endTime,"yyyy-MM-dd HH:mm:ss",Calendar.HOUR);
-			}
-			lTcDataLog.setEndDt(endToday);
+		
+		if(!GgitsCommonUtils.isNull(lTcDataLog.getSearchContent())){
+			lTcDataLog.setDsetId(lTcDataLog.getSearchContent());
 		}
     	
-    	//lTcDataLog.setEtlClsf(""); //TODO::서버 장애 이력 이력명 예제 필요
+		lTcDataLog.setPrgrsStts("ERROR");
 		
     	List<LTcDataLog> collectErrorList = historyMngService.findAllLTcDataLogList(lTcDataLog);
+    	for(LTcDataLog item : collectErrorList) {
+    		item.setColName(LinkedTableInfo.getCodeName(item.getTrgtTbl()));
+    	}
+    	
     	int totalCnt = lTcDataLogMapper.countAll(lTcDataLog);
 		
 		Paging paging = new Paging();
@@ -199,6 +176,7 @@ public class HistoryMngController {
     	
     	model.addAttribute("linkedType", linkedType.getCode());
     	model.addAttribute("paging", paging);
+    	model.addAttribute("searchOption",lTcDataLog);
     	model.addAttribute("collectErrorList",collectErrorList);
     	
     	return "view/historymng/collectErrorList";
@@ -213,38 +191,26 @@ public class HistoryMngController {
      * @throws ParseException 
      */
     @GetMapping("/open/api/list.do")
-    public String viewOpenApiHistList(Model model,LTcOpenApiRqstLog lTcOpenApiRqstLog) throws ParseException{
-		if(GgitsCommonUtils.isNull(lTcOpenApiRqstLog.getTabNum())) {
-			lTcOpenApiRqstLog.setTabNum("1");
+    public String viewOpenApiHistList(Model model,OpenApiPvsnLog openApiPvsnLog) throws ParseException{
+		if(GgitsCommonUtils.isNull(openApiPvsnLog.getTabNum())) {
+			openApiPvsnLog.setTabNum("1");
 		}
-		String startToday = "";
-		String endToday = "";
-		if(!GgitsCommonUtils.isNull(lTcOpenApiRqstLog.getStrDt())) {
-			startToday = GgitsCommonUtils.dateToDatetimeStr(lTcOpenApiRqstLog.getStrDt(), "startDate");
-			if(!GgitsCommonUtils.isNull(lTcOpenApiRqstLog.getStartTime())) {
-				int startTime = Integer.parseInt(lTcOpenApiRqstLog.getStartTime());
-				startToday = GgitsCommonUtils.setDateTimeToDateString(startToday,startTime,"yyyy-MM-dd HH:mm:ss",Calendar.HOUR);
-			}
-			lTcOpenApiRqstLog.setStrDt(startToday);
-		}
-		if(!GgitsCommonUtils.isNull(lTcOpenApiRqstLog.getEndDt())) {
-			endToday = GgitsCommonUtils.dateToDatetimeStr(lTcOpenApiRqstLog.getEndDt(), "endDate");			
-			if(!GgitsCommonUtils.isNull(lTcOpenApiRqstLog.getEndTime())) {
-				int endTime = Integer.parseInt(lTcOpenApiRqstLog.getEndTime());
-				endToday = GgitsCommonUtils.setDateTimeToDateString(endToday,endTime,"yyyy-MM-dd HH:mm:ss",Calendar.HOUR);
-			}
-			lTcOpenApiRqstLog.setEndDt(endToday);
+		
+		// 처음 접근 시
+		if(GgitsCommonUtils.isNull(openApiPvsnLog.getStrDt()) && GgitsCommonUtils.isNull(openApiPvsnLog.getEndDt())) {
+			openApiPvsnLog.setStrDt(BDDateFormatUtil.isDateCal("yyyy-MM-dd", -7));
+			openApiPvsnLog.setEndDt(BDDateFormatUtil.isNowStr("yyyy-MM-dd"));
 		}
     	
-    	List<LTcOpenApiRqstLog> openApiList = historyMngService.findAllLTcOpenApiRqstLogList(lTcOpenApiRqstLog);
-    	int totalCnt = lTcOpenApiRqstLogMapper.countAllBySearchOption(lTcOpenApiRqstLog);
+    	List<OpenApiPvsnLog> openApiList = openApiPvsnLogMapper.findAllOpenApiPvsnLogList(openApiPvsnLog);
+    	int totalCnt = openApiPvsnLogMapper.countAllOpenApiPvsnLogBySearchOption(openApiPvsnLog);
 		
 		Paging paging = new Paging();
-		paging.setPageNo(lTcOpenApiRqstLog.getPage());
+		paging.setPageNo(openApiPvsnLog.getPage());
     	paging.setTotalCount(totalCnt);
     	
     	model.addAttribute("paging", paging);
-    	model.addAttribute("searchOption", lTcOpenApiRqstLog);
+    	model.addAttribute("searchOption", openApiPvsnLog);
     	model.addAttribute("openApiList",openApiList);
     	
     	return "view/historymng/openApiHistList";

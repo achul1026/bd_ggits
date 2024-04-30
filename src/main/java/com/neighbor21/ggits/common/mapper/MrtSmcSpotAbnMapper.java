@@ -35,61 +35,7 @@ public interface MrtSmcSpotAbnMapper {
      * @Method 설명 : 정체 발생량 전체 평균 속도 통계
      * @return
      */
-	int findOneSpotAbnAvgSpd(CommonEntity commonEntity);
-	
-	/**
-	 * @Method Name : findOneSumVhclTrfvlmByAnlsDt
-	 * @작성일 : 2023. 10. 25.
-	 * @작성자 : KY.LEE
-	 * @Method 설명 : 모니터링대시보드 > 금일 전체 교통량 
-	 * @return
-	 */
-	int findOneSumVhclTrfvlmByAnlsDt(MrtSmcSpotAbn mrtSmcSpotAbn);
-	
-	/**
-	 * @Method Name : findOneVclSpeedAvgByAnlsDt
-	 * @작성일 : 2023. 10. 25.
-	 * @작성자 : KY.LEE
-	 * @Method 설명 : 모니터링대시보드 > 금일 평균 속력
-	 * @return
-	 */
-	int findOneVclSpeedAvgByAnlsDt(MrtSmcSpotAbn mrtSmcSpotAbn);
-	
-	/**
-	 * @Method Name : findTop5ByAnlsDtOrderByVhclTrfVlm
-	 * @작성일 : 2023. 10. 25.
-	 * @작성자 : KY.LEE
-	 * @Method 설명 : 모니터링대시보드 > 시간대 별 누적 교통량 순위 TOP5 보기 
-	 * @return
-	 */
-	List<Map<String, Object>> findTop5ByAnlsDtOrderByVhclTrfVlm(MrtSmcSpotAbn mrtSmcSpotAbn);
-
-	/**
-	 * @Method Name : findTop5ByAvgVhclSpeedOrderByAvgVhclSpeed
-	 * @작성일 : 2023. 10. 25.
-	 * @작성자 : KY.LEE
-	 * @Method 설명 : 모니터링대시보드 > 시간대 별 평균 속도 순위 TOP5 보기 
-	 * @return
-	 */
-	List<Map<String, Object>> findTop5ByAvgVhclSpeedOrderByAvgVhclSpeed(MrtSmcSpotAbn mrtSmcSpotAbn);
-
-	/**
-	 * @Method Name : findTodaysStatistics
-	 * @작성일 : 2023. 10. 25.
-	 * @작성자 : KY.LEE
-	 * @Method 설명 : 모니터링대시보드 > 시간대 별 누적 교통량 순위 차트데이터
-	 * @return
-	 */
-	List<Map<String,Object>> findVhclFrfvlTodaysStatistics(MrtSmcSpotAbn mrtSmcSpotAbn);
-
-	/**
-	 * @Method Name : findSpeedAvgTodaysStatistics
-	 * @작성일 : 2023. 10. 25.
-	 * @작성자 : KY.LEE
-	 * @Method 설명 : 모니터링대시보드 > 시간대 별 평균 속도 차트데이터
-	 * @return
-	 */
-	List<Map<String,Object>> findSpeedAvgTodaysStatistics(MrtSmcSpotAbn mrtSmcSpotAbn);
+	Integer findOneSpotAbnAvgSpd(CommonEntity commonEntity);
 	
 	/**
 	 * @Method Name : findTop5CrossRoadsInfo
@@ -99,5 +45,66 @@ public interface MrtSmcSpotAbnMapper {
 	 * @return
 	 */
 	List<Map<String,Object>> findTop5CrossRoadsInfo(MrtSmcSpotAbn mrtSmcSpotAbn);
+	
+	/**
+	 * @Method Name : findTop5SumVhclTrfVlm
+	 * @작성일 : 2023. 10. 30.
+	 * @작성자 : KY.LEE
+	 * @Method 설명 : 빅데이터 분석 > 교통패턴분석 -> 더많은 데이터보기
+	 * @return
+	 */
+	List<Map<String,Object>> findTop5SumVhclTrfVlm(MrtSmcSpotAbn mrtSmcSpotAbn);
+
+	/**
+	 * @Method Name : findTop5ByMrtSmcSpotAbnInfo
+	 * @작성일 : 2023. 10. 30.
+	 * @작성자 : KY.LEE
+	 * @Method 설명 : 빅데이터 분석 > 교통패턴분석 -> 더많은 데이터보기 -> 정체구간 순위 (시,군별)
+	 * @return
+	 */
+	List<Map<String,Object>> findTop5ByMrtSmcSpotAbnInfo();
+
+	/**
+	 * @Method Name : findTop5ByMrtSmcSpotAbnInfo
+	 * @작성일 : 2023. 10. 30.
+	 * @작성자 : KY.LEE
+	 * @Method 설명 : 빅데이터 분석 > 교통패턴분석 -> 더많은 데이터보기 -> 교통량 순위 (도로별)
+	 * @return
+	 */
+	List<Map<String,Object>> findTop5SumVhclTrfVlmLink();
+
+	/**
+	 * @Method Name : findTop5ByMrtSmcSpotAbnInfo
+	 * @작성일 : 2023. 10. 30.
+	 * @작성자 : KY.LEE
+	 * @Method 설명 : 빅데이터 분석 > 교통패턴분석 -> 더많은 데이터보기 -> 교통량 순위 (교차로별)
+	 * @return
+	 */
+	List<Map<String,Object>> findTop5SumVhclTrfVlmCross();
+	
+	/**
+	 * @Method Name : findTop5ByMrtSmcSpotAbnInfo
+	 * @작성일 : 2023. 10. 30.
+	 * @작성자 : KY.LEE
+	 * @Method 설명 : 빅데이터 분석 > 교통패턴분석 -> 더많은 데이터보기 -> 교통량 순위 (교차로별)
+	 * @return
+	 */
+	List<Map<String,Object>> findTop5SumVhclTrfVlmTown();
+	
+	/**
+	 * @Method Name : findAllSmcSpotAbnListForStats
+	 * @작성일 : 2024. 04. 04.
+	 * @작성자 : KC.KIM
+	 * @Method 설명 : 수집원별 소통정보(스마트 교차로) 리스트 조회
+	 */	
+	List<MrtSmcSpotAbn> findAllSmcSpotAbnListForStats(MrtSmcSpotAbn mrtSmcSpotAbn);
+
+	/**
+	 * @Method Name : countSmcSpotAbnForStats
+	 * @작성일 : 2024. 04. 04.
+	 * @작성자 : KC.KIM
+	 * @Method 설명 : 수집원별 소통정보(스마트 교차로) 리스트 개수 조회
+	 */	
+	int countSmcSpotAbnForStats(MrtSmcSpotAbn mrtSmcSpotAbn);
 	
 }

@@ -19,6 +19,7 @@ public class GgdtdrBusSttnInfo {
   private String stStaNm;	// 출발지
   private String edStaNm;	// 도착지
   private String routeInterval;	// 배차간격
+  private String routeTp;	// 노선 유형
 
   public String getAdsiCd() {
     return adsiCd;
@@ -146,6 +147,14 @@ public String getRouteInterval() {
 
 public void setRouteInterval(String routeInterval) {
 	this.routeInterval = routeInterval;
+}
+
+public String getRouteTp() {
+	return routeTp;
+}
+
+public void setRouteTp(String routeTp) {
+	this.routeTp = routeTp;
 }
   
 }

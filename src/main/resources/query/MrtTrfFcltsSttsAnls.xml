@@ -5,8 +5,8 @@
 	<sql id="mrtTrfFcltsSttsAnls-Where">
 		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
 			AND mtfsa.ANLS_DT 
-			BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
-		    	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			BETWEEN TO_TIMESTAMP(#{strDt}|| ' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}|| ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
 		</if>
 		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
 			<![CDATA[
@@ -18,8 +18,20 @@
 			AND mtfsa.ANLS_DT <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
 			]]>
 		</if>
+		<if test="sigunCdId != null and sigunCdId != '' and sigunCdId != 'searchAllLocation'">
+			AND SUBSTRING(cgslam.ADSTDG_CD,0,5) = SUBSTRING(#{sigunCdId},0,5)
+		</if>
 		<if test="searchContent != '' and searchContent != null">
-			AND (gcil.ROAD_NAME LIKE '%' || #{searchContent} || '%' or mtfsa.FCLTS_ID LIKE '%' || #{searchContent} || '%')
+			AND (cgslam.ROAD_NAME LIKE '%' || #{searchContent} || '%' or mtfsa.FCLTS_ID LIKE '%' || #{searchContent} || '%')
+		</if>
+		<if test="seltRoadRank != null and seltRoadRank != '' and seltRoadRank != 'all'">
+			AND mtfsa.ROAD_GRD = #{seltRoadRank}
+		</if>
+		<if test="seltRoadDrct != null and seltRoadDrct != '' and seltRoadDrct != 'all'">
+			AND mtfsa.ROAD_DRCT = #{seltRoadDrct}
+		</if>
+		<if test="seltFicltInfo != null and seltFicltInfo != '' and seltFicltInfo != 'all'">
+			AND mtfsa.FCLTS_TYPE = #{seltFicltInfo}
 		</if>
 		<if test="dayOfTheWeek != null">
 			AND EXTRACT (ISODOW from mtfsa.ANLS_DT)::varchar(1) IN 
@@ -30,50 +42,50 @@
 	</sql>
 	
 	<select id="countTrfFcltsSttsAnls" parameterType="commonEntity" resultType="int">
-		SELECT
-			COUNT(*)
-		FROM
-			MRT_TRF_FCLTS_STTS_ANLS mtfsa
-		LEFT JOIN GY_COMM_INFO_LINK gcil
-			ON mtfsa.LINK_ID = gcil.LINK_ID
-		WHERE
-			1=1
-		<include refid="mrtTrfFcltsSttsAnls-Where"/>
+		SELECT 
+			COUNT(A.ROAD_NAME)
+		FROM(
+			SELECT
+				cgslam.ROAD_NAME
+			FROM
+				MRT_TRF_FCLTS_STTS_ANLS mtfsa
+			INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam
+				ON mtfsa.LINK_ID = cgslam.LINK_ID
+			WHERE	
+				1=1
+			<include refid="mrtTrfFcltsSttsAnls-Where"/>
+			GROUP BY cgslam.ROAD_NAME, ROAD_GRD, mtfsa.ROAD_DRCT, mtfsa.FCLTS_TYPE, mtfsa.FCLTS_ID
+		)A
 	</select>
 	
 	<select id="findAllTrfFcltsSttsAnls" parameterType="commonEntity" resultType="mrtTrfFcltsSttsAnls">
 		SELECT
-			gcil.ROAD_NAME
-			, mtfsa.ROAD_GRD
+			cgslam.ROAD_NAME
+			, CASE WHEN mtfsa.ROAD_GRD ='101' THEN '고속국도'
+				WHEN mtfsa.ROAD_GRD ='102' THEN '도시고속국도'
+				WHEN mtfsa.ROAD_GRD ='103' THEN '일반국도'
+				WHEN mtfsa.ROAD_GRD ='104' THEN '특별광역시도'
+				WHEN mtfsa.ROAD_GRD ='105' THEN '국가지원지방도'
+				WHEN mtfsa.ROAD_GRD ='106' THEN '지방도'
+				WHEN mtfsa.ROAD_GRD ='107' THEN '기타'
+				END AS ROAD_GRD
 			, mtfsa.ROAD_DRCT
 			, mtfsa.FCLTS_TYPE
 			, mtfsa.FCLTS_ID
-			, mtfsa.TRBL_OCCUR_CNT
+			, SUM(mtfsa.TRBL_OCCUR_CNT) as TRBL_OCCUR_CNT
 		FROM
 			MRT_TRF_FCLTS_STTS_ANLS mtfsa
-		LEFT JOIN GY_COMM_INFO_LINK gcil
-			ON mtfsa.LINK_ID = gcil.LINK_ID
+		INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam
+			ON mtfsa.LINK_ID = cgslam.LINK_ID
 		WHERE	
 			1=1
 			<include refid="mrtTrfFcltsSttsAnls-Where"/>
-		ORDER BY mtfsa.ANLS_DT DESC
+		GROUP BY cgslam.ROAD_NAME, ROAD_GRD, mtfsa.ROAD_DRCT, mtfsa.FCLTS_TYPE, mtfsa.FCLTS_ID
+		ORDER BY cgslam.ROAD_NAME
+		<if test="page != null and page != '' and page != 0">
+			LIMIT 10 OFFSET (#{page} - 1) * 10
+		</if>
 	</select>
 	
-	<select id="findAllTrfFcltsEqpLogList" parameterType="commonEntity" resultType="mrtTrfFcltsSttsAnls">
-		SELECT
-			gcil.ROAD_NAME
-			, mtfsa.ROAD_GRD
-			, mtfsa.ROAD_DRCT
-			, mtfsa.FCLTS_TYPE
-			, mtfsa.FCLTS_ID
-			, mtfsa.ANLS_DT
-		FROM
-			MRT_TRF_FCLTS_STTS_ANLS mtfsa
-		LEFT JOIN GY_COMM_INFO_LINK gcil
-			ON mtfsa.LINK_ID = gcil.LINK_ID
-		WHERE
-			1=1
-			<include refid="mrtTrfFcltsSttsAnls-Where"/>
-		ORDER BY mtfsa.ANLS_DT DESC
-	</select>
+	
 </mapper>

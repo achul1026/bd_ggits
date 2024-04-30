@@ -14,96 +14,80 @@
             <h2 class="blind">수집 이력 관리</h2>
             <div class="table_btn_wrap clearfix tab_fc">
                 <div class="btn_search_wrap float-left">
-                    <a href="${pageContext.request.contextPath}/historymng/collectmng/list.do?linkedType=SMT000" class="is-dark-btn ${linkedType eq 'SMT000' ? 'is-darkgreen-btn':''}">지자체 연계</a>
-                    <a href="${pageContext.request.contextPath}/historymng/collectmng/list.do?linkedType=SMT001" class="is-dark-btn ${linkedType eq 'SMT001' ? 'is-darkgreen-btn':''}">외부기관 연계</a>
-                    <a href="${pageContext.request.contextPath}/historymng/collectmng/list.do?linkedType=SMT002" class="is-dark-btn ${linkedType eq 'SMT002' ? 'is-darkgreen-btn':''}">신호 연계</a>
-                    <a href="${pageContext.request.contextPath}/historymng/collectmng/list.do?linkedType=SMT003" class="is-dark-btn ${linkedType eq 'SMT003' ? 'is-darkgreen-btn':''}">빅데이터 저장 플랫폼</a>
+                	<input type="hidden" id="linkedType" value="<c:out value='${linkedType}'/>"/>
+                	<ul>
+                		<li>
+                			<a href="${pageContext.request.contextPath}/historymng/collectmng/list.do?linkedType=SMT000" class="is-dark-btn ${linkedType eq 'SMT000' ? 'is-darkgreen-btn':''}">지자체 연계</a>
+                		</li>
+                		<li>
+                			<a href="${pageContext.request.contextPath}/historymng/collectmng/list.do?linkedType=SMT001" class="is-dark-btn ${linkedType eq 'SMT001' ? 'is-darkgreen-btn':''}">외부기관 연계</a>
+                		</li>
+<!--                 		<li> -->
+<%--                 			<a href="${pageContext.request.contextPath}/historymng/collectmng/list.do?linkedType=SMT002" class="is-dark-btn ${linkedType eq 'SMT002' ? 'is-darkgreen-btn':''}">신호 연계</a> --%>
+<!--                 		</li> -->
+                		<li>
+                			<a href="${pageContext.request.contextPath}/historymng/collectmng/list.do?linkedType=SMT003" class="is-dark-btn ${linkedType eq 'SMT003' ? 'is-darkgreen-btn':''}">빅데이터 연계 시스템</a>
+                		</li>
+                	</ul>
                 </div>
             </div>
             <div class="contents_wrap tab_area">
                 <div class="tab1">
                     <div class="group2">
                         <div class="group_text2">검색</div>
-                        <input type="text" id="searchContent" name="searchContent" placeholder="기관명을 검색해주세요." class="input_same group_box" value="${searchOption.searchContent}">
+						<input type="text" id="searchContent" placeholder="수집 기관 또는 수집원을 입력해 주세요" class="input_same group_box history-input-witdh" value="<c:out value='${searchOption.searchContent}'/>">							
                         <div class="search_detail_btn">
                             상세 검색 <i></i>
                         </div>
                     </div>
-                    <div class="search_detail_wrap">
-	                    <form id="searchForm">
-	                    	<input type="hidden" name="page" value="${paging ne null ? paging.pageNo : '1'}"/>
+                    <form id="searchForm">
+	                    <div class="search_detail_wrap">
+	                    	<input type="hidden" name="page" id="page" value="1">
 	                        <div class="group2">
 	                            <div class="group_text2">시간 설정</div>
-	                            <div class="flex-center">
-	                                <div class="calendar">
-										<input type="text" class="date_picker input_same mr8 input_picker" id="strDt" name="strDt" placeholder="날짜를 선택해주세요.">
-										<select class="selectBox selectTime" id="startTime" name="startTime"></select>
-	                                    ~
-	                                    <input type="text" class="end_date_picker input_same mr8 ml8 input_picker" id="endDt" name="endDt" placeholder="날짜를 선택해주세요.">
-										<select class="selectBox selectTime" id="endTime" name="endTime"></select>
-	                                </div>
-<!-- 	                                <div class="flex-center"> -->
-<!-- 	                                    <div class="select_tltie">집계 시간</div> -->
-<!-- 	                                    <select class="selectBox"> -->
-<!-- 	                                        <option selected="selected">10분</option> -->
-<!-- 	                                        <option>test1</option> -->
-<!-- 	                                        <option>test2</option> -->
-<!-- 	                                        <option>test3</option> -->
-<!-- 	                                        <option>test4</option> -->
-<!-- 	                                        <option>test5</option> -->
-<!-- 	                                    </select> -->
-<!-- 	                                </div> -->
+	                            <div class="btn_search_wrap">
+	                  	            <ul>
+	                  	            	<li>
+	                  	            		<input type="text" class="date_picker input_same input_picker" id="strDt" name="strDt" placeholder="날짜를 선택해주세요.">
+	                  	            	</li>
+	                  	            	<li>
+	                  	            		~
+	                  	            	</li>
+	                  	            	<li>
+	                  	            		<input type="text" class="end_date_picker input_same input_picker" id="endDt" name="endDt" placeholder="날짜를 선택해주세요.">
+	                  	            	</li>
+	                  	            </ul>
+			
 	                            </div>
 	                        </div>
-	                        <div class="group2">
-	                            <div class="group_text2">수집상태</div>
-	                            <div>
-				                    <c:forEach var="collTyCd" items="${collTyCdList}">
-				                    	<c:if test="${collTyCd.cdId eq 'CTC000'}">
-											<label class="is-dark-btn single-toggle"><input type="checkbox" class="none collectionType" value="${collTyCd.cdNm}">${collTyCd.cdNm}</label>
-				                    	</c:if>
-				                    	<c:if test="${collTyCd.cdId eq 'CTC002'}">
-											<label class="is-dark-btn single-toggle"><input type="checkbox" class="none collectionType" value="${collTyCd.cdNm}">${collTyCd.cdNm}</label>
-				                    	</c:if>
-									</c:forEach>
-	                            </div> 
-	                        </div>
-		                     <div class="group2_btn">
-		                    	<!-- button id  name 바꿔서 사용하세요 -->
-		                        <button type="button" class="is-darkgreen-btn" id="searchBtn">찾기</button>
-		                        <input type="button" id="resetSchOption" class="is-dark-btn selected_reset" value="검색값 초기화">
-	                    	</div>
-		                </form>
-		            </div>
+			            </div>
+	                    <div class="btn_search_wrap btn_search_wrap_center">
+	                    	<ul>
+	                    		<li>
+	                    			<button type="button" class="is-darkgreen-btn" id="searchBtn">찾기</button>
+	                    		</li>
+	                    		<li>
+	                    			<input type="button" id="resetSchOption" class="is-dark-btn selected_reset" value="검색값 초기화">
+	                    		</li>
+	                    	</ul>
+                        </div>
+	                </form>
                     <div class="search_container">
                         <div class="search_head">
                             <div class="search_number">
-                                <span>"${paging.totalCount}개"</span>의 검색결과를 찾았습니다.
+                                <span id="totalCnt"><c:out value='${paging.totalCount}'/></span>개의 검색결과를 찾았습니다.
                             </div>
                         </div>
                     </div>
                     <table class="mt16">
-                        <colgroup>
-                            <col style="width:8%">
-                            <col style="width:30%">
-                            <col style="width:20%">
-                            <col style="width:20%">
-                            <col style="width:20%">
-                        </colgroup>
                         <thead>
 	                        <tr>
 	                            <th>번호</th>
 	                            <th>수집일시</th>
 	                            <th>수집기관</th>
-	                            <th>수집유형</th>
-	                            <th>
-		                            <select class="table-filter">
-			                            <option selected="selected">정상여부</option>
-			                            <option>전체</option>
-			                            <option>정상</option>
-			                            <option>비정상</option>
-			                        </select>                            	
-	                            </th>
+	                            <th>수집데이터</th>
+	                            <th>데이터 수집 건수</th>
+	                            <th>처리시간</th>
 	                        </tr>
                         </thead>
                         <tbody>
@@ -111,28 +95,22 @@
                         	<c:when test="${not empty collectList}">
 	                        	<c:forEach var="collectList" items="${collectList}">
 			                        <tr>
-			                            <td>${collectList.rownum}</td>
+			                            <td><c:out value='${collectList.rownum}'/></td>
 			                            <td>
-			                            	<fmt:formatDate value="${collectList.clctStartDt}" pattern="yyyy-MM-dd HH:mm"/>
+			                            	<fmt:formatDate value="${collectList.clctStartDt}" pattern="yyyy-MM-dd HH:mm:ss"/>
 			                            </td>
-			                            <td>${collectList.cdNm}</td>
-			                            <td>${collectList.dataClctType ne null and collectList.dataClctType ne ''? collectList.dataClctType:'-'}</td>
+			                            <td><c:out value='${collectList.cdNm ne null ? collectList.cdNm : "-"}'/></td>
+			                            <td><c:out value='${collectList.jobNm}'/></td>
 			                            <td>
-			                            	<c:choose>
-												<c:when test="${collectList.prgrsStts eq 'ERROR'}">
-													비정상
-												</c:when>
-												<c:otherwise>
-													정상
-												</c:otherwise>		                            	
-			                            	</c:choose>
-			                            </td>
+											<fmt:formatNumber value="${collectList.clctDataCnt}" type="number" />건
+										</td>
+			                            <td><c:out value='${collectList.procTime ne null ? collectList.procTime : "-"}'/></td>
 			                        </tr>
 	                        	</c:forEach>
                         	</c:when>
                         	<c:otherwise>
 			                    <tr>
-									<td colspan="5">조회된 결과가 없습니다.</td>
+									<td colspan="7">조회된 결과가 없습니다.</td>
 								</tr>
                         	</c:otherwise>
                         </c:choose>
@@ -146,15 +124,13 @@
 </main>
 
 <script>
-
+	var dataTotalCnt = '<c:out value="${paging.totalCount}"/>';
+	$("#totalCnt").text(numberComma(dataTotalCnt))
+	
 	$(document).ready(function(){
-		//<![CDATA[
-			var strDt = '${searchOption.strDt}';
-			var endDt = '${searchOption.endDt}';
-			var strTime = '${searchOption.startTime}';
-			var endTime = '${searchOption.endTime}';
-			var colTyCd = '${searchOption.colTyCd}';
-		//]]>
+		var strDt = '<c:out value="${searchOption.strDt}"/>';
+		var endDt = '<c:out value="${searchOption.endDt}"/>';
+		var colTyCd = '<c:out value="${searchOption.colTyCd}"/>';
 		
 		//searchOption dataInit
 		if(strDt != null && strDt != ''){
@@ -162,12 +138,6 @@
 		}
 		if(endDt != null && endDt != ''){
 			$("#endDt").val(endDt.substring(0,10));
-		}
-		if(strTime != null && strTime != ''){
-			$("#startTime").val(strTime).prop("selected",true);
-		}
-		if(endTime != null && endTime != ''){
-			$("#endTime").val(endTime).prop("selected",true);
 		}
 		if(colTyCd != null && colTyCd != ''){
 			var collectionType = $(".collectionType")
@@ -200,6 +170,8 @@
 	function fnSearchList(){
 		var searchContent = $("#searchContent").val();
 		var collectionType = $(".collectionType"); //아직 컬럼 미생성
+		var linkedType = $("#linkedType").val();
+
 		var colTyCd = "";
 		if(collectionType.is(":checked")){
 			for(var i = 0; i < collectionType.length; i++){
@@ -216,6 +188,7 @@
 		var formData = $("#searchForm").serialize();
 		formData += '&searchContent='+searchContent;
 		formData += '&colTyCd='+colTyCd;
+		formData += '&linkedType='+linkedType;
 		
 		location.href="${pageContext.request.contextPath}/historymng/collectmng/list.do?"+formData;
 // 		document.getElementById('searchForm').action= "${pageContext.request.contextPath}/historymng/collectmng/list.do?"+formData;

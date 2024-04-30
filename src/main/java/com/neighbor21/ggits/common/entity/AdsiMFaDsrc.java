@@ -1,6 +1,5 @@
 package com.neighbor21.ggits.common.entity;
 
-import java.util.List;
 
 //dsrc 시설물 정보
 public class AdsiMFaDsrc extends AdsiRseSttsInfo {
@@ -9,25 +8,28 @@ public class AdsiMFaDsrc extends AdsiRseSttsInfo {
     private String rseId; //rse 아이디
     private String rseNm; //rse 명
     private String dsrcId; //dsrc 아이디
-    private double lonCrdn; //경도 좌표
-    private double latCrdn; //위도 좌표
+    private Double lonCrdn; //경도 좌표
+    private Double latCrdn; //위도 좌표
     private String descr; //설명
 
-    private List<AdsiDsrcColctInfo> colctInfo;
-
+    private String colctInfo;
+    
+    @Override
     public String getMngInstCd() {
         return mngInstCd;
     }
 
+    @Override
     public void setMngInstCd(String mngInstCd) {
         this.mngInstCd = mngInstCd;
     }
 
-
+    @Override
     public String getRseId() {
         return rseId;
     }
 
+    @Override
     public void setRseId(String rseId) {
         this.rseId = rseId;
     }
@@ -50,19 +52,19 @@ public class AdsiMFaDsrc extends AdsiRseSttsInfo {
         this.dsrcId = dsrcId;
     }
 
-    public double getLonCrdn() {
+    public Double getLonCrdn() {
         return lonCrdn;
     }
 
-    public void setLonCrdn(double lonCrdn) {
+    public void setLonCrdn(Double lonCrdn) {
         this.lonCrdn = lonCrdn;
     }
 
-    public double getLatCrdn() {
+    public Double getLatCrdn() {
         return latCrdn;
     }
 
-    public void setLatCrdn(double latCrdn) {
+    public void setLatCrdn(Double latCrdn) {
         this.latCrdn = latCrdn;
     }
 
@@ -74,11 +76,11 @@ public class AdsiMFaDsrc extends AdsiRseSttsInfo {
         this.descr = descr;
     }
 
-    public List<AdsiDsrcColctInfo> getColctInfo() {
+    public String getColctInfo() {
         return colctInfo;
     }
 
-    public void setColctInfo(List<AdsiDsrcColctInfo> colctInfo) {
+    public void setColctInfo(String colctInfo) {
         this.colctInfo = colctInfo;
     }
 }

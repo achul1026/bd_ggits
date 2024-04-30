@@ -14,6 +14,8 @@ public class MOpAuthority extends CommonEntity{
 	private Timestamp crtDt; // 수정 일시
 	private Timestamp updtDt; // 수정 일시
 	
+	private String authCd; //권한 코드
+	
 	//미존재 컬럼 조회값
 	private int grpCnt; //그룹 수
 	
@@ -101,6 +103,14 @@ public class MOpAuthority extends CommonEntity{
 
 	public void setDeleteMenuIdArr(List<String> deleteMenuIdArr) {
 		this.deleteMenuIdArr = deleteMenuIdArr;
+	}
+
+	public String getAuthCd() {
+		return authCd;
+	}
+
+	public void setAuthCd(String authCd) {
+		this.authCd = authCd;
 	}
 
 	@Override

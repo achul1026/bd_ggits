@@ -1,25 +1,26 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"%>
-
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<c:set var="urlSplit" value="${fn:split(requestScope['javax.servlet.forward.servlet_path'],'.')}" />
 <div id="map-container">
     <div id="map" ></div>
     <div id="compare_map"></div>
 
     <div class="control_container">
-        <div class="control_open_box">
-            <button type="button" class="control_open_btn"></button>
-        </div>
         <ul class="control_box">
             <li>
                 <ul>
                     <li class="flex-center gap8">
-                        <button type="button" class="zoom" onclick="map.control.zoomOut()"><img src="/statics/images/control_minus.png" alt="마이너스" class="minus"></button>
+                        <button type="button" class="zoom" onclick="slideToggleByTarget('#mapThemeSelector')">테마설정</button>
+                        <button type="button" class="zoom" onclick="map.control.zoomOut()"><img src="${pageContext.request.contextPath}/statics/images/control_minus.png" alt="마이너스" class="minus"></button>
                         <button type="button" id="currentMapZoom" class="zoom">5</button>
-                        <button type="button" class="zoom plus" onclick="map.control.zoomIn()"><img src="/statics/images/control_plus.png" alt="플러스"></button>
+                        <button type="button" class="zoom plus" onclick="map.control.zoomIn()"><img src="${pageContext.request.contextPath}/statics/images/control_plus.png" alt="플러스"></button>
+                        <button type="button" class="zoom" onclick="map.control.setDefaultPanTilt()">초기화</button>
                     </li>
                 </ul>
             </li>
-            <li class="control_on mt8 none">
-                <ul>
+            <li class="control_on mt8">
+                <ul id="mapThemeSelector" style="display:none;">
                     <li class="side_item"><button type="button" class="is-control-btn" onclick="map.control.setStyle('DARK')">다크</button></li>
                     <li class="side_item"><button type="button" class="is-control-btn" onclick="map.control.setStyle('LIGHT')">라이트</button></li>
                     <li class="side_item"><button type="button" class="is-control-btn" onclick="map.control.setStyle('SATELLITE')">지형</button> </li>
@@ -28,6 +29,89 @@
                 </ul>
             </li>
         </ul>
+        <c:if test="${fn:startsWith(requestScope['javax.servlet.forward.servlet_path'], '/monitoring.do')}">
+            <div id="layerControlWrap">
+                <a href="javascript:void(0)" id="layerControlButton" onclick="toggleClassByTarget('#layerControlList-wrapper', 'on')" title="레이어 설정">
+                    <img src="${pageContext.request.contextPath}/statics/images/layers.png" alt="레이어 설정">
+                </a>
+                <div id="layerControlList-wrapper" class="on">
+                    <ul id="layerControlList">
+                        <li>
+                            <label class="">
+                                <span>소통정보</span>
+                                <input role="switch" type="checkbox" class="facility_input is-lightgrey" onchange="gitsApp.mapToggleLayer(this)" data-layer="trf" checked="">
+                            </label>
+                        </li>
+                        <li>
+                            <label class="">
+                                <span>노드</span>
+                                <input role="switch" type="checkbox" class="facility_input is-lightgrey" onchange="gitsApp.mapToggleLayer(this)" data-layer="node" checked="">
+                            </label>
+                        </li>
+                        <li>
+                            <label class="">
+                                <span>긴급차량</span>
+                                <input role="switch" type="checkbox" class="facility_input is-lightgrey" onclick="this.checked ? this.disabled = true : void(0)" onchange="gitsApp.mapToggleLayer(this)" data-layer="emrg">
+                            </label>
+                        </li>
+                        <li>
+                            <label class="">
+                                <span>위험물차량</span>
+                                <input role="switch" type="checkbox" class="facility_input is-lightgrey" onclick="this.checked ? this.disabled = true : void(0)" onchange="gitsApp.mapToggleLayer(this)" data-layer="dngr" >
+                            </label>
+                        </li>
+                        <li>
+                            <label class="">
+                                <span>돌발현황</span>
+                                <input role="switch" type="checkbox" class="facility_input is-lightgrey" onclick="this.checked ? this.disabled = true : void(0)" onchange="gitsApp.mapToggleLayer(this)" data-layer="warn" checked>
+                            </label>
+                        </li>
+                        <li>
+                            <label class="">
+                                <span>실시간버스</span>
+                                <input role="switch" type="checkbox" class="facility_input is-lightgrey" onclick="this.checked ? this.disabled = true : void(0)" onchange="gitsApp.mapToggleLayer(this)" data-layer="bus">
+                            </label>
+                        </li>
+                        <li>
+                            <label class="">
+                                <span>스마트교차로-교통량</span>
+                                <input role="switch" type="checkbox" class="facility_input is-lightgrey" onclick="this.checked ? this.disabled = true : void(0)" onchange="gitsApp.mapToggleLayer(this)" data-layer="smc">
+                            </label>
+                        </li>
+                        <li>
+                            <label class="">
+                                <span>VDS-교통량</span>
+                                <input role="switch" type="checkbox" class="facility_input is-lightgrey" onclick="this.checked ? this.disabled = true : void(0)" onchange="gitsApp.mapToggleLayer(this)" data-layer="vds">
+                            </label>
+                        </li>
+                        <li>
+                            <label class="">
+                                <span>DSRC</span>
+                                <input role="switch" type="checkbox" class="facility_input is-lightgrey" onclick="this.checked ? this.disabled = true : void(0)" onchange="gitsApp.mapToggleLayer(this)" data-layer="dsrc">
+                            </label>
+                        </li>
+                        <li>
+                            <label class="">
+                                <span>상시교통량(국도)</span>
+                                <input role="switch" type="checkbox" class="facility_input is-lightgrey" onclick="this.checked ? this.disabled = true : void(0)" onchange="gitsApp.mapToggleLayer(this)" data-layer="ordtmNlrd">
+                            </label>
+                        </li>
+                        <li>
+                            <label class="">
+                                <span>수시교통량(국도)</span>
+                                <input role="switch" type="checkbox" class="facility_input is-lightgrey" onclick="this.checked ? this.disabled = true : void(0)" onchange="gitsApp.mapToggleLayer(this)" data-layer="anytmNlrd">
+                            </label>
+                        </li>
+                        <li>
+                            <label class="">
+                                <span>수시교통량(고속도로)</span>
+                                <input role="switch" type="checkbox" class="facility_input is-lightgrey" onclick="this.checked ? this.disabled = true : void(0)" onchange="gitsApp.mapToggleLayer(this)" data-layer="anytmHghw">
+                            </label>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </c:if>
     </div>
 
     <%-- 좌측 메뉴 및 컨텐츠 모달 --%>
@@ -35,28 +119,24 @@
     <%-- 맵 데이터 로딩 및 Job 액션 --%>
     <div id="mapDataLoadingJobList"></div>
 
-    <%-- 맵 범례 모달 --%>
-<!--     <div id="dataRemarkModalWrap" class="remarks_container">
-        <div id="dataRemarkModalHeader" class="remarks_title_box" onclick="gitsApp.toggleRemarkModal()">
-            <h6 class="remarks_title rotate">범례</h6>
-        </div>
-        <div id="dataRemarkContent" class="remarks_wrap" style="display: none;">
-            <div>
-                <div>
-                    <select id="remarkKeyList" class="selectBox radius">
+    <div id="bigdataDetailInfoContainer" class="bigdataDetailInfoContainer">
+        <button id="bigdataDetailInfoToggleButton" class="bigdataDetailInfoToggleButton" type="button" onclick="toggleClassByTarget('#bigdataDetailInfoContainer', 'off')">
+            <img src="${pageContext.request.contextPath}/statics/images/white_arrow.png" alt="숨기기">
+        </button>
+        <div id="bigdataDetailContentWrap" class="bigdataDetailContentWrap">
 
-                    </select>
-                </div>
-                <div id="remarkLegendsList" class="check_line_container">
-
-                </div>
-            </div>
-            <div class="remarks_setting flex-between mt16">
-                <div>단위 : (<span id="legendUnit"></span>)</div>
-            </div>
         </div>
-    </div> -->
-        
+    </div>
+
+    <div id="bigdataDetailInfoContainerDual" class="bigdataDetailInfoContainer">
+        <button id="bigdataDetailInfoToggleButtonDual" class="bigdataDetailInfoToggleButton" type="button" onclick="toggleClassByTarget('#bigdataDetailInfoContainerDual', 'off')">
+            <img src="${pageContext.request.contextPath}/statics/images/white_arrow.png" alt="숨기기">
+        </button>
+        <div id="bigdataDetailContentWrapDual" class="bigdataDetailContentWrap">
+
+        </div>
+    </div>
+
    	
     <div class="chart_video_container">
         <div class="tab_box_header chart_video_header">
@@ -82,7 +162,9 @@
             </div>
             <div class="chart_video_box">
                 <div class="chart_video"></div>
-                <div>차트 들어갈곳 입니다</div>
+                <div>
+                    <canvas id="map_chart_canvas"></canvas>
+                </div>
             </div>
         </div>
         <div class="chart_play_footer">
@@ -96,7 +178,4 @@
             </div>
         </div>
     </div>
-	<div class="my_layout_btn none">
-		나의 레이아웃${layoutNo}
-	</div>
 </div>

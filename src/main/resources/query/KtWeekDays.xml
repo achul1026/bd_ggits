@@ -16,9 +16,9 @@
             ,FRIDAY
             ,SATURDAY
         FROM
-            KT_WEEKDAYS,
+            BIGDATA.EXT_KT_WEEKDAYS,
             (SELECT MAX(ETL_YM) RECENT_YM
-             FROM KT_WEEKDAYS
+             FROM BIGDATA.EXT_KT_WEEKDAYS
              GROUP BY ETL_YM
              ORDER BY ETL_YM DESC LIMIT 1) RCT
         WHERE

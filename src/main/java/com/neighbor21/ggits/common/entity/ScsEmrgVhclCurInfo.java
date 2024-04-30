@@ -1,54 +1,71 @@
 package com.neighbor21.ggits.common.entity;
-public class ScsEmrgVhclCurInfo extends ScsEmrgVhclPathInfo{
-    private String    serviceid;        
-    private String    evno;        
-    private double    currentlat;        
-    private double    currentlng;        
-    private long    speed;        
 
+public class ScsEmrgVhclCurInfo extends ScsEmrgVhclPathInfo {
+    private String serviceid;
+    private String evno;
+    private Double currentlat;
+    private Double currentlng;
+    private Double speed;
 
-  public String getServiceid() {
-    return serviceid;
-  }
+    private String routeGeojson;
+   
 
-  public void setServiceid(String serviceid) {
-    this.serviceid = serviceid;
-  }
+    @Override
+    public String getServiceid() {
+        return serviceid;
+    }
 
+    @Override
+    public void setServiceid(String serviceid) {
+        this.serviceid = serviceid;
+    }
 
-  public String getEvno() {
-    return evno;
-  }
+    @Override
+    public String getEvno() {
+        return evno;
+    }
 
-  public void setEvno(String evno) {
-    this.evno = evno;
-  }
+    @Override
+    public void setEvno(String evno) {
+        this.evno = evno;
+    }
 
+    @Override
+    public Double getCurrentlat() {
+        return currentlat;
+    }
 
-  public double getCurrentlat() {
-    return currentlat;
-  }
+    @Override
+    public void setCurrentlat(Double currentlat) {
+        this.currentlat = currentlat;
+    }
 
-  public void setCurrentlat(double currentlat) {
-    this.currentlat = currentlat;
-  }
+    @Override
+    public Double getCurrentlng() {
+        return currentlng;
+    }
 
+    @Override
+    public void setCurrentlng(Double currentlng) {
+        this.currentlng = currentlng;
+    }
 
-  public double getCurrentlng() {
-    return currentlng;
-  }
+    public Double getSpeed() {
+        return speed;
+    }
 
-  public void setCurrentlng(double currentlng) {
-    this.currentlng = currentlng;
-  }
+    public void setSpeed(Double speed) {
+        this.speed = speed;
+    }
 
+    @Override
+    public String getRouteGeojson() {
+        return routeGeojson;
+    }
 
-  public long getSpeed() {
-    return speed;
-  }
-
-  public void setSpeed(long speed) {
-    this.speed = speed;
-  }
+    @Override
+    public void setRouteGeojson(String routeGeojson) {
+        this.routeGeojson = routeGeojson;
+    }
 
 }

@@ -1,0 +1,97 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.FileMngTotInfoMapper'>
+
+	<insert id="saveFileMngTotInfo" parameterType="fileMngTotInfo">
+		INSERT INTO FILE_MNG_TOT_INFO ( 
+			FILE_MNG_ID,
+			FILE_DIV_CD,
+			FILE_NM,
+			FILE_ORG_NM,
+			REGIST_YMD,
+			SAVE_PATH,
+			ATCH_FILE,
+			SAVE_SIZE
+		) VALUES ( 
+			#{fileMngId},
+			#{fileDivCd},
+			#{fileNm},
+			#{fileOrgNm},
+			#{registYmd},
+			#{savePath},
+			#{atchFile},
+			#{saveSize}
+		)
+	</insert>
+	
+	<select id="findAllFileMngTotListByFileDivCd" parameterType="fileMngTotinfo" resultType="fileMngTotinfo">
+		SELECT
+			ROW_NUMBER() OVER(ORDER BY REGIST_YMD) AS ROWNUM,
+			FILE_MNG_ID,
+			FILE_DIV_CD,
+			FILE_NM,
+			FILE_ORG_NM,
+			TO_CHAR(TO_DATE(REGIST_YMD,'yyyyMMdd'),'yyyy.MM.dd') AS "registYmd",
+			SAVE_PATH,
+			ATCH_FILE,
+			SAVE_SIZE
+		FROM FILE_MNG_TOT_INFO
+		WHERE 1=1
+		<if test="fileDivCd != null and fileDivCd != ''">
+			AND FILE_DIV_CD = #{fileDivCd}
+		</if>
+		<if test="searchContent != null and searchContent != ''">
+			AND FILE_NM LIKE CONCAT('%', #{searchContent}, '%')
+		</if>
+		ORDER BY ROWNUM DESC 
+		LIMIT 10 OFFSET (#{page} - 1) * 10
+	</select>
+	
+	<select id="countFileMngTotListByFileDivCd" parameterType="fileMngTotinfo" resultType="Long">
+		SELECT
+			COUNT(1)
+		FROM FILE_MNG_TOT_INFO
+		WHERE 1=1
+		<if test="fileDivCd != null and fileDivCd != ''">
+			AND FILE_DIV_CD = #{fileDivCd}
+		</if>
+		<if test="searchContent != null and searchContent != ''">
+			AND FILE_NM LIKE CONCAT('%', #{searchContent}, '%')
+		</if>
+	</select>
+	
+	<select id="findOneByFileMngId" parameterType="String" resultType="fileMngTotinfo">
+		SELECT 
+			FILE_MNG_ID,
+			FILE_DIV_CD,
+			FILE_NM,
+			FILE_ORG_NM,
+			REGIST_YMD,
+			SAVE_PATH,
+			ATCH_FILE,
+			SAVE_SIZE
+		FROM FILE_MNG_TOT_INFO
+		WHERE FILE_MNG_ID = #{fileMngId}
+	</select>
+	
+	<delete id="deleteFileMngTotInfo" parameterType="String">
+		DELETE FROM FILE_MNG_TOT_INFO
+		WHERE FILE_MNG_ID = #{fileMngId}
+	</delete>
+	
+	<update id="updateFileMngTotInfo" parameterType="fileMngTotinfo">
+		UPDATE
+			FILE_MNG_TOT_INFO
+		SET
+			FILE_DIV_CD = #{fileDivCd},
+			FILE_NM = #{fileNm},
+			FILE_ORG_NM = #{fileOrgNm},
+			REGIST_YMD = #{registYmd},
+			SAVE_PATH = #{savePath},
+			ATCH_FILE = #{atchFile},
+			SAVE_SIZE = #{saveSize}
+		WHERE
+			FILE_MNG_ID = #{fileMngId}
+	</update>
+</mapper>

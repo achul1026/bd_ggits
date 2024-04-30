@@ -15,15 +15,26 @@
             	<form id="authUpdFrm">
 	                <div class="group">
 	                    <div class="group_text">권한 이름 (필수)</div>
-	                    <input type="hidden" id="authId" name="authId" value="${mOpAuthority.authId}"/>
+	                    <input type="hidden" id="authId" name="authId" value="<c:out value='${mOpAuthority.authId}'/>"/>
 	                    <input type="text" placeholder="권한 이름을 입력해 주세요." id="authNm" class="input_same group_box data-validate"
-	                    	data-valid-name="권한 이름" data-valid-required value="${mOpAuthority.authNm}" maxlength="50">
+	                    	data-valid-name="권한 이름" data-valid-required value="<c:out value='${mOpAuthority.authNm}'/>" maxlength="50">
 	                </div>
 	                <div class="group">
 	                    <div class="group_text">권한 설명</div>
-	                    <input type="text" placeholder="권한 설명을 입력해 주세요." id="descr" class="input_same group_box" value="${mOpAuthority.descr}"
+	                    <input type="text" placeholder="권한 설명을 입력해 주세요." id="descr" class="input_same group_box" value="<c:out value='${mOpAuthority.descr}'/>"
 	                    	maxlength="400">
-	                    <div class="flex-center gap8 ml16">
+	                </div>
+	                
+           	        <div class="group">
+	                    <div class="group_text">권한 상세<span class="required-alert">*</span></div>
+   	                    <div class="flex-center gap8">
+				            <select id="authCd" class="authority_selectbox ${mOpAuthority.authCd eq 'AUC002' ? 'is-disabled':''}">
+				            	<option value="AUC000" ${mOpAuthority.authCd eq 'AUC000' ? 'selected':''}>상위 권한</option>
+				            	<option value="AUC001" ${mOpAuthority.authCd eq 'AUC001' ? 'selected':''}>일반 권한</option>
+				            	<option value="AUC002" ${mOpAuthority.authCd eq 'AUC002' ? 'selected':''}>VIP 권한</option>
+				            </select>
+	                    </div>
+						 <div class="flex-center gap8 ml16">
 			            	<span>권한 사용 여부</span>
 				            <select id="authUseYn" class="authority_selectbox">
 				            	<option value="Y" ${mOpAuthority.authUseYn eq 'Y' ? 'selected':''}>사용</option>
@@ -33,41 +44,45 @@
 	                </div>
             	</form>
                 
-                <div class="">
-                    <div class="group_text">권한 설정</div>
-                    <div class="group_authority">
-	                    <c:forEach var="menuList" items="${menuList}" varStatus="upprStatus">
-							<div class="authority_box"> 
-								<div id="upperMenuNm" class="authority_title_box">
-									${menuList.upperMenu.menuNm}
-									<input type="checkbox" id="menuId${menuList.upperMenu.menuId}" role="switch" class="facility_input mainMenu" value="${menuList.upperMenu.menuId}"/>
+                <c:if test="${mOpAuthority.authCd ne 'AUC002'}">
+	                <div class="">
+	                    <div class="group_text">권한 설정</div>
+	                    <div class="group_authority">
+		                    <c:forEach var="menuList" items="${menuList}" varStatus="upprStatus">
+								<div class="authority_box"> 
+									<div id="upperMenuNm" class="authority_title_box">
+										<c:out value="${menuList.upperMenu.menuNm}"/>
+										<input type="checkbox" id="menuId<c:out value='${menuList.upperMenu.menuId}'/>" role="switch" class="facility_input mainMenu" value="<c:out value='${menuList.upperMenu.menuId}'/>"/>
+									</div>
+			                        <c:choose>
+			                        	<c:when test="${not empty menuList.subMenuList}">
+											<div class="authority_click_bg not_click">
+												<c:forEach var="subMenuList" items="${menuList.subMenuList}" varStatus="subStatus">
+													<div class="authority_item">
+							                            <label class="is-dark-btn authority_btn mj0">
+							                            	<c:out value="${subMenuList.menuNm}"/>
+															<input type="checkbox" id="menuId<c:out value='${subMenuList.menuId}'/>" class="none subMenu<c:out value="${upprStatus.index}"/>" value="<c:out value='${subMenuList.menuId}'/>"/>
+							                            </label>
+						                        	</div>
+						                        </c:forEach>
+											</div>
+			                        	</c:when>
+										<c:otherwise>
+											<div>
+												<p>하위 메뉴가 없습니다.</p>
+											</div>
+										</c:otherwise>
+			                        </c:choose>
+	
 								</div>
-		                        <c:choose>
-		                        	<c:when test="${not empty menuList.subMenuList}">
-										<div class="authority_click_bg not_click">
-											<c:forEach var="subMenuList" items="${menuList.subMenuList}" varStatus="subStatus">
-												<div class="authority_item">
-						                            <label class="is-dark-btn authority_btn mj0">
-						                            	${subMenuList.menuNm}
-														<input type="checkbox" id="menuId${subMenuList.menuId}" class="none subMenu${upprStatus.index}" value="${subMenuList.menuId}"/>
-						                            </label>
-					                        	</div>
-					                        </c:forEach>
-										</div>
-		                        	</c:when>
-									<c:otherwise>
-										<div>
-											<p>하위 메뉴가 없습니다.</p>
-										</div>
-									</c:otherwise>
-		                        </c:choose>
-
-							</div>
-	                    </c:forEach>
-                    </div> 
-                </div>
+		                    </c:forEach>
+	                    </div> 
+	                </div>
+	             </c:if>
                 <div class="group group_search">
-                    <button type="button" id="updateBtn" class="is-darkgreen-btn">수정</button>
+                	<c:if test="${mOpAuthority.authCd ne 'AUC002'}">
+                    	<button type="button" id="updateBtn" class="is-darkgreen-btn">수정</button>
+                    </c:if>
                     <button type="button" id="deleteBtn" class="is-darkgreen-btn">삭제</button>
                     <a href="${pageContext.request.contextPath}/system/auth/list.do" class="is-dark-btn">취소</a>
                 </div>
@@ -79,9 +94,9 @@
 	$(document).ready(function(){
 		//<![CDATA[
 			var authMenuArr = new Array();
-			var authMenuLength = '${fn:length(authMenuList)}';
+			var authMenuLength = '<c:out value="${fn:length(authMenuList)}"/>';
 			<c:forEach var="authMenuList" items="${authMenuList}">
-				authMenuArr.push("${authMenuList['menuId']}");
+				authMenuArr.push("<c:out value='${authMenuList["menuId"]}'/>");
 			</c:forEach>
 			
 			for(var i = 0; i < authMenuLength; i++){
@@ -115,15 +130,24 @@
 	    })
 		/* check 제어 end */
 	});
-	
+	<c:if test="${mOpAuthority.authCd ne 'AUC002'}">
 	$("#updateBtn").on('click',function(){
 		//TO DO:: UI변경 수정 인덱스 파악 후 구현
 		var authId = $("#authId").val();
 		var authNm = $("#authNm").val();
 		var descr = $("#descr").val();
 		var authUseYn = $("#authUseYn").val();
+		var authCd = $("#authCd option:selected").val();
 
 		var obj = new Object();
+
+		if(authCd == "" || authCd == null){
+			new ModalBuilder().init().alertBoby("권한 상세를 선택해주세요.").footer(4,'확인',function(button, modal){
+				modal.close();
+				$("#authCd").focus();
+			}).open();
+			return false;
+		}
 		
 		// 데이터 유효성 검사
 		if(!$("#authUpdFrm").soValid()){
@@ -186,6 +210,7 @@
 		obj.authNm = authNm;
 		obj.descr = descr;
 		obj.authUseYn = authUseYn;
+		obj.authCd = authCd;
 		obj.menuIdArr = insertArr;
 		obj.deleteMenuIdArr = deleteArr;
 		
@@ -209,6 +234,7 @@
 			}
 		});
 	});
+	</c:if>
 	
 	$("#deleteBtn").on('click',function(){
 		var authId = $("#authId").val();
@@ -232,11 +258,11 @@
 						}).open();
 						modalAlertWrap();
 					} else {
-						new ModalBuilder().init().alertBoby("권한 삭제를 실패하였습니다.").footer(4,'확인',function(button, modal){modal.close();}).open();
+						new ModalBuilder().init().alertBoby(data.message).footer(4,'확인',function(button, modal){modal.close();}).open();
 						modalAlertWrap();
 					}
 				}
 			});
-		 },'취소하기',function(button, modal){}).open();				
+		 },'취소하기',function(button, modal){modal.close()}).open();				
 	});
 </script>

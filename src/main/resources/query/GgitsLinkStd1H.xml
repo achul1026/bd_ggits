@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='com.neighbor21.ggits.common.mapper.GgitsLinkStd1HMapper'>
+
+	<select id="findOneDataCntForMonitoring" resultType="mapMonitoringLinkDataDTO">
+		SELECT
+			COUNT(*) AS DATA_CNT,
+			COALESCE(TO_CHAR(MAX(PROC_DATE),'hh24시mi분'),'-') AS RENEW_TIME
+		FROM
+			BIGDATA.EXT_GGITS_LINK_STD_1H
+		<![CDATA[	
+		WHERE TO_TIMESTAMP(TO_CHAR(NOW(),'YYYY-MM-DD'), 'YYYY-MM-DD 00:00:00') <= PROC_DATE 
+		AND  PROC_DATE <= TO_TIMESTAMP(TO_CHAR(NOW(), 'YYYY-MM-DD 23:59:59'), 'YYYY-MM-DD HH24:MI:SS')
+		]]>
+	</select>
+	
+</mapper>

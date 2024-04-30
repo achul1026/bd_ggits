@@ -2,24 +2,113 @@
 <!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.TrfIpcssActPopltnBsuntMapper'>
-	<select id="countTrafficImpactList" parameterType="trfIpcssActPopltnBsunt" resultType="int">
-		SELECT
-			COUNT(*)
-		FROM TRF_IPCSS_ACT_POPLTN_BSUNT
-	</select>
 	
-	<select id="findAllTrafficImpactList" parameterType="trfIpcssActPopltnBsunt" resultType="trfIpcssActPopltnBsunt">
-		SELECT
+	<select id="findAllActPopltnBsuntList" parameterType="trfvlmStatisticsDTO" resultType="trfIpcssActPopltnBsunt">
+		SELECT 
 			IPCSS_MNG_NO
 			, SMLFACT_NM
+			, SMLFACT_ADDR
+			, SCALE
+			, TOTFRAR
+			, EXMN_DIV_NM
+			, EXMN_YMD
 			, EXMN_DOC_NM
 		FROM TRF_IPCSS_ACT_POPLTN_BSUNT
+		WHERE IPCSS_MNG_NO = #{ipcssMngNo}
+		GROUP BY IPCSS_MNG_NO, SMLFACT_NM, SMLFACT_ADDR, SCALE, TOTFRAR, EXMN_DIV_NM, EXMN_YMD, EXMN_DOC_NM, ACT_POPLTN_NO
+		ORDER BY ACT_POPLTN_NO::NUMERIC ASC
 	</select>
+	
+	<select id="findOneActPopltnBsuntInfo" parameterType="trfIpcssActPopltnBsunt" resultType="trfIpcssActPopltnBsunt">
+		SELECT 
+			moc.CD_NM 
+			, tiapb.USG_TOTFRAR 
+			, tiapb.RESDNG_BSUNT 
+			, tiapb.VISIT_BSUNT 
+			, tiapb.BSUNT_UNIT 
+		FROM TRF_IPCSS_ACT_POPLTN_BSUNT tiapb
+		INNER JOIN (
+			SELECT
+				CD_ID
+				, CD_NM 
+			FROM M_OP_CODE moc
+			WHERE moc.GRP_CD_ID = 'USG_CD'
+		) moc on tiapb.USG_CD = moc.CD_ID 
+		WHERE tiapb.SMLFACT_NM = #{smlfactNm} AND tiapb.SMLFACT_ADDR = #{smlfactAddr} AND tiapb.IPCSS_MNG_NO = #{ipcssMngNo}
+	</select>
+	
+	<select id="findAllusgNoList" parameterType="trfvlmStatisticsDTO" resultType="trfIpcssActPopltnBsunt">
+		SELECT 
+			A.CD_NM 
+			, A.USG_CD
+		FROM(
+			SELECT 
+				moc.CD_NM 
+				, tiapb.USG_CD
+			FROM TRF_IPCSS_ACT_POPLTN_BSUNT tiapb 
+			INNER JOIN M_OP_CODE moc 
+				ON tiapb.USG_CD = moc.CD_ID
+					AND moc.GRP_CD_ID = 'USG_CD'
+			WHERE tiapb.IPCSS_MNG_NO = #{ipcssMngNo}
+			GROUP BY moc.CD_NM , tiapb.USG_CD, tiapb.USG_NO, tiapb.ACT_POPLTN_NO 
+			ORDER BY  tiapb.USG_NO, tiapb.ACT_POPLTN_NO 
+		)A
+		GROUP  BY A.CD_NM , A.USG_CD
+		ORDER BY A.CD_NM
+	</select>
+	
+	<select id="findAllChartData" parameterType="trfvlmStatisticsDTO" resultType="trfIpcssActPopltnBsunt">
+		SELECT 
+			moc.CD_NM 
+			, SUM(tiapb.RESDNG_BSUNT) AS RESDNG_BSUNT
+			, SUM(tiapb.VISIT_BSUNT) AS VISIT_BSUNT
+		FROM TRF_IPCSS_ACT_POPLTN_BSUNT  tiapb
+		INNER JOIN M_OP_CODE moc 
+			ON tiapb.USG_CD = moc.CD_ID 
+				AND moc.GRP_CD_ID ='USG_CD'
+		WHERE tiapb.IPCSS_MNG_NO = #{ipcssMngNo} AND tiapb.USG_CD = #{usgCd}
+		GROUP BY moc.CD_NM 
+	</select>
+	
+	<insert id="saveActPopltnBsunt" parameterType="trfIpcssActPopltnBsunt">
+		INSERT INTO TRF_IPCSS_ACT_POPLTN_BSUNT(
+			IPCSS_MNG_NO,
+			SMLFACT_NM,
+			SMLFACT_ADDR,
+			SCALE,
+			TOTFRAR,
+			EXMN_DIV_NM,
+			EXMN_YMD,
+			EXMN_DOC_NM,
+			USG_CD,
+			USG_TOTFRAR,
+			RESDNG_BSUNT,
+			VISIT_BSUNT,
+			BSUNT_UNIT,
+			USG_NO,
+			ACT_POPLTN_NO
+			)VALUES(
+			#{ipcssMngNo}, 
+			#{smlfactNm}, 
+			#{smlfactAddr}, 
+			#{scale}, 
+			#{totfrar}, 
+			#{exmnDivNm}, 
+			#{exmnYmd}, 
+			#{exmnDocNm}, 
+			#{usgCd}, 
+			#{usgTotfrar}, 
+			#{resdngBsunt}, 
+			#{visitBsunt}, 
+			#{bsuntUnit},
+			#{usgNo},
+			#{actPopltnNo})
+	</insert>
 	
 	<delete id="deleteTrafficImpactReportByIpcssMngNo" parameterType="String">
 		DELETE 
-		FROM 
-			TRF_IPCSS_ACT_POPLTN_BSUNT 
+		FROM
+			TRF_IPCSS_ACT_POPLTN_BSUNT
 		WHERE
 			IPCSS_MNG_NO = #{ipcssMngNo}
 	</delete>

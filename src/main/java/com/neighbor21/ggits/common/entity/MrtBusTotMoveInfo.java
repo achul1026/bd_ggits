@@ -9,11 +9,15 @@ public class MrtBusTotMoveInfo {
     private String    lndiSttnId;       //하차 역 아이디
     private String    rideTime;        	//승차 시간
     private String    lndiTime;        	//하차 시간
-    private long    busUseCnt;        	//버스 사용 수
-    private long    mvmnDstne;        	//이동 거리
+    private Long    busUseCnt;        	//버스 사용 수
+    private Long    mvmnDstne;        	//이동 거리
     
     private String rideSttnNm;			// 출발정류장명
     private String lndiSttnNm;			// 도착정류장명
+    
+    private String routeNm;
+    private String stStaNm;
+    private String edStaNm;
 
   public Timestamp getAnlsDt() {
     return anlsDt;
@@ -69,20 +73,20 @@ public class MrtBusTotMoveInfo {
   }
 
 
-  public long getBusUseCnt() {
+  public Long getBusUseCnt() {
     return busUseCnt;
   }
 
-  public void setBusUseCnt(long busUseCnt) {
+  public void setBusUseCnt(Long busUseCnt) {
     this.busUseCnt = busUseCnt;
   }
 
 
-  public long getMvmnDstne() {
+  public Long getMvmnDstne() {
     return mvmnDstne;
   }
 
-  public void setMvmnDstne(long mvmnDstne) {
+  public void setMvmnDstne(Long mvmnDstne) {
     this.mvmnDstne = mvmnDstne;
   }
 
@@ -102,4 +106,27 @@ public class MrtBusTotMoveInfo {
 	this.lndiSttnNm = lndiSttnNm;
   }
 
+  public String getRouteNm() {
+    return routeNm;
+  }
+
+  public void setRouteNm(String routeNm) {
+    this.routeNm = routeNm;
+  }
+
+  public String getStStaNm() {
+	return stStaNm;
+  }
+
+  public void setStStaNm(String stStaNm) {
+	this.stStaNm = stStaNm;
+  }
+
+  public String getEdStaNm() {
+	return edStaNm;
+  }
+
+  public void setEdStaNm(String edStaNm) {
+	this.edStaNm = edStaNm;
+  }
 }

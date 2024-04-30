@@ -39,14 +39,14 @@ public class LoginService{
 	  * @Method 설명 : 로그인 유저 존재 유무 체크
 	  * @return
 	  */
-	public MOpOperator findOneMOpOperatorByEmail(MOpOperator mOpOperator) {
+	public MOpOperator findOneMOpOperatorInfo(MOpOperator mOpOperator) {
 		String oprtrPswd = mOpOperator.getOprtrPswd();
 		
 		if(GgitsCommonUtils.isNull(oprtrPswd) || GgitsCommonUtils.isNull(mOpOperator.getOprtrEmail())) {
 			throw new CommonException(ErrorCode.PARAMETER_DATA_NULL);
 		} 
 
-		MOpOperator mOpOperatorInfo = mOpOperatorMapper.findOneMOpOperatorByEmail(mOpOperator); 
+		MOpOperator mOpOperatorInfo = mOpOperatorMapper.findOneMOpOperatorByEmailAndNameAndTel(mOpOperator); 
 		
 		if(mOpOperatorInfo == null) {
 			throw new CommonException(ErrorCode.ENTITY_DATA_NULL,"유저 정보가 존재하지 않습니다.");
@@ -79,7 +79,7 @@ public class LoginService{
 		return orginalPw;
 	}
 
-	public List<MOpOperator> findAllMOpOperatorByNmAndTel(MOpOperator mOpOperator) throws Exception {
+	public List<MOpOperator> findAllMOpOperatorByNmAndTel(MOpOperator mOpOperator) {
 
 		if(GgitsCommonUtils.isNull(mOpOperator.getOprtrNm()) || GgitsCommonUtils.isNull(mOpOperator.getOprtrTel())) {
 			throw new CommonException(ErrorCode.PARAMETER_DATA_NULL);
@@ -129,7 +129,7 @@ public class LoginService{
 		lOpPgmLogn.setPrgrmSesnId(mOpOperatorInfo.getOprtrEmail());
 		lOpPgmLogn.setRqstrNm(mOpOperatorInfo.getOprtrNm());
 		lOpPgmLogn.setLgnIp(req.getRemoteAddr());
-		// 사용자 로그 유형(ULC001: 로그인, ULC002: 로그아웃)
+		// 사용자 로그 유형(ULC001: 로그인, ULC002: 로그아웃, ULC003:본인인증 로그인)
 		lOpPgmLogn.setLogType(logType);
 		lOpPgmLognMapper.saveLOpPgmLogn(lOpPgmLogn);
 	}

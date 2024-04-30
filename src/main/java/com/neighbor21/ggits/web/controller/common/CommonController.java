@@ -1,13 +1,20 @@
 package com.neighbor21.ggits.web.controller.common;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
+import com.neighbor21.ggits.common.entity.*;
+import com.neighbor21.ggits.common.enums.CntnSystemCd;
+import com.neighbor21.ggits.common.mapper.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,33 +24,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.neighbor21.ggits.common.component.ExcelFileComponent;
+import com.neighbor21.ggits.common.component.ExcelDownloadComponent;
 import com.neighbor21.ggits.common.component.validate.ValidateBuilder;
 import com.neighbor21.ggits.common.component.validate.ValidateChecker;
 import com.neighbor21.ggits.common.component.validate.ValidateResult;
-import com.neighbor21.ggits.common.entity.CommonEntity;
-import com.neighbor21.ggits.common.entity.CommonResponse;
-import com.neighbor21.ggits.common.entity.DsetInfo;
-import com.neighbor21.ggits.common.entity.LOpPgmLogn;
-import com.neighbor21.ggits.common.entity.LTcAcdntLogInfo;
-import com.neighbor21.ggits.common.entity.LTcDataLog;
-import com.neighbor21.ggits.common.entity.LTcFcltsLogInfo;
-import com.neighbor21.ggits.common.entity.LTcSrvrLogInfo;
-import com.neighbor21.ggits.common.entity.MOpCode;
-import com.neighbor21.ggits.common.entity.MOpGrpInfo;
-import com.neighbor21.ggits.common.entity.MOpOperator;
-import com.neighbor21.ggits.common.entity.Paging;
-import com.neighbor21.ggits.common.mapper.DsetInfoMapper;
-import com.neighbor21.ggits.common.mapper.LOpPgmLognMapper;
-import com.neighbor21.ggits.common.mapper.LTcAcdntLogInfoMapper;
-import com.neighbor21.ggits.common.mapper.LTcDataLogMapper;
-import com.neighbor21.ggits.common.mapper.LTcFcltsLogInfoMapper;
-import com.neighbor21.ggits.common.mapper.LTcSrvrLogInfoMapper;
-import com.neighbor21.ggits.common.mapper.MGmStdLinkNodeMngInfoMapper;
-import com.neighbor21.ggits.common.mapper.MOpCodeMapper;
-import com.neighbor21.ggits.common.mapper.MOpGrpInfoMapper;
-import com.neighbor21.ggits.common.mapper.MOpMenuMapper;
-import com.neighbor21.ggits.common.mapper.MOpOperatorMapper;
+import com.neighbor21.ggits.common.util.GgitsCommonUtils;
+import com.neighbor21.ggits.common.util.LoginSessionUtils;
+import com.neighbor21.ggits.support.exception.CommonException;
+import com.neighbor21.ggits.support.exception.ErrorCode;
 import com.neighbor21.ggits.web.service.common.CommonService;
 import com.neighbor21.ggits.web.service.systemmng.MenuMngService;
 
@@ -51,11 +39,18 @@ import com.neighbor21.ggits.web.service.systemmng.MenuMngService;
 @RequestMapping("/common")
 public class CommonController {
 	
+	
 	@Autowired
 	CommonService commonService;
 	
 	@Autowired
 	MenuMngService menuMngService;
+	
+	@Autowired
+	GOpTrfInfoStatsRptMapper gOpTrfInfoStatsRptMapper;
+	
+	@Autowired
+	GOpDataUseStatsRptMapper gOpDataUseStatsRptMapper;
 
 	@Autowired
 	MOpGrpInfoMapper mOpGrpInfoMapper;
@@ -91,7 +86,23 @@ public class CommonController {
 	DsetInfoMapper dsetInfoMapper;
 	
 	@Autowired
-	ExcelFileComponent excelFileComponent;
+	ExcelDownloadComponent excelDownloadComponent;
+	
+	@Autowired
+	FileMngTotInfoMapper fileMngTotInfoMapper;
+
+	@Autowired
+	OpenApiPvsnLogMapper openApiPvsnLogMapper;
+	
+	@Autowired
+	MOpAuthorityMapper mOpAuthorityMapper;
+	
+	@Autowired
+	CGmStdLinkAdstdgMppgMapper cGmStdLinkAdstdgMppgMapper;
+	
+	@Autowired
+	MOpUserCntnSystemMenuMapper mOpUserCntnSystemMenuMapper;
+	
 	
 	  /**
 	   * @Method Name : saveSubMenu
@@ -111,11 +122,8 @@ public class CommonController {
 	   		return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST , dtoValidatorResult.getMessage());
 	   	}
 	   	String menuId = String.valueOf(paramMap.get("menuId"));
-	   	try {
-	   		menuMngService.saveLOpUseMenu(menuId);
-	   	} catch (Exception e) {
-	   		return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST , "메뉴 로그 삽입 오류");
-	   	}
+	   	
+   		menuMngService.saveLOpUseMenu(menuId);
 	   	
 	 	return CommonResponse.ResponseCodeAndMessage(HttpStatus.OK , "메뉴 로그 삽입 성공");
 	 }
@@ -139,8 +147,9 @@ public class CommonController {
 	  * @Method 설명 : 회원가입 행정기관 모달 팝업
      * @return
      */
-	@GetMapping("/modal/join/administrative/list.do")
-	public String modalJoinAdministrativeList() {
+	@GetMapping("/modal/join/administrative/{type}/list.do")
+	public String modalJoinAdministrativeList(@PathVariable String type, Model model) {
+		model.addAttribute("type",type);
 		return "modal/common/modalJoinAdministrativeList";
 	}
 	
@@ -175,10 +184,17 @@ public class CommonController {
 	 */
 	@GetMapping("/modal/group/user/list.do")
 	public String modalGroupUserList(	Model model,
+										HttpSession session,
 										MOpOperator mOpOperator,
 										@RequestParam(value = "modalUserList[]", required = false) long[] modalUserList
 									) {
 		
+		
+		//2023-11-11 일반 관리자 기관별 목록 조회 추가
+		MOpOperator mOpOperatorInfo = (MOpOperator) session.getAttribute("mOpOperatorInfo");
+		mOpOperator.setMngInstCd(mOpOperatorInfo.getMngInstCd());
+		mOpOperator.setOprtrGrd(mOpOperatorInfo.getOprtrGrd());
+				
 		List<MOpOperator> userList = mOpOperatorMapper.findAllUserList(mOpOperator);
 		int totalCnt = mOpOperatorMapper.countAll(mOpOperator);
 		
@@ -264,7 +280,7 @@ public class CommonController {
 	@GetMapping("/modal/menuinfo/{menuId}/list.do")
 	public String modalMenuInfo(@PathVariable("menuId") String menuId,Model model) {
 	   model.addAttribute("mOpMenu", menuMngService.getMenuDetailInfo(menuId));
-	   model.addAttribute("subMenuList", mOpMenuMapper.findAllBySortNoIsNotNullAndUpprMenuId(menuId));
+	   model.addAttribute("subMenuList", mOpMenuMapper.findAllSubMenuBySortNoIsNotNullAndUpprMenuId(menuId));
 	   model.addAttribute("ctgryCdList", mOpCodeMapper.findAllCodeListByGrpCdId("MENU_CTGRY_CD"));
 		return "modal/common/modalMenuInfo";
 	}
@@ -301,7 +317,7 @@ public class CommonController {
 	}
 	
 	/**
-	 * @Method Name : modalmenuRegistration
+	 * @Method Name : modalCsvUpload
 	 * @작성일 : 2023. 9. 11.
 	 * @작성자 : NK.KIM
 	 * @Method 설명 : 통계 분석 > 교통 DB화 통계 > 교통영향평가 > 신규조사등록 
@@ -310,6 +326,20 @@ public class CommonController {
 	@GetMapping("/modal/csvupload/list.do")
 	public String modalCsvUpload(Model model) {
 		return "modal/common/modalCsvUpload";
+	}
+	
+	/**
+	 * @Method Name : modalmenuRegistration
+	 * @작성일 : 2023. 9. 11.
+	 * @작성자 : NK.KIM
+	 * @Method 설명 : 통계 분석 > 교통 DB화 통계 > 교통영향평가 > 수정 
+	 * @return
+	 */
+	@GetMapping("/modal/csvupdate/list.do")
+	public String modalCsvUpdate(Model model, String type, String ipcssMngNo) {
+		model.addAttribute("type", type);
+		model.addAttribute("ipcssMngNo", ipcssMngNo);
+		return "modal/common/modalCsvUpdate";
 	}
 	
 	/**
@@ -354,14 +384,40 @@ public class CommonController {
 	
 	/**
 	 * @Method Name : modalTrafficReport
-	 * @작성일 : 2023. 9. 18.
-	 * @작성자 : NK.KIM
-	 * @Method 설명 : 통계 분석 > 데이터 활용 통계 > 서비스 이력 > 스마트교차로 데이터 이력 > 수집 데이터 
+	 * @작성일 : 2023. 11. 26.
+	 * @작성자 : KY.LEE
+	 * @Method 설명 : 통계 분석 > 분석 리포트 > 데이터 활용 통계 리포트
 	 * @return
 	 */
-	@GetMapping("/modal/traffic/report/list.do")
-	public String modalTrafficReport(Model model) {
+	@GetMapping("/modal/traffic/report/{rptId}/list.do")
+	public String modalTrafficReport(Model model,@PathVariable String rptId) {
+		GOpTrfInfoStatsRpt gOpTrfInfoStatsRpt = gOpTrfInfoStatsRptMapper.findOneByRptId(rptId);
+		boolean isUserChk = false;
+		if(gOpTrfInfoStatsRpt.getOprtrId() == LoginSessionUtils.getOprtrId()) {
+			isUserChk = true;
+		}
+		model.addAttribute("isUserChk", isUserChk);
+		model.addAttribute("gOpTrfInfoStatsRpt", gOpTrfInfoStatsRpt);
 		return "modal/common/modalTrafficReport";
+	}
+
+	/**
+	 * @Method Name : modaldataUseReport
+	 * @작성일 : 2023. 11. 26.
+	 * @작성자 : KY.LEE
+	 * @Method 설명 : 통계 분석 > 분석 리포트 > 교통정보 통계 리포트
+	 * @return
+	 */
+	@GetMapping("/modal/data/report/{rptId}/list.do")
+	public String modaldataUseReport(Model model,@PathVariable String rptId) {
+		GOpDataUseStatsRpt gOpDataUseStatsRpt = gOpDataUseStatsRptMapper.findOneByRptId(rptId);
+		boolean isUserChk = false;
+		if(gOpDataUseStatsRpt.getOprtrId() == LoginSessionUtils.getOprtrId()) {
+			isUserChk = true;
+		}
+		model.addAttribute("isUserChk", isUserChk);
+		model.addAttribute("gOpDataUseStatsRpt", gOpDataUseStatsRpt);
+		return "modal/common/modalDataUseReport";
 	}
 	
 	/**
@@ -408,9 +464,151 @@ public class CommonController {
 	 * @Method 설명 : 엑셀 파일 다운로드
 	 * @return
 	 * @throws IOException 
+	 * @throws ParseException 
 	 */
 	@GetMapping("/excel/{type}/download.do")
-	public void downloadExcelFile(@PathVariable("type")String type, HttpServletResponse resp, CommonEntity commonEntity) throws IOException {
-		excelFileComponent.downLoadExcelFile(resp, type, commonEntity);
+	public void downloadExcelFile(@PathVariable("type")String type, HttpServletResponse resp, CommonEntity commonEntity) throws IOException, ParseException {
+		excelDownloadComponent.downLoadExcelFile(resp, type, commonEntity);
+	}
+	
+	/**
+	   * @Method Name : saveSubMenu
+	   * @작성일 : 2023. 8. 28
+	   * @작성자 : KY.LEE
+	   * @Method 설명 : 서브 메뉴 등록
+	   * @param paramMap
+	   * @return
+	   */
+	@GetMapping("/update/sessionTime.ajax")
+	public @ResponseBody CommonResponse<?> updateSessionTime(HttpServletRequest request, HttpSession session){
+		session.setMaxInactiveInterval(1800);
+		return CommonResponse.ResponseCodeAndMessage(HttpStatus.OK , "");
+	 }
+	
+	/**
+	 * @Method Name : modalDatamngUpload
+	 * @작성일 : 2023. 11. 16
+	 * @작성자 : TY.LEE
+	 * @Method 설명 : 자료 관리 > 자료 등록
+	 * @return
+	 */
+	@GetMapping("/modal/datamng/{fileDivCd}/save.do")
+		public String modalRoadUpload(Model model, @PathVariable("fileDivCd") String fileDivCd){
+		model.addAttribute("fileDivCd", fileDivCd);
+		return "modal/common/modalFileMngSave";
+	}
+	
+	/**
+	 * @Method Name : modalDatamngUpdata
+	 * @작성일 : 2023. 11. 17
+	 * @작성자 : TY.LEE
+	 * @Method 설명 : 자료 관리 > 자료 수정
+	 * @return
+	 */
+	@GetMapping("/modal/datamng/{fileDivCd}/update.do")
+	public String modalRoadUpdata(Model model, @PathVariable("fileDivCd") String fileDivCd,@RequestParam Map<String,Object> paramMap){
+		String fileMngId = String.valueOf(paramMap.get("fileMngId"));
+		model.addAttribute("fileDivCd", fileDivCd);
+		model.addAttribute("fileMngTotInfo", fileMngTotInfoMapper.findOneByFileMngId(fileMngId));
+		return "modal/common/modalFileMngUpdate";
+	}
+	
+	/**
+	 * @Method Name : modalDashboardLayout
+	 * @작성일 : 2023. 11. 20
+	 * @작성자 : TY.LEE
+	 * @Method 설명 : 모니터링 대쉬보드 > 나의 레이아웃
+	 * @return
+	 */
+	@GetMapping("/modal/monitroing/layout/list.do")
+	public String modalDashBoardMyLayout(Model model) {
+		return "modal/common/modalDashBoardMyLayout";
+	}
+	
+	/**
+	 * @Method Name : modalAnalysisReport
+	 * @작성일 : 2023. 11. 20
+	 * @작성자 : KY.LEE
+	 * @Method 설명 : 통계 분석 > 분석 리포트 등록하기
+	 * @return
+	 */
+	@GetMapping("/modal/traffic/analysis/report/save.do")
+	public String modalAnalysisReportSave(Model model) {
+		return "modal/common/modalTrafficInfoAnalysisReportSave";
+	}
+	
+	/**
+	 * @Method Name : modalDataReportSave
+	 * @작성일 : 2023. 11. 20
+	 * @작성자 : KY.LEE
+	 * @Method 설명 : 통계 분석 > 분석 리포트 등록하기
+	 * @return
+	 */
+	@GetMapping("/modal/data/analysis/report/save.do")
+	public String modalDataReportSave(Model model) {
+		return "modal/common/modalDataAnalysisReportSave";
+	}
+	
+	/**
+	 * @Method Name : modalDataReportSave
+	 * @작성일 : 2023. 12. 15
+	 * @작성자 : TY.LEE
+	 * @Method 설명 : 이력관리 > openApi 사용이력 
+	 * @return
+	 */
+	@GetMapping("/modal/historymng/openapi/result.do")
+	public String modalOpenApiResult(Model model,OpenApiPvsnLog openApiPvsnLog) {
+		if(GgitsCommonUtils.isNull(openApiPvsnLog.getDsetId())) {
+			throw new CommonException(ErrorCode.PARAMETER_DATA_NULL);
+		}
+		model.addAttribute("openApiLogDetail", openApiPvsnLogMapper.findOneForOpenApiLogHistory(openApiPvsnLog));
+
+		return "modal/common/modalOpenApiResult";
+	}
+	
+	/**
+	 * @Method Name : modal
+	 * @작성일 : 2023. 12. 21
+	 * @작성자 : JH.PARK
+	 * @Method 설명 : 사용자 정보 > 메뉴 권한
+	 * @return
+	 */
+	@GetMapping("/modal/user/detail/intro.do")
+	public String modalIntroUserCheck(Model model,@RequestParam(name="oprtrId", required = true)Long oprtrId) {
+		int isMenuChk = mOpUserCntnSystemMenuMapper.countByMOpCntnSystemMenuByOprtrId(oprtrId);
+
+		//메뉴권한 초기값세팅 (아무것도없을때)
+		if(isMenuChk == 0) {
+			for(CntnSystemCd r : CntnSystemCd.values()) {
+				MOpUserCntnSystemMenu mOpUserCntnSystemMenu = new MOpUserCntnSystemMenu();
+				mOpUserCntnSystemMenu.setOprtrId(oprtrId);
+				mOpUserCntnSystemMenu.setUseYn(r.getDefaultYn());
+				mOpUserCntnSystemMenu.setCntnSystemCd(r.getCode());
+				mOpUserCntnSystemMenuMapper.saveMOpUserCntnSystemMenu(mOpUserCntnSystemMenu);
+			}
+		}
+		
+		MOpUserCntnSystemMenu mOpUserCntnSystemMenu = new MOpUserCntnSystemMenu();
+		mOpUserCntnSystemMenu.setUseYn(null);
+		mOpUserCntnSystemMenu.setOprtrId(oprtrId);
+		
+		List<MOpUserCntnSystemMenu> menuList = mOpUserCntnSystemMenuMapper.findAllMOpCntnSystemMenuByOprtrIdAndUseYn(mOpUserCntnSystemMenu);
+
+		model.addAttribute("menuList", menuList);
+		return "modal/common/modalIntroUserCheck";
+	}
+
+
+	/**
+	 * 행정동 가져오기(도로그룹)
+	 * @param sggCd
+	 * @return
+	 */
+	@GetMapping("/getDongList.ajax")
+	public @ResponseBody ResponseEntity<?> getDongList(
+			@RequestParam(name = "sggCd", required = false) String sggCd
+	){
+		List<CGmStdLinkAdstdgMppg> list = cGmStdLinkAdstdgMppgMapper.findAllGroupDongNmBySggCd(sggCd);
+		return new ResponseEntity<>(list, HttpStatus.OK); 
 	}
 }

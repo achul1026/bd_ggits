@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <div class="unex_list mt24">
-	<div class="unex_list_title">돌발상활 발생건수</div>
+	<div class="unex_list_title">돌발상황 발생건수</div>
 	<div class="unex_list_number">5건</div>
 </div>
 <div class="unex_list mb10">

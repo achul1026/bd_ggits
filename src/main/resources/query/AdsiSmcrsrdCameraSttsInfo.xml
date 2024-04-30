@@ -2,4 +2,56 @@
 <!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.AdsiSmcrsrdCameraSttsInfoMapper'>
-</mapper>
+	<sql id="eqpLogList-Where">
+		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
+			AND CLCT_DT
+			BETWEEN TO_TIMESTAMP(#{strDt}|| ' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}|| ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+		</if>
+		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
+			<![CDATA[
+			AND TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS')  <= CLCT_DT
+			]]>
+		</if>
+		<if test="(strDt == '' or strDt == null) and (endDt != '' and endDt != null)">
+			<![CDATA[
+			AND CLCT_DT <= TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
+			]]>
+		</if>
+		<if test="searchContent != '' and searchContent != null">
+			AND (ascsi.CAMERA_ID LIKE '%' || #{searchContent} || '%' or asci.CAMERA_ID LIKE '%' || #{searchContent} || '%')
+		</if>
+		<if test="dayOfTheWeek != null">
+			AND EXTRACT (ISODOW from CLCT_DT)::varchar(1) IN 
+				<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+		</if>
+	</sql>
+	
+	<select id="countSmcInfoList" parameterType="commonEntity" resultType="int">
+		SELECT 
+			COUNT(1)
+		FROM bigdata.EXT_ADSI_SMCRSRD_CAMERA_STTS_INFO ascsi
+		INNER JOIN bigdata.EXT_ADSI_SMCRSRD_CAMERA_INFO asci
+			ON ascsi.CAMERA_ID = asci.CAMERA_ID 
+		WHERE 1=1
+		<include refid="eqpLogList-Where"/>
+	</select>
+	<select id="findAllSmcInfoList" parameterType="commonEntity" resultType="eqpLogDTO">
+		SELECT 
+			ascsi.CLCT_DT as clctDt
+			, ascsi.CAMERA_ID as id
+			, ascsi.CMNC_STTS  as stts
+			, asci.CAMERA_NM  as name
+		FROM bigdata.EXT_ADSI_SMCRSRD_CAMERA_STTS_INFO ascsi
+		INNER JOIN bigdata.EXT_ADSI_SMCRSRD_CAMERA_INFO asci
+			ON ascsi.CAMERA_ID = asci.CAMERA_ID 
+		WHERE 1=1
+		<include refid="eqpLogList-Where"/>
+		ORDER BY ascsi.CLCT_DT DESC
+		<if test="page != null and page != '' and page != 0">
+		LIMIT 10 OFFSET (#{page} - 1) * 10
+		</if>
+	</select>
+</mapper> 
