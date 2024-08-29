@@ -5,8 +5,8 @@
 	<sql id="mrtRoadAccntAnal-where">
 		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
 			AND mraa.INFO_OCCUR_DT 
-			BETWEEN TO_TIMESTAMP(#{strDt}|| ' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') 
-		    	AND TO_TIMESTAMP(#{endDt}|| ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+			BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
 		</if>
 		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
 			<![CDATA[
@@ -60,7 +60,7 @@
 				END AS ROAD_RANK
 		, ROUND((SUM(mraa.DCSD_CNT) / SUM(mraa.TOT_CASLT_CNT) * 100)::Decimal,2) as ftltyRate
 	FROM MRT_ROAD_ACCNT_ANAL mraa 
-	INNER JOIN C_GM_STD_LINK gcil
+	INNER JOIN C_GM_STD_LINK_TMP /*todo :: _TMP 제거*/ gcil
 		ON mraa.ACDNT_DSTRCT_IDENTIFIER = gcil.LINK_ID
 	INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam
 		ON gcil.LINK_ID = cgslam.LINK_ID
@@ -81,7 +81,7 @@
 			SELECT 
 				gcil.ROAD_NAME
 			FROM MRT_ROAD_ACCNT_ANAL mraa
-			INNER JOIN C_GM_STD_LINK gcil
+			INNER JOIN C_GM_STD_LINK_TMP /*todo :: _TMP 제거*/ gcil
 				ON mraa.ACDNT_DSTRCT_IDENTIFIER = gcil.LINK_ID
 			INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam
 				ON gcil.LINK_ID = cgslam.LINK_ID
@@ -94,7 +94,7 @@
 	</select>
 
 	<select id="findAllRiskZnPrdtList" parameterType="commonEntity" resultType="mrtRoadAccntAnal">
-		SELECT
+		SELECT 
 			gcil.ROAD_NAME
 			, MAX(mraa.ACDNT_OCCUR_CNT) as MAX_ACDNT_CNT
 			, SUM(mraa.ACDNT_OCCUR_CNT) as ACDNT_OCCUR_CNT
@@ -112,7 +112,7 @@
 				WHEN MAX(mraa.acdnt_type_cd) ='OLMAN' THEN '노인 보행자 사고'
 				END AS ACDNT_TYPE_CD
 		FROM MRT_ROAD_ACCNT_ANAL mraa
-		INNER JOIN C_GM_STD_LINK gcil
+		INNER JOIN C_GM_STD_LINK_TMP /*todo :: _TMP 제거*/ gcil
 			ON mraa.ACDNT_DSTRCT_IDENTIFIER = gcil.LINK_ID
 		INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam
 			ON gcil.LINK_ID = cgslam.LINK_ID
@@ -131,7 +131,7 @@
 			SELECT 
 				cgslam.ROAD_NAME as roadName
 			FROM MRT_ROAD_ACCNT_ANAL mraa 
-			INNER JOIN C_GM_STD_LINK gcil
+			INNER JOIN C_GM_STD_LINK_TMP /*todo :: _TMP 제거*/ gcil
 				ON mraa.ACDNT_DSTRCT_IDENTIFIER = gcil.LINK_ID
 			INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam
 				ON gcil.LINK_ID = cgslam.LINK_ID
@@ -208,7 +208,7 @@
 						END AS ACDNT_TYPE_CD
 					, SUM(mraa.ACDNT_OCCUR_CNT) as ACDNT_OCCUR_CNT
 					FROM MRT_ROAD_ACCNT_ANAL mraa
-					INNER JOIN C_GM_STD_LINK gcil
+					INNER JOIN C_GM_STD_LINK_TMP /*todo :: _TMP 제거*/ gcil
 						ON mraa.ACDNT_DSTRCT_IDENTIFIER = gcil.LINK_ID
 					INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam
 						ON gcil.LINK_ID = cgslam.LINK_ID

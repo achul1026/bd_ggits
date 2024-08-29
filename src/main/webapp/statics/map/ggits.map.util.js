@@ -3,7 +3,7 @@ const GitsMapUtil = function(){
     
     /**
      * 혼잡도 계산
-     * 1 : 원활
+     * 1 : 원할
      * 2 : 지체(서행)
      * 3 : 정체
      */
@@ -56,17 +56,7 @@ const GitsMapUtil = function(){
         if(data){
             opt.body = JSON.stringify(data);
         }
-        const response = await fetch(reqURL, {
-            headers: {
-                "Content-Type": "application/json",
-                "X-GGITS-MAP-DATA" : 'GGITSREQ'
-            },
-        });
-        if(response.status === 401){
-            return {
-                noLogin : true
-            }
-        }
+        const response = await fetch(reqURL, data);
         const json = await response.json();
         return json;
     };
@@ -272,15 +262,6 @@ const GitsMapUtil = function(){
         }
     }
 
-    this.getSGGInfoByMngInstCode = function(code, env){
-        for(const sggInfo in env.SGG_INFO) {
-            env.SGG_INFO[sggInfo].sggNm = sggInfo;
-            if(env.SGG_INFO[sggInfo].MNGCD === code) {
-                return env.SGG_INFO[sggInfo];
-            }
-        }
-    }
-
     this.wktToGeoJson = function(string) {
         return wellknown.parse(string);
     }
@@ -393,9 +374,8 @@ const GitsMapUtil = function(){
             total += count;
         }
         const fontSize =
-            total >= 1000 ? 20 : total >= 100 ? 20 : total >= 10 ? 18 : 16;
-        /*const r = Math.max(total, 50);*/
-        const r = 50;
+            total >= 1000 ? 22 : total >= 100 ? 20 : total >= 10 ? 18 : 16;
+        const r = Math.max(total, 50);
             //title >= 1000 ? 50 : total >= 100 ? 32 : total >= 10 ? 24 : 18;
         const r0 = Math.round(r * 0.6);
         const w = r * 2;
@@ -468,60 +448,9 @@ const GitsMapUtil = function(){
         return bbox;
     }
 
-    this.timestampToDate = function(timestamp){
-        try {
-            let dateFormat = new Date(timestamp);
-            return dateFormat.getFullYear() + "-" + (dateFormat.getMonth() + 1) + "-" + dateFormat.getDate() + " " + dateFormat.getHours() + ":" + dateFormat.getMinutes() + ":" + (dateFormat.getSeconds() < 10 ? "0"+dateFormat.getSeconds() : dateFormat.getSeconds());
-        }catch(e){
-            return timestamp;
-        }
-    }
 
     this.parseYYYYMMDDHHMMtoKorean = function(yyyymmddhhmm){
         return yyyymmddhhmm.replace(/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})/g, '$1년$2월$3일 $4시$5분')
-    }
-    this.parseYYMMDDHHMMtoKorean = function(yymmddhhmm){
-        return yymmddhhmm.substring(0, 10).replace(/(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/g, '20$1-$2-$3 $4:$5');
-    }
-
-    this.conggradeCodeToKor = function(conggrade){
-        let str = "";
-        switch(conggrade) {
-            case "0":
-                str = "데이터미수집";
-                break;
-            case "1":
-                str = "원활";
-                break;
-            case "2":
-                str = "서행";
-                break;
-            case "3"  :
-                str = "정체"
-                break;
-        }
-        return str;
-    }
-
-    this.numberComma = function(value) {
-        try{
-            return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        }catch(e){
-            return value;
-        }
-    }
-
-    this.hexToRgbA = function(hex, opacity='1'){
-        var c;
-        if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)){
-            c= hex.substring(1).split('');
-            if(c.length== 3){
-                c= [c[0], c[0], c[1], c[1], c[2], c[2]];
-            }
-            c= '0x'+c.join('');
-            return 'rgba('+[(c>>16)&255, (c>>8)&255, c&255].join(',')+','+opacity+')';
-        }
-        return hex;
     }
 
 }

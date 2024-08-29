@@ -13,6 +13,7 @@
 	            <input type="hidden" id="startYear" value="<c:out value='${yearsList[0].year}'/>">
 	            <input type="hidden" id="endYear" value="<c:out value='${yearsList[fn:length(yearsList) -1].year}'/>">
 	            <select class="selectBox radius" name="searchYear" id="searchYear">
+	                <option value="searchAllYear">전체</option>
 	           		<c:forEach var="yearsList" items="${yearsList}" varStatus="status">
 	                	<option value="<c:out value='${yearsList.year}'/>"><c:out value='${yearsList.year}'/>년</option>
 	           		</c:forEach>
@@ -34,7 +35,7 @@
 		            </div>	            
 				</div>
 	        </div>
-	        <%--<div class="tab_item_box">
+	        <div class="tab_item_box">
 	            <div class="flex-center">
 	                <h5 class="tab_item_title">시간</h5>
 	                <label class="group_btn_item is-dark-btn is-darkgreen-btn radius inpd"><input type="checkbox" class="none" name=searchTime value="workingTime" checked>출근 <span class="group_btn_span">(06시~10시)</span></label>
@@ -46,7 +47,7 @@
 	                ~
 					<select class="selectBox selectTime" id="endTime" name="endTime"></select>
 	            </div>
-	        </div>--%>
+	        </div>
 			<div class="tab_item_box flex-center">
 	            <h5 class="tab_item_title">지역별</h5>
 	            <select class="selectBox radius" name="sigunCdId">
@@ -89,7 +90,6 @@
 			            <div class="unit">단위 : 승하차/ 환승 횟수</div>
 		        	</div>
 		    	</div>`)
-		$('#map-container').find(".remarks_container").remove();
 		$('#map-container').append(remarksItem);
 		legendToggle();
 		window.map.bigdata.getPublicTransferUsageGroupBySGG($("#searchForm").serialize());

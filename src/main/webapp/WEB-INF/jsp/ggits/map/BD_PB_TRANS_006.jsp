@@ -4,71 +4,17 @@
 
 <div class="tab_bigbox_close">
     <div class="original_box clearfix">
-    	<form id="searchForm" method="get" onsubmit="return false;" class="result_change">
+    	<form id="searchForm" method="get">
     		<input type="hidden" id="mapPage" name="page" value="1"/>
     		<input type="hidden" name="stationId" id="stationId">
     		<input type="hidden" name="pageType" value="<c:out value='${type}'/>">
-        	<div class="tab_item_box flex-center">
-            <h5 class="tab_item_title">연도별</h5>
-            	<select class="selectBox radius" name="searchYear" id="searchYear">
-	           		<c:forEach var="yearsList" items="${yearsList}" varStatus="status">
-	                	<option value="<c:out value='${yearsList.year}'/>"><c:out value='${yearsList.year}'/>년</option>
-	           		</c:forEach>
-	            </select>
-        	</div>
-			<div class="tab_item_box">
-				<div class="flex-center">
-					<h5 class="tab_item_title">기간<span class="required-alert">*</span></h5>
-					<div class="calendar" id="directDate">
-						<input type="text" class="date_picker input_same mr8 input_picker" name="startDate" placeholder="날짜를 선택해주세요." autocomplete="off">
-						~
-						<div class="end_calendar_box">
-							<div class="date_picker_block"></div>
-							<input type="text" class="end_date_picker input_same mr8 ml8 input_picker" name="endDate" placeholder="날짜를 선택해주세요." autocomplete="off">
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="tab_item_box">
-				<div class="flex-center">
-					<h5 class="tab_item_title">기간구분<span class="required-alert">*</span></h5>
-					<label class="group_btn_item is-dark-btn is-darkgreen-btn radius inpd"><input type="checkbox" name="searchPeriod" class="none" value="" checked>전체</label>
-					<label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" name="searchPeriod" class="none" value="weekday" checked>평일</label>
-					<label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" name="searchPeriod" class="none" value="weekend">주말</label>
-				</div>
-			</div>
-			<div class="tab_item_box">
-				<div class="flex-center">
-					<h5 class="tab_item_title">시간대<span class="required-alert">*</span></h5>
-					<label class="group_btn_item is-dark-btn is-darkgreen-btn radius inpd"><input type="checkbox" class="none" name=searchTime value="workingTime" checked>출근 <span class="group_btn_span">(06시~10시)</span></label>
-					<label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" class="none" name="searchTime" value="workingEndTime">퇴근 <span class="group_btn_span">(17시~20시)</span></label>
-					<label class="group_btn_item is-dark-btn radius inpd direct"><input type="checkbox" class="none" name="searchTime" value="directTime">직접 입력</label>
-				</div>
-				<div class="calendar direct_time none" id="directTime">
-					<select class="selectBox selectTime" id="startTime" name="startTime"></select>
-					~
-					<select class="selectBox selectTime" id="endTime" name="endTime"></select>
-				</div>
-			</div>
 			<div class="tab_item_box flex-center">
-				<h5 class="tab_item_title">시군구</h5>
-				<select class="selectBox radius change-detect"  name="searchLocation">
-					<option value="">시군구 전체</option>
-					<c:forEach var="sggCdList" items="${sggCdList}">
-						<option value="<c:out value='${sggCdList.cdId}'/>"><c:out value='${sggCdList.cdNm}'/></option>
-					</c:forEach>
-				</select>
-			</div>
-			<div class="bottom_btn">
-				<button type="button" class="is-darkgreen-btn radius original_result_btn" onclick="sectionResult()">결과보기</button>
-			</div>
-			<%--<div class="tab_item_box flex-center">
 		        <h5 class="tab_item_title">정류장<span class="required-alert">*</span></h5>
-		        <input type="text" placeholder="정류장 이름 입력" name="searchContent" id="searchContent" class="input_same search_box radius">
+		        <input type="text" placeholder="정류장ID 또는 이름 입력" name="searchContent" id="searchContent" class="input_same search_box radius">
 		        <button type="button" class="is-darkgreen-btn ml8" id="srchBtn">검색</button>
-	        </div>--%>
+	        </div>
         </form>
-		<%--<div class="tab_item_box flex-center pt8 none" id="tableHeader">
+		<div class="tab_item_box flex-center pt8 none" id="tableHeader">
 			<h5 class="tab_item_title"></h5>
 			<div class="gis_table_scroll" style="width:500px;">
 				<div class="table_search_number tableTitle">
@@ -77,14 +23,12 @@
 				<table id="modalTable"  class="result_change">
 				    <colgroup>
 				        <col style="width:10%">
-						<col style="width:30%">
-				        <col style="width:40%">
-				        <col style="width:20%">
+				        <col style="width:60%">
+				        <col style="width:30%">
 				    </colgroup>
 				    <thead>
 				        <tr>
 				            <th scope="col">선택</th>
-							<th scope="col">정류장ID</th>
 				            <th scope="col">정류장명</th>
 				            <th scope="col">노선개수</th>
 				        </tr>
@@ -97,7 +41,7 @@
 			    	<%@ include file="/WEB-INF/jsp/ggits/utils/gis_paging.jsp" %>
 				</div>
 			</div>
-        </div>--%>
+        </div>
 <!--         <div class="bottom_btn"> -->
 <!--             <button type="button" class="is-darkgreen-btn radius original_result_btn" onclick="publicTransportResult()">결과보기</button> -->
 <!--         </div> -->
@@ -108,7 +52,7 @@
 	gisCheckInit();
 	datePickerInit();
 	dateTiemInit();
-	// settingBigdataSearchParam("BD_PB_TRANS_006");
+	settingBigdataSearchParam("BD_PB_TRANS_006");
 
 	var dataTotalCnt = '<c:out value="${paging.totalCount eq null || paging.totalCount eq '' ? '0' : ''}"/>';
 
@@ -119,11 +63,6 @@
 			$('.date_picker_block').remove();
 		}
 	})
-	/*$("#busStationLocationFilterSelector").on("change", function(){
-		if($(this).val() == "") return;
-		if(__Map.getLayer(GITS_ENV.LAYER.BD_BUS_STATION))
-			__Map.setFilter(GITS_ENV.LAYER.BD_BUS_STATION, ['in', $(this).val().substring(0,4), ['string', ['get', 'sidoCd']]]);
-	});*/
 	
 	$('#srchBtn').on('click', function(){
 		$("#mapPage").val("1");
@@ -155,9 +94,8 @@
 	    				$("#tableHeader").removeClass("none");
 		    			$(result.data.resultList).each(function(index, item){
 		    				var routeInterval = !isNull(item.routeInterval) ? item.routeInterval : "0";
-		    				html += '<tr>' +
-										'<td onclick="fnSttnLocation(this,'+item.mapX+','+item.mapY+')">' + '<input type="radio" id="listItem'+index+'" name="listItem" class="bigdata_input_radio">' + '</td>' +
-										'<td>' + '<label for="listItem'+index+'">' + item.stationId + '</label>' + '</td>' +
+		    				html += '<tr onclick="fnSttnLocation(this,'+item.mapX+','+item.mapY+')">' +
+										'<td>' + '<input type="radio" id="listItem'+index+'" name="listItem" class="bigdata_input_radio">' + '</td>' +
 										'<td>' + '<label for="listItem'+index+'">' + item.stationNm + '</label>' + '</td>' +
 										'<td>' + '<label for="listItem'+index+'">' + item.routeCnt + '</label>' + '</td>' +
 									'</tr>';
@@ -192,7 +130,6 @@
     		}
     	});
 	}
-
 	function publicTransportResult(){
     	var radioChecked = $('input:radio[name=listItem]').is(':checked');
     	if(radioChecked == false){
@@ -207,18 +144,30 @@
 	function fnSttnLocation(_this, mapX, mapY){
 		map.control.highlightingTarget(_this, mapX, mapY);
 	}	
-
-	function sectionResult(){
-		if($("input[name='startDate']").val() == '') {
-			alert("시작날짜를 입력해주세요.");
-			return;
+	$('#searchContent').autocomplete({
+		source : function(request, response) {
+		     $.ajax({
+		           url : "${pageContext.request.contextPath}/map/bigdata/ajax/autocomplete.ajax"   
+		         , type : "POST"
+		         , dataType: "JSON"
+		         , data : {value: request.term}	// 검색 키워드
+		         , success : function(data){ 	// 성공
+		             response(
+		                 $.map(data.resultList, function(item) {
+		                     return {
+		                    	     label : item.search_word
+		                           , value : item.search_word
+		                           , idx : item.SEQ 
+		                     };
+		                 })
+		             );
+		         }
+		     });
 		}
-		if($("input[name='endDate']").val() == '') {
-			alert("종료날짜를 입력해주세요.");
-			return;
-		}
-		window.map.bigdata.getPublicTransferPassengerAnalysisAll($("#searchForm").serialize());
-		bigdataSearchForm = $("#searchForm").serializeObject();
-		resultChange();
-	}
+		,focus : function(event, ui) {return false;}
+		,minLength: 2
+		,autoFocus : true
+		,delay: 2000
+		,select : function(evt, ui) {}
+	});
 </script>

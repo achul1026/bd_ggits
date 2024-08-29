@@ -6,12 +6,6 @@
  */
 const BD_Accident_By_SGG = async function(searchOption = ''){
     let list = await self.util.getJsonFormApi("/bigdata/getRoadAccidentInfoGroupBySGG.ajax?"+searchOption);
-    if(list?.noLogin){
-        return {
-            error : true,
-            noLogin : true
-        }
-    }
     /*
     dcsdCnt : 사망자수
     injpsnCnt : 부상자수

@@ -1,6 +1,5 @@
 package com.neighbor21.ggits.common.mapper;
 import java.util.List;
-import java.util.Map;
 
 import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
 
@@ -15,7 +14,7 @@ public interface MetaColInfoMapper {
 	 * @작성자 : KY.LEE
 	 * @Method 설명 : 메타데이터 컬럼 테이블 고유값 ID조회
 	 */	
-	public int findColsqnoNextVal(MetaColInfo metaColInfo);
+	public int findColsqnoNextVal();
 	
 	/**
 	 * @Method Name : saveMetaColInfo
@@ -64,14 +63,5 @@ public interface MetaColInfoMapper {
 	 * @Method 설명 : 메타데이터 데이터 유형 전체 삭제
 	 */	
 	public void deleteMetaColInfoByTblIdAndDsetId(MetaColInfo metaColInfo);
-	
-	
-	/**
-	 * @Method Name : findAllByTblIdAndDsetId
-	 * @작성일 : 2023. 01. 03.
-	 * @작성자 : KY.LEE
-	 * @Method 설명 : 메타데이터 컬럼 조회
-	 */	
-	public List<Map<String,Object>> findAllByTblIdAndDsetId(MetaColInfo metaColInfo);
 	
 }

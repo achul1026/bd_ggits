@@ -1,13 +1,8 @@
 package com.neighbor21.ggits.common.dto;
 
-import java.util.List;
-
 public class MapBigdataSearchDTO {
 
     String searchYear;
-    String searchMonth;
-    String searchDay;
-    String searchHour;
     String searchPeriod;
     String startDate;
     String endDate;
@@ -23,9 +18,6 @@ public class MapBigdataSearchDTO {
     String searchLocationNm;
     String menuCode;
     String dataOption;	//쿼리 param 경용 추가
-    String collectType;
-    String type;
-    String linkId;
     
     Long limit;
     int page = 1;            	//pageNum
@@ -39,20 +31,16 @@ public class MapBigdataSearchDTO {
     String searchContent;		// text 검색용
     String sigunCdId;			// 시군 코드 아이디
     String routeTp;				// 노선 유형
-    List<String> routeTpList;
+    
     
     String stStationId;			// 출발지 아이디
     String edStationId;			// 도착지 아이디
     
     String accidentType;
     String dangerType; // 도로안전 유형
-    String[] dangerTypeList;
     String routeId;
     String pageType;
     String[] timeArray = new String[]{"00","01","02","03","04","05","06","07","08","09","10","11","12","13","14","15","16","17","18","19","20","21","22","23",};
-    String districtGnm;
-    String companyNm;
-
 
     public String getSearchYear() {
         return searchYear;
@@ -332,85 +320,5 @@ public class MapBigdataSearchDTO {
 	public void setPageType(String pageType) {
 		this.pageType = pageType;
 	}
-
-    public String getCollectType() {
-        return collectType;
-    }
-
-    public void setCollectType(String collectType) {
-        this.collectType = collectType;
-    }
-
-	public String[] getDangerTypeList() {
-		return dangerTypeList;
-	}
-
-	public void setDangerTypeList(String[] dangerTypeList) {
-		this.dangerTypeList = dangerTypeList;
-	}
-
-
-    public String getSearchMonth() {
-        return searchMonth;
-    }
-
-    public void setSearchMonth(String searchMonth) {
-        this.searchMonth = searchMonth;
-    }
-
-    public String getSearchDay() {
-        return searchDay;
-    }
-
-    public void setSearchDay(String searchDay) {
-        this.searchDay = searchDay;
-    }
-
-    public String getSearchHour() {
-        return searchHour;
-    }
-
-    public void setSearchHour(String searchHour) {
-        this.searchHour = searchHour;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public String getDistrictGnm() {
-        return districtGnm;
-    }
-
-    public void setDistrictGnm(String districtGnm) {
-        this.districtGnm = districtGnm;
-    }
-
-    public List<String> getRouteTpList() {
-        return routeTpList;
-    }
-
-    public void setRouteTpList(List<String> routeTpList) {
-        this.routeTpList = routeTpList;
-    }
-
-    public String getLinkId() {
-        return linkId;
-    }
-
-    public void setLinkId(String linkId) {
-        this.linkId = linkId;
-    }
-
-    public String getCompanyNm() {
-        return companyNm;
-    }
-
-    public void setCompanyNm(String companyNm) {
-        this.companyNm = companyNm;
-    }
+    
 }

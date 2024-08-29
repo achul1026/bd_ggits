@@ -1,8 +1,8 @@
 package com.neighbor21.ggits.web.service.metadatamng;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +16,6 @@ import com.neighbor21.ggits.common.entity.DsetInfo;
 import com.neighbor21.ggits.common.entity.MetaColInfo;
 import com.neighbor21.ggits.common.entity.MetaFileInfo;
 import com.neighbor21.ggits.common.entity.MetaTabInfo;
-import com.neighbor21.ggits.common.hivesql.mapper.TemporaryMetaDataMapper;
 import com.neighbor21.ggits.common.mapper.ClschmInfoMapper;
 import com.neighbor21.ggits.common.mapper.DsetInfoMapper;
 import com.neighbor21.ggits.common.mapper.MOpCodeMapper;
@@ -27,6 +26,8 @@ import com.neighbor21.ggits.common.mapper.MetaInfsysInfoMapper;
 import com.neighbor21.ggits.common.mapper.MetaTabInfoMapper;
 import com.neighbor21.ggits.common.util.GgitsCommonUtils;
 import com.neighbor21.ggits.common.util.LoginSessionUtils;
+import com.neighbor21.ggits.support.exception.CommonException;
+import com.neighbor21.ggits.support.exception.ErrorCode;
 
 @Service
 public class MetaDataMngService{
@@ -58,9 +59,6 @@ public class MetaDataMngService{
 	@Autowired
 	DsetInfoMapper dsetInfoMapper;
 	
-	@Autowired
-	TemporaryMetaDataMapper temporaryMetaDataMapper;
-	
 	public List<MetaTabInfo> getMetaDataList(MetaTabInfo metaTabInfo){
 		//검색 조건이 있을때
 		if(metaTabInfo.getSearchType() != null && !"".equals(metaTabInfo.getSearchType())) {
@@ -68,20 +66,30 @@ public class MetaDataMngService{
 			case "title":
 				metaTabInfo.setTblKoreanNm(metaTabInfo.getSearchContent());
 				metaTabInfo.setTblEngNm(metaTabInfo.getSearchContent());
-				metaTabInfo.setSearchContent(null);
 				break;
 			case "writer":
 				metaTabInfo.setTblOwnrNm(metaTabInfo.getSearchContent());
-				metaTabInfo.setSearchContent(null);
 				break;
 			case "keyword":
 				metaTabInfo.setDataKeyword(metaTabInfo.getSearchContent());
-				metaTabInfo.setSearchContent(null);
 				break;
 			default:
+				metaTabInfo.setTblKoreanNm(metaTabInfo.getSearchContent());
+				metaTabInfo.setTblEngNm(metaTabInfo.getSearchContent());
+				metaTabInfo.setTblOwnrNm(metaTabInfo.getSearchContent());
+				metaTabInfo.setDataKeyword(metaTabInfo.getSearchContent());
 				break;
 			}
-		} 
+		} else {
+			//검색어만 있을때
+			if(metaTabInfo.getSearchContent() != null && !"".equals(metaTabInfo.getSearchContent())) {
+				metaTabInfo.setTblKoreanNm(metaTabInfo.getSearchContent());
+				metaTabInfo.setTblEngNm(metaTabInfo.getSearchContent());
+				metaTabInfo.setTblOwnrNm(metaTabInfo.getSearchContent());
+				metaTabInfo.setDataKeyword(metaTabInfo.getSearchContent());
+			}
+		}
+		
 		return metaTabInfoMapper.findAllMetadataList(metaTabInfo);
 	}
 	
@@ -93,7 +101,7 @@ public class MetaDataMngService{
 	 * @Method 설명 : 메타데이터 테이블 저장
 	 */	
 	public String saveMetaData(MetaTabInfo metaTabInfo , MultipartFile[] uploadFiles) {
-//		String rltinstId = metaTabInfo.getRltinstId();
+		String rltinstId = metaTabInfo.getRltinstId();
 		String tblId = GgitsCommonUtils.getUuid();
 		String dsetId = GgitsCommonUtils.getUuid();
 		String clschmId = null;
@@ -102,7 +110,7 @@ public class MetaDataMngService{
 		dsetInfo.setDsetId(dsetId);
 		dsetInfo.setSrvcNm("T_META_TAB_INFO");
 		dsetInfo.setOrgDataNm("meta_tab_info");
-//		dsetInfo.setRltinstId(rltinstId);
+		dsetInfo.setRltinstId(rltinstId);
 		
 		if(!GgitsCommonUtils.isNull(metaTabInfo.getClschmId())) {
 			String clschmNm = metaTabInfo.getClschmId();
@@ -153,49 +161,34 @@ public class MetaDataMngService{
 //		metaTabInfo.setOpngDataListNm(metaTabInfo.getCollDataType());
 		
 		//null 비참조 numberic
-		metaTabInfo.setPrsrvPeriod(0L);
-		metaTabInfo.setTblSize(0L);
-		metaTabInfo.setOccurCycl(0L);
-		metaTabInfo.setDataSaveCycl(0L);
+		metaTabInfo.setPrsrvPeriod(0);
+		metaTabInfo.setTblSize(0);
+		metaTabInfo.setOccurCycl(0);
+		metaTabInfo.setDataSaveCycl(0);
 		metaTabInfo.setClschmId(clschmId);
 		
 		metaTabInfoMapper.saveMetaTabInfo(metaTabInfo);
 		dsetInfoMapper.saveDsetInfo(dsetInfo);
-		
-//		if(metaTabInfo.getMetaColInfoList() != null) {
-//			for(int i = 0; i < metaTabInfo.getMetaColInfoList().size(); i++) {
-//				metaTabInfo.getMetaColInfoList().get(i).setTblId(tblId);
-//				metaTabInfo.getMetaColInfoList().get(i).setDsetId(dsetId);
-//				metaTabInfo.getMetaColInfoList().get(i).setDataLen(0L);
-//				metaTabInfo.getMetaColInfoList().get(i).setColSqno((long)i);
-//				metaColInfoMapper.saveMetaColInfo(metaTabInfo.getMetaColInfoList().get(i));
-//			}
-//		}
-		
-		if(metaTabInfo.getStrDataTypeArr().contains(",")) {
-			String[] dataTypeArr = metaTabInfo.getStrDataTypeArr().split(",");
-			String[] colEngNmArr = metaTabInfo.getStrColEngNmArr().split(",");
-			String[] colKoreanNmArr = metaTabInfo.getStrColKoreanNmArr().split(",");
+		if(metaTabInfo.getDataType().contains(",")) {
+			String[] dataTypeArr = metaTabInfo.getDataType().split(",");
 			for(int i = 0; i < dataTypeArr.length; i++) {
 				MetaColInfo metaColInfo = new MetaColInfo();
 				metaColInfo.setTblId(tblId);
 				metaColInfo.setDsetId(dsetId);
+				metaColInfo.setRltinstId(rltinstId);
 				metaColInfo.setDataType(dataTypeArr[i]);
-				metaColInfo.setColEngNm(colEngNmArr[i]);
-				metaColInfo.setColKoreanNm(colKoreanNmArr[i]);
-				metaColInfo.setDataLen(0L);
-				metaColInfo.setColSqno((long)i);
+				metaColInfo.setDataLen(dataTypeArr[i].length());
+				metaColInfo.setColSqno(metaColInfoMapper.findColsqnoNextVal()+1);
 				metaColInfoMapper.saveMetaColInfo(metaColInfo);
 			}
 		} else {
 			MetaColInfo metaColInfo = new MetaColInfo();
 			metaColInfo.setTblId(tblId);
 			metaColInfo.setDsetId(dsetId);
-			metaColInfo.setDataType(metaTabInfo.getStrDataTypeArr());
-			metaColInfo.setColEngNm(metaTabInfo.getStrColEngNmArr());
-			metaColInfo.setColKoreanNm(metaTabInfo.getStrColKoreanNmArr());
-			metaColInfo.setDataLen(0L);
-			metaColInfo.setColSqno(1L);
+			metaColInfo.setRltinstId(rltinstId);
+			metaColInfo.setDataType(metaTabInfo.getDataType());
+			metaColInfo.setDataLen(metaTabInfo.getDataType().length());
+			metaColInfo.setColSqno(metaColInfoMapper.findColsqnoNextVal()+1);
 			metaColInfoMapper.saveMetaColInfo(metaColInfo);
 		}
 		
@@ -217,7 +210,8 @@ public class MetaDataMngService{
 		//분류체계 관련로직
 		DsetInfo dsetInfo = new DsetInfo();
 		dsetInfo.setDsetId(metaTabInfo.getDsetId());
-		DsetInfo dbDsetInfo = dsetInfoMapper.findOneDsetInfo(dsetInfo);
+		DsetInfo dbDsetInfo = new DsetInfo();
+		dbDsetInfo = dsetInfoMapper.findOneDsetInfo(dsetInfo);
 		
 		String dbClschmId = clschmInfoMapper.findClschmIdByClschmNm(clschmNm);
 
@@ -261,7 +255,7 @@ public class MetaDataMngService{
 
 		metaTabInfo.setTblOwnrNm(LoginSessionUtils.getOprtrNm());
 		//추구 컬럼 변경 수집유형 컬럼
-//		metaTabInfo.setOpngDataListNm(metaTabInfo.getCollDataType());
+		metaTabInfo.setOpngDataListNm(metaTabInfo.getCollDataType());
 		metaTabInfo.setClschmId(clschmId);
 		metaTabInfoMapper.updateMetaTabInfo(metaTabInfo);
 		dsetInfoMapper.updateDsetInfo(dbDsetInfo);
@@ -361,46 +355,5 @@ public class MetaDataMngService{
 		
 		//DB제거
 		metaFileInfoMapper.deleteMetaFileInfoByFileId(fileId);
-	}
-	
-	
-	public List<String[]> exportMetaDataCsv(MetaTabInfo metaTabInfo) {
-		List<String[]> resultList = new ArrayList<String[]> ();
-		List<Map<String,String>> dbDataResult = null;
-		
-		MetaColInfo schMetaColInfo = new MetaColInfo();
-		schMetaColInfo.setDsetId(metaTabInfo.getDsetId());
-		schMetaColInfo.setTblId(metaTabInfo.getTblId());
-		
-		List<Map<String,Object>> colDataList = metaColInfoMapper.findAllByTblIdAndDsetId(schMetaColInfo);
-		metaTabInfo.setColInfoList(colDataList);
-		
-		switch(metaTabInfo.getTblType()) {
-			case "NDAP" :
-				dbDataResult = temporaryMetaDataMapper.findAllCsvInfo(metaTabInfo);
-				break;
-			case "GPDB" :
-				dbDataResult = metaTabInfoMapper.findAllCsvInfo(metaTabInfo);
-				break;
-		}
-		
-		String[] keyArr = new String[colDataList.size()];
-		
-		for(int i = 0; i < colDataList.size(); i++) {
-			keyArr[i] = (String) colDataList.get(i).get("colEngNm");
-		}
-
-		resultList.add(keyArr);
-		
-		if(!dbDataResult.isEmpty()) {
-			for(Map<String,String> resultMap : dbDataResult) {
-				String[] colArr = new String[keyArr.length];
-				for(int i = 0; i < keyArr.length; i++) {
-					colArr[i] = String.valueOf(resultMap.get(keyArr[i]));
-				}
-				resultList.add(colArr);
-			}
-		}
-		return resultList;
 	}
 }

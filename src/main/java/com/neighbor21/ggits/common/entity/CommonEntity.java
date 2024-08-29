@@ -32,7 +32,7 @@ public class CommonEntity {
 	private String strSearchMonth;
 	private String endSearchMonth;
 	private Long totalCntChk;
-	
+
 	public CommonEntity(CommonEntity commonEntity) {
 		super();
 		this.tabNum = commonEntity.getTabNum();
@@ -283,7 +283,7 @@ public class CommonEntity {
 	public void setSelInciCate(String selInciCate) {
 		this.selInciCate = selInciCate;
 	}
-	
+
 	public Long getTotalCntChk() {
 		return totalCntChk;
 	}
@@ -291,4 +291,6 @@ public class CommonEntity {
 	public void setTotalCntChk(Long totalCntChk) {
 		this.totalCntChk = totalCntChk;
 	}
+
+	
 }

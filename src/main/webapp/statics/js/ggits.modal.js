@@ -108,19 +108,8 @@ let ModalBuilder = function(){
 			$footerWrap.append($footerButton);
 			return $footerWrap; 
 		},
-		FOOTER_ONE_BUTTON : function(buttonText, callback){
-			let $footerWrap = $(`<div class="modal_footer"></div>`);
-			let $footerButton = $(`<button class="modal_footer_btn">${buttonText}</button>`);
-			$footerButton.on("click", function(){
-				if(!isNull(callback)){
-					callback($(this), _self);
-				}
-			});
-			$footerWrap.append($footerButton);
-			return $footerWrap;
-		},
 		FOOTER_TWO_BUTTON : function(buttonText, callback){
-			let $footerWrap = $(`<div class="modal_footer"></div>`);
+			let $footerWrap = $(`<div class="modal_footer flex-between none"></div>`);
 			let $footerButton = $(`<button class="modal_footer_remove_btn">${buttonText}</button>`);
 			let $footerCloseButton = $(`<button class="modal_footer_btn">닫기</button>`);
 			$footerButton.on("click", function(){
@@ -284,8 +273,6 @@ let ModalBuilder = function(){
 		if(parseInt(type) == 3) footerButtonType = "FOOTER_CUSTOM_TWO_BUTTON";
 		if(parseInt(type) == 4) footerButtonType = "FOOTER_ALERT";
 		if(parseInt(type) == 5) footerButtonType = "FOOTER_ALERT_TWO_BUTTON";
-		if(type == 'FOOTER_ONE_BUTTON') footerButtonType = "FOOTER_ONE_BUTTON";
-
 		if(footerButtonType == "FOOTER_TWO_BUTTON"){
 			$footer = UI[footerButtonType](buttonText, callback, cancelCallback);
 		} else if(footerButtonType == "FOOTER_CUSTOM_TWO_BUTTON", "FOOTER_ALERT_TWO_BUTTON"){

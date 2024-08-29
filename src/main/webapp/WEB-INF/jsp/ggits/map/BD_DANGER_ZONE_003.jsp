@@ -1,6 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="c"   uri="http://java.sun.com/jsp/jstl/core" %>
 <div class="tab_bigbox_close">
     <div class="original_box clearfix">
@@ -9,32 +8,13 @@
 	        <div class="tab_item_box flex-center">
 	            <h5 class="tab_item_title">연도별</h5>
 	            <select class="selectBox radius" name="searchYear">
+	                <option value="searchAllYear">전체</option>
 	           	<c:forEach var="yearsList" items="${yearsList}">
-					<c:if test="${fn:startsWith(yearsList.year, '20')}">
 	                <option value="<c:out value='${yearsList.year}'/>"><c:out value='${yearsList.year}'/>년</option>
-					</c:if>
 	           	</c:forEach>
 	            </select>
 	        </div>
-			<div class="tab_item_box flex-center">
-				<h5 class="tab_item_title">월별</h5>
-				<select class="selectBox radius" name="searchMonth">
-					<option value="">전체</option>
-					<option value="01">1월</option>
-					<option value="02">2월</option>
-					<option value="03">3월</option>
-					<option value="04">4월</option>
-					<option value="05">5월</option>
-					<option value="06">6월</option>
-					<option value="07">7월</option>
-					<option value="08">8월</option>
-					<option value="09">9월</option>
-					<option value="10">10월</option>
-					<option value="11">11월</option>
-					<option value="12">12월</option>
-				</select>
-			</div>
-	        <%--<div class="tab_item_box">
+	        <div class="tab_item_box">
 	            <div class="flex-center">
 	                <h5 class="tab_item_title">기간</h5>
 	                <label class="group_btn_item is-dark-btn radius inpd is-darkgreen-btn"><input type="checkbox" class="none" name="searchPeriod" value="weekday" checked="checked">평일</label>
@@ -62,7 +42,7 @@
 	                ~
 					<select class="selectBox selectTime" name="endTime" id="endTime"></select>
 	            </div>
-	        </div>--%>
+	        </div>
 	        <div class="tab_item_box flex-center">
 	            <h5 class="tab_item_title">지역별</h5>
 	            <select class="selectBox radius" name="searchLocation">
@@ -85,8 +65,7 @@
 	                <option value="LAWVLTN">법위반 보행자 사고구역</option>
 	                <option value="JAYWK">무단횡단 보행자 사고구역</option>
 					<option value="HLDY">휴일기간 보행자 사고구역</option>
-					<option value="OLMAN">노인 보행자 사고 구역</option>
-					<option value="CHILD">어린이 보행자 사고 구역</option>
+					<!-- <option value="OLMAN">노인 보행자 사고 구역</option> -->
 	            </select>
 	        </div>
         </form>
@@ -119,46 +98,38 @@
 		        	<div class="remarks_wrap">
 		            	<div>
 			                <div class="check_line_container">
-			                    <div class="check_line_box check_border is-double">
+			                    <div class="check_line_box check_border">
 			                        <span class="remarks_circle set4-1">자전거 사고</span>
 			                    </div>
-			                    <div class="check_line_box check_border is-double">
+			                    <div class="check_line_box check_border">
 			                        <span class="remarks_circle set4-2">결빙사고 구역</span>
 			                    </div>
-			                    <div class="check_line_box check_border is-double">
+			                    <div class="check_line_box check_border">
 			                        <span class="remarks_circle set4-3">음주 사고 구역</span>
 			                    </div>
-			                    <div class="check_line_box check_border is-double">
+			                    <div class="check_line_box check_border">
 				                	<span class="remarks_circle set4-4">이륜차 사고 구역</span>
 			                    </div>
-			                    <div class="check_line_box check_border is-double">
+			                    <div class="check_line_box check_border">
 			                        <span class="remarks_circle set4-5">보행자 사고 구역</span>
 			                    </div>
-			                    <div class="check_line_box check_border is-double">
+			                    <div class="check_line_box check_border">
 			                        <span class="remarks_circle set4-6">화물차 사고 구역</span>
 			                    </div>
-			                    <div class="check_line_box check_border is-double">
+			                    <div class="check_line_box check_border">
 			                        <span class="remarks_circle set4-8">법위반 보행자 사고 구역</span>
 			                    </div>
-			                    <div class="check_line_box check_border is-double">
+			                    <div class="check_line_box check_border">
 			                        <span class="remarks_circle set4-9">무단횡단 보행자 사고 구역</span>
 			                    </div>
-			                    <div class="check_line_box check_border is-double">
+			                    <div class="check_line_box check_border">
 			                        <span class="remarks_circle set4-10">휴일기간 보행자 사고 구역</span>
 			                    </div>
-								<div class="check_line_box check_border is-double">
-			                        <span class="remarks_circle set4-7">노인 보행자 사고 구역</span>
-			                    </div>
-								<div class="check_line_box check_border is-double">
-			                        <span class="remarks_circle set4-9">어린이 보행자 사고 구역</span>
-			                    </div>
-								<div style='clear:both;'></div>
 			                </div>
 		            	</div>
 			            <div class="unit">단위 : 사고 유형</div>
 		        	</div>
-		    	</div>`)
-		$('#map-container').find(".remarks_container").remove();
+		    	</div>`)        
 	        $('#map-container').append(remarksItem);
 	        legendToggle();
 	        resultChange();

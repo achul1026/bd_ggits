@@ -10,25 +10,16 @@ public class MrtBusSttnAnal extends CommonEntity {
     private String useYn;                // 사용 여부
     private String routeNm;                // 노선 명
     private String bstpNm;                // 버스정류장 명
-    private Long rideUserCnt;            // 승차 사용자 수
-    private Long lndiUserCnt;            // 하차 사용자 수
-    private Long trnsitUserCnt;            // 환승 사용자 수
+    private long rideUserCnt;            // 승차 사용자 수
+    private long lndiUserCnt;            // 하차 사용자 수
+    private long trnsitUserCnt;            // 환승 사용자 수
     private String etlDt;                // etl 일시
 
     private String routeTp;        		// 노선종류
     private String routeInterval;        // 배차간격
     private String stStaNm;                // 출발지
     private String edStaNm;                // 종착지
-    private Long mobileNo;
-    
-    //#GgbisBusStation
-    private String stationNm;
-    private String adminNm;
-    
-    //none col
-    private Long total;
-    
-    
+
     public Timestamp getAnlsDt() {
         return anlsDt;
     }
@@ -79,27 +70,27 @@ public class MrtBusSttnAnal extends CommonEntity {
         this.bstpNm = bstpNm;
     }
 
-    public Long getRideUserCnt() {
+    public long getRideUserCnt() {
         return rideUserCnt;
     }
 
-    public void setRideUserCnt(Long rideUserCnt) {
+    public void setRideUserCnt(long rideUserCnt) {
         this.rideUserCnt = rideUserCnt;
     }
 
-    public Long getLndiUserCnt() {
+    public long getLndiUserCnt() {
         return lndiUserCnt;
     }
 
-    public void setLndiUserCnt(Long lndiUserCnt) {
+    public void setLndiUserCnt(long lndiUserCnt) {
         this.lndiUserCnt = lndiUserCnt;
     }
 
-    public Long getTrnsitUserCnt() {
+    public long getTrnsitUserCnt() {
         return trnsitUserCnt;
     }
 
-    public void setTrnsitUserCnt(Long trnsitUserCnt) {
+    public void setTrnsitUserCnt(long trnsitUserCnt) {
         this.trnsitUserCnt = trnsitUserCnt;
     }
 
@@ -144,36 +135,4 @@ public class MrtBusSttnAnal extends CommonEntity {
     public void setRouteTp(String routeTp) {
         this.routeTp = routeTp;
     }
-
-    public Long getMobileNo() {
-        return mobileNo;
-    }
-
-    public void setMobileNo(Long mobileNo) {
-        this.mobileNo = mobileNo;
-    }
-
-	public String getStationNm() {
-		return stationNm;
-	}
-
-	public void setStationNm(String stationNm) {
-		this.stationNm = stationNm;
-	}
-
-	public String getAdminNm() {
-		return adminNm;
-	}
-
-	public void setAdminNm(String adminNm) {
-		this.adminNm = adminNm;
-	}
-
-	public Long getTotal() {
-		return total;
-	}
-
-	public void setTotal(Long total) {
-		this.total = total;
-	}
 }

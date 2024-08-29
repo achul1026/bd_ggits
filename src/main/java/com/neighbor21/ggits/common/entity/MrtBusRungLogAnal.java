@@ -7,14 +7,14 @@ public class MrtBusRungLogAnal extends CommonEntity {
     private String clctYmd;        // 수집 일자
     private String busRouteId;    // 버스 노선 아이디
     private String coId;        // 회사 아이디
-    private Long trsfrCnt;        // 환승 수
-    private Long psgrCnt;        // 승객 수
+    private long trsfrCnt;        // 환승 수
+    private long psgrCnt;        // 승객 수
     private String rideBstpId;    // 승차 버스정류장 아이디
     private String rideDt;        // 승차 일시
     private String lndiBstpId;    // 하차 버스정류장 아이디
     private String lndiDt;        // 하차 일시
-    private Long busUserCnt;    // 버스 사용자 수
-    private Long busRungDstne;    // 버스 운행 거리
+    private long busUserCnt;    // 버스 사용자 수
+    private long busRungDstne;    // 버스 운행 거리
     private String etlDt;        // etl 일시
 
     private String routeNm;        // 구간 명
@@ -53,7 +53,7 @@ public class MrtBusRungLogAnal extends CommonEntity {
     private String stStationId;
     private String edStationId;
     private String roadName;
-    private String routeTp;
+
 
     public String getClctYmd() {
         return clctYmd;
@@ -79,19 +79,19 @@ public class MrtBusRungLogAnal extends CommonEntity {
         this.coId = coId;
     }
 
-    public Long getTrsfrCnt() {
+    public long getTrsfrCnt() {
         return trsfrCnt;
     }
 
-    public void setTrsfrCnt(Long trsfrCnt) {
+    public void setTrsfrCnt(long trsfrCnt) {
         this.trsfrCnt = trsfrCnt;
     }
 
-    public Long getPsgrCnt() {
+    public long getPsgrCnt() {
         return psgrCnt;
     }
 
-    public void setPsgrCnt(Long psgrCnt) {
+    public void setPsgrCnt(long psgrCnt) {
         this.psgrCnt = psgrCnt;
     }
 
@@ -127,19 +127,19 @@ public class MrtBusRungLogAnal extends CommonEntity {
         this.lndiDt = lndiDt;
     }
 
-    public Long getBusUserCnt() {
+    public long getBusUserCnt() {
         return busUserCnt;
     }
 
-    public void setBusUserCnt(Long busUserCnt) {
+    public void setBusUserCnt(long busUserCnt) {
         this.busUserCnt = busUserCnt;
     }
 
-    public Long getBusRungDstne() {
+    public long getBusRungDstne() {
         return busRungDstne;
     }
 
-    public void setBusRungDstne(Long busRungDstne) {
+    public void setBusRungDstne(long busRungDstne) {
         this.busRungDstne = busRungDstne;
     }
 
@@ -387,6 +387,14 @@ public class MrtBusRungLogAnal extends CommonEntity {
         this.geojson = geojson;
     }
 
+    public String getRoadName() {
+        return roadName;
+    }
+
+    public void setRoadName(String roadName) {
+        this.roadName = roadName;
+    }
+
     public String getStStationNm() {
         return stStationNm;
     }
@@ -417,13 +425,5 @@ public class MrtBusRungLogAnal extends CommonEntity {
 
     public void setEdStationId(String edStationId) {
         this.edStationId = edStationId;
-    }
-
-    public String getRoadName() {
-        return roadName;
-    }
-
-    public void setRoadName(String roadName) {
-        this.roadName = roadName;
     }
 }

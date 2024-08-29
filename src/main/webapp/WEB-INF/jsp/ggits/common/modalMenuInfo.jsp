@@ -131,7 +131,7 @@
 						</c:when>
 						<c:otherwise>
 							<tr id="noneSubMenuTr">
-								<td colspan="6" class="center">
+								<td colspan="5" class="center">
 									<p> 하위 메뉴가 존재하지 않습니다. 하위 메뉴를 생성 해주세요.</p>
 								</td>
 							</tr>
@@ -327,9 +327,7 @@
 					}
 				}
 			});
-		 },'취소하기',function(button, modal){
-			 modal.close();
-		 }).open();		
+		 },'취소하기',function(button, modal){}).open();		
 	};
 	
 	/**

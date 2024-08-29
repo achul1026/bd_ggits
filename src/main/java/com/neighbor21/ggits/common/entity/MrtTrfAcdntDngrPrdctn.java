@@ -2,9 +2,9 @@ package com.neighbor21.ggits.common.entity;
 
 public class MrtTrfAcdntDngrPrdctn {
     private String linkId;        //링크 아이디
-    private Long speed;        //속도
-    private String safeIdex;        //안전 지수
-    private String safeGrd;        //안전 등급	0:안전 1:주의 2:위험 3:심각
+    private long speed;        //속도
+    private long safeIdex;        //안전 지수
+    private String safeGrd;        //안전 등급
 
     private Long noneLinkCntBySgg;
     private Long speedOverCntBySgg;
@@ -14,19 +14,7 @@ public class MrtTrfAcdntDngrPrdctn {
     private Long dangerCntBySgg;
     private Long seriousCntBySgg;
     private String sggCd;
-    
-    //#CGmStdLink
-    private String roadName;	//도로명
 
-    //#CGmStdLinkAdstdgMppg
-    private String    adsiNm;        //행정시 명
-    private String    adstdgCd;        //법정동 코드
-    private String    adstdgNm;        //법정동 명
-
-    
-    //none col
-    private String ordSafeIdex;
-    
     public String getLinkId() {
         return linkId;
     }
@@ -35,21 +23,24 @@ public class MrtTrfAcdntDngrPrdctn {
         this.linkId = linkId;
     }
 
-    public Long getSpeed() {
-		return speed;
-	}
 
-	public void setSpeed(Long speed) {
-		this.speed = speed;
-	}
+    public long getSpeed() {
+        return speed;
+    }
 
-	public String getSafeIdex() {
+    public void setSpeed(long speed) {
+        this.speed = speed;
+    }
+
+
+    public long getSafeIdex() {
         return safeIdex;
     }
 
-    public void setSafeIdex(String safeIdex) {
+    public void setSafeIdex(long safeIdex) {
         this.safeIdex = safeIdex;
     }
+
 
     public String getSafeGrd() {
         return safeGrd;
@@ -122,44 +113,4 @@ public class MrtTrfAcdntDngrPrdctn {
     public void setSggCd(String sggCd) {
         this.sggCd = sggCd;
     }
-
-	public String getRoadName() {
-		return roadName;
-	}
-
-	public void setRoadName(String roadName) {
-		this.roadName = roadName;
-	}
-
-	public String getAdsiNm() {
-		return adsiNm;
-	}
-
-	public void setAdsiNm(String adsiNm) {
-		this.adsiNm = adsiNm;
-	}
-
-	public String getAdstdgCd() {
-		return adstdgCd;
-	}
-
-	public void setAdstdgCd(String adstdgCd) {
-		this.adstdgCd = adstdgCd;
-	}
-
-	public String getAdstdgNm() {
-		return adstdgNm;
-	}
-
-	public void setAdstdgNm(String adstdgNm) {
-		this.adstdgNm = adstdgNm;
-	}
-
-	public String getOrdSafeIdex() {
-		return ordSafeIdex;
-	}
-
-	public void setOrdSafeIdex(String ordSafeIdex) {
-		this.ordSafeIdex = ordSafeIdex;
-	}
 }

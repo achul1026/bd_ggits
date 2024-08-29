@@ -2,7 +2,6 @@ package com.neighbor21.ggits.common.mapper;
 
 import java.util.List;
 
-import org.apache.ibatis.annotations.Param;
 import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
 
 import com.neighbor21.ggits.common.entity.GgbisBusEventinfo;
@@ -27,6 +26,4 @@ public interface GgbisBusEventinfoMapper {
 	 * @return
 	 */
 	public int countAllRealTimeBusMoveInfo(GgbisBusEventinfo ggbisBusEventinfo);
-
-	public List<GgbisBusEventinfo> findAllCurrentByRouteId(@Param("routeId") String routeId);
 }

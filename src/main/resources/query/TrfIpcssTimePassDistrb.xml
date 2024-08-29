@@ -162,8 +162,7 @@
 			OUTFL_RT, 
 			TOT_INFL_RT, 
 			TOT_OUTFL_RT,
-			USG_NO,
-		   ETL_DT
+			USG_NO
 			)VALUES(
 			#{ipcssMngNo}, 
 			#{dywkDiv}, 
@@ -174,9 +173,7 @@
 			#{outflRt}, 
 			#{totInflRt},
 			#{totOutflRt},
-			#{usgNo},
-			TO_CHAR(now(),'YYYYMMDDHH24MISS')
-			)
+			#{usgNo})
 	</insert>
 	
 	<delete id="deleteTrafficImpactReportByIpcssMngNo" parameterType="String">

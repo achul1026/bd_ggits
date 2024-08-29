@@ -1,26 +1,5 @@
-Date.prototype.addDays = function(days) {
-	var date = new Date(this.valueOf());
-	date.setDate(date.getDate() + days);
-	return date;
-}
-function IsAlphaNumeric(ee) {
-	var keyCode = ee.keyCode == 0 ? ee.charCode : ee.keyCode;
-	// 예외키 규정
-	var specialKeys = new Array();
-	specialKeys.push(8); //Backspace
-	specialKeys.push(9); //Tab
-	specialKeys.push(46); //Delete
-	specialKeys.push(36); //Home
-	specialKeys.push(35); //End
-	specialKeys.push(37); //Left
-	specialKeys.push(39); //Right
-	var ret = ((keyCode >= 48 && keyCode <= 57) || (keyCode >= 65 && keyCode <= 90) || (keyCode >= 97 && keyCode <= 122) || (specialKeys.indexOf(ee.keyCode) != -1 && ee.charCode != ee.keyCode));
-	// error message
-	if (!ret) { alert("only alphanumeric can be allowed to input."); }
-	return ret;
-}
 let postFilter = function( options, originalOptions, jqXHR ) {
-	if(isNull(options.timeout)) options.timeout = 10*60*1000;
+	if(isNull(options.timeout)) options.timeout = 60000;
 	options.error = function(jqXHR, textStatus, errorThrown)
 		{
 
@@ -28,7 +7,7 @@ let postFilter = function( options, originalOptions, jqXHR ) {
 				originalOptions.error(jqXHR, textStatus, errorThrown);
 				return;
 			}
-			//alert('서버의 응답이 지연되고 있습니다. 잠시 후 다시 이용하여 주십시오.[101]');
+			alert('서버의 응답이 지연되고 있습니다. 잠시 후 다시 이용하여 주십시오.[101]');
 			$("#mapLoadingLayer").fadeOut(250, function () {
 				$("#mapLoadingLayer").remove();
 			});
@@ -39,9 +18,11 @@ let postFilter = function( options, originalOptions, jqXHR ) {
 				originalOptions.complete(jqXHR, textStatus);
 			}
 			if(textStatus === 'timeout'){
-				//alert('서버의 응답이 지연되고 있습니다. 잠시 후 다시 이용하여 주십시오.[102]');
+				alert('서버의 응답이 지연되고 있습니다. 잠시 후 다시 이용하여 주십시오.[102]');
 				return;
 			}
+
+			$("button:disabled:not(.is-manual)").prop("disabled",false);
 		}
 };
 $.ajaxPrefilter(postFilter);
@@ -51,23 +32,6 @@ const GGITS_WORKER = new Worker("/statics/js/ggits.worker.js?t="+new Date().getT
 var dataTimer;
 
 $(function(){
-
-	$(document).tooltip({
-		track : true,
-		position: {
-			my: "center bottom-20",
-			at: "center top",
-			using: function( position, feedback ) {
-				$( this ).css( position );
-				$( "<div>" )
-					.addClass( "arrow" )
-					.addClass( feedback.vertical )
-					.addClass( feedback.horizontal )
-					.appendTo( this );
-			}
-		}
-	});
-
     // email validation
     isEmailValidated = function(_this) {
         let emailRegExp = /^[a-z0-9A-Z._-]+@[a-z0-9A-Z_-]+\.[a-zA-Z.]*$/i;
@@ -435,30 +399,6 @@ $(function(){
     })
 })
 
-/*
- author : KY.LEE
- date  : 2024.01.09
- date to String format
-*/
-function numberToTimeString(value) {
-    if (value >= 10) {
-        return value;
-    }
-
-    return `0${value}`;
-}
-
-function dateToStringFormat(date, delimiter = '-') {
-    let getYear = date.getFullYear();
-    let getMonth = numberToTimeString(date.getMonth() + 1);
-    let getDay = numberToTimeString(date.getDate());
-
-    return [getYear, getMonth, getDay].join(delimiter);
-}
-
-
-
-
 //호출
 $(function(){
 	//시간, 달력
@@ -528,7 +468,7 @@ function gisCheckInit() {
 
 	
 //시간, 달력
-function datePickerInit(autoSetTimeDisabled = false){
+function datePickerInit(){
 	//startDate
 	$('.date_picker').datepicker({
 		dateFormat:'yy-mm-dd',
@@ -545,7 +485,7 @@ function datePickerInit(autoSetTimeDisabled = false){
 	    format: 'YYYY',
 		minViewMode: 'years',
 	    viewMode: "years",
-		/*maxDate:'0D',*/
+		maxDate:'0D',
 	})
 	
 	//endDate
@@ -564,7 +504,7 @@ function datePickerInit(autoSetTimeDisabled = false){
 	    format: 'YYYY',
 		minViewMode: 'years',
 	    viewMode: "years",
-		/*maxDate:'0D',*/
+		maxDate:'0D',
 	})
 	
 	//start date alert
@@ -612,120 +552,119 @@ function datePickerInit(autoSetTimeDisabled = false){
 		}
 	
 	});
+	
+	
+	$('.date_picker').on('change', function(){
+		var getHours = toDayTime.getHours();
+		var afterTime = $("#endTime").val();
+		var beforeTime = $("#startTime").val();
+		var beforeDate = $(".date_picker").val();
+		var afterDate = $(".end_date_picker").val();		
+		
+		//오늘 날짜와 시작날짜가 같다면
+		if(dateString == beforeDate){
+			$.each($('#endTime option'), function(){
+			var idx = $(this).index();
+				if (getHours <= idx){
+			       $(this).attr('disabled','disabled');
+			    } else {
+				   $(this).removeAttr('disabled').prop('selected', true);
+				}
+			})
+		} else {
+			$('#endTime option').removeAttr('disabled').prop('selected', true);
+			$("#endTime").val(afterTime);
+		}
+		
+		//종료날짜와 오늘날짜가 같다면
+		if(afterDate == dateString){
+			$.each($('#endTime option'), function(){
+			var idx = $(this).index();
+				if (getHours <= idx){
+			       $(this).attr('disabled','disabled');
+			    } else {
+				   $(this).removeAttr('disabled').prop('selected', true);
+				}
+			})
+		}
+		
+		//시작,종료일이 같을때 같은시간 선택 하지 못하게
+		if(beforeDate == afterDate) {
+			$.each($('#startTime option'), function(){
+			var idx = $(this).index();
+				if (getHours <= idx){
+			       $(this).attr('disabled','disabled');
+			    } else {
+				   $(this).removeAttr('disabled').prop('selected', true);
+				}
+			})			
+		}
 
-	if(!autoSetTimeDisabled) {
-		$('.date_picker').on('change', function () {
-			var getHours = toDayTime.getHours();
-			var afterTime = $("#endTime").val();
-			var beforeTime = $("#startTime").val();
-			var beforeDate = $(".date_picker").val();
-			var afterDate = $(".end_date_picker").val();
-
-			//오늘 날짜와 시작날짜가 같다면
-			if (dateString == beforeDate) {
-				$.each($('#endTime option'), function () {
-					var idx = $(this).index();
-					if (getHours <= idx) {
-						$(this).attr('disabled', 'disabled');
-					} else {
-						$(this).removeAttr('disabled').prop('selected', true);
-					}
-				})
-			} else {
-				$('#endTime option').removeAttr('disabled').prop('selected', true);
-				$("#endTime").val(afterTime);
-			}
-
-			//종료날짜와 오늘날짜가 같다면
-			if (afterDate == dateString) {
-				$.each($('#endTime option'), function () {
-					var idx = $(this).index();
-					if (getHours <= idx) {
-						$(this).attr('disabled', 'disabled');
-					} else {
-						$(this).removeAttr('disabled').prop('selected', true);
-					}
-				})
-			}
-
-			//시작,종료일이 같을때 같은시간 선택 하지 못하게
-			if (beforeDate == afterDate) {
-				$.each($('#startTime option'), function () {
-					var idx = $(this).index();
-					if (getHours <= idx) {
-						$(this).attr('disabled', 'disabled');
-					} else {
-						$(this).removeAttr('disabled').prop('selected', true);
-					}
-				})
-			}
-
-			if (dateString == beforeDate) {
-				$.each($('#startTime option'), function () {
-					var idx = $(this).index();
-					if (getHours <= idx) {
-						$(this).attr('disabled', 'disabled');
-						$("#startTime").val(null);
-					} else {
-						$(this).removeAttr('disabled').prop('selected', true);
-					}
-				})
-			} else {
-				$('#startTime option').removeAttr('disabled').prop('selected', true);
-				$("#startTime").val(beforeTime);
-			}
-		})
-
-		//날짜비교 -> select 시간 제어
-		$('.end_date_picker').on('change', function () {
-			var getHours = toDayTime.getHours();
-			var afterTime = $("#endTime").val();
-			var beforeTime = $("#startTime").val();
-			var beforeDate = $(".date_picker").val();
-			var afterDate = $(".end_date_picker").val();
-
-			//오늘 날짜와 시작날짜가 같다면
-			if (dateString == beforeDate) {
-				$.each($('#endTime option'), function () {
-					var idx = $(this).index();
-					if (getHours <= idx) {
-						$(this).attr('disabled', 'disabled');
-					} else {
-						$(this).removeAttr('disabled').prop('selected', true);
-					}
-				})
-			} else {
-				$('#endTime option').removeAttr('disabled').prop('selected', true);
-				$("#endTime").val(afterTime);
-			}
-			//오늘 날짜와 종료날짜가 같다면
-			if (dateString == afterDate) {
-				$.each($('.effect_start_time option'), function () {
-					var idx = $(this).index();
-					if (getHours <= idx) {
-						$(this).attr('disabled', 'disabled');
-					} else {
-						$(this).removeAttr('disabled').prop('selected', true);
-					}
-				})
-			} else {
-				$('#startTime option').removeAttr('disabled').prop('selected', true);
-				$("#startTime").val(beforeTime);
-			}
-			//종료날짜와 오늘날짜가 같다면
-			if (afterDate == dateString) {
-				$.each($('#endTime option'), function () {
-					var idx = $(this).index();
-					if (getHours <= idx) {
-						$(this).attr('disabled', 'disabled');
-					} else {
-						$(this).removeAttr('disabled').prop('selected', true);
-					}
-				})
-			}
-
-		})
-	}
+		if(dateString == beforeDate){
+			$.each($('#startTime option'), function(){
+				var idx = $(this).index();
+				if (getHours <= idx){
+					$(this).attr('disabled','disabled');
+					$("#startTime").val(null);
+				} else {
+					$(this).removeAttr('disabled').prop('selected', true);
+				}
+			})
+		} else {
+			$('#startTime option').removeAttr('disabled').prop('selected', true);
+			$("#startTime").val(beforeTime);
+		}
+	})
+	
+	//날짜비교 -> select 시간 제어
+	$('.end_date_picker').on('change', function(){
+		var getHours = toDayTime.getHours();
+		var afterTime = $("#endTime").val();
+		var beforeTime = $("#startTime").val();
+		var beforeDate = $(".date_picker").val();
+		var afterDate = $(".end_date_picker").val();
+		
+		//오늘 날짜와 시작날짜가 같다면
+		if(dateString == beforeDate){
+			$.each($('#endTime option'), function(){
+			var idx = $(this).index();
+				if (getHours <= idx){
+			       $(this).attr('disabled','disabled');
+			    } else {
+				   $(this).removeAttr('disabled').prop('selected', true);
+				}
+			})
+		} else {
+			$('#endTime option').removeAttr('disabled').prop('selected', true);
+			$("#endTime").val(afterTime);
+		}
+		//오늘 날짜와 종료날짜가 같다면
+		if(dateString == afterDate){
+			$.each($('.effect_start_time option'), function(){
+			var idx = $(this).index();
+				if (getHours <= idx){
+			       $(this).attr('disabled','disabled');
+			    } else {
+				   $(this).removeAttr('disabled').prop('selected', true);
+				}
+			})		
+		} else {
+			$('#startTime option').removeAttr('disabled').prop('selected', true);
+			$("#startTime").val(beforeTime);
+		}
+		//종료날짜와 오늘날짜가 같다면
+		if(afterDate == dateString){
+			$.each($('#endTime option'), function(){
+			var idx = $(this).index();
+				if (getHours <= idx){
+			       $(this).attr('disabled','disabled');
+			    } else {
+				   $(this).removeAttr('disabled').prop('selected', true);
+				}
+			})
+		}
+		
+	})
 	
 	//오늘날짜, 어제날짜 찍어주기
 	$('.yesterday').datepicker('setDate', yesterDateString);	
@@ -733,26 +672,14 @@ function datePickerInit(autoSetTimeDisabled = false){
 }
 
 
-function dateTiemInit(isTime = true, is30min = false){
+function dateTiemInit(isTime = true){
 	var optionHtml = "";
 	if(isTime){
-		if(!is30min) {
-			for (var i = 0; i < 24; i++) {
-				if (i < 10) {
-					optionHtml += "<option value=0" + i + ">0" + i + ":00</option>";
-				} else {
-					optionHtml += "<option value=" + i + ">" + i + ":00</option>";
-				}
-			}
-		}else{
-			for (var i = 0; i < 24; i++) {
-				if (i < 10) {
-					optionHtml += "<option value=0" + i + "00>0" + i + ":00</option>";
-					optionHtml += "<option value=0" + i + "30>0" + i + ":30</option>";
-				} else {
-					optionHtml += "<option value=" + i + "00>" + i + ":00</option>";
-					optionHtml += "<option value=" + i + "30>" + i + ":30</option>";
-				}
+		for(var i = 0; i < 24; i++){
+			if(i < 10){
+				optionHtml += "<option value=0"+i+">0"+i+":00</option>";
+			}else{
+				optionHtml += "<option value="+i+">"+i+":00</option>";
 			}
 		}
 	} else{
@@ -977,7 +904,7 @@ function tabListOnOff() {
 //범례 토글
 function legendToggle(){
 	$(".remarks_title_box").click(function(){
-        $(this).parent().find(".remarks_wrap").slideToggle(200);
+        $(".remarks_wrap").slideToggle(200);
         $(this).find(".remarks_title").toggleClass("rotate");
     })
 }
@@ -990,205 +917,6 @@ function numberComma(number) {
 
 function mapPopupClose() {
 	$(".mapboxgl-popup").remove()
-}
-function openRoutePrdctnInfo(){
-	const html = `
-		<img src="/statics/images/route_prdctn_01.jpg" style="display:block;width:100%;max-width:1200px;"/>
-		<img src="/statics/images/route_prdctn_02.jpg" style="display:block;width:100%;max-width:1200px;"/>
-	`;
-	new ModalBuilder().init().body(html).footer('FOOTER_ONE_BUTTON','확인',function(button, modal){
-		modal.close();
-	}).open();
-}
-function openPopulationPrdctnInfo(){
-	const html = `
-		<img src="/statics/images/population_prdctn_01.jpg" style="display:block;width:100%;max-width:1200px;"/>
-		<img src="/statics/images/population_prdctn_02.jpg" style="display:block;width:100%;max-width:1200px;"/>
-	`;
-	new ModalBuilder().init().body(html).footer('FOOTER_ONE_BUTTON','확인',function(button, modal){
-		modal.close();
-	}).open();
-}
-function openBusArrivePrdctnInfo(){
-	const html = `
-		<img src="/statics/images/bus_arv_prdctn_01.jpg" style="display:block;width:100%;max-width:1200px;"/>
-		<img src="/statics/images/bus_arv_prdctn_02.jpg" style="display:block;width:100%;max-width:1200px;"/>
-	`;
-	new ModalBuilder().init().body(html).footer('FOOTER_ONE_BUTTON','확인',function(button, modal){
-		modal.close();
-	}).open();
-}
-function openSvcCongestionCalcInfo(){
-	const html = `
-		<ul style="list-style: circle;margin-left: 20px;">
-			<li style="margin-bottom:10px;">경기도 자체 관리하는 서비스 제공구간 1시간단위 평균 속도 데이터 활용(1개월 집계)</li>
-			<li style="margin-bottom:10px;">일평균 2시간 이상 정체가 발생하는 구간</li>
-			<li style="margin-bottom:10px;">
-			산출 방법
-			<p style="margin-top: 5px;line-height: 1.4em;padding: 5px;background: #fff7cb;padding: 10px;text-align: center;    border-radius: 5px;">“일일 총 정체시간 = 정체건수 / 단위기간(일)”<br/>
-     		“정체건수 : 경기도 자체 관리하는 서비스 제공구간 1시간단위 평균 속도 데이터의 단위기간(일)동안 발생한 정체건수”</p>
-			</li>
-		</ul>
-		<table class="popup_table">
-		<thead>
-		<tr>
-		<th>정의</th>
-		<th>정체</th>
-		</tr>
-		</thead>
-		<tbody>
-		<tr>
-		<td>고속도로</td>
-		<td>40km/h 미만</td>
-		</tr>
-		<tr>
-		<td>도시고속도로</td>
-		<td>30km/h 미만</td>
-		</tr>
-		<tr>
-		<td>국도</td>
-		<td>20km/h 미만</td>
-		</tr>
-		<tr>
-		<td>지방도,시내부</td>
-		<td>15km/h 미만</td>
-		</tr>
-		</tbody>
-	`;
-	new ModalBuilder().init().body(html).footer('FOOTER_ONE_BUTTON','확인',function(button, modal){
-		modal.close();
-	}).open();
-}
-function openCongestionGradeInfo(){
-	const html = `
-		<table class="popup_table">
-		<thead>
-		<tr>
-		<th>도로등급</th>
-		<th>속도</th>
-		<th>소통등급</th>
-		</tr>
-		</thead>
-		<tbody>
-		<tr>
-		<th rowspan="3">고속도로</th>
-		<td>0 ~ 29 km/h</td>
-		<td>정체</td>
-		</tr>
-		<tr>
-		<td>30 ~ 69 km/h</td>
-		<td>지체(서행)</td>
-		</tr>
-		<tr>
-		<td>70 km/h ~</td>
-		<td>원활</td>
-		</tr>
-		<tr>
-		<th rowspan="3">도시고속도로</th>
-		<td>0 ~ 29 km/h</td>
-		<td>정체</td>
-		</tr>
-		<tr>
-		<td>30 ~ 49 km/h</td>
-		<td>지체(서행)</td>
-		</tr>
-		<tr>
-		<td>50 km/h ~</td>
-		<td>원활</td>
-		</tr>
-		<tr>
-		<th rowspan="3">그 외</th>
-		<td>0 ~ 19 km/h</td>
-		<td>정체</td>
-		</tr>
-		<tr>
-		<td>20 ~ 29 km/h</td>
-		<td>지체(서행)</td>
-		</tr>
-		<tr>
-		<td>30 km/h ~</td>
-		<td>원활</td>
-		</tr>
-		</tbody>
-		</table>`;
-	new ModalBuilder().init().body(html).footer('FOOTER_ONE_BUTTON','확인',function(button, modal){
-		modal.close();
-	}).open();
-}
-function openWarningFilter(){
-	const filter = window.map.getSavedWarningFilter();
-	const html = `
-		<table id="warningFilterTable" class="popup_table">
-		<thead>
-		<tr>
-		<th>수집원</th>
-		<th>ON/OFF</th>
-		</tr>
-		</thead>
-		<tbody>
-		<tr>
-		<td>경기도교통정보센터</td>
-		<td>
-		<label class="flex-center">
-			<input role="switch" type="checkbox" class="warning_filter_switch facility_input" name="GITS" ${filter.indexOf("GITS") > -1 ? "" : "checked"}>
-		</label>
-		</td>
-		</tr>
-		<tr>
-		<td>도로교통공단</td>
-		<td>
-		<label class="flex-center">
-			<input role="switch" type="checkbox" class="warning_filter_switch facility_input" name="UTIC" ${filter.indexOf("UTIC") > -1 ? "" : "checked"}>
-		</label>
-		</td>
-		</tr>
-		<tr>
-		<td>T-map</td>
-		<td>
-		<label class="flex-center">
-			<input role="switch" type="checkbox" class="warning_filter_switch facility_input" name="SK" ${filter.indexOf("SK") > -1 ? "" : "checked"}>
-		</label>
-		</td>
-		</tr>
-		<tr>
-		<td>한국도로공사</td>
-		<td>
-		<label class="flex-center">
-			<input role="switch" type="checkbox" class="warning_filter_switch facility_input" name="EX" ${filter.indexOf("EX") > -1 ? "" : "checked"}>
-		</label>
-		</td>
-		</tr>
-		<tr>
-		<td>경기소방본부</td>
-		<td>
-		<label class="flex-center">
-			<input role="switch" type="checkbox" class="warning_filter_switch facility_input" name="119" ${filter.indexOf("119") > -1 ? "" : "checked"}>
-		</label>
-		</td>
-		</tr>
-		<tr>
-		<td>경기도 내 터널</td>
-		<td>
-		<label class="flex-center">
-			<input role="switch" type="checkbox" class="warning_filter_switch facility_input" name="SISUL" ${filter.indexOf("SISUL") > -1 ? "" : "checked"}>
-		</label>
-		</td>
-		</tr>
-		</tbody>
-		</table>`;
-	new ModalBuilder().init().body(html).footer(2,'저장',function(button, modal){
-		let filter = [];
-		$("#warningFilterTable").find("input.warning_filter_switch").each(function(){
-			if(!$(this).is(":checked")) {
-				filter.push($(this).attr("name"));
-				if($(this).attr("name") === "UTIC") {
-					filter.push("UTIS");
-				}
-			}
-		});
-		window.map.setSavedWarningFilter(filter);
-		modal.close();
-	}).open();
 }
 
 
@@ -1214,9 +942,6 @@ GGITS_WORKER.onmessage = function(e){
 			const sec = e.data.sec;
 			modalAlertClose();
 			new ModalBuilder().init().alertBoby(+ min +"분"+ sec + "초 후에 로그아웃됩니다.").footer(5,'연장하기',function(button, modal){
-				GGITS_WORKER.postMessage({
-					"event" : "LOGIN.TIMEOUT_START"
-				});
 				$.ajax({
 					type : "get",
 					url : __contextPath__ + "/common/update/sessionTime.ajax",
@@ -1227,19 +952,18 @@ GGITS_WORKER.onmessage = function(e){
 					}
 				});
 				modalAlertClose()
+				clearInterval(tiemSet);
 			},'로그아웃',function(button, modal){
-				GGITS_WORKER.postMessage({
-					"event" : "LOGIN.TIMEOUT_START"
-				});
 				$.ajax({
 					type : "get",
 					url : __contextPath__ + "/logout.ajax",
 					success : function(data) {
-						location.href = __contextPath__ + "/login.do";
-					},complete : function(){
-						location.href = __contextPath__ + "/login.do";
-					},error : function(){
-						location.href = __contextPath__ + "/login.do";
+						if(data.code == '200'){
+							location.href = __contextPath__ + "/login.do";
+						} else {
+							new ModalBuilder().init().alertBoby(data.message).footer(4,'확인',function(button, modal){modal.close();}).open();
+							modalAlertWrap();
+						}
 					}
 				});
 			}).open();
@@ -1257,7 +981,7 @@ GGITS_WORKER.onmessage = function(e){
 			});
 			break;
 		case "EXCEL.GENERATE" :
-			endLoading();
+			console.log("EXCEL",e.data);
 			let blob = new Blob([e.data.uint8], {type:"application/octet-stream"});
 			let url = URL.createObjectURL(blob);
 			let a = document.createElement("a");
@@ -1270,7 +994,6 @@ GGITS_WORKER.onmessage = function(e){
 }
 
 window.onload = resetTimer;
-window.onclick = resetTimer;
 
 //결과보기 연속 클릭 방지
 function resultChange(){
@@ -1390,92 +1113,6 @@ function getDongListBySggCd(sggCd, targetSelector){
 	});
 }
 
-function fnDownloadExcelWorker({exportType, header, metadata, rows, filename}){
-	startLoading();
-	GGITS_WORKER.postMessage({
-		exportType : exportType ? exportType : "default",
-		header : header,
-		metadata, metadata,
-		rows, rows,
-		filename : filename,
-		event : "EXCEL.GENERATE"
-	})
-}
-function fnDownloadExcelChartWorker(chartId,filename="차트엑셀", isReverse = false){
-	const data = Chart.getChart(chartId).data;
-	let rows = [];
-	let header = []
-	if(isReverse){
-		header = data.datasets.reduce(function(prev, cur){
-			prev.push(cur.label);
-			return prev;
-		}, [""])
-		rows = data.labels.reduce(function(prev, cur, index){
-			let row = [];
-			row.push(cur);
-			for (const dataset of data.datasets) {
-				row.push(dataset.data[index])
-			}
-			prev.push(row);
-			return prev;
-		},[]);
-	}else {
-		const label = data.labels;
-		const datasets = data.datasets;
-		label.unshift(" ");
-		header = label;
-		for (const dataset of datasets) {
-			let datasetData = [...dataset.data]
-			datasetData.unshift(dataset.label);
-			rows.push(datasetData);
-		}
-	}
-	fnDownloadExcelWorker({
-		exportType :"chartJs",
-		header : header,
-		metadata : null,
-		rows : rows,
-		filename : filename
-	})
-
-}
-/*차트캔버스 이미지로 다운로드 기능*/
-function fnDownloadChartImage(canvasId, filename="chart image"){
-	const MAX_WIDTH = 400;
-	const MAX_HEIGHT = 300;
-	const img = new Image();
-	img.crossOrigin = '';
-	img.onload = () => {
-		const wRatio = MAX_WIDTH / img.width;
-		const hRatio = MAX_HEIGHT / img.height;
-		let width, height;
-		if(wRatio > hRatio) {
-			width = MAX_WIDTH;
-			height = wRatio * img.height;
-		}
-		else {
-			width = hRatio * img.width;
-			height = MAX_HEIGHT;
-		}
-		const canvas = document.createElement('canvas');
-		canvas.width = width;
-		canvas.height = height;
-		const ctx = canvas.getContext('2d');
-		ctx.fillStyle = "rgba(0,0,0,0.5)";
-		ctx.fillRect(0, 0, canvas.width, canvas.height);
-		ctx.drawImage(img, 0, 0, width, height);
-		//const finalImage = b64toFile(canvas.toDataURL("image/jpg"));
-		const imgElement = document.createElement('img');
-		imgElement.src = canvas.toDataURL('image/jpg');
-		//document.body.appendChild(imgElement);
-		let a = document.createElement('a');
-		a.href = canvas.toDataURL('image/png',1);
-		a.download = filename+'.png';
-		a.click();
-	};
-	img.src = document.getElementById(canvasId).toDataURL('image/png',1);
-}
-
 function fnSearchCrossListForBigdata(){
 		
 	$("#crossroadsListBody > tr").remove();
@@ -1560,15 +1197,6 @@ function keyupEngEvent(_this){
 	_this.value = eng_format(value);
 }
 
-function col_format(value){
-	return value.replace(/[^a-zA-Z0-9_-]/g,'');
-}
-
-function keyupColEvent(_this){
-	let value = _this.value;
-	_this.value = col_format(value);
-}
-
 // 요일 검색
 function chkDayOfWeek(){
 	var dayOfWeek = $(".dayOfWeek");
@@ -1597,20 +1225,16 @@ window.onpageshow = function(event){
 // 로딩화면
 startLoading = function(){
     if($("#mapLoadingLayer").length === 0) {
-        const layer = $(`<div id="mapLoadingLayer"><img src="/statics/images/loading_loop.gif"/></div>`);
+        const layer = $(`<div id="mapLoadingLayer"><div class="feeder"><div></div><div></div><div></div></div></div>`);
         $("body").append(layer);
     }
 }
 endLoading = function(){
-    if(window.map && window.map.getJobList().length == 0) {
+    if(window.map.getJobList().length == 0) {
         $("#mapLoadingLayer").fadeOut(250, function () {
             $("#mapLoadingLayer").remove();
         });
-    }else {
-		$("#mapLoadingLayer").fadeOut(250, function () {
-			$("#mapLoadingLayer").remove();
-		});
-	}
+    }
 }
 
 // 영향평가 로딩화면
@@ -1618,22 +1242,6 @@ impactEndLoading = function(){
     $("#mapLoadingLayer").fadeOut(250, function () {
         $("#mapLoadingLayer").remove();
     });
-}
-
-const slideToggleByTarget = function(target) {
-	if($(target).is(":visible")) {
-		$(target).slideUp();
-	}else{
-		$(target).slideDown();
-	}
-}
-
-const toggleClassByTarget = function(target, classname) {
-	if($(target).hasClass(classname)) {
-		$(target).removeClass(classname);
-	}else{
-		$(target).addClass(classname);
-	}
 }
 
 //2023-11-16 NK.KIM 빅데이터 검색 세팅
@@ -1803,6 +1411,4 @@ function settingBigdataSearchParam(type){
 			}
 		}	
 	}
-
-
 }

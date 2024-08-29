@@ -17,7 +17,6 @@ public class UticRoadDngrSttsFrcst {
     private String lotnoAddr; //지번 주소
     private String roadNmAddr; //도로명 주소
     private String totCrdnData; //전체 좌표 데이터
-    private String etlDt;
 
     public String getSafeDataId() {
         return safeDataId;
@@ -129,13 +128,5 @@ public class UticRoadDngrSttsFrcst {
 
     public void setTotCrdnData(String totCrdnData) {
         this.totCrdnData = totCrdnData;
-    }
-
-    public String getEtlDt() {
-        return etlDt;
-    }
-
-    public void setEtlDt(String etlDt) {
-        this.etlDt = etlDt;
     }
 }

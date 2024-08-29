@@ -58,6 +58,7 @@ public class HistoryMngController {
     	if(GgitsCommonUtils.isNull(lTcDataLog.getTabNum())) {
 			lTcDataLog.setTabNum("1");
 		}
+    	
     	// 처음 접근 시
 		if(GgitsCommonUtils.isNull(lTcDataLog.getStrDt()) && GgitsCommonUtils.isNull(lTcDataLog.getEndDt())) {
 			lTcDataLog.setStrDt(BDDateFormatUtil.isDateCal("yyyy-MM-dd", -7));
@@ -107,7 +108,7 @@ public class HistoryMngController {
 			lTcDataLog.setStrDt(BDDateFormatUtil.isDateCal("yyyy-MM-dd", -7));
 			lTcDataLog.setEndDt(BDDateFormatUtil.isNowStr("yyyy-MM-dd"));
 		}
-		
+    	
 		if(!GgitsCommonUtils.isNull(lTcDataLog.getSearchContent())){
 			lTcDataLog.setDsetId(lTcDataLog.getSearchContent());
 		}

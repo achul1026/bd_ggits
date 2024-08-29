@@ -14,5 +14,5 @@ public interface MrtCndcyPathRouteBstpInfoMapper {
      * @param candRouteId
      * @return
      */
-    List<MrtCndcyPathRouteBstpInfo> findAllByCandRouteId(@Param("btcId") String btcId, @Param("baseym") String baseym, @Param("candRouteId") String candRouteId);
+    List<MrtCndcyPathRouteBstpInfo> findAllByCandRouteId(@Param("candRouteId") String candRouteId);
 }

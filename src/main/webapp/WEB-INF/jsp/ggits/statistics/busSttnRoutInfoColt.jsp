@@ -172,8 +172,8 @@
 	$(document).ready(function(){
 		var strDt = '<c:out value="${searchOption.strDt}"/>';
 		var endDt = '<c:out value="${searchOption.endDt}"/>';
-// 		var strTime = '<c:out value="${searchOption.startTime}"/>';
-// 		var endTime = '<c:out value="${searchOption.endTime}"/>';
+		var strTime = '<c:out value="${searchOption.startTime}"/>';
+		var endTime = '<c:out value="${searchOption.endTime}"/>';
 		var dayOfTheWeekStr = '<c:out value="${searchOption.dayOfTheWeekStr}"/>';
 		var sigunCdId = '<c:out value="${searchOption.sigunCdId}"/>';
 	
@@ -184,12 +184,12 @@
 		if(endDt != null && endDt != ''){
 			$("#endDt").val(endDt.substring(0,10));
 		}
-// 		if(strTime != null && strTime != ''){
-// 			$("#startTime").val(strTime).prop("selected",true);
-// 		}
-// 		if(endTime != null && endTime != ''){
-// 			$("#endTime").val(endTime).prop("selected",true);
-// 		}
+		if(strTime != null && strTime != ''){
+			$("#startTime").val(strTime).prop("selected",true);
+		}
+		if(endTime != null && endTime != ''){
+			$("#endTime").val(endTime).prop("selected",true);
+		}
 		if(sigunCdId != null && sigunCdId != ''){
 			$("#sigunCdId").val(sigunCdId).prop("selected",true);
 		}

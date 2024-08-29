@@ -4,9 +4,9 @@
 <mapper namespace='com.neighbor21.ggits.common.mapper.ScsEmrgVhclLogInfoMapper'>
 	<sql id="scsEmrgVhclLogInfo-Where">
 		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
-			AND SEVPI.COLLECTDT
-			BETWEEN TO_TIMESTAMP(#{strDt}|| ' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') 
-		    	AND TO_TIMESTAMP(#{endDt}|| ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+			AND SEVPI.COLLECTDT 
+			BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
 		</if>
 		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
 			<![CDATA[
@@ -22,7 +22,7 @@
 			AND SEVPI.EVNO LIKE '%' || #{searchContent} || '%'
 		</if>
 		<if test="dayOfTheWeek != null">
-			AND EXTRACT (ISODOW from SEVPI.COLLECTDT)::varchar(1) IN
+			AND EXTRACT (ISODOW from SEVPI.COLLECTDT)::varchar(1) IN 
 				<foreach collection="dayOfTheWeek" item="item" index="index" separator="," open="(" close=")">
                     #{item}
                 </foreach>
@@ -116,7 +116,7 @@
 					SERVICEID ,
 					MAX(COLLECTDT) AS COLLECTDT
 					FROM SCS_EMRG_VHCL_PATH_LOG SEVPI
-					GROUP BY SERVICEID ,EVNO, ARRIVALTIME, OCRTYPE
+					GROUP BY SERVICEID ,EVNO, ARRIVALTIME, OCRTYPE 
 					) SEVPI
 					INNER JOIN (
 							SELECT
@@ -129,11 +129,11 @@
 					LEFT JOIN EMRG_CUR_INFO_CHK ON EMRG_CUR_INFO_CHK.SERVICEID = SEVPI.SERVICEID
 					WHERE 1 = 1
 					<include refid="scsEmrgVhclLogInfo-Where"/>
-					GROUP BY SEVPI.EVNO, SEVLI.SPEED, EMRG_CUR_INFO_CHK.CUR_INF_CNT, SEVPI.OCRTYPE
+					GROUP BY SEVPI.EVNO, SEVLI.SPEED, EMRG_CUR_INFO_CHK.CUR_INF_CNT, SEVPI.OCRTYPE 
 				ORDER BY ARRIVAL_DATE DESC
 		)A
 	</select>
-
+	
 	<select id="findOneDataCntForMonitoring" resultType="mapMonitoringLinkDataDTO">
 		SELECT
 			COUNT(*) as DATA_CNT,
@@ -177,14 +177,14 @@
 				SELECT
 					ROUND(100.0*COUNT(A.OCRTYPE) / (SELECT COUNT(EVNO) FROM SCS_EMRG_VHCL_PATH_LOG SEVPI WHERE 1=1 <include refid="scsEmrgVhclLogInfo-Where"/>) ,2) as RATEVALUE
 					, A.OCRTYPE
-				FROM
+				FROM 
 					(
 					WITH EMRG_CUR_INFO_CHK AS (
 							SELECT
 								COUNT(SEVPI.SERVICEID) AS CUR_INF_CNT,
 								SEVPI.SERVICEID
 							FROM SCS_EMRG_VHCL_PATH_INFO SEVPI
-							GROUP BY SEVPI.SERVICEID
+							GROUP BY SEVPI.SERVICEID 
 					)
 					SELECT
 						SEVPI.OCRTYPE

@@ -25,8 +25,6 @@ public class LoginSessionInterceptor implements HandlerInterceptor {
 			throw new NoLoginException(ErrorCode.NOT_FOUNT_USER_INFO);
 		}
 
-		request.setAttribute("authCd", mOpOperatorInfo.getAuthCd());
-
 		return true;
 	}
 

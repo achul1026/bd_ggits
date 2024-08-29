@@ -6,18 +6,11 @@
 const BD_Population = async function(searchOption){
     let gridList = await self.util.getJsonFormApi("/bigdata/getPopulationInfo.ajax?"+searchOption);
 
-    let chartDataList = [];
-    /*let chartDataList = await self.util.getJsonFormApi("/bigdata/getPopulationInfoForChart.ajax?"+searchOption);
-    if(chartDataList.length === 0) {
+    let chartDataList = await self.util.getJsonFormApi("/bigdata/getPopulationInfoForChart.ajax?"+searchOption);
+    if(chartDataList.length) {
         return {
             error : true,
             errorMsg : "조회된 데이터가 없습니다."
-        }
-    }*/
-    if(gridList?.noLogin){
-        return {
-            error : true,
-            noLogin : true
         }
     }
     let sggNmGroupList = [];
@@ -58,20 +51,20 @@ const BD_Population = async function(searchOption){
 
 
 
-    const chartHeight = sggNmGroupList.length * 10;
+
     //매트릭스 차트데이터 가공
     let chartOption = {
         type : "matrix",
         data : {
             datasets : [{
-                label : "인구밀집예측",
+                label : "위험운전수",
                 data : data,
                 borderWidth: 1
             }]
         },
         options: {
             events : ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove', 'scroll'],
-            aspectRatio: sggNmGroupList.length == 1 ? 5 : 0.7,
+            aspectRatio: 5,
             plugins: {
                 legend: false,
                 tooltip: {
@@ -89,8 +82,7 @@ const BD_Population = async function(searchOption){
                     },
                     grid: {
                         display: false
-                    },
-                    position: 'top'
+                    }
                 },
                 y: {
                     type: 'category',

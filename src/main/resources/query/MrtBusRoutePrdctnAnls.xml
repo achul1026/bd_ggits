@@ -9,29 +9,21 @@
 		INNER JOIN MRT_CNDCY_PATH_ADD_INFO mcpai
 			ON (mbrpa.BASEYM = mcpai.BASEYM and mbrpa.BTC_ID = mcpai.BTC_ID)
 		WHERE mbrpa.ROUTE_NM = #{routeNm}
-		  and mcpai.obj_func_id = '2'
 	</select>
 	
 	<select id="findAllBusRouteOptPrdt" parameterType="mapBigdataSearchDTO" resultType="mrtBusRoutePrdctnAnls">
 		SELECT 
 			mcpai.CAND_ROUTE_ID
-			, mcpai.BASEYM
-			, mcpai.BTC_ID
 			, mcpai.SCORE
 			, mbrpa.ROUTE_ID
 			, mbrpa.ROUTE_NM
 			, mcpai.LENGTH
 			, mcpai.LENGTH_RATIO
-			, mcpai.score_imprv
-			, mcpai.length_var
-			, mcpai.num_psngr
-			, mcpai.num_psngr_var
 		FROM MRT_BUS_ROUTE_PRDCTN_ANLS mbrpa
 		INNER JOIN MRT_CNDCY_PATH_ADD_INFO mcpai
 			ON (mbrpa.BASEYM = mcpai.BASEYM and mbrpa.BTC_ID = mcpai.BTC_ID)
 		WHERE mbrpa.ROUTE_NM = #{routeNm}
-		and mcpai.obj_func_id = '2'
-		ORDER BY mbrpa.BASEYM DESC, substr(mcpai.btc_id,11,2) asc, mcpai.CAND_ROUTE_ID asc
+		ORDER BY mcpai.SCORE DESC
 	</select>
 	
 	<select id="findAllBusRouteLengthRank" resultType="map">
@@ -64,7 +56,6 @@
 					LIMIT 1
 				)routeInfo
 					on routeInfo.route_id = mbrpa.ROUTE_ID
-				where mcpai.obj_func_id = '2'
 				ORDER BY lengthDef DESC 
 				LIMIT 5
 			)A
@@ -108,7 +99,6 @@
 				LIMIT 1
 			) routeInfo
 				ON routeInfo.ROUTE_ID = mbrpa.ROUTE_ID
-			where mcpai.obj_func_id = '2'
 			ORDER BY curvtDef DESC
 			LIMIT 5
 		)A
@@ -133,10 +123,9 @@
 				 	,mcpai.SCORE 
 				FROM MRT_BUS_ROUTE_PRDCTN_ANLS mbrpa 
 				INNER JOIN MRT_CNDCY_PATH_ADD_INFO mcpai  
-					ON (mbrpa.BASEYM = mcpai.BASEYM and mbrpa.BTC_ID = mcpai.BTC_ID)
-				where mcpai.obj_func_id = '2'
+					ON (mbrpa.BASEYM = mcpai.BASEYM and mbrpa.BTC_ID = mcpai.BTC_ID) 
 				ORDER BY mcpai.SCORE DESC
-				LIMIT 10
+				LIMIT 5
 			)A
 		GROUP BY A.ROUTE_NM, A.SCORE
 		ORDER BY A.SCORE DESC

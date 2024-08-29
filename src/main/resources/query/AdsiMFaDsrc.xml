@@ -31,25 +31,37 @@
 	</select>-->
 
 	<select id="findAllDSRCInfoForMap" resultType="adsiMFaDsrc">
-		SELECT
+		select
 			AMFD.MNG_INST_CD ,
 			AMFD.RSE_ID ,
 			AMFD.RSE_NM ,
 			AMFD.DSRC_ID ,
 			AMFD.LON_CRDN ,
 			AMFD.LAT_CRDN ,
-			AMFD.DESCR /*,RCT_STTS.RSE_STTS*/
-		FROM
+			AMFD.DESCR ,
+			RCT_STTS.RSE_STTS
+		from
 			BIGDATA.EXT_ADSI_M_FA_DSRC AMFD
-		INNER JOIN (
-			SELECT
-				MAX(AMFD.ETL_DT) AS RCT_ETL_DT ,
-				AMFD.RSE_ID,
-				AMFD.MNG_INST_CD -- 수정 박원배
-			FROM
-				BIGDATA.EXT_ADSI_M_FA_DSRC AMFD
-			GROUP BY RSE_ID, MNG_INST_CD /*수정 박원배*/) RCT_AMFD ON RCT_AMFD.RSE_ID = AMFD.RSE_ID /*수정 박원배*/AND RCT_AMFD.RCT_ETL_DT = AMFD.ETL_DT
-
+				inner join (
+				select
+					MAX(AMFD.ETL_DT) as RCT_ETL_DT ,
+					AMFD.DSRC_ID
+				from
+					BIGDATA.EXT_ADSI_M_FA_DSRC AMFD
+				group by
+					DSRC_ID ) RCT_AMFD on
+						RCT_AMFD.DSRC_ID = AMFD.DSRC_ID
+					and RCT_AMFD.RCT_ETL_DT = AMFD.ETL_DT
+				left join (
+				select
+					MAX(ARSI.CLCT_DT) as RCT_CLCT_DT ,
+					ARSI.RSE_ID,
+					ARSI.RSE_STTS
+				from
+					BIGDATA.EXT_ADSI_RSE_STTS_INFO ARSI
+				group by
+					ARSI.RSE_ID, ARSI.RSE_STTS ) RCT_STTS on
+				RCT_STTS.RSE_ID = AMFD.RSE_ID
 	</select>
 	
 	<select id="findAllDSRCForFacility" parameterType="mapFacilityMenuDTO" resultType="mapFacilityMenuDTO">

@@ -8,47 +8,29 @@ public class TsLogDriveanal {
     private String    routeNo;        
     private String    lon;        
     private String    lat;        
-    private Long    rpm;
-    private Long    spd;
+    private long    rpm;        
+    private long    spd;        
     private String    overspd;        
-    private Long    overspdOvdwSpd;
-    private Long    overspdDuraTm;
+    private long    overspdOvdwSpd;        
+    private long    overspdDuraTm;        
     private String    quickAccel;        
-    private Long    quickAccelOvdwSpd;
-    private Long    quickAccelDuraTm;
+    private long    quickAccelOvdwSpd;        
+    private long    quickAccelDuraTm;        
     private String    quickDecel;        
-    private Long    quickDecelOvdwSpd;
-    private Long    quickDecelDuraTm;
+    private long    quickDecelOvdwSpd;        
+    private long    quickDecelDuraTm;        
     private String    quickStop;        
-    private Long    quickStopOvdwSpd;
-    private Long    quickStopDuraTm;
+    private long    quickStopOvdwSpd;        
+    private long    quickStopDuraTm;        
     private String    quickStart;        
-    private Long    quickStartOvdwSpd;
-    private Long    quickStartDuraTm;
+    private long    quickStartOvdwSpd;        
+    private long    quickStartDuraTm;        
     private String    rpmInf;        
     private String    idleYn;        
-    private Long    idleynDuraTm;
-    private Long    idleynDuraTm2;
-    private Long    longOverspd;
-    private String quickRouteChange;
-    private String quickOvertake;
-    private String quickLfrtTurn;
-    private String quickUturn;
+    private long    idleynDuraTm;        
+    private long    idleynDuraTm2;        
+    private long    longOverspd;        
 
-    private Long pagingTotalCnt;
-    private Long quickAccelCnt;
-    private Long quickDecelCnt;
-    private Long quickStopCnt;
-    private Long quickStartCnt;
-    private Long quickRouteChangeCnt;
-    private Long quickOvertakeCnt;
-    private Long quickLfrtTurnCnt;
-    private Long quickUturnCnt;
-    private String routeNm;
-    private String routeId;
-    private String routeTp;
-    private String districtGnm;
-    private String districtSnm;
 
   public String getCarNo() {
     return carNo;
@@ -58,6 +40,7 @@ public class TsLogDriveanal {
     this.carNo = carNo;
   }
 
+
   public String getDriveDtm() {
     return driveDtm;
   }
@@ -65,6 +48,7 @@ public class TsLogDriveanal {
   public void setDriveDtm(String driveDtm) {
     this.driveDtm = driveDtm;
   }
+
 
   public String getWorkDt() {
     return workDt;
@@ -74,6 +58,7 @@ public class TsLogDriveanal {
     this.workDt = workDt;
   }
 
+
   public String getCorpId() {
     return corpId;
   }
@@ -81,6 +66,7 @@ public class TsLogDriveanal {
   public void setCorpId(String corpId) {
     this.corpId = corpId;
   }
+
 
   public String getDriverCode() {
     return driverCode;
@@ -90,6 +76,7 @@ public class TsLogDriveanal {
     this.driverCode = driverCode;
   }
 
+
   public String getRouteNo() {
     return routeNo;
   }
@@ -97,6 +84,7 @@ public class TsLogDriveanal {
   public void setRouteNo(String routeNo) {
     this.routeNo = routeNo;
   }
+
 
   public String getLon() {
     return lon;
@@ -106,6 +94,7 @@ public class TsLogDriveanal {
     this.lon = lon;
   }
 
+
   public String getLat() {
     return lat;
   }
@@ -114,21 +103,24 @@ public class TsLogDriveanal {
     this.lat = lat;
   }
 
-  public Long getRpm() {
+
+  public long getRpm() {
     return rpm;
   }
 
-  public void setRpm(Long rpm) {
+  public void setRpm(long rpm) {
     this.rpm = rpm;
   }
 
-  public Long getSpd() {
+
+  public long getSpd() {
     return spd;
   }
 
-  public void setSpd(Long spd) {
+  public void setSpd(long spd) {
     this.spd = spd;
   }
+
 
   public String getOverspd() {
     return overspd;
@@ -138,21 +130,24 @@ public class TsLogDriveanal {
     this.overspd = overspd;
   }
 
-  public Long getOverspdOvdwSpd() {
+
+  public long getOverspdOvdwSpd() {
     return overspdOvdwSpd;
   }
 
-  public void setOverspdOvdwSpd(Long overspdOvdwSpd) {
+  public void setOverspdOvdwSpd(long overspdOvdwSpd) {
     this.overspdOvdwSpd = overspdOvdwSpd;
   }
 
-  public Long getOverspdDuraTm() {
+
+  public long getOverspdDuraTm() {
     return overspdDuraTm;
   }
 
-  public void setOverspdDuraTm(Long overspdDuraTm) {
+  public void setOverspdDuraTm(long overspdDuraTm) {
     this.overspdDuraTm = overspdDuraTm;
   }
+
 
   public String getQuickAccel() {
     return quickAccel;
@@ -162,21 +157,24 @@ public class TsLogDriveanal {
     this.quickAccel = quickAccel;
   }
 
-  public Long getQuickAccelOvdwSpd() {
+
+  public long getQuickAccelOvdwSpd() {
     return quickAccelOvdwSpd;
   }
 
-  public void setQuickAccelOvdwSpd(Long quickAccelOvdwSpd) {
+  public void setQuickAccelOvdwSpd(long quickAccelOvdwSpd) {
     this.quickAccelOvdwSpd = quickAccelOvdwSpd;
   }
 
-  public Long getQuickAccelDuraTm() {
+
+  public long getQuickAccelDuraTm() {
     return quickAccelDuraTm;
   }
 
-  public void setQuickAccelDuraTm(Long quickAccelDuraTm) {
+  public void setQuickAccelDuraTm(long quickAccelDuraTm) {
     this.quickAccelDuraTm = quickAccelDuraTm;
   }
+
 
   public String getQuickDecel() {
     return quickDecel;
@@ -186,21 +184,24 @@ public class TsLogDriveanal {
     this.quickDecel = quickDecel;
   }
 
-  public Long getQuickDecelOvdwSpd() {
+
+  public long getQuickDecelOvdwSpd() {
     return quickDecelOvdwSpd;
   }
 
-  public void setQuickDecelOvdwSpd(Long quickDecelOvdwSpd) {
+  public void setQuickDecelOvdwSpd(long quickDecelOvdwSpd) {
     this.quickDecelOvdwSpd = quickDecelOvdwSpd;
   }
 
-  public Long getQuickDecelDuraTm() {
+
+  public long getQuickDecelDuraTm() {
     return quickDecelDuraTm;
   }
 
-  public void setQuickDecelDuraTm(Long quickDecelDuraTm) {
+  public void setQuickDecelDuraTm(long quickDecelDuraTm) {
     this.quickDecelDuraTm = quickDecelDuraTm;
   }
+
 
   public String getQuickStop() {
     return quickStop;
@@ -210,21 +211,24 @@ public class TsLogDriveanal {
     this.quickStop = quickStop;
   }
 
-  public Long getQuickStopOvdwSpd() {
+
+  public long getQuickStopOvdwSpd() {
     return quickStopOvdwSpd;
   }
 
-  public void setQuickStopOvdwSpd(Long quickStopOvdwSpd) {
+  public void setQuickStopOvdwSpd(long quickStopOvdwSpd) {
     this.quickStopOvdwSpd = quickStopOvdwSpd;
   }
 
-  public Long getQuickStopDuraTm() {
+
+  public long getQuickStopDuraTm() {
     return quickStopDuraTm;
   }
 
-  public void setQuickStopDuraTm(Long quickStopDuraTm) {
+  public void setQuickStopDuraTm(long quickStopDuraTm) {
     this.quickStopDuraTm = quickStopDuraTm;
   }
+
 
   public String getQuickStart() {
     return quickStart;
@@ -234,21 +238,24 @@ public class TsLogDriveanal {
     this.quickStart = quickStart;
   }
 
-  public Long getQuickStartOvdwSpd() {
+
+  public long getQuickStartOvdwSpd() {
     return quickStartOvdwSpd;
   }
 
-  public void setQuickStartOvdwSpd(Long quickStartOvdwSpd) {
+  public void setQuickStartOvdwSpd(long quickStartOvdwSpd) {
     this.quickStartOvdwSpd = quickStartOvdwSpd;
   }
 
-  public Long getQuickStartDuraTm() {
+
+  public long getQuickStartDuraTm() {
     return quickStartDuraTm;
   }
 
-  public void setQuickStartDuraTm(Long quickStartDuraTm) {
+  public void setQuickStartDuraTm(long quickStartDuraTm) {
     this.quickStartDuraTm = quickStartDuraTm;
   }
+
 
   public String getRpmInf() {
     return rpmInf;
@@ -258,6 +265,7 @@ public class TsLogDriveanal {
     this.rpmInf = rpmInf;
   }
 
+
   public String getIdleYn() {
     return idleYn;
   }
@@ -266,171 +274,31 @@ public class TsLogDriveanal {
     this.idleYn = idleYn;
   }
 
-  public Long getIdleynDuraTm() {
+
+  public long getIdleynDuraTm() {
     return idleynDuraTm;
   }
 
-  public void setIdleynDuraTm(Long idleynDuraTm) {
+  public void setIdleynDuraTm(long idleynDuraTm) {
     this.idleynDuraTm = idleynDuraTm;
   }
 
-  public Long getIdleynDuraTm2() {
+
+  public long getIdleynDuraTm2() {
     return idleynDuraTm2;
   }
 
-  public void setIdleynDuraTm2(Long idleynDuraTm2) {
+  public void setIdleynDuraTm2(long idleynDuraTm2) {
     this.idleynDuraTm2 = idleynDuraTm2;
   }
 
-  public Long getLongOverspd() {
+
+  public long getLongOverspd() {
     return longOverspd;
   }
 
-  public void setLongOverspd(Long longOverspd) {
+  public void setLongOverspd(long longOverspd) {
     this.longOverspd = longOverspd;
   }
 
-  public Long getQuickAccelCnt() {
-    return quickAccelCnt;
-  }
-
-  public void setQuickAccelCnt(Long quickAccelCnt) {
-    this.quickAccelCnt = quickAccelCnt;
-  }
-
-  public Long getQuickDecelCnt() {
-    return quickDecelCnt;
-  }
-
-  public void setQuickDecelCnt(Long quickDecelCnt) {
-    this.quickDecelCnt = quickDecelCnt;
-  }
-
-  public Long getQuickStopCnt() {
-    return quickStopCnt;
-  }
-
-  public void setQuickStopCnt(Long quickStopCnt) {
-    this.quickStopCnt = quickStopCnt;
-  }
-
-  public Long getQuickStartCnt() {
-    return quickStartCnt;
-  }
-
-  public void setQuickStartCnt(Long quickStartCnt) {
-    this.quickStartCnt = quickStartCnt;
-  }
-
-  public Long getQuickRouteChangeCnt() {
-    return quickRouteChangeCnt;
-  }
-
-  public void setQuickRouteChangeCnt(Long quickRouteChangeCnt) {
-    this.quickRouteChangeCnt = quickRouteChangeCnt;
-  }
-
-  public Long getQuickOvertakeCnt() {
-    return quickOvertakeCnt;
-  }
-
-  public void setQuickOvertakeCnt(Long quickOvertakeCnt) {
-    this.quickOvertakeCnt = quickOvertakeCnt;
-  }
-
-  public Long getQuickLfrtTurnCnt() {
-    return quickLfrtTurnCnt;
-  }
-
-  public void setQuickLfrtTurnCnt(Long quickLfrtTurnCnt) {
-    this.quickLfrtTurnCnt = quickLfrtTurnCnt;
-  }
-
-  public Long getQuickUturnCnt() {
-    return quickUturnCnt;
-  }
-
-  public void setQuickUturnCnt(Long quickUturnCnt) {
-    this.quickUturnCnt = quickUturnCnt;
-  }
-
-  public String getRouteNm() {
-    return routeNm;
-  }
-
-  public void setRouteNm(String routeNm) {
-    this.routeNm = routeNm;
-  }
-
-  public String getRouteId() {
-    return routeId;
-  }
-
-  public void setRouteId(String routeId) {
-    this.routeId = routeId;
-  }
-
-  public String getRouteTp() {
-    return routeTp;
-  }
-
-  public void setRouteTp(String routeTp) {
-    this.routeTp = routeTp;
-  }
-
-  public String getDistrictGnm() {
-    return districtGnm;
-  }
-
-  public void setDistrictGnm(String districtGnm) {
-    this.districtGnm = districtGnm;
-  }
-
-  public String getDistrictSnm() {
-    return districtSnm;
-  }
-
-  public void setDistrictSnm(String districtSnm) {
-    this.districtSnm = districtSnm;
-  }
-
-  public Long getPagingTotalCnt() {
-    return pagingTotalCnt;
-  }
-
-  public void setPagingTotalCnt(Long pagingTotalCnt) {
-    this.pagingTotalCnt = pagingTotalCnt;
-  }
-
-  public String getQuickRouteChange() {
-    return quickRouteChange;
-  }
-
-  public void setQuickRouteChange(String quickRouteChange) {
-    this.quickRouteChange = quickRouteChange;
-  }
-
-  public String getQuickOvertake() {
-    return quickOvertake;
-  }
-
-  public void setQuickOvertake(String quickOvertake) {
-    this.quickOvertake = quickOvertake;
-  }
-
-  public String getQuickLfrtTurn() {
-    return quickLfrtTurn;
-  }
-
-  public void setQuickLfrtTurn(String quickLfrtTurn) {
-    this.quickLfrtTurn = quickLfrtTurn;
-  }
-
-  public String getQuickUturn() {
-    return quickUturn;
-  }
-
-  public void setQuickUturn(String quickUturn) {
-    this.quickUturn = quickUturn;
-  }
 }

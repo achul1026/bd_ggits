@@ -5,15 +5,9 @@
  */
 const BD_Public_Transfer_Duplicate_Route = async function(searchOption = ''){
     let list = await self.util.getJsonFormApi("/bigdata/getDuplicateRouteGeometryInfoByStationId.ajax?"+searchOption);
-    if(list?.noLogin){
-        return {
-            error : true,
-            noLogin : true
-        }
-    }
     let features = [];
     /*let stationList = await self.util.getJsonFormApi("/monitoring/getBusStationListByRouteIds.ajax?routeIds=");*/
-    // let routes = "";
+    let routes = "";
     let idx = 0;
     for(const info of list) {
         const obj = {
@@ -25,13 +19,14 @@ const BD_Public_Transfer_Duplicate_Route = async function(searchOption = ''){
         for(const prop in info){
             obj.properties[prop] = info[prop];
         }
+        routes += (idx > 0 ? ",": "")+info.routeIds;
         features.push(obj);
         idx++;
     }
     let stationFeatures = [];
-    // const set = new Set(routes.split(","));
-    // const uniqueRouteIds = [...set];
-    /*let stationList = await self.util.getJsonFormApi("/monitoring/getBusStationListByRouteIds.ajax?routeIds="+uniqueRouteIds.join(","));
+    const set = new Set(routes.split(","));
+    const uniqueRouteIds = [...set];
+    let stationList = await self.util.getJsonFormApi("/monitoring/getBusStationListByRouteIds.ajax?routeIds="+uniqueRouteIds.join(","));
     for(const station of stationList) {
         const obj = {
             'type': 'Feature',
@@ -47,7 +42,7 @@ const BD_Public_Transfer_Duplicate_Route = async function(searchOption = ''){
         }
         obj.properties.icon = "bus_station"
         stationFeatures.push(obj);
-    }*/
+    }
     return {
         routeFeatureCollection : self.util.wrapFeatureCollection(features),
         stationFeatureCollection : self.util.wrapFeatureCollection(stationFeatures)

@@ -1,18 +1,16 @@
 package com.neighbor21.ggits.web.controller.bigdata;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.neighbor21.ggits.common.entity.*;
-import com.neighbor21.ggits.common.hcisql.mapper.HciTsLogDriveanalMapper;
-import com.neighbor21.ggits.common.mapper.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.neighbor21.ggits.api.module.bigdata.BDDangerZoneComponent;
 import com.neighbor21.ggits.api.module.bigdata.BDPatternComponent;
@@ -40,13 +38,13 @@ public class BigDataController {
 
     @Autowired
     CMCrossRoadCameraComponent cmCrossRoadCameraComponent;
-
+    
     @Autowired
     BDDangerZoneComponent bdDangerZoneComponent;
 
     @Autowired
     BDPatternComponent bdPatternComponent;
-
+    
     @Autowired
     BDPublicTransferDangerComponent bdPublicTransferDangerComponent;
 
@@ -55,7 +53,7 @@ public class BigDataController {
 
     @Autowired
     BDPredictionComponent bdPredictionComponent;
-
+    
     @Autowired
     BDTrafficActiveEffectAnalysisComponent bdTrafficActiveEffectAnalysisComponent;
 
@@ -67,42 +65,7 @@ public class BigDataController {
 
     @Autowired
     BDPublicTransferPredictionComponent bdPublicTransferPredictionComponent;
-
-    @Autowired
-    MrtBusRoutePasngAnalMapper mrtBusRoutePasngAnalMapper;
-
-    @Autowired
-    GgbisBusEventinfoMapper ggbisBusEventinfoMapper;
-
-    @Autowired
-    MrtSmcTrfPatMapper mrtSmcTrfPatMapper;
-
-    @Autowired
-    MrtTrfHlctcCngstnSctnMapper mrtTrfHlctcCngstnSctnMapper;
-
-    @Autowired
-    MrtDsrcTrfvlmAnalMapper mrtDsrcTrfvlmAnalMapper;
-
-    @Autowired
-    MrtVdsTrfvlmAnalMapper mrtVdsTrfvlmAnalMapper;
-
-    @Autowired
-    MrtBusRouteDetAnalMapper mrtBusRouteDetAnalMapper;
-
-    @Autowired
-    MrtBusRouteSectnAnalMapper mrtBusRouteSectnAnalMapper;
-
-    @Autowired
-    TmsAnytmTrfvlmMapper tmsAnytmTrfvlmMapper;
-
-    @Autowired
-    TmsOrdtmTrfvlmMapper tmsOrdtmTrfvlmMapper;
-
-    @Autowired
-    HciTsLogDriveanalMapper hciTsLogDriveanalMapper;
-
-    @Autowired
-    MrtSigCrsdTrfAnalMapper mrtSigCrsdTrfAnalMapper;
+	
     /**
       * @Method Name : viewDashboard
       * @작성일 : 2023. 8. 26.
@@ -112,7 +75,7 @@ public class BigDataController {
       */
     @GetMapping("/dashboard.do")
     public String viewDashboard(){
-
+    	
         return "view/bigdata/dashboard";
     }
 
@@ -161,113 +124,16 @@ public class BigDataController {
     }
 
     /**
-     * 교통패턴 상습정체구간
-     * @param mapBigdataSearchDTO
-     * @return
-     */
-    @GetMapping("/getPatternTrafficCngstn.ajax")
-    public @ResponseBody
-    ResponseEntity<?> getPatternTrafficCngstn(MapBigdataSearchDTO mapBigdataSearchDTO){
-        List<MrtTrfHlctcCngstnSctn> list = mrtTrfHlctcCngstnSctnMapper.findAllBySearchOption(mapBigdataSearchDTO);
-        return new ResponseEntity<>(list, HttpStatus.OK);
-    }
-
-    /**
-     * 교통패턴 > 교통량/평균속도 조회
+     * 교통량 조회
      * @return
      */
     @GetMapping("/getPatternTrafficQuantity.ajax")
     public @ResponseBody
     ResponseEntity<?> getPatternTrafficQuantity(MapBigdataSearchDTO mapBigdataSearchDTO){
-        switch (mapBigdataSearchDTO.getCollectType()){
-            case "vds" :
-                return new ResponseEntity<>(mrtVdsTrfvlmAnalMapper.findAllGroupByLinkId(mapBigdataSearchDTO), HttpStatus.OK);
-            case "dsrc" :
-                return new ResponseEntity<>(mrtDsrcTrfvlmAnalMapper.findAllGroupByLinkId(mapBigdataSearchDTO), HttpStatus.OK);
-            default :
-                return new ResponseEntity<>(mrtSmcTrfPatMapper.findAllGroupByLinkId(mapBigdataSearchDTO), HttpStatus.OK);
-        }
-    }
-
-
-    /**
-     * 교통패턴 > 교통량/평균속도 조회 > 디테일 차트
-     * @return
-     */
-    @GetMapping("/{collectType}/{type}/getPatternTrafficQuantityChart.ajax")
-    public @ResponseBody
-    ResponseEntity<?> getPatternTrafficQuantityChart(@PathVariable String collectType,@PathVariable String type, MapBigdataSearchDTO mapBigdataSearchDTO){
-        switch(collectType) {
-            case "smc" :
-                switch (type){
-                    case "total" :
-                        return new ResponseEntity<>(mrtSmcTrfPatMapper.findAllByTotalChart(mapBigdataSearchDTO), HttpStatus.OK);
-                    case "total-day" :
-                        return new ResponseEntity<>(mrtSmcTrfPatMapper.findAllByTotalChartGroupDay(mapBigdataSearchDTO), HttpStatus.OK);
-                    case "sgg" :
-                        return new ResponseEntity<>(mrtSmcTrfPatMapper.findAllBySGGChart(mapBigdataSearchDTO), HttpStatus.OK);
-                    case "sgg-day" :
-                        return new ResponseEntity<>(mrtSmcTrfPatMapper.findAllBySGGChartGroupDay(mapBigdataSearchDTO), HttpStatus.OK);
-                    case "top10" :
-                        return new ResponseEntity<>(mrtSmcTrfPatMapper.findAllByTop10Chart(mapBigdataSearchDTO), HttpStatus.OK);
-                    default:
-                        return new ResponseEntity<>(null, HttpStatus.OK);
-                }
-            case "vds" :
-                switch (type){
-                    case "total" :
-                        return new ResponseEntity<>(mrtVdsTrfvlmAnalMapper.findAllByTotalChart(mapBigdataSearchDTO), HttpStatus.OK);
-                    case "total-day" :
-                        return new ResponseEntity<>(mrtVdsTrfvlmAnalMapper.findAllByTotalChartGroupDay(mapBigdataSearchDTO), HttpStatus.OK);
-                    case "sgg" :
-                        return new ResponseEntity<>(mrtVdsTrfvlmAnalMapper.findAllBySGGChart(mapBigdataSearchDTO), HttpStatus.OK);
-                    case "sgg-day" :
-                        return new ResponseEntity<>(mrtVdsTrfvlmAnalMapper.findAllBySGGChartGroupDay(mapBigdataSearchDTO), HttpStatus.OK);
-                    case "top10" :
-                        return new ResponseEntity<>(mrtVdsTrfvlmAnalMapper.findAllByTop10Chart(mapBigdataSearchDTO), HttpStatus.OK);
-                    default:
-                        return new ResponseEntity<>(null, HttpStatus.OK);
-                }
-            case "dsrc" :
-                switch (type){
-                    case "total" :
-                        return new ResponseEntity<>(mrtDsrcTrfvlmAnalMapper.findAllByTotalChart(mapBigdataSearchDTO), HttpStatus.OK);
-                    case "total-day" :
-                        return new ResponseEntity<>(mrtDsrcTrfvlmAnalMapper.findAllByTotalChartGroupDay(mapBigdataSearchDTO), HttpStatus.OK);
-                    case "sgg" :
-                        return new ResponseEntity<>(mrtDsrcTrfvlmAnalMapper.findAllBySGGChart(mapBigdataSearchDTO), HttpStatus.OK);
-                    case "sgg-day" :
-                        return new ResponseEntity<>(mrtDsrcTrfvlmAnalMapper.findAllBySGGChartGroupDay(mapBigdataSearchDTO), HttpStatus.OK);
-                    case "top10" :
-                        return new ResponseEntity<>(mrtDsrcTrfvlmAnalMapper.findAllByTop10Chart(mapBigdataSearchDTO), HttpStatus.OK);
-                    default:
-                        return new ResponseEntity<>(null, HttpStatus.OK);
-                }
-        }
-        return new ResponseEntity<>(null, HttpStatus.OK);
-    }
-
-    @GetMapping("/getPatternSvcCongetionTop10.ajax")
-    public @ResponseBody
-    ResponseEntity<?> getPatternSvcCongetionTop10(MapBigdataSearchDTO mapBigdataSearchDTO){
-        List<MrtTrfHlctcCngstnSctn> list = mrtTrfHlctcCngstnSctnMapper.findSvcCongestionTop10BySearchOption(mapBigdataSearchDTO);
+        List<MrtSmcTrfPat> list = bdPatternComponent.getTrafficQuantityInfo(mapBigdataSearchDTO);
         return new ResponseEntity<>(list, HttpStatus.OK);
     }
-
-    /**
-     * 교통패턴 > 정체구간 조회
-     * @param mapBigdataSearchDTO
-     * @return
-     */
-    @GetMapping("/getPatternTrafficAbnLos.ajax")
-    public @ResponseBody
-    ResponseEntity<?> getPatternTrafficAbnLos(MapBigdataSearchDTO mapBigdataSearchDTO){
-        List<MrtSmcAbnLos> list = bdPatternComponent.getTrafficAbnLos(mapBigdataSearchDTO);
-        return new ResponseEntity<>(list, HttpStatus.OK);
-    }
-
-
-
+    
     /**
      * 교통활동 효과분석 > 정체구간 개선효과
      * @return
@@ -278,37 +144,6 @@ public class BigDataController {
     	List<?> list = bdTrafficActiveEffectAnalysisComponent.getTrafficActiveEffectAnalysis(mapBigdataSearchDTO);
     	return new ResponseEntity<>(list, HttpStatus.OK);
     }
-
-    /**
-     * 교통활동 효과분석 > 정체구간 개선효과 - 평균속도
-     * @return
-     */
-    @GetMapping("/getSvcLinkTrafficActiveEffectAnalysis.ajax")
-    public @ResponseBody
-    ResponseEntity<?> getSvcLinkTrafficActiveEffectAnalysis(MapBigdataSearchDTO mapBigdataSearchDTO){
-        List<MrtSigCrsdTrfAnal> list = mrtSigCrsdTrfAnalMapper.findAllGroupBySvcLinkId(mapBigdataSearchDTO);
-        return new ResponseEntity<>(list, HttpStatus.OK);
-    }
-
-
-
-
-    @GetMapping("/getTrafficEffectAnalysisChart.ajax")
-    public @ResponseBody
-    ResponseEntity<?> getTrafficEffectAnalysisChart(MapBigdataSearchDTO mapBigdataSearchDTO) {
-        List<?> list = bdTrafficActiveEffectAnalysisComponent.getTrafficActiveEffectAnalysisChart(mapBigdataSearchDTO);
-        return new ResponseEntity<>(list, HttpStatus.OK);
-    }
-
-    @GetMapping("/getSvcLinkTrafficEffectAnalysisChart.ajax")
-    public @ResponseBody
-    ResponseEntity<?> getSvcLinkTrafficEffectAnalysisChart(MapBigdataSearchDTO mapBigdataSearchDTO) {
-        List<MrtSigCrsdTrfAnal> list = mrtSigCrsdTrfAnalMapper.findAllSvcLinkForChart(mapBigdataSearchDTO);
-        return new ResponseEntity<>(list, HttpStatus.OK);
-    }
-
-
-
 
     /**
      * 교통활동 효과분석 > 정체구간 개선효과(병합데이터)
@@ -360,11 +195,9 @@ public class BigDataController {
      */
     @GetMapping("/getPublicTransferCndcyPathLinkInfo.ajax")
     public @ResponseBody ResponseEntity<?> getPublicTransferCndcyPathLinkInfo(
-            @RequestParam("candRouteId") String candRouteId,
-            @RequestParam("baseym") String baseym,
-            @RequestParam("btcId") String btcId
+            @RequestParam("candRouteId") String candRouteId
     ){
-        List<MrtCndcyPathLinkInfo> list = bdPublicTransferPredictionComponent.getPublicTransferCndcyPathLinkInfo(btcId, baseym, candRouteId);
+        List<MrtCndcyPathLinkInfo> list = bdPublicTransferPredictionComponent.getPublicTransferCndcyPathLinkInfo(candRouteId);
         return new ResponseEntity<>(list, HttpStatus.OK);
     }
 
@@ -374,15 +207,13 @@ public class BigDataController {
      */
     @GetMapping("/getPublicTransferCndcyStationInfo.ajax")
     public @ResponseBody ResponseEntity<?> getPublicTransferCndcyStationInfo(
-            @RequestParam("candRouteId") String candRouteId,
-            @RequestParam("baseym") String baseym,
-            @RequestParam("btcId") String btcId
+            @RequestParam("candRouteId") String candRouteId
     ){
-        List<MrtCndcyPathRouteBstpInfo> list = bdPublicTransferPredictionComponent.getPublicTransferCndcyStationInfo(btcId, baseym, candRouteId);
+        List<MrtCndcyPathRouteBstpInfo> list = bdPublicTransferPredictionComponent.getPublicTransferCndcyStationInfo(candRouteId);
         return new ResponseEntity<>(list, HttpStatus.OK);
     }
 
-
+    
 
     /**
      * 사고 예측구간 데이터 조회
@@ -416,30 +247,9 @@ public class BigDataController {
     @GetMapping("/getCrossRoadTrafficQuantityPrediction.ajax")
     public @ResponseBody
     ResponseEntity<?> getCrossRoadTrafficQuantityPrediction(MapBigdataSearchDTO mapBigdataSearchDTO){
-        List<MrtSmcrsrdTrfvlmAnal> list = bdPredictionComponent.getCrossRoadAngleInfo(mapBigdataSearchDTO);
+        List<MrtSmcrsrdTrfvlmAnal> list = bdPredictionComponent.getCrossRoadTrafficPredictionByYmd(mapBigdataSearchDTO);
         return new ResponseEntity<>(list, HttpStatus.OK);
     }
-
-    /**
-     * 교차로 교통량 예측 시간 추이용 데이터
-     * @param mapBigdataSearchDTO
-     * @return
-     */
-    @GetMapping("/getCrossRoadTrafficQuantityPredictionGroupTime.ajax")
-    public @ResponseBody
-    ResponseEntity<?> getCrossRoadTrafficQuantityPredictionGroupTime(MapBigdataSearchDTO mapBigdataSearchDTO){
-        List<MrtSmcrsrdTrfvlmAnal> list = bdPredictionComponent.getTrfvlmGroupTime(mapBigdataSearchDTO);
-        return new ResponseEntity<>(list, HttpStatus.OK);
-    }
-
-    @GetMapping("/getCrossRoadTrafficQuantityPredictionTop10.ajax")
-    public @ResponseBody
-    ResponseEntity<?> getCrossRoadTrafficQuantityPredictionTop10(MapBigdataSearchDTO mapBigdataSearchDTO){
-        List<MrtSmcrsrdTrfvlmAnal> list = bdPredictionComponent.getTrfvlmTop10(mapBigdataSearchDTO);
-        return new ResponseEntity<>(list, HttpStatus.OK);
-    }
-
-
 
     /**
      * 교차로 교통량 예측 데이터 조회(차트 플레이어용 시군구)
@@ -473,7 +283,7 @@ public class BigDataController {
     @GetMapping("/getPublicTransferDangerInfo.ajax")
     public @ResponseBody
     ResponseEntity<?> getPublicTransferDangerInfo(MapBigdataSearchDTO mapBigdataSearchDTO){
-        List<TsLogDriveanal> list = hciTsLogDriveanalMapper.findAllBySearchOptionForGIS(mapBigdataSearchDTO);
+        List<MrtDtgDangerSectn> list = bdPublicTransferDangerComponent.getBusDtgDangerSectionInfo(mapBigdataSearchDTO);
         return new ResponseEntity<>(list, HttpStatus.OK);
     }
 
@@ -534,7 +344,7 @@ public class BigDataController {
     }
 
     /**
-     * 대중교통 이용현황분석 > 버스 도착정보 예측 조회
+     * 대중교통 이용현황분석 > 버스 도착정보 예측 조회 
      * @param mapBigdataSearchDTO
      * @return
      */
@@ -542,19 +352,6 @@ public class BigDataController {
     public @ResponseBody
     ResponseEntity<?> getPublicTransferBIT(MapBigdataSearchDTO mapBigdataSearchDTO){
         List<MrtBusArvlTimePrdctnRslt> list = bdPublicTransferUsageComponent.getPublicTransferBIT(mapBigdataSearchDTO);
-        return new ResponseEntity<>(list, HttpStatus.OK);
-    }
-
-
-    /**
-     * 대중교통 이용현황분석 > 노선별 정류장 BIT 조회 - 현재 버스 정류장 위치 정보
-     * @param mapBigdataSearchDTO
-     * @return
-     */
-    @GetMapping("/getBusCurrentMoveInfo.ajax")
-    public @ResponseBody
-    ResponseEntity<?> getBusCurrentMoveInfo(MapBigdataSearchDTO mapBigdataSearchDTO){
-        List<GgbisBusEventinfo> list = ggbisBusEventinfoMapper.findAllCurrentByRouteId(mapBigdataSearchDTO.getRouteId());
         return new ResponseEntity<>(list, HttpStatus.OK);
     }
 
@@ -587,29 +384,6 @@ public class BigDataController {
         return new ResponseEntity<>(data, HttpStatus.OK);
     }
 
-    @GetMapping("/{routeTp}/getPublicTransferRouteCurveAnalysisTop10.ajax")
-    public @ResponseBody
-    ResponseEntity<?> getPublicTransferRouteCurveAnalysisTop10(
-            @PathVariable String routeTp
-    ){
-        List<MrtBusRouteDetAnal> data = new ArrayList<>();
-        switch (routeTp) {
-            case "type1" :
-                data = mrtBusRouteDetAnalMapper.findAllTop10ByCurvtAndType1();
-                break;
-            case "type2" :
-                data = mrtBusRouteDetAnalMapper.findAllTop10ByCurvtAndType2();
-                break;
-            case "type3" :
-                data = mrtBusRouteDetAnalMapper.findAllTop10ByCurvtAndType3();
-                break;
-            case "type4" :
-                data = mrtBusRouteDetAnalMapper.findAllTop10ByCurvtAndType4();
-                break;
-        }
-        return new ResponseEntity<>(data, HttpStatus.OK);
-    }
-
     /**
      * 대중교통 노션별 분석 > 노선구간별 중복구간 도출 및 적정성 분석(맵호출)
      * @return
@@ -617,95 +391,8 @@ public class BigDataController {
     @GetMapping("/getDuplicateRouteGeometryInfoByStationId.ajax")
     public @ResponseBody
     ResponseEntity<?> getDuplicateRouteGeometryInfo(MapBigdataSearchDTO mapBigdataSearchDTO){
-        List<MrtBusRouteSectnAnal> list = bdPublicTransferRouteAnalysisComponent.getDuplicateRouteGeometryInfo(mapBigdataSearchDTO);
+        List<GgbisBusrouteInfounit> list = bdPublicTransferRouteAnalysisComponent.getDuplicateRouteGeometryInfo(mapBigdataSearchDTO);
         return new ResponseEntity<>(list, HttpStatus.OK);
     }
-
-    @GetMapping("/getDuplicateRouteListBySectionId.ajax")
-    public @ResponseBody
-    ResponseEntity<?> getDuplicateRouteListBySectionId(
-            @RequestParam("stToEd") String stToEd
-    ){
-        String[] sectionIds = stToEd.split(",");
-        List<Map<String, String>> sttoedlist = new ArrayList<>();
-        for(String sted :sectionIds ){
-            Map<String,String> map = new HashMap<>();
-            String[] stedarr = sted.split("-");
-            map.put("stStaId", stedarr[0]);
-            map.put("edStaId", stedarr[1]);
-            sttoedlist.add(map);
-        }
-        List<MrtBusRouteSectnAnal> list = mrtBusRouteSectnAnalMapper.findAllBySectionId(sttoedlist);
-        return new ResponseEntity<>(list, HttpStatus.OK);
-    }
-
-    @GetMapping("/getDuplicateRouteTop10.ajax")
-    public @ResponseBody
-    ResponseEntity<?> getDuplicateRouteTop10(MapBigdataSearchDTO mapBigdataSearchDTO){
-        List<MrtBusRouteSectnAnal> list = mrtBusRouteSectnAnalMapper.findTop10ByRouteId(mapBigdataSearchDTO);
-        return new ResponseEntity<>(list, HttpStatus.OK);
-    }
-
-    @GetMapping("/getPublicTransferLndiCntByRouteId.ajax")
-    public @ResponseBody ResponseEntity<?> getPublicTransferLndiCntByRouteId(MapBigdataSearchDTO mapBigdataSearchDTO){
-        List<MrtBusRoutePasngAnal> list = mrtBusRoutePasngAnalMapper.findAllCntByAllByRouteId(mapBigdataSearchDTO);
-        return new ResponseEntity<>(list, HttpStatus.OK);
-    }
-    @GetMapping("/getPublicTransferLndiCntByAll.ajax")
-    public @ResponseBody ResponseEntity<?> getPublicTransferLndiCntByAll(MapBigdataSearchDTO mapBigdataSearchDTO){
-        List<MrtBusRoutePasngAnal> list = mrtBusRoutePasngAnalMapper.findAllLndiCntByAll(mapBigdataSearchDTO);
-        return new ResponseEntity<>(list, HttpStatus.OK);
-    }
-
-
-    /**
-     * 대중교통 노션별 분석 > 노선구간별 이용자수(정류장 클릭시)
-     * @param mapBigdataSearchDTO
-     * @return
-     */
-    @GetMapping("/getBusRouteSectionPassengerInfo.ajax")
-    public @ResponseBody
-    ResponseEntity<?> getBusRouteSectionPassengerInfo(MapBigdataSearchDTO mapBigdataSearchDTO){
-        List<MrtBusRoutePasngAnal> list = mrtBusRoutePasngAnalMapper.findAllByRideStationId(mapBigdataSearchDTO);
-        return new ResponseEntity<>(list, HttpStatus.OK);
-    }
-
-
-    /**
-     * 상시교통량 조회 ( 국도만 있음 )
-     * @param mapBigdataSearchDTO
-     * @return
-     */
-    @GetMapping("/getOrdTmTrfvlmInfo-nlrm.ajax")
-    public @ResponseBody
-    ResponseEntity<?> getOrdTmTrfvlmInfoNlrm(MapBigdataSearchDTO mapBigdataSearchDTO){
-        List<ExtTmsNlrdTimeOrdtmTrfvlm> list = tmsOrdtmTrfvlmMapper.findAllNlrdTimeByYmd(mapBigdataSearchDTO);
-        return new ResponseEntity<>(list, HttpStatus.OK);
-    }
-
-    /**
-     * 수시교통량 조회 - 국도
-     * @param mapBigdataSearchDTO
-     * @return
-     */
-    @GetMapping("/getAnytmTrfvlmInfo-nlrm.ajax")
-    public @ResponseBody
-    ResponseEntity<?> getAnytmTrfvlmInfoNlrm(MapBigdataSearchDTO mapBigdataSearchDTO){
-        List<ExtTmsNlrdVhcclsAnytmTrfvlm> list = tmsAnytmTrfvlmMapper.findAllNlrdTimeByYmd(mapBigdataSearchDTO);
-        return new ResponseEntity<>(list, HttpStatus.OK);
-    }
-
-    /**
-     * 수시교통량 조회 - 고속도로
-     * @param mapBigdataSearchDTO
-     * @return
-     */
-    @GetMapping("/getAnytmTrfvlmInfo-hghw.ajax")
-    public @ResponseBody
-    ResponseEntity<?> getAnytmTrfvlmInfoHghw(MapBigdataSearchDTO mapBigdataSearchDTO){
-        List<ExtTmsHghwVhcclsAnytmTrfvlm> list = tmsAnytmTrfvlmMapper.findAllHghwTimeByYmd(mapBigdataSearchDTO);
-        return new ResponseEntity<>(list, HttpStatus.OK);
-    }
-
 
 }

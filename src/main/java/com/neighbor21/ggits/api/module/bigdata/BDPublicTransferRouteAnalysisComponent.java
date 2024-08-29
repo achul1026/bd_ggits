@@ -2,8 +2,6 @@ package com.neighbor21.ggits.api.module.bigdata;
 
 import java.util.List;
 
-import com.neighbor21.ggits.common.entity.MrtBusRouteSectnAnal;
-import com.neighbor21.ggits.common.mapper.MrtBusRouteSectnAnalMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -30,9 +28,6 @@ public class BDPublicTransferRouteAnalysisComponent extends BaseMapDataComponent
     @Autowired
     GgbisBusrouteInfounitMapper ggbisBusrouteInfounitMapper;
 
-    @Autowired
-    MrtBusRouteSectnAnalMapper mrtBusRouteSectnAnalMapper;
-
     /**
      * 대중교통 노션별 분석 > 노선구간별 승하차/재차 승객수 조회
      * @return
@@ -53,8 +48,8 @@ public class BDPublicTransferRouteAnalysisComponent extends BaseMapDataComponent
      * 대중교통 노션별 분석 > 노선구간별 중복구간 도출 및 적정성 분석(맵호출)
      * @return
      */
-    public  List<MrtBusRouteSectnAnal> getDuplicateRouteGeometryInfo(MapBigdataSearchDTO mapBigdataSearchDTO){
-        return mrtBusRouteSectnAnalMapper.findAllDuplicateSectionInfoGeometry(mapBigdataSearchDTO);
+    public  List<GgbisBusrouteInfounit> getDuplicateRouteGeometryInfo(MapBigdataSearchDTO mapBigdataSearchDTO){
+        return ggbisBusrouteInfounitMapper.findAllByStStationIdAndEdStationId(mapBigdataSearchDTO);
 
     }
 }

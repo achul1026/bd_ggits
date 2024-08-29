@@ -8,8 +8,8 @@ public class AdsiMFaDsrc extends AdsiRseSttsInfo {
     private String rseId; //rse 아이디
     private String rseNm; //rse 명
     private String dsrcId; //dsrc 아이디
-    private Double lonCrdn; //경도 좌표
-    private Double latCrdn; //위도 좌표
+    private double lonCrdn; //경도 좌표
+    private double latCrdn; //위도 좌표
     private String descr; //설명
 
     private String colctInfo;
@@ -52,19 +52,19 @@ public class AdsiMFaDsrc extends AdsiRseSttsInfo {
         this.dsrcId = dsrcId;
     }
 
-    public Double getLonCrdn() {
+    public double getLonCrdn() {
         return lonCrdn;
     }
 
-    public void setLonCrdn(Double lonCrdn) {
+    public void setLonCrdn(double lonCrdn) {
         this.lonCrdn = lonCrdn;
     }
 
-    public Double getLatCrdn() {
+    public double getLatCrdn() {
         return latCrdn;
     }
 
-    public void setLatCrdn(Double latCrdn) {
+    public void setLatCrdn(double latCrdn) {
         this.latCrdn = latCrdn;
     }
 

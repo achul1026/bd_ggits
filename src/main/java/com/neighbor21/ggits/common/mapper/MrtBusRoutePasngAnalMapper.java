@@ -59,12 +59,4 @@ public interface MrtBusRoutePasngAnalMapper {
 	 * @param commonEntity
 	 */
 	public int countBusRoutePasng(CommonEntity commonEntity);
-
-	public List<MrtBusRoutePasngAnal> findAllByRideStationId(MapBigdataSearchDTO mapBigdataSearchDTO);
-
-	public List<MrtBusRoutePasngAnal> findAllLndiCntByRouteId(MapBigdataSearchDTO mapBigdataSearchDTO);
-	public List<MrtBusRoutePasngAnal> findAllCntByAllByRouteId(MapBigdataSearchDTO mapBigdataSearchDTO);
-
-	public List<MrtBusRoutePasngAnal> findAllLndiCntByAll(MapBigdataSearchDTO mapBigdataSearchDTO);
-
 }

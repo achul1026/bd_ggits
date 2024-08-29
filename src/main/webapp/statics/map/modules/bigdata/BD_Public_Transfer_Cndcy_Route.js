@@ -5,14 +5,8 @@
  */
 const BD_Public_Transfer_Cndcy_Route = async function(searchOption){
     const so = self.util.convertParamToObject(searchOption);
-    let list = await self.util.getJsonFormApi("/bigdata/getPublicTransferCndcyPathLinkInfo.ajax?candRouteId="+so.candRouteId+"&baseym="+so.baseym+"&btcId="+so.btcId);
-    if(list?.noLogin){
-        return {
-            error : true,
-            noLogin : true
-        }
-    }
-    let stationList = await self.util.getJsonFormApi("/bigdata/getPublicTransferCndcyStationInfo.ajax?candRouteId="+so.candRouteId+"&baseym="+so.baseym+"&btcId="+so.btcId);
+    let list = await self.util.getJsonFormApi("/bigdata/getPublicTransferCndcyPathLinkInfo.ajax?candRouteId="+so.candRouteId);
+    let stationList = await self.util.getJsonFormApi("/bigdata/getPublicTransferCndcyStationInfo.ajax?candRouteId="+so.candRouteId);
     if(list.length === 0) {
         return {
             error : true,

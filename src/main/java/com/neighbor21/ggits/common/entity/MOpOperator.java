@@ -31,9 +31,6 @@ public class MOpOperator extends CommonEntity{
 	//#MOpGrpInfo 테이블 컬럼 참조
     private String grpNm;        //그룹 명
     private String upperOprtrAuthGrpYn = "N"; // 상위 관리자 그룹 여부
-    
-    //#MOpAuthority 권한 관련 테이블
-    private String authCd;		//권한 코드
 	
     
     //비밀번호 확인 컬럼
@@ -263,12 +260,5 @@ public class MOpOperator extends CommonEntity{
 	public void setLoginType(String loginType) {
 		this.loginType = loginType;
 	}
-
-	public String getAuthCd() {
-		return authCd;
-	}
-
-	public void setAuthCd(String authCd) {
-		this.authCd = authCd;
-	}
+	
 }

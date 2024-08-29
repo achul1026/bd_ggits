@@ -66,7 +66,7 @@
 		SELECT
 			ROW_NUMBER() OVER(ORDER BY lopl.OCCUR_DT) AS rownum,
 			lopl.LOG_ID,
-			TO_CHAR(lopl.OCCUR_DT,'YYYY-MM-DD HH24:MI:SS') AS OCCUR_DT_STR,
+			TO_CHAR(lopl.OCCUR_DT,'YYYY-MM-DD') AS OCCUR_DT_STR,
 			lopl.OPRTR_ID,
 			lopl.GRP_ID,
 			lopl.LGN_IP,
@@ -116,7 +116,7 @@
      <select id="findOneLOpPgmLognByLogId" parameterType="String" resultType="lOpPgmLogn">
      	SELECT
      		lopl.LOG_ID
-     		, TO_CHAR(lopl.OCCUR_DT,'YYYY-MM-DD HH24:MI:SS') AS OCCUR_DT_STR
+     		, TO_CHAR(lopl.OCCUR_DT,'YYYY-MM-DD') AS OCCUR_DT_STR
      		, lopl.LOG_TYPE
      		, lopl.PRGRM_SESN_ID
      		, lopl.RQSTR_NM

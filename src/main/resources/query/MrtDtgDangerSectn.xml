@@ -5,8 +5,8 @@
 	<sql id="mrtDtgDangerSectn-Where">
 		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
 			AND mdds.ANLS_DT 
-			BETWEEN TO_TIMESTAMP(#{strDt}|| ' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') 
-		    	AND TO_TIMESTAMP(#{endDt}|| ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+			BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
 		</if>
 		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
 			<![CDATA[
@@ -49,7 +49,7 @@
 			, gbr.ST_STA_NM
 			, gbr.ED_STA_NM
 			, gbr.ROUTE_INTERVAL
-			, ROUND(gbr.ROUTE_LENGTH::numeric, 2) as ROUTE_LENGTH
+			, ROUND(gbr.ROUTE_LENGTH::numeric , 2) as ROUTE_LENGTH
 			, gbr.ROUTE_NM
 			, GBR.ROUTE_ID
 			, SUM(mdds.SPDNG_RUNG_CNT) + SUM(mdds.SDACEL_RUNG_CNT) + SUM(mdds.RPDDCL_RUNG_CNT) + SUM(mdds.SDSTOP_RUNG_CNT) + SUM(mdds.SDSTRT_RUNG_CNT) + SUM(mdds.LNGTRMACL_RUNG_CNT) as riskJugCnt
@@ -66,49 +66,303 @@
 
 	<select id="findAllBySearchOption" parameterType="mapBigdataSearchDTO" resultType="mrtDtgDangerSectn">
 		select
-		GCIL.LINK_ID as ST_LINK_ID ,
-		ST_ASGEOJSON(ST_LINEMERGE(GCIL.GEOMETRY)) as GEOJSON ,
-		GCIL.ROAD_NAME ,
-		mdds.SPDNG_RUNG_CNT ,
-		mdds.SDACEL_RUNG_CNT ,
-		mdds.RPDDCL_RUNG_CNT ,
-		mdds.SDSTOP_RUNG_CNT ,
-		mdds.SDSTRT_RUNG_CNT ,
-		mdds.LNGTRMACL_RUNG_CNT ,
-		mdds.riskJugCnt
+		distinct
+		EGBL.ROUTE_ID
+		,EGBL.LINK_ID
+		,EGBL.FNODE_ID
+		,EGBL.TNODE_ID
+		,EGBL.FNODE_X
+		,EGBL.FNODE_Y
+		,EGBL.TNODE_X
+		,EGBL.TNODE_Y
+		,EGBL.ROAD_LENGTH
+		,EGBL.ROAD_WIDTH
+		,EGBL.ROUTE_LENGTH
+		,EGBL.TOTAL_LENGTH
+		,EGBL.LINK_ORDER
+		,GCIL.LINK_ID AS ST_LINK_ID
+		,EGBL.ST_LINK_ORDER
+		,EGBR.ROUTE_NM
+		,EGBR.ROUTE_TP
+		,EGBR.ROUTE_LENGTH
+		,EGBR.ROUTE_INTERVAL
+		,EGBR.ST_STA_NM
+		,EGBR.ED_STA_NM
+		,EGBR.ST_STA_ID
+		,EGBR.ED_STA_ID
+		,EGBR.SIDO_CD
+		,EGBR.MANAGE_TP
+		,EGBR.PERM_VOL
+		,EGBR.BEGIN_DATE
+		,EGBR.CLOSE_DATE
+		,EGBR.ROUTE_EX
+		,EGBR.COMPANY_ID
+		,EGBR.COMPANY_NM
+		,EGBR.ADMIN_NM
+		,EGBR.TURN_SEQ
+		,EGBR.ROUTE_ALLOC
+		,EGBR.EB_ROUTE_ID
+		,EGBR.ROUTE_ALLOC_COMPNAY_ID
+		,EGBR.USE_YN
+		,EGBR.REMARK
+		,EGBR.AREA_CD
+		,EGBR.TURN_STA_ID
+		,EGBR.TURN_USE_YN
+		,EGBR.TURNINFO_FLAG
+		,EGBR.LASTVEH_FLAG
+		,EGBR.TURNPROCESS_FLAG
+		,EGBR.FIRSTVEH_FLAG
+		,ST_ASGEOJSON(ST_LINEMERGE(GCIL.GEOMETRY)) AS GEOJSON
+		,GCIL.GEOMETRY
+		,GCIL.ROAD_NAME
+		,mdds.SPDNG_RUNG_CNT
+		,mdds.SDACEL_RUNG_CNT
+		,mdds.RPDDCL_RUNG_CNT
+		,mdds.SDSTOP_RUNG_CNT
+		,mdds.SDSTRT_RUNG_CNT
+		,mdds.LNGTRMACL_RUNG_CNT
+		,mdds.riskJugCnt
+		,mdds.riskJugCnt_00
+		,mdds.riskJugCnt_01
+		,mdds.riskJugCnt_02
+		,mdds.riskJugCnt_03
+		,mdds.riskJugCnt_04
+		,mdds.riskJugCnt_05
+		,mdds.riskJugCnt_06
+		,mdds.riskJugCnt_07
+		,mdds.riskJugCnt_08
+		,mdds.riskJugCnt_09
+		,mdds.riskJugCnt_10
+		,mdds.riskJugCnt_11
+		,mdds.riskJugCnt_12
+		,mdds.riskJugCnt_13
+		,mdds.riskJugCnt_14
+		,mdds.riskJugCnt_15
+		,mdds.riskJugCnt_16
+		,mdds.riskJugCnt_17
+		,mdds.riskJugCnt_18
+		,mdds.riskJugCnt_19
+		,mdds.riskJugCnt_20
+		,mdds.riskJugCnt_21
+		,mdds.riskJugCnt_22
+		,mdds.riskJugCnt_23
 		FROM
-		C_GM_STD_LINK GCIL
-		inner join bigdata.ext_ggbis_link_mapping eglm on gcil.link_id = eglm.st_link_id
-		inner join (
+		BIGDATA.EXT_GGBIS_BUSROUTE_LINK EGBL
+		INNER JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE EGBR ON
+		EGBL.ROUTE_ID = EGBR.ROUTE_ID
+		INNER JOIN BIGDATA.EXT_GGBIS_LINK_MAPPING EGLM ON EGBL.LINK_ID = EGLM.LINK_ID
+		INNER JOIN C_GM_STD_LINK_TMP GCIL ON
+		EGLM.ST_LINK_ID = GCIL.LINK_ID
+		left join (
 		SELECT
-		LINK_ID
+		VHCL_NO
+		,LINK_ID
 		,BUS_ROUTE_NO
+		,CO_ID
 		,SUM(SPDNG_RUNG_CNT) AS SPDNG_RUNG_CNT
 		,SUM(SDACEL_RUNG_CNT) AS SDACEL_RUNG_CNT
 		,SUM(RPDDCL_RUNG_CNT) AS RPDDCL_RUNG_CNT
 		,SUM(SDSTOP_RUNG_CNT) AS SDSTOP_RUNG_CNT
 		,SUM(SDSTRT_RUNG_CNT) AS SDSTRT_RUNG_CNT
 		,SUM(LNGTRMACL_RUNG_CNT) AS LNGTRMACL_RUNG_CNT
-		,SUM(SPDNG_RUNG_CNT) + SUM(SDACEL_RUNG_CNT) + SUM(RPDDCL_RUNG_CNT) + SUM(SDSTOP_RUNG_CNT) + SUM(SDSTRT_RUNG_CNT) + SUM(LNGTRMACL_RUNG_CNT) as riskJugCnt
+		,SUM(SPDNG_RUNG_CNT) + SUM(SDACEL_RUNG_CNT) + SUM(RPDDCL_RUNG_CNT) + SUM(SDSTOP_RUNG_CNT) + SUM(SDSTRT_RUNG_CNT) + SUM(LNGTRMACL_RUNG_CNT) as riskJugCnt,
+		SUM(SPDNG_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0000' and '0059')
+		+ SUM(SDACEL_RUNG_CNT)  filter (where TO_CHAR(anls_dt, 'HH24MI') between '0000' and '0059')
+		+ SUM(RPDDCL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0000' and '0059')
+		+ SUM(SDSTOP_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0000' and '0059')
+		+ SUM(SDSTRT_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0000' and '0059')
+		+ SUM(LNGTRMACL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0000' and '0059') as riskJugCnt_00,
+		SUM(SPDNG_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0100' and '0159')
+		+ SUM(SDACEL_RUNG_CNT)  filter (where TO_CHAR(anls_dt, 'HH24MI') between '0100' and '0159')
+		+ SUM(RPDDCL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0100' and '0159')
+		+ SUM(SDSTOP_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0100' and '0159')
+		+ SUM(SDSTRT_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0100' and '0159')
+		+ SUM(LNGTRMACL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0100' and '0159') as riskJugCnt_01,
+		SUM(SPDNG_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0200' and '0259')
+		+ SUM(SDACEL_RUNG_CNT)  filter (where TO_CHAR(anls_dt, 'HH24MI') between '0200' and '0259')
+		+ SUM(RPDDCL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0200' and '0259')
+		+ SUM(SDSTOP_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0200' and '0259')
+		+ SUM(SDSTRT_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0200' and '0259')
+		+ SUM(LNGTRMACL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0200' and '0259') as riskJugCnt_02,
+		SUM(SPDNG_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0300' and '0359')
+		+ SUM(SDACEL_RUNG_CNT)  filter (where TO_CHAR(anls_dt, 'HH24MI') between '0300' and '0359')
+		+ SUM(RPDDCL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0300' and '0359')
+		+ SUM(SDSTOP_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0300' and '0359')
+		+ SUM(SDSTRT_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0300' and '0359')
+		+ SUM(LNGTRMACL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0300' and '0359') as riskJugCnt_03,
+		SUM(SPDNG_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0400' and '0459')
+		+ SUM(SDACEL_RUNG_CNT)  filter (where TO_CHAR(anls_dt, 'HH24MI') between '0400' and '0459')
+		+ SUM(RPDDCL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0400' and '0459')
+		+ SUM(SDSTOP_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0400' and '0459')
+		+ SUM(SDSTRT_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0400' and '0459')
+		+ SUM(LNGTRMACL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0400' and '0459') as riskJugCnt_04,
+		SUM(SPDNG_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0500' and '0559')
+		+ SUM(SDACEL_RUNG_CNT)  filter (where TO_CHAR(anls_dt, 'HH24MI') between '0500' and '0559')
+		+ SUM(RPDDCL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0500' and '0559')
+		+ SUM(SDSTOP_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0500' and '0559')
+		+ SUM(SDSTRT_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0500' and '0559')
+		+ SUM(LNGTRMACL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0500' and '0559') as riskJugCnt_05,
+		SUM(SPDNG_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0600' and '0659')
+		+ SUM(SDACEL_RUNG_CNT)  filter (where TO_CHAR(anls_dt, 'HH24MI') between '0600' and '0659')
+		+ SUM(RPDDCL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0600' and '0659')
+		+ SUM(SDSTOP_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0600' and '0659')
+		+ SUM(SDSTRT_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0600' and '0659')
+		+ SUM(LNGTRMACL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0600' and '0659') as riskJugCnt_06,
+		SUM(SPDNG_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0700' and '0759')
+		+ SUM(SDACEL_RUNG_CNT)  filter (where TO_CHAR(anls_dt, 'HH24MI') between '0700' and '0759')
+		+ SUM(RPDDCL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0700' and '0759')
+		+ SUM(SDSTOP_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0700' and '0759')
+		+ SUM(SDSTRT_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0700' and '0759')
+		+ SUM(LNGTRMACL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0700' and '0759') as riskJugCnt_07,
+		SUM(SPDNG_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0800' and '0859')
+		+ SUM(SDACEL_RUNG_CNT)  filter (where TO_CHAR(anls_dt, 'HH24MI') between '0800' and '0859')
+		+ SUM(RPDDCL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0800' and '0859')
+		+ SUM(SDSTOP_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0800' and '0859')
+		+ SUM(SDSTRT_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0800' and '0859')
+		+ SUM(LNGTRMACL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0800' and '0859') as riskJugCnt_08,
+		SUM(SPDNG_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0900' and '0959')
+		+ SUM(SDACEL_RUNG_CNT)  filter (where TO_CHAR(anls_dt, 'HH24MI') between '0900' and '0959')
+		+ SUM(RPDDCL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0900' and '0959')
+		+ SUM(SDSTOP_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0900' and '0959')
+		+ SUM(SDSTRT_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0900' and '0959')
+		+ SUM(LNGTRMACL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '0900' and '0959') as riskJugCnt_09,
+		SUM(SPDNG_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1000' and '1059')
+		+ SUM(SDACEL_RUNG_CNT)  filter (where TO_CHAR(anls_dt, 'HH24MI') between '1000' and '1059')
+		+ SUM(RPDDCL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1000' and '1059')
+		+ SUM(SDSTOP_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1000' and '1059')
+		+ SUM(SDSTRT_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1000' and '1059')
+		+ SUM(LNGTRMACL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1000' and '1059') as riskJugCnt_10,
+		SUM(SPDNG_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1100' and '1159')
+		+ SUM(SDACEL_RUNG_CNT)  filter (where TO_CHAR(anls_dt, 'HH24MI') between '1100' and '1159')
+		+ SUM(RPDDCL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1100' and '1159')
+		+ SUM(SDSTOP_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1100' and '1159')
+		+ SUM(SDSTRT_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1100' and '1159')
+		+ SUM(LNGTRMACL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1100' and '1159') as riskJugCnt_11,
+		SUM(SPDNG_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1200' and '1259')
+		+ SUM(SDACEL_RUNG_CNT)  filter (where TO_CHAR(anls_dt, 'HH24MI') between '1200' and '1259')
+		+ SUM(RPDDCL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1200' and '1259')
+		+ SUM(SDSTOP_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1200' and '1259')
+		+ SUM(SDSTRT_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1200' and '1259')
+		+ SUM(LNGTRMACL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1200' and '1259') as riskJugCnt_12,
+		SUM(SPDNG_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1300' and '1359')
+		+ SUM(SDACEL_RUNG_CNT)  filter (where TO_CHAR(anls_dt, 'HH24MI') between '1300' and '1359')
+		+ SUM(RPDDCL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1300' and '1359')
+		+ SUM(SDSTOP_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1300' and '1359')
+		+ SUM(SDSTRT_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1300' and '1359')
+		+ SUM(LNGTRMACL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1300' and '1359') as riskJugCnt_13,
+		SUM(SPDNG_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1400' and '1459')
+		+ SUM(SDACEL_RUNG_CNT)  filter (where TO_CHAR(anls_dt, 'HH24MI') between '1400' and '1459')
+		+ SUM(RPDDCL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1400' and '1459')
+		+ SUM(SDSTOP_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1400' and '1459')
+		+ SUM(SDSTRT_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1400' and '1459')
+		+ SUM(LNGTRMACL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1400' and '1459') as riskJugCnt_14,
+		SUM(SPDNG_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1500' and '1559')
+		+ SUM(SDACEL_RUNG_CNT)  filter (where TO_CHAR(anls_dt, 'HH24MI') between '1500' and '1559')
+		+ SUM(RPDDCL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1500' and '1559')
+		+ SUM(SDSTOP_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1500' and '1559')
+		+ SUM(SDSTRT_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1500' and '1559')
+		+ SUM(LNGTRMACL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1500' and '1559') as riskJugCnt_15,
+		SUM(SPDNG_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1600' and '1659')
+		+ SUM(SDACEL_RUNG_CNT)  filter (where TO_CHAR(anls_dt, 'HH24MI') between '1600' and '1659')
+		+ SUM(RPDDCL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1600' and '1659')
+		+ SUM(SDSTOP_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1600' and '1659')
+		+ SUM(SDSTRT_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1600' and '1659')
+		+ SUM(LNGTRMACL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1600' and '1659') as riskJugCnt_16,
+		SUM(SPDNG_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1700' and '1759')
+		+ SUM(SDACEL_RUNG_CNT)  filter (where TO_CHAR(anls_dt, 'HH24MI') between '1700' and '1759')
+		+ SUM(RPDDCL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1700' and '1759')
+		+ SUM(SDSTOP_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1700' and '1759')
+		+ SUM(SDSTRT_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1700' and '1759')
+		+ SUM(LNGTRMACL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1700' and '1759') as riskJugCnt_17,
+		SUM(SPDNG_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1800' and '1859')
+		+ SUM(SDACEL_RUNG_CNT)  filter (where TO_CHAR(anls_dt, 'HH24MI') between '1800' and '1859')
+		+ SUM(RPDDCL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1800' and '1859')
+		+ SUM(SDSTOP_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1800' and '1859')
+		+ SUM(SDSTRT_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1800' and '1859')
+		+ SUM(LNGTRMACL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1800' and '1859') as riskJugCnt_18,
+		SUM(SPDNG_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1900' and '1959')
+		+ SUM(SDACEL_RUNG_CNT)  filter (where TO_CHAR(anls_dt, 'HH24MI') between '1900' and '1959')
+		+ SUM(RPDDCL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1900' and '1959')
+		+ SUM(SDSTOP_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1900' and '1959')
+		+ SUM(SDSTRT_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1900' and '1959')
+		+ SUM(LNGTRMACL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '1900' and '1959') as riskJugCnt_19,
+		SUM(SPDNG_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '2000' and '2059')
+		+ SUM(SDACEL_RUNG_CNT)  filter (where TO_CHAR(anls_dt, 'HH24MI') between '2000' and '2059')
+		+ SUM(RPDDCL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '2000' and '2059')
+		+ SUM(SDSTOP_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '2000' and '2059')
+		+ SUM(SDSTRT_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '2000' and '2059')
+		+ SUM(LNGTRMACL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '2000' and '2059') as riskJugCnt_20,
+		SUM(SPDNG_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '2100' and '2159')
+		+ SUM(SDACEL_RUNG_CNT)  filter (where TO_CHAR(anls_dt, 'HH24MI') between '2100' and '2159')
+		+ SUM(RPDDCL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '2100' and '2159')
+		+ SUM(SDSTOP_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '2100' and '2159')
+		+ SUM(SDSTRT_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '2100' and '2159')
+		+ SUM(LNGTRMACL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '2100' and '2159') as riskJugCnt_21,
+		SUM(SPDNG_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '2200' and '2259')
+		+ SUM(SDACEL_RUNG_CNT)  filter (where TO_CHAR(anls_dt, 'HH24MI') between '2200' and '2259')
+		+ SUM(RPDDCL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '2200' and '2259')
+		+ SUM(SDSTOP_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '2200' and '2259')
+		+ SUM(SDSTRT_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '2200' and '2259')
+		+ SUM(LNGTRMACL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '2200' and '2259') as riskJugCnt_22,
+		SUM(SPDNG_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '2300' and '2359')
+		+ SUM(SDACEL_RUNG_CNT)  filter (where TO_CHAR(anls_dt, 'HH24MI') between '2300' and '2359')
+		+ SUM(RPDDCL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '2300' and '2359')
+		+ SUM(SDSTOP_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '2300' and '2359')
+		+ SUM(SDSTRT_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '2300' and '2359')
+		+ SUM(LNGTRMACL_RUNG_CNT) filter (where TO_CHAR(anls_dt, 'HH24MI') between '2300' and '2359') as riskJugCnt_23
 		FROM mrt_dtg_danger_sectn mdds
-		<where>
-			<if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
-				AND TO_CHAR(ANLS_DT, 'YYYY') = #{searchYear}
-			</if>
-			<if test="startDate != null and startDate != ''">
-				<![CDATA[AND TO_CHAR(ANLS_DT, 'YYYY-MM-DD') = #{startDate}]]>
-			</if>
-		</where>
-		group by BUS_ROUTE_NO, LINK_ID
-		) mdds on mdds.link_id = eglm.LINK_ID
-		WHERE mdds.bus_route_no = #{routeId}
+		where
+		1=1
+		<!-- 연도별 검색 -->
+		<if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+			AND TO_CHAR(ANLS_DT, "YYYY') = #{searchYear}
+		</if>
+		<!-- 기간 검색 -->
+		<if test="searchPeriod != null and searchPeriod != ''">
+			<choose>
+				<when test="searchPeriod == 'weekday' ">
+					AND TO_CHAR(ANLS_DT, 'D') BETWEEN '2' AND '6'
+				</when>
+				<when test="searchPeriod == 'weekend' ">
+					AND TO_CHAR(ANLS_DT, 'D') = '1' OR TO_CHAR(ANLS_DT, 'D') = '7'
+				</when>
+				<!-- 시작 날짜만 있는경우 11-16추가 -->
+				<when test="searchPeriod == 'startDate' ">
+					<![CDATA[AND TO_CHAR(ANLS_DT, 'YYYY-MM-DD') >= #{startDate}]]>
+				</when>
+				<otherwise>
+					AND TO_CHAR(ANLS_DT, 'YYYY-MM-DD') BETWEEN #{startDate} AND #{endDate}
+				</otherwise>
+			</choose>
+		</if>
+		<!-- 시간 검색 -->
+		<if test="searchTime != null and searchTime != ''">
+			<choose>
+				<when test="searchTime == 'workingTime' ">
+					AND TO_CHAR(ANLS_DT, 'HH24') BETWEEN '06' AND '10'
+				</when>
+				<when test="searchTime == 'workingEndTime' ">
+					AND TO_CHAR(ANLS_DT, 'HH24') BETWEEN '17' AND '20'
+				</when>
+				<otherwise>
+					AND TO_CHAR(ANLS_DT, 'HH24') BETWEEN #{startTime} AND #{endTime}
+				</otherwise>
+			</choose>
+		</if>
+		group by VHCL_NO, BUS_ROUTE_NO, CO_ID, LINK_ID
+		) mdds on mdds.bus_route_no = egbl.route_id and mdds.link_id = GCIL.link_id
+		WHERE EGBL.ROUTE_ID = #{routeId}
+		<if test="searchLocation != null and searchLocation != '' and searchLocation != 'searchAllLocation'">
+            AND sido_cd LIKE CONCAT(#{searchLocation},'%')
+        </if>
+		ORDER BY EGBL.ROUTE_ID ,EGBL.LINK_ORDER asc
 	</select>
 	
 	<select id="countAllPubTrfSafeDrvAnal" parameterType="mapBigdataSearchDTO" resultType="int">
 		SELECT
 			COUNT(*)
 		FROM MRT_DTG_DANGER_SECTN mdds
-		INNER JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE gbr
+		INNER JOIN GGBIS_BUS_ROUTE gbr
 			ON mdds.BUS_ROUTE_NO = gbr.ROUTE_ID
 		WHERE
 			1=1
@@ -162,7 +416,7 @@
 				WHEN gbr.ROUTE_TP ='53' THEN '일반형공항버스'
 				END AS ROUTE_TP
 		FROM MRT_DTG_DANGER_SECTN mdds
-		LEFT JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE gbr
+		LEFT JOIN GGBIS_BUS_ROUTE gbr
 			ON mdds.BUS_ROUTE_NO = gbr.ROUTE_ID
 		WHERE
 			1=1
@@ -282,7 +536,7 @@
 														TO_CHAR(mdds.ANLS_DT,'HH24') as TIME_DATA
 													FROM
 														MRT_DTG_DANGER_SECTN mdds
-													INNER JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE gbr
+													INNER JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE gbr 
 														ON mdds.BUS_ROUTE_NO = gbr.ROUTE_ID 
 													WHERE 1=1
 														<if test="routeId != null and routeId != ''">
@@ -324,7 +578,7 @@
 				INNER JOIN BIGDATA.EXT_GGBIS_BUS_ROUTE EGBR ON
 				EGBL.ROUTE_ID = EGBR.ROUTE_ID
 				INNER JOIN BIGDATA.EXT_GGBIS_LINK_MAPPING EGLM ON EGBL.LINK_ID = EGLM.LINK_ID
-				INNER JOIN C_GM_STD_LINK GCIL ON
+				INNER JOIN C_GM_STD_LINK_TMP GCIL ON
 				EGLM.ST_LINK_ID = GCIL.LINK_ID
 				left join (
 				SELECT
@@ -346,8 +600,23 @@
 				<if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
 					AND TO_CHAR(ANLS_DT, 'YYYY') = #{searchYear}
 				</if>
-				<if test="startDate != null and startDate != ''">
-				<![CDATA[AND TO_CHAR(ANLS_DT, 'YYYY-MM-DD') = #{startDate}]]>
+				<!-- 기간 검색 -->
+				<if test="searchPeriod != null and searchPeriod != ''">
+					<choose>
+						<when test="searchPeriod == 'weekday' ">
+							AND TO_CHAR(ANLS_DT, 'D') BETWEEN '2' AND '6'
+						</when>
+						<when test="searchPeriod == 'weekend' ">
+							AND TO_CHAR(ANLS_DT, 'D') = '1' OR TO_CHAR(ANLS_DT, 'D') = '7'
+						</when>
+						<!-- 시작 날짜만 있는경우 11-16추가 -->
+						<when test="searchPeriod == 'startDate' ">
+							<![CDATA[AND TO_CHAR(ANLS_DT, 'YYYY-MM-DD') >= #{startDate}]]>
+						</when>
+						<otherwise>
+							AND TO_CHAR(ANLS_DT, 'YYYY-MM-DD') BETWEEN #{startDate} AND #{endDate}
+						</otherwise>
+					</choose>
 				</if>
 				group by VHCL_NO, BUS_ROUTE_NO, CO_ID, LINK_ID, HH
 			) mdds on mdds.bus_route_no = egbl.route_id and mdds.link_id = GCIL.link_id

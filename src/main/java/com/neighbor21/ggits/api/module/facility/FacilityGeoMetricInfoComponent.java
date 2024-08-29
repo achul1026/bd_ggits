@@ -1,14 +1,11 @@
 package com.neighbor21.ggits.api.module.facility;
 
 import com.neighbor21.ggits.api.module.BaseMapDataComponent;
-import com.neighbor21.ggits.common.component.StaticDataLoadComonent;
 import com.neighbor21.ggits.common.entity.*;
 import com.neighbor21.ggits.common.mapper.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -51,9 +48,6 @@ public class FacilityGeoMetricInfoComponent extends BaseMapDataComponent {
     @Autowired
     ScsTConIntflowMapper scsTConIntflowMapper;
 
-    @Autowired
-    StaticDataLoadComonent staticDataLoadComonent;
-
     /**
      * VDS 정보 조회
      * @return
@@ -67,8 +61,8 @@ public class FacilityGeoMetricInfoComponent extends BaseMapDataComponent {
         return list;
     }
 
-    public List<AdsiVdsColctInfo> getVDSCollectInfo(String vdsId, String mngInstCd){
-        return adsiVdsColctInfoMapper.findRecentListByVdsID(vdsId, mngInstCd);
+    public List<AdsiVdsColctInfo> getVDSCollectInfo(String vdsId){
+        return adsiVdsColctInfoMapper.findRecentListByVdsID(vdsId);
     }
 
     /**
@@ -117,8 +111,8 @@ public class FacilityGeoMetricInfoComponent extends BaseMapDataComponent {
      * 스마트교차로 정보 조회
      * @return
      */
-    public List<AdsiSmcrsrdCrsrdInfo> getSmartCrossRoadList(String mngInstCd){
-        return adsiSmcrsrdCrsrdInfoMapper.findAllOneHourStats(mngInstCd);
+    public List<AdsiSmcrsrdCrsrdInfo> getSmartCrossRoadList(){
+        return adsiSmcrsrdCrsrdInfoMapper.findAllOneHourStats();
     }
 
     /**
@@ -126,12 +120,7 @@ public class FacilityGeoMetricInfoComponent extends BaseMapDataComponent {
      * @return
      */
     public List<AdsiSmcrsrdCrsrdAcsRoadInfo> getSmartCrossRoadLinkList(){
-        List<AdsiSmcrsrdCrsrdAcsRoadInfo> mergedList = new ArrayList<>();
-        List<AdsiSmcrsrdCrsrdAcsRoadInfo> list = adsiSmcrsrdCrsrdAcsRoadInfoMapper.findAllOneHourStats();
-        /*광명 정적 스마트교차로 표준링크정보 추가*/
-//        mergedList.addAll(staticDataLoadComonent.getGmSmcrdAcsrdList());
-        mergedList.addAll(list);
-        return mergedList;
+        return adsiSmcrsrdCrsrdAcsRoadInfoMapper.findAllOneHourStats();
     }
 
     /**

@@ -1,7 +1,6 @@
 package com.neighbor21.ggits.common.entity;
 
 import java.sql.Timestamp;
-import java.util.List;
 
 /**
  * 설명
@@ -33,18 +32,6 @@ public class GgsplBusPeriodicinfo extends CommonEntity {
      String routeNm; //노선이름
      String plateNo;
      String companyId;
-     String companyNm;
-     
-     String routeTp;
-     
-     List<String> routeTpList;
-     
-     
-     //#GgbisDistrict
-     String districtGnm;	//시군구 코드
-     
-     //none col
-     String routeTpNm;
 
     public String getCollectId() {
         return collectId;
@@ -215,44 +202,4 @@ public class GgsplBusPeriodicinfo extends CommonEntity {
     public void setCompanyId(String companyId) {
         this.companyId = companyId;
     }
-
-    public String getCompanyNm() {
-        return companyNm;
-    }
-
-    public void setCompanyNm(String companyNm) {
-        this.companyNm = companyNm;
-    }
-
-	public String getRouteTp() {
-		return routeTp;
-	}
-
-	public void setRouteTp(String routeTp) {
-		this.routeTp = routeTp;
-	}
-
-	public String getRouteTpNm() {
-		return routeTpNm;
-	}
-
-	public void setRouteTpNm(String routeTpNm) {
-		this.routeTpNm = routeTpNm;
-	}
-
-	public List<String> getRouteTpList() {
-		return routeTpList;
-	}
-
-	public void setRouteTpList(List<String> routeTpList) {
-		this.routeTpList = routeTpList;
-	}
-
-	public String getDistrictGnm() {
-		return districtGnm;
-	}
-
-	public void setDistrictGnm(String districtGnm) {
-		this.districtGnm = districtGnm;
-	}
 }

@@ -6,11 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.neighbor21.ggits.common.entity.*;
-import com.neighbor21.ggits.common.enums.RouteTpCd;
-import com.neighbor21.ggits.common.hcisql.mapper.HciTsLogDriveanalMapper;
 import com.neighbor21.ggits.common.mapper.*;
-import com.neighbor21.ggits.common.util.GgitsCommonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -27,9 +23,16 @@ import com.neighbor21.ggits.api.module.bigdata.BDPredictionComponent;
 import com.neighbor21.ggits.api.module.bigdata.BDTrafficActiveEffectAnalysisComponent;
 import com.neighbor21.ggits.common.dto.MapBigdataSearchDTO;
 import com.neighbor21.ggits.common.dto.MapChartDataDTO;
+import com.neighbor21.ggits.common.entity.AdsiSmcrsrdCrsrdInfo;
+import com.neighbor21.ggits.common.entity.CommonResponse;
+import com.neighbor21.ggits.common.entity.GgbisBusRoute;
+import com.neighbor21.ggits.common.entity.MrtBusRoutePasngAnal;
+import com.neighbor21.ggits.common.entity.MrtBusRoutePrdctnAnls;
+import com.neighbor21.ggits.common.entity.Paging;
 import com.neighbor21.ggits.common.enums.MapBigdataSubMenuCd;
 import com.neighbor21.ggits.common.util.BDDateFormatUtil;
 import com.neighbor21.ggits.common.util.BDDateUtil;
+import com.neighbor21.ggits.common.util.GgitsCommonUtils;
 import com.neighbor21.ggits.web.service.map.MapBigDataService;
 
 /**
@@ -116,25 +119,6 @@ public class MapBigDataController {
 
 	@Autowired
 	GbmsBusUseCalcInfoMapper gbmsBusUseCalcInfoMapper;
-	
-	@Autowired
-	UticRoadDngrSttsFrcstMapper uticRoadDngrSttsFrcstMapper;
-
-	@Autowired
-	MrtTrfHlctcCngstnSctnMapper mrtTrfHlctcCngstnSctnMapper;
-
-	@Autowired
-	MrtSmcTrfPatMapper mrtSmcTrfPatMapper;
-
-	@Autowired
-	TsLogDriveanalMapper tsLogDriveanalMapper;
-
-	@Autowired
-	HciTsLogDriveanalMapper hciTsLogDriveanalMapper;
-
-	@Autowired
-	MrtSigCrsdTrfAnalMapper mrtSigCrsdTrfAnalMapper;
-	
     /**
      * 빅데이터 맵 교통패턴분석 viewpage 호출
      * @param type the type
@@ -150,8 +134,8 @@ public class MapBigDataController {
 			case TRAFFIC_PATTERN_ANALYSIS_AVG_SPPED: // 교통패턴분석 > 평균 속도
 				yearsList = bdPatternComponent.findAllDataYears(type);
 				break;
-			case TRAFFIC_PATTERN_ANALYSIS_CONGESTION_SECTION: // 교통패턴분석 > 상습정체구간
-				yearsList = mrtTrfHlctcCngstnSctnMapper.findAllDataYears();
+			case TRAFFIC_PATTERN_ANALYSIS_CONGESTION_SECTION: // 교통패턴분석 > 정체구간
+				yearsList = bdPatternComponent.findAllDataYears(type);
 				break;
 			default:
 				break;
@@ -229,41 +213,22 @@ public class MapBigDataController {
      */
     @GetMapping("/effect/analysis/{type}.ajax")
     public String getEffectAnalysis(Model model , @PathVariable String type) {
+    	List<Map<String,Object>> yearsList = new ArrayList<Map<String,Object>>();
+    	switch (MapBigdataSubMenuCd.getEnum(type)) {
+			case TRAFFIC_EFFECT_CONGESTION_SECTION: // 교통활동 효과분석 > 정체구간 개선효과
+				yearsList = bdTrafficActiveEffectAnalysisComponent.findAllDataYears(type);
+				break;
+			case TRAFFIC_EFFECT_EMERGENCY_VEHICLE: // 교통활동 효과분석 > 긴급차량 우선 신호시스템 제어효과
+				yearsList = bdTrafficActiveEffectAnalysisComponent.findAllDataYears(type);
+				break;
+			default:
+				break;
+    	}
     	model.addAttribute("sggCdList", mOpCodeMapper.findAllCodeListByGrpCdId("SGG_CD"));
+    	model.addAttribute("yearsList", yearsList);
     	model.addAttribute("type", type);
     	return "map/"+type;
     }
-
-	@GetMapping("/effect/analysis/{type}/data.ajax")
-	public @ResponseBody CommonResponse<?> getEffectAnalysisData(MapBigdataSearchDTO mapBigdataSearchDTO , @PathVariable String type) {
-		Map<String, Object> resultMap = new HashMap<String, Object>();
-		Integer totalCnt = 0;
-		switch (MapBigdataSubMenuCd.getEnum(type)) {
-			case TRAFFIC_EFFECT_CONGESTION_SECTION: // 교통활동 효과분석 > 정체구간 개선효과
-				resultMap.put("resultList",mrtSmcTrfPatMapper.findAllByLinkIdOrRoadNm(mapBigdataSearchDTO));
-				totalCnt = mrtSmcTrfPatMapper.countByLinkIdOrRoadNm(mapBigdataSearchDTO);
-				break;
-			case TRAFFIC_EFFECT_CONGESTION_SECTION_SVC :
-				List<MrtSigCrsdTrfAnal> resultList = mrtSigCrsdTrfAnalMapper.findAllBySvcLinkIdOrRoadNm(mapBigdataSearchDTO);
-				if(!resultList.isEmpty()){
-					totalCnt = resultList.get(0).getPagingTotalCount().intValue();
-				}
-				resultMap.put("resultList",resultList);
-				break;
-			default :
-		}
-
-		Paging paging = new Paging();
-		paging.setPageSize(5);
-		paging.setPageNo(mapBigdataSearchDTO.getPage());
-		paging.setTotalCount(totalCnt);
-
-		resultMap.put("paging", paging);
-		resultMap.put("searchOption", mapBigdataSearchDTO);
-
-		return CommonResponse.successToData(resultMap, "");
-	}
-
 
     /**
      * 빅데이터 맵 교통 위험 구간 분석 viewpage 호출
@@ -275,9 +240,10 @@ public class MapBigDataController {
     	List<Map<String,Object>> yearsList = new ArrayList<Map<String,Object>>();
     	switch (MapBigdataSubMenuCd.getEnum(type)) {
     	case TRAFFIC_DANGER_SEACTION_MORE_INFO:
+    		//TODO 도로안전 DB 확인 필요
     		break;
     	case TRAFFIC_DANGER_ROAD_SAFTY_INFO:
-    		yearsList = uticRoadDngrSttsFrcstMapper.findAllDataYears();
+    		//TODO DB 확인 필요
     		break;
     	case TRAFFIC_DANGER_ACDNT_RESION_INFO:
     		yearsList = taasAcdntDstrctMasterMapper.findAllDataYears();
@@ -298,6 +264,7 @@ public class MapBigDataController {
      */
     @GetMapping("/prediction/{type}.ajax")
     public String getPrediction(Model model , @PathVariable String type) {
+    	//TODO:: DB에서 호출 기능 추가 필요
     	List<Map<String,Object>> yearsList = new ArrayList<Map<String,Object>>();
     	switch (MapBigdataSubMenuCd.getEnum(type)) {
     	case TRAFFIC_PREDICTION_MORE_INFO:		// 더 많은 데이터 보기
@@ -319,7 +286,7 @@ public class MapBigDataController {
     		yearsList = mrtSmcrsrdTrfvlmAnalMapper.findAllDataYears();
     		break;
     	case TRAFFIC_PREDICTION_ACCDNT_INFO:	// 사고 예측 구간
-    		/*yearsList = mrtTrfAcdntDngrPrdctnMapper.findAllDataYears();*/
+    		yearsList = mrtTrfAcdntDngrPrdctnMapper.findAllDataYears();
     		break;
 		default:
 			break;
@@ -424,8 +391,7 @@ public class MapBigDataController {
 		case PUBLIC_TRAFFIC_BUS_ROUTE_BIT:			// 정류장별 버스노선 및 BIT
 			yearsList = mrtBusArvlTimePrdctnRsltMapper.findAllDataYears();
 			break;
-		case PUBLIC_TRAFFIC_BUS_ROUTE_USE_CALC :	// 노선별 교통 카드 이용 현황;
-			yearsList = gbmsBusUseCalcInfoMapper.findAllDataYears();
+		case PUBLIC_TRAFFIC_BUS_ROUTE_USE_CALC :
 			break;
 		default:
 			break;
@@ -462,10 +428,8 @@ public class MapBigDataController {
     		}
 			break;
 		case PUBLIC_TRAFFIC_START_END_USAGE:		// 기종점 대중교통 이용량
-			/*totalCnt = extGgbisBusrouteStationMapper.countAllSttnPbTrfUseStatsAnal(mapBigdataSearchDTO);
-			resultMap.put("resultList", extGgbisBusrouteStationMapper.findAllSttnPbTrfUseStatsAnsl(mapBigdataSearchDTO));*/
-			totalCnt = mrtBusRungLogAnalMapper.countByRouteNmPaging(mapBigdataSearchDTO);
-			resultMap.put("resultList", mrtBusRungLogAnalMapper.findListByRouteNmPaging(mapBigdataSearchDTO));
+			totalCnt = extGgbisBusrouteStationMapper.countAllSttnPbTrfUseStatsAnal(mapBigdataSearchDTO);
+			resultMap.put("resultList", extGgbisBusrouteStationMapper.findAllSttnPbTrfUseStatsAnsl(mapBigdataSearchDTO));
 			break;
 		case PUBLIC_TRAFFIC_REGION_USAGE:			// 권역별 대중교통 이용현황
 			totalCnt = ggbisBusRoutemapper.countPubTrfRouteInfo(mapBigdataSearchDTO);
@@ -486,9 +450,6 @@ public class MapBigDataController {
 			resultMap.put("resultList", ggbisBusStationMapper.findAllBusSttnRouteInfo(mapBigdataSearchDTO));	
 			break;
 		case PUBLIC_TRAFFIC_BUS_ROUTE_USE_CALC:
-			if(!GgitsCommonUtils.isNull(mapBigdataSearchDTO.getRouteTp())) {
-				mapBigdataSearchDTO.setRouteTpList(RouteTpCd.getRouteTpListFromRouteTpCd(mapBigdataSearchDTO.getRouteTp()));
-			}
 			totalCnt = gbmsBusUseCalcInfoMapper.countAllBySearchOption(mapBigdataSearchDTO);
 			resultMap.put("resultList", gbmsBusUseCalcInfoMapper.findAllBySearchOption(mapBigdataSearchDTO));
 			break;
@@ -533,10 +494,10 @@ public class MapBigDataController {
 			yearsList = mrtBusRoutePasngAnalMapper.findAllDataYears();
 			break;
 		case PUBLIC_TRAFFIC_ROUTE_RECIVE_CURVE:		// 노선구간별 수용성 및 굴곡도 조회
-//			yearsList = mrtBusRouteDetAnalMapper.findAllDataYears();
+			yearsList = mrtBusRouteDetAnalMapper.findAllDataYears();
 			break;
 		case PUBLIC_TRAFFIC_ROUTE_DUPL_SEC_ADEQUACY: // 노선구간별 중복구간 도출 및 적정성 조회
-//			yearsList = mrtBusRouteSectnAnalMapper.findAllDataYears();
+			yearsList = mrtBusRouteSectnAnalMapper.findAllDataYears();
 			break;
 		default:
 			break;
@@ -561,41 +522,27 @@ public class MapBigDataController {
     	
     	Integer totalCnt = 0;
     	
-
+    	mapBigdataSearchDTO = mapBigDataService.setSearchDateInfo(mapBigdataSearchDTO);
+    	mapBigdataSearchDTO.setDayOfTheWeek(BDDateUtil.findWeekdaysAndWeekend(mapBigdataSearchDTO.getSearchPeriod()));
     	
     	switch (MapBigdataSubMenuCd.getEnum(type)) {
 		case PUBLIC_TRAFFIC_ROUTE_MORE_INFO:			// 더 많은 데이터 보기
-			mapBigdataSearchDTO = mapBigDataService.setSearchDateInfo(mapBigdataSearchDTO);
-			mapBigdataSearchDTO.setDayOfTheWeek(BDDateUtil.findWeekdaysAndWeekend(mapBigdataSearchDTO.getSearchPeriod()));
 			Map<String, Object> routeUserMap = mrtBusRoutePasngAnalMapper.findAllRouteUserRankList(mapBigdataSearchDTO);
 			resultMap.put("sttnInfoArr", routeUserMap.get("sttnInfoArr"));
 			resultMap.put("userCntArr", routeUserMap.get("userCntArr"));
 			break;
 		case PUBLIC_TRAFFIC_ROUTE_USER_CNT:				// 노선구간별 승하차/재차 승객수 조회
-			if(!GgitsCommonUtils.isNull(mapBigdataSearchDTO.getRouteTp())) {
-				mapBigdataSearchDTO.setRouteTpList(RouteTpCd.getRouteTpListFromRouteTpCd(mapBigdataSearchDTO.getRouteTp()));
-			}
-//			totalCnt = mrtBusRoutePasngAnalMapper.countPubTrfRouteUserCnt(mapBigdataSearchDTO);
+			totalCnt = mrtBusRoutePasngAnalMapper.countPubTrfRouteUserCnt(mapBigdataSearchDTO);
 			List<MrtBusRoutePasngAnal> resultList = mrtBusRoutePasngAnalMapper.findAllPubTrfRouteUserCnt(mapBigdataSearchDTO);
-			if(!resultList.isEmpty()) {
-				totalCnt = Math.toIntExact(resultList.get(0).getPagingTotalCount());
-			}
 			resultMap.put("resultList", resultList);
 			break;
 		case PUBLIC_TRAFFIC_ROUTE_RECIVE_CURVE:			// 노선구간별 수용성 및 굴곡도 조회
-			mapBigdataSearchDTO = mapBigDataService.setSearchDateInfo(mapBigdataSearchDTO);
-			mapBigdataSearchDTO.setDayOfTheWeek(BDDateUtil.findWeekdaysAndWeekend(mapBigdataSearchDTO.getSearchPeriod()));
 			totalCnt = mrtBusRouteDetAnalMapper.countAllPubTrfRouteReciveCurveList(mapBigdataSearchDTO);
 			resultMap.put("resultList", mrtBusRouteDetAnalMapper.findAllPubTrfRouteReciveCurveList(mapBigdataSearchDTO));
 			break;
 		case PUBLIC_TRAFFIC_ROUTE_DUPL_SEC_ADEQUACY: 	// 노선구간별 중복구간 도출 및 적정성 조회
-			mapBigdataSearchDTO = mapBigDataService.setSearchDateInfo(mapBigdataSearchDTO);
-			mapBigdataSearchDTO.setDayOfTheWeek(BDDateUtil.findWeekdaysAndWeekend(mapBigdataSearchDTO.getSearchPeriod()));
-			if(!GgitsCommonUtils.isNull(mapBigdataSearchDTO.getRouteTp())) {
-				mapBigdataSearchDTO.setRouteTpList(RouteTpCd.getRouteTpListFromRouteTpCd(mapBigdataSearchDTO.getRouteTp()));
-			}
-			totalCnt = mrtBusRouteSectnAnalMapper.countDuplicateSectionInfo(mapBigdataSearchDTO);
-			resultMap.put("resultList", mrtBusRouteSectnAnalMapper.findAllDuplicateSectionInfo(mapBigdataSearchDTO));
+			totalCnt = mrtBusRouteSectnAnalMapper.countAllPubTrfDuplSetAdequacyList(mapBigdataSearchDTO);
+			resultMap.put("resultList", mrtBusRouteSectnAnalMapper.findAllPubTrfDuplSetAdequacyList(mapBigdataSearchDTO));
 			break;
 		default:
 			break;
@@ -620,11 +567,10 @@ public class MapBigDataController {
     @GetMapping("/bus/danger/{type}.ajax")
     public String getBusDanger(Model model , @PathVariable String type) {
     	List<Map<String,Object>> yearsList = new ArrayList<Map<String,Object>>();
-
-		MapBigdataSearchDTO mapBigdataSearchDTO = new MapBigdataSearchDTO();
+    	
     	switch (MapBigdataSubMenuCd.getEnum(type)) {
     	case PUBLIC_TRAFFIC_DANGER_SECTION_MORE_INFO:
-
+    		MapBigdataSearchDTO mapBigdataSearchDTO = new MapBigdataSearchDTO();
     		mapBigdataSearchDTO.setSearchResultType("city");
     		
     		Map<String, Object> pubTrfDagrfrecRankMap = mrtDtgDangerSectnMapper.findAllPubTrfDagrFrecRank(mapBigdataSearchDTO);
@@ -635,21 +581,7 @@ public class MapBigDataController {
     		model.addAttribute("pubTrfDagrfrecRankList", pubTrfDagrfrecRankList);
     		break;
     	case PUBLIC_TRAFFIC_DANGER_SECTION:
-//    		yearsList = mrtDtgDangerSectnMapper.findAllDataYears();
-			List<Map<String, String>> companyList = tsLogDriveanalMapper.findAllGgbisCompany();
-			/*mapBigdataSearchDTO = new MapBigdataSearchDTO();
-			List<GgbisVehicle> pubTrfRouteInfoList = hciTsLogDriveanalMapper.findAllBusVehicleByPlateNo(mapBigdataSearchDTO);
-			int totalCnt = 0;
-			if(!pubTrfRouteInfoList.isEmpty()){
-				totalCnt = pubTrfRouteInfoList.get(0).getPagingTotalCount().intValue();
-			}
-			Paging paging = new Paging();
-			paging.setPageSize(5);
-			paging.setPageNo(mapBigdataSearchDTO.getPage());
-			paging.setTotalCount(totalCnt);
-			model.addAttribute("paging", paging);
-			model.addAttribute("resultList", pubTrfRouteInfoList);*/
-			model.addAttribute("companyList", companyList);
+    		yearsList = mrtDtgDangerSectnMapper.findAllDataYears();
     		break;
     	default:
 			break;
@@ -675,10 +607,10 @@ public class MapBigDataController {
     	Map<String, Object> resultMap = new HashMap<String, Object>();
     	
     	int totalCnt = 0;
-    	List<GgbisVehicle> pubTrfRouteInfoList = new ArrayList<GgbisVehicle>();
+    	List<GgbisBusRoute> pubTrfRouteInfoList = new ArrayList<GgbisBusRoute>();
     	
-    	/*mapBigdataSearchDTO = mapBigDataService.setSearchDateInfo(mapBigdataSearchDTO);*/
-		/*mapBigdataSearchDTO.setDayOfTheWeek(BDDateUtil.findWeekdaysAndWeekend(mapBigdataSearchDTO.getSearchPeriod()));*/
+    	mapBigdataSearchDTO = mapBigDataService.setSearchDateInfo(mapBigdataSearchDTO);
+		mapBigdataSearchDTO.setDayOfTheWeek(BDDateUtil.findWeekdaysAndWeekend(mapBigdataSearchDTO.getSearchPeriod()));
 		
 		switch (MapBigdataSubMenuCd.getEnum(type)) {
     	case PUBLIC_TRAFFIC_DANGER_SECTION_MORE_INFO:
@@ -691,10 +623,8 @@ public class MapBigDataController {
 		
     		break;
     	case PUBLIC_TRAFFIC_DANGER_SECTION:
-			pubTrfRouteInfoList =  hciTsLogDriveanalMapper.findAllBusVehicleByPlateNo(mapBigdataSearchDTO);
-			if(!pubTrfRouteInfoList.isEmpty()){
-				totalCnt = pubTrfRouteInfoList.get(0).getPagingTotalCount().intValue();
-			}
+    		totalCnt = ggbisBusRoutemapper.countPubTrfRouteInfo(mapBigdataSearchDTO);
+    		pubTrfRouteInfoList = ggbisBusRoutemapper.findAllPubTrfRouteInfoList(mapBigdataSearchDTO);
     		break;
     	default:
 			break;
@@ -733,12 +663,14 @@ public class MapBigDataController {
     		model.addAttribute("scoreArr", busRoutePrdctnRank.get("scoreArr"));
     		break;
     	case PUBLIC_TRAFFIC_DISASTER_PREDICTION:	// 유동인구 밀집 예측 분석
+    		yearsList = mrtDynmcPopltnCell500RsltMapper.findAllDataYears();
     		break;
     	case BUS_ROUTE_OPTIMIZATION_PREDICTION: 	// 버스노선 최적화 예측 분석
     		break;
 		default:
 			break;
     	}
+    	model.addAttribute("yearsList", yearsList);
     	model.addAttribute("type", type);
     	return "map/"+type;
     }

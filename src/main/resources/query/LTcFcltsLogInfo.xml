@@ -74,7 +74,7 @@
      <select id="findOneLTcFcltsLogInfoByLogId" parameterType="String" resultType="lTcFcltsLogInfo">
      	SELECT
      		ltfli.LOG_ID
-     		, TO_CHAR(ltfli.OCCUR_DT,'YYYY-MM-DD HH24:MI:SS') AS OCCUR_DT_STR
+     		, TO_CHAR(ltfli.OCCUR_DT,'YYYY-MM-DD') AS OCCUR_DT_STR
      		, ltfli.LOG_TYPE
      		, ltfli.SESN_ID
      		, ltfli.RQSTR_NM
@@ -92,7 +92,7 @@
 			ltfli.FCLTS_ID,
 			ltfli.SESN_ID,
 			ltfli.LGN_IP,
-			TO_CHAR(ltfli.OCCUR_DT,'YYYY-MM-DD HH24:MI:SS') AS OCCUR_DT_STR,
+			TO_CHAR(ltfli.OCCUR_DT,'YYYY-MM-DD') AS OCCUR_DT_STR,
 			ltfli.RQSTR_NM,
 			ltfli.LOG_TYPE,
 			moc.CD_NM

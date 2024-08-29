@@ -90,7 +90,7 @@ public interface MrtSmcSpotAbnMapper {
 	 * @return
 	 */
 	List<Map<String,Object>> findTop5SumVhclTrfVlmTown();
-	
+
 	/**
 	 * @Method Name : findAllSmcSpotAbnListForStats
 	 * @작성일 : 2024. 04. 04.
@@ -106,5 +106,5 @@ public interface MrtSmcSpotAbnMapper {
 	 * @Method 설명 : 수집원별 소통정보(스마트 교차로) 리스트 개수 조회
 	 */	
 	int countSmcSpotAbnForStats(MrtSmcSpotAbn mrtSmcSpotAbn);
-	
+
 }

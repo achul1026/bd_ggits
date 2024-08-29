@@ -8,6 +8,7 @@
 	        <div class="tab_item_box flex-center">
 	            <h5 class="tab_item_title">연도별</h5>
 	            <select class="selectBox radius" name="searchYear">
+	                <option value="searchAllYear">전체</option>
 	           	<c:forEach var="yearsList" items="${yearsList}">
 	                <option value="<c:out value='${yearsList.year}'/>"><c:out value='${yearsList.year}'/>년</option>
 	           	</c:forEach>

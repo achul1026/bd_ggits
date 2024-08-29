@@ -1,16 +1,19 @@
 package com.neighbor21.ggits.api.module.monitoring;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import com.neighbor21.ggits.common.dto.MonitoringTrafficCurDto;
-import com.neighbor21.ggits.common.mapper.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.neighbor21.ggits.api.module.BaseMapDataComponent;
+import com.neighbor21.ggits.api.module.monitoring.dto.Itemlist;
 import com.neighbor21.ggits.common.dto.MapMonitoringMenuDTO;
 import com.neighbor21.ggits.common.entity.ExtGgitsLinkStd1m;
+import com.neighbor21.ggits.common.mapper.AdsiVdsColctInfoMapper;
+import com.neighbor21.ggits.common.mapper.ExtGgitsLinkStd1mMapper;
+import com.neighbor21.ggits.common.mapper.MrtSigCrsdTrfAnalMapper;
+import com.neighbor21.ggits.common.mapper.MrtSmcTrfPatMapper;
+import com.neighbor21.ggits.common.mapper.MrtStdLinkSectnInfoMapper;
 
 /**
  * 모니터링 교통현황 데이터 컴포넌트
@@ -22,6 +25,7 @@ import com.neighbor21.ggits.common.entity.ExtGgitsLinkStd1m;
 @Component
 public class MTrafficComponent extends BaseMapDataComponent {
 
+    private List<Itemlist> loadedTrafficInfoList = null;
 
     @Autowired
     MrtSmcTrfPatMapper mrtSmcTrfPatMapper;
@@ -37,64 +41,13 @@ public class MTrafficComponent extends BaseMapDataComponent {
     
     @Autowired
     AdsiVdsColctInfoMapper adsiVdsColctInfoMapper;
-
-	@Autowired
-	MonitoringTrafficCurMapper monitoringTrafficCurMapper;
-
-	static List<ExtGgitsLinkStd1m> savedTrafficInfo = new ArrayList<>();
-	static List<ExtGgitsLinkStd1m> savedTrafficInfoLowerRoadRank = new ArrayList<>();
-
     /**
      * 실시간 지/정체 도로 정보 조회
      * @return
      */
-    public List<ExtGgitsLinkStd1m> getRealtimeTrafficInfo(String minimize){
-		List<ExtGgitsLinkStd1m> list = null;
-		if(minimize.equals("true")){
-			/*if(savedTrafficInfoLowerRoadRank == null || savedTrafficInfoLowerRoadRank.isEmpty()){
-				savedTrafficInfoLowerRoadRank = extGgitsLinkStd1mMapper.findAllByRecentLowerRoadRank();
-			}*/
-			list = savedTrafficInfoLowerRoadRank;
-		}else{
-			/*if(savedTrafficInfo == null || savedTrafficInfo.isEmpty()){
-				savedTrafficInfo = extGgitsLinkStd1mMapper.findAllByRecent();
-			}*/
-			list = savedTrafficInfo;
-		}
-		return list;
+    public List<ExtGgitsLinkStd1m> getRealtimeTrafficInfo(){
+		return extGgitsLinkStd1mMapper.findAllByRecent();
     }
-
-	/**
-	 * 실시간 스마트교차로 교통량 조회
-	 * @return
-	 */
-	public List<MonitoringTrafficCurDto> getRealtimeVolumeSmart(){
-		return monitoringTrafficCurMapper.getVolumeSmartForGIS();
-	}
-
-	/**
-	 * 실시간 스마트교차로 방향별 교통량 조회
-	 * @return
-	 */
-	public List<MonitoringTrafficCurDto> getRealtimeVolumeSmartDrct(){
-		return monitoringTrafficCurMapper.getVolumeSmartDcrtForGIS();
-	}
-
-	/**
-	 * 실시간 VDS 교통량 조회
-	 * @return
-	 */
-	public List<MonitoringTrafficCurDto> getRealtimeVolumeVDS(){
-		return monitoringTrafficCurMapper.getVolumeVDSForGIS();
-	}
-
-	public void setSavedTrafficInfo(List<ExtGgitsLinkStd1m> data) {
-		savedTrafficInfo = data;
-	}
-
-	public void setSavedTrafficInfoLowerRoadRank(List<ExtGgitsLinkStd1m> data) {
-		savedTrafficInfoLowerRoadRank = data;
-	}
     
     /**
      * @Method Name : findOneCumulativeTrafficVolumeByTimeZone

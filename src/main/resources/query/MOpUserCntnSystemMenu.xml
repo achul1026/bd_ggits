@@ -32,11 +32,6 @@
 			#{useYn}
 		)
 	</insert>
-
-	<delete id="deleteByOprtrId" parameterType="long">
-		delete from M_OP_USER_CNTN_SYSTEM_MENU
-		where oprtr_id = #{oprtrId}
-	</delete>
 	
 	<update id="updateMOpUserCntnSystemMenuUseYn" parameterType="mOpUserCntnSystemMenu">
 		UPDATE M_OP_USER_CNTN_SYSTEM_MENU SET

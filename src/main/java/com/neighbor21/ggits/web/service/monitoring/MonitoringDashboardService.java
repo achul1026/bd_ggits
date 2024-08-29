@@ -1,7 +1,9 @@
 package com.neighbor21.ggits.web.service.monitoring;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,32 +15,35 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.neighbor21.ggits.common.dto.MapChartDataDTO;
 import com.neighbor21.ggits.common.dto.MonitoringDashboardDTO;
-import com.neighbor21.ggits.common.entity.AdsiSmcrsrdCrsrdAcsRoadStatsFivminCur;
 import com.neighbor21.ggits.common.entity.GimsMngInciDetail;
+import com.neighbor21.ggits.common.entity.LTcDataLog;
 import com.neighbor21.ggits.common.entity.MOpLayoutMstInfo;
 import com.neighbor21.ggits.common.entity.MOpMenu;
 import com.neighbor21.ggits.common.entity.MOpOperator;
-import com.neighbor21.ggits.common.entity.MrtBusSttnAnal;
-import com.neighbor21.ggits.common.entity.MrtDynmcPopltnCell500Rslt;
-import com.neighbor21.ggits.common.entity.MrtEvcPassAnal;
-import com.neighbor21.ggits.common.entity.MrtTrfAcdntDngrPrdctn;
-import com.neighbor21.ggits.common.entity.MrtTrfHlctcCngstnSctn;
-import com.neighbor21.ggits.common.entity.ScsEmrgVhclPathLog;
+import com.neighbor21.ggits.common.entity.MrtSigCrsdTrfAnal;
+import com.neighbor21.ggits.common.entity.MrtSmcSpotAbn;
+import com.neighbor21.ggits.common.entity.MrtStdLinkSectnInfo;
+import com.neighbor21.ggits.common.entity.ScsEmrgVhclLogInfo;
 import com.neighbor21.ggits.common.enums.LayoutMenuInfo;
-import com.neighbor21.ggits.common.mapper.AdsiSmcrsrdCrsrdAcsRoadStatsFivminCurMapper;
+import com.neighbor21.ggits.common.enums.LinkedTableInfo;
+import com.neighbor21.ggits.common.enums.ServerMngType;
+import com.neighbor21.ggits.common.mapper.GgsplBusPeriodicinfoCurMapper;
 import com.neighbor21.ggits.common.mapper.GimsMngInciDetailMapper;
+import com.neighbor21.ggits.common.mapper.LTcDataLogMapper;
 import com.neighbor21.ggits.common.mapper.MOpLayoutMstInfoMapper;
 import com.neighbor21.ggits.common.mapper.MOpMenuMapper;
 import com.neighbor21.ggits.common.mapper.MOpOperatorMapper;
-import com.neighbor21.ggits.common.mapper.MrtBusSttnAnalMapper;
-import com.neighbor21.ggits.common.mapper.MrtDynmcPopltnCell500RsltMapper;
-import com.neighbor21.ggits.common.mapper.MrtEvcPassAnalMapper;
-import com.neighbor21.ggits.common.mapper.MrtTrfAcdntDngrPrdctnMapper;
-import com.neighbor21.ggits.common.mapper.MrtTrfHlctcCngstnSctnMapper;
-import com.neighbor21.ggits.common.mapper.ScsEmrgVhclPathLogMapper;
+import com.neighbor21.ggits.common.mapper.MrtSigCrsdTrfAnalMapper;
+import com.neighbor21.ggits.common.mapper.MrtSmcAbnLosMapper;
+import com.neighbor21.ggits.common.mapper.MrtSmcSpotAbnMapper;
+import com.neighbor21.ggits.common.mapper.MrtStdLinkSectnInfoMapper;
+import com.neighbor21.ggits.common.mapper.ScsEmrgVhclCurInfoMapper;
+import com.neighbor21.ggits.common.mapper.ScsEmrgVhclLogInfoMapper;
 import com.neighbor21.ggits.common.util.GgitsCommonUtils;
 import com.neighbor21.ggits.common.util.LoginSessionUtils;
+import com.neighbor21.ggits.support.exception.CommonException;
 
 @Service
 public class MonitoringDashboardService{
@@ -50,33 +55,36 @@ public class MonitoringDashboardService{
    
    @Autowired
    MOpMenuMapper mOpMenuMapper;
-   
+    
    @Autowired
    MOpOperatorMapper mOpOperatorMapper;
- 
+   
+   @Autowired
+   MrtSmcSpotAbnMapper mrtSmcSpotAbnMapper;
+   
+   @Autowired
+   MrtSmcAbnLosMapper mrtSmcAbnLosMapper;
+   
+   @Autowired
+   MrtSigCrsdTrfAnalMapper mrtSigCrsdTrfAnalMapper;
+
+   @Autowired
+   MrtStdLinkSectnInfoMapper mrtStdLinkSectnInfoMapper;
+   
    @Autowired
    GimsMngInciDetailMapper gimsMngInciDetailMapper;
+   
+	@Autowired
+	LTcDataLogMapper lTcDataLogMapper;
 	
 	@Autowired
-	AdsiSmcrsrdCrsrdAcsRoadStatsFivminCurMapper adsiSmcrsrdCrsrdAcsRoadStatsFivminCurMapper;
+	ScsEmrgVhclLogInfoMapper scsEmrgVhclLogInfoMapper;
 	
 	@Autowired
-	MrtTrfAcdntDngrPrdctnMapper mrtTrfAcdntDngrPrdctnMapper;
+	ScsEmrgVhclCurInfoMapper scsEmrgVhclCurInfoMapper;
 	
 	@Autowired
-	MrtDynmcPopltnCell500RsltMapper mrtDynmcPopltnCell500RsltMapper;
-	
-	@Autowired
-	MrtBusSttnAnalMapper mrtBusSttnAnalMapper;
-	
-	@Autowired 
-	MrtEvcPassAnalMapper mrtEvcPassAnalMapper;
-	
-	@Autowired 
-	ScsEmrgVhclPathLogMapper scsEmrgVhclPathLogMapper;
-	
-	@Autowired 
-	MrtTrfHlctcCngstnSctnMapper mrtTrfHlctcCngstnSctnMapper;
+	GgsplBusPeriodicinfoCurMapper ggsplBusPeriodicinfoCurMapper;
 	
 	
    public MonitoringDashboardDTO getUserLayoutInfo(){
@@ -185,149 +193,440 @@ public class MonitoringDashboardService{
 	   }
    }
    
-   
-	/**
-	 * @Method Name : getSmcrdTop10Info
-	 * @작성일 : 2023. 01. 04.
-	 * @작성자 : KY.LEE
-	 * @Method 설명 : 모니터링 대시보드 -> 스마트교차로 교차로별 top 10 
-	 */	
-   public List<AdsiSmcrsrdCrsrdAcsRoadStatsFivminCur> getSmcrdTop10Info(){
-	   return adsiSmcrsrdCrsrdAcsRoadStatsFivminCurMapper.findSmcrdTop10Info();
-   }
+   public List<MapChartDataDTO> getChartDataInfo(Map<String,Object> paramMap) {
+	   List<MapChartDataDTO> resultList = new ArrayList<MapChartDataDTO>();
 
-   /**
-    * @Method Name : getSvcCongestionTop10
-    * @작성일 : 2023. 01. 23.
-    * @작성자 : KY.LEE
-    * @Method 설명 : 모니터링 대시보드 -> 도로별 주요 정체구간 TOP 10 
-    */	
-   public List<MrtTrfHlctcCngstnSctn> getSvcCongestionTop10(MrtTrfHlctcCngstnSctn mrtTrfHlctcCngstnSctn){
-	   return mrtTrfHlctcCngstnSctnMapper.findSvcCongestionTop10(mrtTrfHlctcCngstnSctn);
-   }
-   
-   /**
-    * @Method Name : getSmcrdTop10Info
-    * @작성일 : 2023. 01. 04.
-    * @작성자 : KY.LEE
-    * @Method 설명 : 모니터링 대시보드 -> 사고예측구간 지수 top 10
-    */	
-   public List<MrtTrfAcdntDngrPrdctn> getAcdntPredictionTop10Info(){
-	   return mrtTrfAcdntDngrPrdctnMapper.findAcdntPredictionTop10Info();
-   }
-   
-   /**
-    * @Method Name : getPopulationPredictionTop10
-    * @작성일 : 2023. 01. 04.
-    * @작성자 : KY.LEE
-    * @Method 설명 : 모니터링 대시보드 -> 유동인구 밀집 예측 TOP 10
-    */	
-   public List<MrtDynmcPopltnCell500Rslt> getPopulationPredictionTop10(){
-	   List<MrtDynmcPopltnCell500Rslt> list = new ArrayList<>();
-	   list = mrtDynmcPopltnCell500RsltMapper.findPopulationPredictionTop10();
-	   if(list.isEmpty())
-		   list = mrtDynmcPopltnCell500RsltMapper.findPopulationPredictionTop10Max();
-	   return list;
-   }
-
-   /**
-    * @Method Name : getBusStationUsageInit
-    * @작성일 : 2023. 01. 04.
-    * @작성자 : KY.LEE
-    * @Method 설명 : 모니터링 대시보드 -> 버스정류장 이용량
-    */	
-   public List<MrtBusSttnAnal> getBusStationUsageInit(String rideYmd){
-	   return mrtBusSttnAnalMapper.findBusStationUsageInit(rideYmd);
-   }
-
-   /**
-    * @Method Name : getWarningByMnginstcd
-    * @작성일 : 2023. 01. 04.
-    * @작성자 : KY.LEE
-    * @Method 설명 : 모니터링 대시보드 -> 돌발 수집원별 수
-    */	
-   public List<GimsMngInciDetail> getWarningByMnginstcd(){
-	   return gimsMngInciDetailMapper.findWarningByMnginstcd();
-   }
-
-   /**
-    * @Method Name : getWarningByMnginstcd
-    * @작성일 : 2023. 01. 04.
-    * @작성자 : KY.LEE
-    * @Method 설명 : 모니터링 대시보드 -> 긴급차량
-    */	
-   public Map<String,Object> getEmergAcheivePtg(){
-	   Map<String,Object> result = new HashMap<String,Object>();
+	   int layoutNo = paramMap.get("layoutNo") != null ? Integer.parseInt(String.valueOf(paramMap.get("layoutNo"))):1;
 	   
-	   List<MrtEvcPassAnal> emergAcheivePtg = mrtEvcPassAnalMapper.findEmergAcheivePtgV2();
-		   if(!emergAcheivePtg.isEmpty()) {
-//			   int compareCnt = 100;
-//			   double totalCnt = emergAcheivePtg.size();
-//			   double goalCnt = 0;
+	   MOpLayoutMstInfo mOpLayoutMstInfo = new MOpLayoutMstInfo();
+	   mOpLayoutMstInfo.setDataTypeCd("DTC000");
+	   mOpLayoutMstInfo.setOprtrId(LoginSessionUtils.getOprtrId());
+	   
+	   List<MOpLayoutMstInfo> mOpLayoutMstInfoList = mOpLayoutMstInfoMapper.findAllByOprtrIdAndMenuIdList(mOpLayoutMstInfo);
 
-			   String[] evnoArr = new String[emergAcheivePtg.size()];
-			   String[] firenameArr = new String[emergAcheivePtg.size()];
-			   int[] avgSrvcTimeArr = new int[emergAcheivePtg.size()];
-			   int[] avgArvlPrnmntTimeArr = new int[emergAcheivePtg.size()];
-			   int[] differnceTimeArr = new int[emergAcheivePtg.size()];
-			   for(int i = 0; i < emergAcheivePtg.size(); i++) {
-				   evnoArr[i] = emergAcheivePtg.get(i).getEvno();
-				   firenameArr[i] = emergAcheivePtg.get(i).getFirename();
-				   avgSrvcTimeArr[i] = emergAcheivePtg.get(i).getAvgSrvcTime().intValue();
-				   avgArvlPrnmntTimeArr[i] = emergAcheivePtg.get(i).getAvgArvlPrnmntTime().intValue();
-				   differnceTimeArr[i] = emergAcheivePtg.get(i).getDiffernceTime().intValue();
-//				   if("Y".equals(emergAcheivePtg.get(i).getGoalYn())) {
-//					   goalCnt++;
-//				   }
+	    //금일
+		String startToday = GgitsCommonUtils.getCalculationDateToString(0, "yyyy-MM-dd 00:00:00", Calendar.HOUR);
+		String endToday = GgitsCommonUtils.getCalculationDateToString(0, "yyyy-MM-dd 23:59:59", Calendar.HOUR);
+		String now = GgitsCommonUtils.getCalculationDateToString(0, "yyyy-MM-dd HH:mm:ss", Calendar.HOUR);
+		String oneHoursAgoTime = GgitsCommonUtils.getCalculationDateToString(-1, "yyyy-MM-dd HH:mm:ss", Calendar.HOUR);
+
+		//전일
+		String startYesterDay = GgitsCommonUtils.getCalculationDateToString(-1, "yyyy-MM-dd 00:00:00", Calendar.DAY_OF_MONTH);
+		String nowTimeYesterDay = GgitsCommonUtils.getCalculationDateToString(-1, "yyyy-MM-dd HH:mm:ss", Calendar.DAY_OF_MONTH);
+	   
+	   if(!mOpLayoutMstInfoList.isEmpty()) {
+		   for(MOpLayoutMstInfo dbMOpLayoutMstInfo : mOpLayoutMstInfoList) {
+			   MapChartDataDTO mapChartDataDTO = new MapChartDataDTO();
+			   mapChartDataDTO.setTitle(dbMOpLayoutMstInfo.getLayoutMenuNm());
+			   if("Y".equals(MonitoringDashboardService.getLayoutUseYn(dbMOpLayoutMstInfo, layoutNo))) {
+				   switch(dbMOpLayoutMstInfo.getFnctType()) {
+				   case "FTC004":
+					   try {
+						   mapChartDataDTO.setFnctType("FTC004");
+						   //교차로 및 구간 소통정보
+						   String commTabOption = paramMap.get("commTabOption") != null ? String.valueOf(paramMap.get("commTabOption")):"link";
+						   List<Map<String,Object>> commTop5List = new ArrayList<Map<String,Object>>();
+						   switch(commTabOption) {
+						   case "cross" :
+							   MrtSmcSpotAbn crossMrtSmcSpotAbn = new MrtSmcSpotAbn();
+							   crossMrtSmcSpotAbn.setStrDt(startToday);
+							   crossMrtSmcSpotAbn.setEndDt(now);
+							   crossMrtSmcSpotAbn.setOrderByOption("trfvlm");
+							   commTop5List = mrtSmcSpotAbnMapper.findTop5CrossRoadsInfo(crossMrtSmcSpotAbn);
+							   break;
+						   case "link" : 
+							   MrtStdLinkSectnInfo commMrtStdLinkSectnInfo = new MrtStdLinkSectnInfo();
+							   commMrtStdLinkSectnInfo.setStrDt(startToday);
+							   commMrtStdLinkSectnInfo.setEndDt(now);
+							   commTop5List = mrtStdLinkSectnInfoMapper.findTop5ByAnlsDt(commMrtStdLinkSectnInfo);
+							   break;
+						   }
+						   mapChartDataDTO.setTableData(commTop5List);
+						   mapChartDataDTO.setStartDt(GgitsCommonUtils.getTimeForStringDate(startToday, "yyyy-MM-dd HH:mm:ss"));
+						   mapChartDataDTO.setEndDt(GgitsCommonUtils.getTimeForStringDate(now, "yyyy-MM-dd HH:mm:ss"));
+						   mapChartDataDTO.setTableOption(commTabOption);
+					   } catch(ParseException e) {
+						   logger.info("교차로 및 구간 소통정보 에러발생");
+					   } catch(CommonException e) {
+						   logger.info("교차로 및 구간 소통정보 에러발생");
+					   }
+					   break;
+				   case "FTC005":
+					   try {
+					   //시간대별 누적 교통량
+					   mapChartDataDTO.setFnctType("FTC005");
+					   MrtStdLinkSectnInfo trfVlmMrtStdLinkSectnInfo = new MrtStdLinkSectnInfo();
+					   trfVlmMrtStdLinkSectnInfo.setStrDt(startToday);
+					   trfVlmMrtStdLinkSectnInfo.setEndDt(endToday);
+					   mapChartDataDTO.setTotalCnt(mrtStdLinkSectnInfoMapper.findOneSumVhclTrfvlmByAnlsDt(trfVlmMrtStdLinkSectnInfo));
+					   //차트데이터
+					   List<Map<String,Object>> chartDataList = mrtStdLinkSectnInfoMapper.findVhclFrfvlTodaysStatistics(trfVlmMrtStdLinkSectnInfo);
+				
+		     			int[] chartArr = new int[24];
+		    			
+		     			if(!resultList.isEmpty()) {
+		      				for(Map<String,Object> resultMap : chartDataList) {
+		      					String hoursStr = String.valueOf(resultMap.get("hours"));
+		       					int hours = Integer.parseInt(hoursStr);
+		     					chartArr[hours] = Integer.parseInt(String.valueOf(resultMap.get("cnt")));
+		     				}
+		     			}
+					   mapChartDataDTO.setChartData(Arrays.toString(chartArr));
+					   //동일시간대 비교
+					   trfVlmMrtStdLinkSectnInfo.setEndDt(now);
+					   int todaysCnt = mrtStdLinkSectnInfoMapper.findOneSumVhclTrfvlmByAnlsDt(trfVlmMrtStdLinkSectnInfo);
+					   trfVlmMrtStdLinkSectnInfo.setStrDt(startYesterDay);
+					   trfVlmMrtStdLinkSectnInfo.setEndDt(nowTimeYesterDay);
+					   int yesterDayCnt = mrtStdLinkSectnInfoMapper.findOneSumVhclTrfvlmByAnlsDt(trfVlmMrtStdLinkSectnInfo);
+					   int compareCnt = 0;
+					   //전일대비 증가
+					   if(todaysCnt == yesterDayCnt) {
+						   mapChartDataDTO.setCompareStts("CSC003");
+					   } else if(todaysCnt == 0 && yesterDayCnt > 0) {
+						   compareCnt = yesterDayCnt;
+						   mapChartDataDTO.setCompareStts("CSC001");
+					   } else if(todaysCnt > 0 && yesterDayCnt == 0) {
+						   compareCnt = todaysCnt;
+						   mapChartDataDTO.setCompareStts("CSC000");
+					   } else if(todaysCnt > yesterDayCnt) {
+						   compareCnt = ((todaysCnt - yesterDayCnt)/yesterDayCnt)*100;
+						   mapChartDataDTO.setCompareStts("CSC000");
+					   } else {
+						   compareCnt = ((yesterDayCnt - todaysCnt)/todaysCnt)*100;
+						   mapChartDataDTO.setCompareStts("CSC001");
+					   }
+					   mapChartDataDTO.setCompareCnt(compareCnt);
+
+					   //현재시각 -1시간 ~ 현재시간 TOP5 리스트 가져오기
+					   trfVlmMrtStdLinkSectnInfo.setStrDt(oneHoursAgoTime);
+					   trfVlmMrtStdLinkSectnInfo.setEndDt(now);
+					   List<Map<String,Object>> top5MrtStdLinkSectnInfoList = mrtStdLinkSectnInfoMapper.findTop5ByAnlsDtOrderByVhclTrfVlm(trfVlmMrtStdLinkSectnInfo);
+
+					   mapChartDataDTO.setStartDt(GgitsCommonUtils.getTimeForStringDate(oneHoursAgoTime, "yyyy-MM-dd HH:mm:ss"));
+					   mapChartDataDTO.setEndDt(GgitsCommonUtils.getTimeForStringDate(now, "yyyy-MM-dd HH:mm:ss"));
+					   mapChartDataDTO.setTableData(top5MrtStdLinkSectnInfoList);
+					   } catch(ParseException e) {
+						   logger.info("시간대별 누적 교통량 에러발생");
+					   } catch(CommonException e) {
+						   logger.info("시간대별 누적 교통량 에러발생");
+					   }
+					   break;
+				   case "FTC006":
+					   try{
+					   //시간대별 평균 통행 속도
+					   mapChartDataDTO.setFnctType("FTC006");
+					   
+					   MrtStdLinkSectnInfo speedMrtStdLinkSectnInfo = new MrtStdLinkSectnInfo();
+					   speedMrtStdLinkSectnInfo.setStrDt(startToday);
+					   speedMrtStdLinkSectnInfo.setEndDt(endToday);
+					   mapChartDataDTO.setTotalCnt(mrtStdLinkSectnInfoMapper.findOneVclSpeedAvgByAnlsDt(speedMrtStdLinkSectnInfo));
+					   //차트데이터
+					   List<Map<String,Object>> speedChartDataList = mrtStdLinkSectnInfoMapper.findSpeedAvgTodaysStatistics(speedMrtStdLinkSectnInfo);
+				
+		     			int[] speedChartArr = new int[24];
+		    			
+		     			if(!resultList.isEmpty()) {
+		      				for(Map<String,Object> resultMap : speedChartDataList) {
+		      					String hoursStr = String.valueOf(resultMap.get("hours"));
+		       					int hours = Integer.parseInt(hoursStr);
+		       					speedChartArr[hours] = Integer.parseInt(String.valueOf(resultMap.get("cnt")));
+		     				}
+		     			}
+					   mapChartDataDTO.setChartData(Arrays.toString(speedChartArr));
+					   //동일시간대 비교
+					   speedMrtStdLinkSectnInfo.setEndDt(now);
+					   int todaysSpeedCnt = mrtStdLinkSectnInfoMapper.findOneVclSpeedAvgByAnlsDt(speedMrtStdLinkSectnInfo);
+					   speedMrtStdLinkSectnInfo.setStrDt(startYesterDay);
+					   speedMrtStdLinkSectnInfo.setEndDt(nowTimeYesterDay);
+					   int yesterSpeedDayCnt = mrtStdLinkSectnInfoMapper.findOneVclSpeedAvgByAnlsDt(speedMrtStdLinkSectnInfo);
+					   int compareSpeedCnt = 0;
+					   //전일대비 증가
+					   if(todaysSpeedCnt == yesterSpeedDayCnt) {
+						   mapChartDataDTO.setCompareStts("CSC003");
+					   } else if(todaysSpeedCnt == 0 && yesterSpeedDayCnt > 0) {
+						   compareSpeedCnt = yesterSpeedDayCnt;
+						   mapChartDataDTO.setCompareStts("CSC001");
+					   } else if(todaysSpeedCnt > 0 && yesterSpeedDayCnt == 0) {
+						   compareSpeedCnt = todaysSpeedCnt;
+						   mapChartDataDTO.setCompareStts("CSC000");
+					   } else if(todaysSpeedCnt > yesterSpeedDayCnt) {
+						   compareSpeedCnt = todaysSpeedCnt - yesterSpeedDayCnt;
+						   mapChartDataDTO.setCompareStts("CSC000");
+					   } else {
+						   compareSpeedCnt = yesterSpeedDayCnt - todaysSpeedCnt;
+						   mapChartDataDTO.setCompareStts("CSC001");
+					   }
+					   mapChartDataDTO.setCompareCnt(compareSpeedCnt);
+
+					   //현재시각 -1시간 ~ 현재시간 TOP5 리스트 가져오기
+					   speedMrtStdLinkSectnInfo.setStrDt(oneHoursAgoTime);
+					   speedMrtStdLinkSectnInfo.setEndDt(now);
+					   List<Map<String,Object>> top5MrtStdLinkSectnInfoSpeedList = mrtStdLinkSectnInfoMapper.findTop5ByAvgVhclSpeedOrderByAvgVhclSpeed(speedMrtStdLinkSectnInfo);
+
+						mapChartDataDTO.setStartDt(GgitsCommonUtils.getTimeForStringDate(oneHoursAgoTime, "yyyy-MM-dd HH:mm:ss"));
+						mapChartDataDTO.setEndDt(GgitsCommonUtils.getTimeForStringDate(now, "yyyy-MM-dd HH:mm:ss"));
+					   mapChartDataDTO.setTableData(top5MrtStdLinkSectnInfoSpeedList);
+					   } catch (ParseException e) {
+						   logger.info("시간대별 평균 통행 속도 에러 발생");
+					   } catch (CommonException e) {
+						   logger.info("시간대별 평균 통행 속도 에러 발생");
+					   }
+					   break;
+				   case "FTC007":
+					   try {
+						   //시내버스 운행 현황
+						   mapChartDataDTO.setFnctType("FTC007");
+						   
+						   int busRunningCnt = ggsplBusPeriodicinfoCurMapper.countAllRealTimeBusMoveInfo();
+						   
+						   //운행중
+						   mapChartDataDTO.setStartCnt(busRunningCnt);
+						   List<Map<String,Object>> chartDataMap = ggsplBusPeriodicinfoCurMapper.findRealTimeBusMoveInfoByCity();
+						   if(chartDataMap != null &&!chartDataMap.isEmpty()) {
+							   String[] chartLabelArr = new String[chartDataMap.size()];
+							   String[] chartIdArr = new String[chartDataMap.size()];
+							   int[] chartDataArr = new int[chartDataMap.size()];
+							   
+							   for(int i = 0; i < chartDataMap.size(); i++) {
+			      					String chartLabel = String.valueOf(chartDataMap.get(i).get("adminNm"));
+			      					String chartId = String.valueOf(chartDataMap.get(i).get("cdId"));
+			      					String chartData = String.valueOf(chartDataMap.get(i).get("cnt"));
+			      					chartLabelArr[i] = chartLabel;
+			      					chartIdArr[i] = chartId;
+			      					chartDataArr[i] = Integer.parseInt(chartData);
+							   }
+							   
+							   mapChartDataDTO.setChartData(Arrays.toString(chartDataArr).replaceAll("[\\['\\]]",""));
+							   mapChartDataDTO.setChartData2(Arrays.toString(chartIdArr).replaceAll("[\\['\\]]",""));
+							   mapChartDataDTO.setChartLabel(Arrays.toString(chartLabelArr).replaceAll("[\\['\\]]",""));
+						   }
+					   } catch (CommonException e) {
+						   logger.info("시내버스 운행현황 에러 발생");
+					   }
+					   break;
+				   case "FTC008":
+					   try {
+					   //주요 정체 구간
+					   List<Map<String,Object>> delayTop5List = new ArrayList<Map<String,Object>>();
+					   mapChartDataDTO.setFnctType("FTC008");
+					   String delayTabOption = paramMap.get("delayTabOption") != null ? String.valueOf(paramMap.get("delayTabOption")):"city";
+					   
+					   	switch(delayTabOption) {
+					   	case "city" : 
+					   		MrtSmcSpotAbn cityMrtSmcSpotAbn = new MrtSmcSpotAbn();
+					   		cityMrtSmcSpotAbn.setStrDt(startToday);
+					   		cityMrtSmcSpotAbn.setEndDt(now);
+					   		
+					   		delayTop5List = mrtSmcSpotAbnMapper.findTop5SumVhclTrfVlm(cityMrtSmcSpotAbn);
+					   		break;
+					   	case "cross" :
+					   		MrtSigCrsdTrfAnal mrtSigCrsdTrfAnal = new MrtSigCrsdTrfAnal();
+					   		mrtSigCrsdTrfAnal.setStrDt(startToday);
+					   		mrtSigCrsdTrfAnal.setEndDt(now);
+					   		
+					   		delayTop5List = mrtSigCrsdTrfAnalMapper.findTop5DelayTrfInfo(mrtSigCrsdTrfAnal);
+					   		break;
+					   	case "link" : 
+					   		MrtStdLinkSectnInfo delMrtStdLinkSectnInfo = new MrtStdLinkSectnInfo();
+					   		delMrtStdLinkSectnInfo.setStrDt(startToday);
+					   		delMrtStdLinkSectnInfo.setEndDt(now);
+					   		
+					   		delayTop5List = mrtStdLinkSectnInfoMapper.findTop5DelayInfoByAnlsDt(delMrtStdLinkSectnInfo);
+					   		break;
+					   	}
+					   
+					   mapChartDataDTO.setTableData(delayTop5List);
+					   mapChartDataDTO.setStartDt(GgitsCommonUtils.getTimeForStringDate(startToday, "yyyy-MM-dd HH:mm:ss"));
+					   mapChartDataDTO.setEndDt(GgitsCommonUtils.getTimeForStringDate(now, "yyyy-MM-dd HH:mm:ss"));
+					   mapChartDataDTO.setTableOption(delayTabOption);
+					   } catch (ParseException e) {
+						   logger.info("주요 정체 구간 에러 발생");
+					   } catch (CommonException e) {
+						   logger.info("주요 정체 구간 에러 발생");
+					   }
+					   break;
+				   case "FTC009":
+					   try {
+					   mapChartDataDTO.setFnctType("FTC009");
+					   //돌발 현황
+					   GimsMngInciDetail gimsMngInciDetail = new GimsMngInciDetail();
+					   gimsMngInciDetail.setStrDt(startToday);
+					   gimsMngInciDetail.setEndDt(endToday);
+					   
+					   Map<String,Object> waringChartData = gimsMngInciDetailMapper.countByMonitoringWaringInfo(gimsMngInciDetail);
+					   int wrRunningCnt = Integer.parseInt(String.valueOf(waringChartData.get("runningCnt")));
+					   int wrCompleteCnt = Integer.parseInt(String.valueOf(waringChartData.get("completeCnt")));
+					   int wrTotalCnt = Integer.parseInt(String.valueOf(waringChartData.get("totalCnt")));
+					   
+					   //진행중
+					   mapChartDataDTO.setStartCnt(wrRunningCnt);
+					   //완료
+					   mapChartDataDTO.setEndCnt(wrCompleteCnt);
+					   //합계
+					   mapChartDataDTO.setTotalCnt(wrTotalCnt);
+					   
+					   //통계 데이터 조회
+					   //돌발 상황 비율 
+					   Map<String, Object> uneptSitnRate = gimsMngInciDetailMapper.findByMonitoringChartData(gimsMngInciDetail);
+					   mapChartDataDTO.setChartLabel((String)uneptSitnRate.get("uneptSitnRateLabelArray"));
+					   mapChartDataDTO.setChartData((String)uneptSitnRate.get("uneptSitnRateDataArray"));
+					   
+					   //돌발발생 현황 리스트 조회
+					   List<Map<String,Object>> wrTableData = gimsMngInciDetailMapper.findWarningTabInfo(gimsMngInciDetail); 
+					    mapChartDataDTO.setTableData(wrTableData);
+					   } catch (CommonException e) {
+						   logger.info("돌발현황 에러 발생");
+					   }
+					   break;
+				   case "FTC010":
+					   try {
+					   //데이터 수집 장애 알림
+					   mapChartDataDTO.setFnctType("FTC010");
+					   mapChartDataDTO.setStartDt(GgitsCommonUtils.getTimeForStringDate(startToday, "yyyy-MM-dd HH:mm:ss"));
+					   mapChartDataDTO.setEndDt(GgitsCommonUtils.getTimeForStringDate(now, "yyyy-MM-dd HH:mm:ss"));
+					   String collTabOption = paramMap.get("collTabOption") != null ? String.valueOf(paramMap.get("collTabOption")):"all";
+
+					   LTcDataLog lTcDataLog = new LTcDataLog();
+					   ServerMngType linkedType = null;
+					   lTcDataLog.setStrDt(startToday);
+					   lTcDataLog.setEndDt(now);
+					   lTcDataLog.setPrgrsStts("ERROR"); 
+					   
+					   if(!"all".equals(collTabOption)) {
+						   linkedType = ServerMngType.getServerMngTypeFromCode(collTabOption);
+						   List<String> linkedList = LinkedTableInfo.getLinkedTableInfoList(linkedType);
+						   if(!linkedList.isEmpty()) {
+							   lTcDataLog.setLinkedList(linkedList);
+						   }
+					   }
+					   
+					   List<Map<String,Object>> collectList = lTcDataLogMapper.findTop5ByClctStartDtAndEtlClsfAndLinkedList(lTcDataLog);
+					   mapChartDataDTO.setTableData(collectList);
+					   mapChartDataDTO.setTableOption(collTabOption);
+					   } catch (ParseException e) {
+						   logger.info("데이터 수집장애 이력 에러 발생");
+					   } catch (CommonException e) {
+						   logger.info("데이터 수집장애 이력 에러 발생");
+					   }
+					   break;
+				   case "FTC011":
+					   try {
+					   //긴급 차량 이동 현황
+					   mapChartDataDTO.setFnctType("FTC011");
+					   
+					   ScsEmrgVhclLogInfo scsEmrgVhclLogInfo = new ScsEmrgVhclLogInfo();
+					   scsEmrgVhclLogInfo.setStrDt(startToday);
+					   scsEmrgVhclLogInfo.setEndDt(endToday);
+					   
+					   Map<String,Object> emrgChartData = scsEmrgVhclLogInfoMapper.findOneByChartDataForMonitoringDashboard(scsEmrgVhclLogInfo);
+					   int runningCnt = Integer.parseInt(String.valueOf(emrgChartData.get("runningCnt")));
+					   int completeCnt = Integer.parseInt(String.valueOf(emrgChartData.get("completeCnt")));
+					   int totalCnt = Integer.parseInt(String.valueOf(emrgChartData.get("totalCnt")));
+					   
+					   //이동중
+					   mapChartDataDTO.setStartCnt(runningCnt);
+					   //종료
+					   mapChartDataDTO.setEndCnt(completeCnt);
+					   //합계
+					   mapChartDataDTO.setTotalCnt(totalCnt);
+					   
+					   String chartLabel = "이동중,이동완료";
+					   
+					   mapChartDataDTO.setChartLabel(chartLabel);
+					   mapChartDataDTO.setChartData(runningCnt+","+completeCnt);
+
+					   //긴급차량 운행 현황 리스트 조회
+					   List<Map<String,Object>> tableData = scsEmrgVhclCurInfoMapper.findTopTableDataForMonitoringDashboard();  
+					    mapChartDataDTO.setTableData(tableData);
+					   } catch (CommonException e) {
+						   logger.info("데이터 수집장애 이력 에러 발생");
+					   }
+					    break;
+				   default:
+					   break;
+				   }
+				   resultList.add(mapChartDataDTO);
 			   }
-//  			   if(goalCnt > 0) {
-//				   compareCnt = (int) ((goalCnt/totalCnt)*100);
-//			   }
 			   
-			   result.put("avgDifferentTime", mrtEvcPassAnalMapper.findAvgDifferentTimeForToday());
-			   result.put("evnoArr", Arrays.toString(evnoArr).replaceAll("[\\['\\]]",""));
-			   result.put("firenameArr", Arrays.toString(firenameArr).replaceAll("[\\['\\]]",""));
-			   result.put("avgSrvcTimeArr", Arrays.toString(avgSrvcTimeArr).replaceAll("[\\['\\]]",""));
-			   result.put("avgArvlPrnmntTimeArr", Arrays.toString(avgArvlPrnmntTimeArr).replaceAll("[\\['\\]]",""));
-			   result.put("differnceTimeArr", Arrays.toString(differnceTimeArr).replaceAll("[\\['\\]]",""));
 		   }
+	   }
+	   
+	   return resultList;
+   }
+   
+   public List<Map<String,Object>> getTableData(Map<String,Object> paramMap){
+	   List<Map<String,Object>> tableDataList = new ArrayList<Map<String,Object>>();
+	   String tableNm = String.valueOf(paramMap.get("tableNm"));
+	   String tabType = String.valueOf(paramMap.get("tabType"));
+	   
+	   String startToday = GgitsCommonUtils.getCalculationDateToString(0, "yyyy-MM-dd 00:00:00", Calendar.HOUR);
+	   String now = GgitsCommonUtils.getCalculationDateToString(0, "yyyy-MM-dd HH:mm:ss", Calendar.HOUR);
 
-	   return result;
-   }
-   
-   /**
-    * @Method Name : getEmergByMnginstcd
-    * @작성일 : 2023. 01. 04.
-    * @작성자 : KY.LEE
-    * @Method 설명 : 모니터링 대시보드 -> 지자체별 긴급차량 운행 현황 목록 조회
-    * @return List<ScsEmrgVhclPathLog> 
-    */	
-   public List<ScsEmrgVhclPathLog> getEmergByMnginstcd(){
-	   return scsEmrgVhclPathLogMapper.findEmergByMnginstcd();
-   }
+	   
+	   switch(tableNm) {
+	   case "communication":
+		   //소통 정보
+		    switch(tabType) {
+		    case "cross" :
+		   		MrtSmcSpotAbn crossMrtSmcSpotAbn = new MrtSmcSpotAbn();
+		   		crossMrtSmcSpotAbn.setStrDt(startToday);
+		   		crossMrtSmcSpotAbn.setEndDt(now);
+		   		crossMrtSmcSpotAbn.setOrderByOption("trfvlm");
+		   		tableDataList = mrtSmcSpotAbnMapper.findTop5CrossRoadsInfo(crossMrtSmcSpotAbn);
+		    	break;
+		   	case "link" : 
+		   		MrtStdLinkSectnInfo commMrtStdLinkSectnInfo = new MrtStdLinkSectnInfo();
+		   		commMrtStdLinkSectnInfo.setStrDt(startToday);
+		   		commMrtStdLinkSectnInfo.setEndDt(now);
+		   		tableDataList = mrtStdLinkSectnInfoMapper.findTop5ByAnlsDt(commMrtStdLinkSectnInfo);
+		   		break;
+		   	}
+		   break;
+	   case "delay":
+		   //주요 정체 구간
+		   	switch(tabType) {
+		   	case "city" : 
+		   		MrtSmcSpotAbn cityMrtSmcSpotAbn = new MrtSmcSpotAbn();
+		   		cityMrtSmcSpotAbn.setStrDt(startToday);
+		   		cityMrtSmcSpotAbn.setEndDt(now);
+		   		
+		   		tableDataList = mrtSmcSpotAbnMapper.findTop5SumVhclTrfVlm(cityMrtSmcSpotAbn);
+		   		break;
+		   	case "cross" :
+		   		MrtSigCrsdTrfAnal mrtSigCrsdTrfAnal = new MrtSigCrsdTrfAnal();
+		   		mrtSigCrsdTrfAnal.setStrDt(startToday);
+		   		mrtSigCrsdTrfAnal.setEndDt(now);
+		   		
+		   		tableDataList = mrtSigCrsdTrfAnalMapper.findTop5DelayTrfInfo(mrtSigCrsdTrfAnal);
+		   		break;
+		   	case "link" : 
+		   		MrtStdLinkSectnInfo delMrtStdLinkSectnInfo = new MrtStdLinkSectnInfo();
+		   		delMrtStdLinkSectnInfo.setStrDt(startToday);
+		   		delMrtStdLinkSectnInfo.setEndDt(now);
 
-   /**
-    * @Method Name : getEmergByMnginstcd
-    * @작성일 : 2023. 01. 04.
-    * @작성자 : KY.LEE
-    * @Method 설명 : 모니터링 대시보드 -> 지자체별 긴급차량 운행 현황 목록 조회
-    * @return List<ScsEmrgVhclPathLog> 
-    */	
-   public List<Map<String,Object>> getEmergByMnginstcdList(){
-	   return scsEmrgVhclPathLogMapper.findEmergByMnginstcdList();
+		   		tableDataList = mrtStdLinkSectnInfoMapper.findTop5DelayInfoByAnlsDt(delMrtStdLinkSectnInfo);
+		   		break;
+		   	}
+		   
+		   break;
+	   case "collection":
+		   //데이터 수집 장애 알림
+		   LTcDataLog lTcDataLog = new LTcDataLog();
+		   ServerMngType linkedType = null;
+		   lTcDataLog.setStrDt(startToday);
+		   lTcDataLog.setEndDt(now);
+		   lTcDataLog.setPrgrsStts("ERROR"); 
+		   if(!"all".equals(tabType)) {
+			   linkedType = ServerMngType.getServerMngTypeFromCode(tabType);
+			   List<String> linkedList = LinkedTableInfo.getLinkedTableInfoList(linkedType);
+			   if(!linkedList.isEmpty()) {
+				   lTcDataLog.setLinkedList(linkedList);
+			   }
+		   }
+		   tableDataList = lTcDataLogMapper.findTop5ByClctStartDtAndEtlClsfAndLinkedList(lTcDataLog);
+		   break;
+	   }
+	   return tableDataList;
    }
-   
-   
-   /**
-    * @Method Name : getEmergByMnginstcdChartDataInfo
-    * @작성일 : 2023. 01. 19.
-    * @작성자 : KY.LEE
-    * @Method 설명 : 모니터링 대시보드 -> 지자체별 긴급차량 운행 현황 차트 정보 조회
-    * @return Map<String,Object>
-    */	   
-   public Map<String,Object> getEmergByMnginstcdChartDataInfo(){
-		return scsEmrgVhclPathLogMapper.findEmergByMnginstcdChartDataInfo();
-   }
-   
    
 }

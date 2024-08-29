@@ -18,17 +18,6 @@ public interface MrtSmcrsrdTrfvlmAnalMapper {
     List<MrtSmcrsrdTrfvlmAnal> findBySearchOption(MapBigdataSearchDTO mapBigdataSearchDTO);
 
 	/**
-	 * 교차로 인접도로 교통량 예측
-	 * @param mapBigdataSearchDTO
-	 * @return
-	 */
-	List<MrtSmcrsrdTrfvlmAnal> findAllRoadAndAngleInfoBySearchOption(MapBigdataSearchDTO mapBigdataSearchDTO);
-
-	List<MrtSmcrsrdTrfvlmAnal> findAllBySearchOptionGroupTime(MapBigdataSearchDTO mapBigdataSearchDTO);
-
-	List<MrtSmcrsrdTrfvlmAnal> findAllBySearchOptionTop10(MapBigdataSearchDTO mapBigdataSearchDTO);
-
-	/**
 	 * 교차로 교통량 예측(날짜별 그룹)
 	 * @param mapBigdataSearchDTO
 	 * @return

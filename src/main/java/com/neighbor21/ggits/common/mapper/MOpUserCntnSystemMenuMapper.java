@@ -46,6 +46,4 @@ public interface MOpUserCntnSystemMenuMapper {
 	 * @param MOpUserCntnSystemMenu
 	 */
 	void updateMOpUserCntnSystemMenuUseYn(MOpUserCntnSystemMenu mOpUserCntnSystemMenu);
-
-	void deleteByOprtrId(long oprtrId);
 }

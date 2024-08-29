@@ -195,10 +195,10 @@ public class UserMngController {
 		
 		dtoValidator.addRule("oprtrEmail", new ValidateChecker().setEmail().setRequired().setMaxLength(40, "관리자 이메일은 40자를 넘을 수 없습니다."))
 					.addRule("oprtrNm", new ValidateChecker().setRequired().setMaxLength(50, "관리자 명은 50자를 넘을 수 없습니다."))
-			   		/*.addRule("addngCd", new ValidateChecker().setRequired())*/
+			   		.addRule("addngCd", new ValidateChecker().setRequired())
 			   		.addRule("oprtrId", new ValidateChecker().setRequired())
 			   		.addRule("grpId", new ValidateChecker().setRequired());
-
+		
 	   ValidateResult dtoValidatorResult = dtoValidator.isValid();
 	   
 	   if(!dtoValidatorResult.isSuccess()) {

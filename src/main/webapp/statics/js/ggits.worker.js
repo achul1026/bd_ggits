@@ -24,30 +24,21 @@ function generateExcelFile({exportType, header, metadata, rows, filename}){
         case "featureCollection" :
             rows = rows.map(function(feature){
                 let obj = {};
-                for(const key of metadata){
+                for(const key in metadata){
                     obj[key] = feature.properties[key];
                 }
                 return obj;
             });
             break;
         default :
-            if(metadata) {
-                rows = rows.map(function (oldObj) {
-                    let obj = {};
-                    for (const key of metadata) {
-                        obj[key] = oldObj[key];
-                    }
-                    return obj;
-                });
-            }
     }
-    console.log("Excel download process --- 01");
+
     const workbook = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet([]);
     XLSX.utils.sheet_add_aoa(ws,[header]);
     XLSX.utils.sheet_add_json(ws, rows, {origin : "A2", skipHeader : true});
     XLSX.utils.book_append_sheet(workbook, ws, "Sheet1");
-    console.log("Excel download process --- 02");
+
     /* fix headers */
     /*XLSX.utils.sheet_add_aoa(worksheet, data.header, { origin: "A1" });*/
 
@@ -56,7 +47,6 @@ function generateExcelFile({exportType, header, metadata, rows, filename}){
     worksheet["!cols"] = [ { wch: max_width } ];*/
     const uint8 = XLSX.write(workbook, { type: "array", bookType: "xlsx" });
     filename = filename ? filename+(filename.endsWith(".xlsx") ? "" : ".xlsx") : "데이터추출.xlsx";
-    console.log("Excel download process --- 03");
     self.postMessage({
         event : "EXCEL.GENERATE",
         uint8 : uint8,

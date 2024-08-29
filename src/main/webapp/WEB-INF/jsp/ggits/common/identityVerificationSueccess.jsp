@@ -1,7 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <script src="${pageContext.request.contextPath}/statics/js/jquery-1.12.4.min.js"></script>
-<script src="${pageContext.request.contextPath}/statics/js/kgmobilans.js"></script>
+<script src="${pageContext.request.contextPath}/statics/js/kgmobilans2.js"></script>
 <script type="text/javascript">
 
 	if(opener.identityProcessManager.identityResultCallback){

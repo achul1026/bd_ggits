@@ -5,8 +5,8 @@
 	<sql id="eqpLogList-Where">
 		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
 			AND CLCT_DT
-			BETWEEN TO_TIMESTAMP(#{strDt}|| ' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') 
-		    	AND TO_TIMESTAMP(#{endDt}|| ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+			BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
 		</if>
 		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
 			<![CDATA[
@@ -31,7 +31,7 @@
 
 	<select id="countRseInfoList" parameterType="commonEntity" resultType="int">
 		SELECT 		
-			count(1)
+			count(arsi.*)
 		FROM bigdata.EXT_ADSI_RSE_STTS_INFO arsi
 		INNER JOIN bigdata.EXT_ADSI_M_FA_DSRC amfd
 			ON arsi.RSE_ID = amfd.RSE_ID 

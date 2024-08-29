@@ -1,20 +1,18 @@
 package com.neighbor21.ggits.common.entity;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-
 import java.sql.Timestamp;
 
 // 매 1분마다 가공된 소통정보를 누적한다.
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ExtGgitsLinkStd1m {
+	private Timestamp procDate;		// 1분 소통정보가공시각
 	private String linkId;				// 링크를 고유키로 식별하기 위해 생성 도로구분(1자리) + 링크(1자리) + 방향(1자리) + 행정구역(2자리) + 일련번호(4자리) 예) ALW100001
-	private Double spd;					// 1분 동안의 링크의 평균속도
-	private Long vol;					// 교통량
-	private Long dens;					// 밀도
-	private Double trvlTime;				// 1분동안의 링크길이에 대한 링크평균속도를 시간으로 환산한 값
-	private Long linkDelaytime;		// 링크 지체시간
-	private Long qLen;					// 대기 길이
-	private Double occ;					// 점유율
+	private long spd;					// 1분 동안의 링크의 평균속도
+	private long vol;					// 교통량
+	private long dens;					// 밀도
+	private long trvlTime;				// 1분동안의 링크길이에 대한 링크평균속도를 시간으로 환산한 값
+	private long linkDelaytime;		// 링크 지체시간
+	private long qLen;					// 대기 길이
+	private long occ;					// 점유율
 	private String congGrade;			// 링크별 속도에 따른 혼잡도구분(소통원활/지체서행/정체)
 	private String dowCd;				// 요일구분 (일주일+특별휴일)
 	private String weathInflCd;		// 수집일의 기상상태 구분
@@ -24,178 +22,145 @@ public class ExtGgitsLinkStd1m {
 	private Timestamp collDate;		// 수집일시(소통정보 갱신 시각
 	
 	private String roadName;			// 도로명
-	private Double avgSpd;				// 평균 속도
-	private Double minSpd;				// 최저 속도
-	private Double maxSpd;				// 최고 속도
-	private Long roadLength;			// 도로 길이
+	private long avgSpd;				// 평균 속도
+	private long minSpd;				// 최저 속도
+	private long maxSpd;				// 최고 속도
+	private long roadLength;			// 도로 길이
 	
 	private String roadRank;			// 도로 등급
-
+	
+	public Timestamp getProcDate() {
+		return procDate;
+	}
+	public void setProcDate(Timestamp procDate) {
+		this.procDate = procDate;
+	}
 	public String getLinkId() {
 		return linkId;
 	}
-
 	public void setLinkId(String linkId) {
 		this.linkId = linkId;
 	}
-
-	public Double getSpd() {
+	public long getSpd() {
 		return spd;
 	}
-
-	public void setSpd(Double spd) {
+	public void setSpd(long spd) {
 		this.spd = spd;
 	}
-
-	public Long getVol() {
+	public long getVol() {
 		return vol;
 	}
-
-	public void setVol(Long vol) {
+	public void setVol(long vol) {
 		this.vol = vol;
 	}
-
-	public Long getDens() {
+	public long getDens() {
 		return dens;
 	}
-
-	public void setDens(Long dens) {
+	public void setDens(long dens) {
 		this.dens = dens;
 	}
-
-	public Double getTrvlTime() {
+	public long getTrvlTime() {
 		return trvlTime;
 	}
-
-	public void setTrvlTime(Double trvlTime) {
+	public void setTrvlTime(long trvlTime) {
 		this.trvlTime = trvlTime;
 	}
-
-	public Long getLinkDelaytime() {
+	public long getLinkDelaytime() {
 		return linkDelaytime;
 	}
-
-	public void setLinkDelaytime(Long linkDelaytime) {
+	public void setLinkDelaytime(long linkDelaytime) {
 		this.linkDelaytime = linkDelaytime;
 	}
-
-	public Long getqLen() {
+	public long getqLen() {
 		return qLen;
 	}
-
-	public void setqLen(Long qLen) {
+	public void setqLen(long qLen) {
 		this.qLen = qLen;
 	}
-
-	public Double getOcc() {
+	public long getOcc() {
 		return occ;
 	}
-
-	public void setOcc(Double occ) {
+	public void setOcc(long occ) {
 		this.occ = occ;
 	}
-
 	public String getCongGrade() {
 		return congGrade;
 	}
-
 	public void setCongGrade(String congGrade) {
 		this.congGrade = congGrade;
 	}
-
 	public String getDowCd() {
 		return dowCd;
 	}
-
 	public void setDowCd(String dowCd) {
 		this.dowCd = dowCd;
 	}
-
 	public String getWeathInflCd() {
 		return weathInflCd;
 	}
-
 	public void setWeathInflCd(String weathInflCd) {
 		this.weathInflCd = weathInflCd;
 	}
-
 	public String getTfinfoCreTpCd() {
 		return tfinfoCreTpCd;
 	}
-
 	public void setTfinfoCreTpCd(String tfinfoCreTpCd) {
 		this.tfinfoCreTpCd = tfinfoCreTpCd;
 	}
-
 	public String getRecurrentYn() {
 		return recurrentYn;
 	}
-
 	public void setRecurrentYn(String recurrentYn) {
 		this.recurrentYn = recurrentYn;
 	}
-
 	public String getOrgCode() {
 		return orgCode;
 	}
-
 	public void setOrgCode(String orgCode) {
 		this.orgCode = orgCode;
 	}
-
 	public Timestamp getCollDate() {
 		return collDate;
 	}
-
 	public void setCollDate(Timestamp collDate) {
 		this.collDate = collDate;
 	}
-
 	public String getRoadName() {
 		return roadName;
 	}
-
 	public void setRoadName(String roadName) {
 		this.roadName = roadName;
 	}
-
-	public Double getAvgSpd() {
+	public long getAvgSpd() {
 		return avgSpd;
 	}
-
-	public void setAvgSpd(Double avgSpd) {
+	public void setAvgSpd(long avgSpd) {
 		this.avgSpd = avgSpd;
 	}
-
-	public Double getMinSpd() {
+	public long getMinSpd() {
 		return minSpd;
 	}
-
-	public void setMinSpd(Double minSpd) {
+	public void setMinSpd(long minSpd) {
 		this.minSpd = minSpd;
 	}
-
-	public Double getMaxSpd() {
+	public long getMaxSpd() {
 		return maxSpd;
 	}
-
-	public void setMaxSpd(Double maxSpd) {
+	public void setMaxSpd(long maxSpd) {
 		this.maxSpd = maxSpd;
 	}
-
-	public Long getRoadLength() {
+	public long getRoadLength() {
 		return roadLength;
 	}
-
-	public void setRoadLength(Long roadLength) {
+	public void setRoadLength(long roadLength) {
 		this.roadLength = roadLength;
 	}
-
 	public String getRoadRank() {
 		return roadRank;
 	}
-
 	public void setRoadRank(String roadRank) {
 		this.roadRank = roadRank;
 	}
+	
+	
 }

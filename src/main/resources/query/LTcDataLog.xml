@@ -16,8 +16,8 @@
 		</if>
 		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
 			AND ltdl.CLCT_START_DT 
-			BETWEEN TO_TIMESTAMP(#{strDt}|| ' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') 
-		    	AND TO_TIMESTAMP(#{endDt}|| ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+			BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
 		</if>
 		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
 			<![CDATA[
@@ -108,8 +108,9 @@
 				</otherwise>
 			</choose>
 			<if test="linkedList != null">
-				<foreach collection="linkedList" item="linked" open="AND (" close=")" separator=" or ">
-					LTDL.TRGT_TBL LIKE #{linked}||'%'
+				AND LTDL.TRGT_TBL IN
+				<foreach collection="linkedList" item="linked" open="(" close=")" separator=",">
+					#{linked}
 				</foreach>
 			</if>
 			<if test="prgrsStts != null and prgrsStts != '' and prgrsStts != 'all'">
@@ -150,8 +151,9 @@
 			]]>
 			</if>
 			<if test="linkedList != null">
-				<foreach collection="linkedList" item="linked" open="AND (" close=")" separator=" or ">
-					LTDL.TRGT_TBL LIKE #{linked}||'%'
+				AND LTDL.TRGT_TBL IN
+				<foreach collection="linkedList" item="linked" open="(" close=")" separator=",">
+					#{linked}
 				</foreach>
 			</if>
 			AND 	LTDL.PRGRS_STTS = #{prgrsStts} 
@@ -186,8 +188,9 @@
 				</otherwise>
 			</choose>
 			<if test="linkedList != null">
-				<foreach collection="linkedList" item="linked" open="AND (" close=")" separator=" or ">
-					LTDL.TRGT_TBL LIKE #{linked}||'%'
+				AND LTDL.TRGT_TBL IN
+				<foreach collection="linkedList" item="linked" open="(" close=")" separator=",">
+					#{linked}
 				</foreach>
 			</if>
 			<if test="prgrsStts != null and prgrsStts != '' and prgrsStts != 'all'">

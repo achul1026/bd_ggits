@@ -3,22 +3,26 @@
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.AdsiVdsColctInfoMapper'>
 	<select id="findRecentListByVdsID" resultType="adsiVdsColctInfo">
-
-		select
-			MNG_INST_CD ,
-			VDS_ID ,
-			LANE_NO ,
-			sum(TRFVLM) as TRFVLM,
-			avg(AVG_SPEED) as AVG_SPEED
-		from
-			adsi_vds_colct_info_cur avcic
-		where
-			VDS_ID = #{vdsId}
-		  and mng_inst_cd = #{mngInstCd}
-		  and
-			clct_dt >= now() - interval '1 hour'
-		group by MNG_INST_CD ,
-			VDS_ID ,
-			LANE_NO
+		SELECT
+			AVCI.MNG_INST_CD
+			 ,AVCI.CLCT_DT
+			 ,AVCI.VDS_ID
+			 ,AVCI.LANE_NO
+			 ,AVCI.AVG_SPEED
+			 ,AVCI.TRFVLM
+			 ,AVCI.OCCP_RT
+		FROM
+			BIGDATA.EXT_ADSI_VDS_COLCT_INFO AVCI
+				INNER JOIN (
+				SELECT
+					MAX(AVCI.CLCT_DT) AS CLCT_DT
+					 ,VDS_ID
+					 ,LANE_NO
+				FROM BIGDATA.EXT_ADSI_VDS_COLCT_INFO AVCI
+				WHERE AVCI.VDS_ID = #{vdsId}
+				GROUP BY VDS_ID, LANE_NO
+			) RCT ON AVCI.CLCT_DT = RCT.CLCT_DT AND AVCI.VDS_ID = RCT.VDS_ID AND AVCI.LANE_NO = RCT.LANE_NO
+		WHERE AVCI.VDS_ID = #{vdsId}
+		GROUP BY AVCI.MNG_INST_CD ,AVCI.CLCT_DT,AVCI.VDS_ID ,AVCI.LANE_NO ,AVCI.AVG_SPEED ,AVCI.TRFVLM ,AVCI.OCCP_RT
 	</select>
 </mapper>

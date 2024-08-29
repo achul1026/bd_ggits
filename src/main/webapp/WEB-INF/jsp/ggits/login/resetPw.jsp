@@ -11,7 +11,7 @@
                 <div class="login_tip">
                     비밀번호를 변경해주세요.<br>
                     <strong class="login_tip_txt">비밀번호는 N자리 이상 1개 이상의 특수문자</strong>를 포함해야 합니다. <br>
-                    <c:out value='${oprtrEmail}'/> 계정의 비밀번호를 재설정 해주세요.
+                	${oprtrEmail} 계정의 비밀번호를 재설정 해주세요.
                 </div>
                 <form action="/" method="GET" class="login_form" id="userChngPwForm">
                 	<input type="hidden" id="oprtrTel" name="oprtrTel" value="<c:out value='${oprtrTel}'/>" />
@@ -23,7 +23,7 @@
                         <label class="input_label">새 비밀번호</label>
                         <span class="input_line"></span>
                         <p class="error_message"></p>
-                        <button type="button" class="eye_img"><img src="${pageContext.request.contextPath}/statics/images/eye_off.png" alt="눈"></button>
+                        <button type="button" class="eye_img"><img src="../statics/images/eye_off.png" alt="눈"></button>
                     </div>
                     <div class="input_wrap input_margin">
                         <input type="password" class="input_item chkNewPw data-validate" id="oprtrPswdChk" name="oprtrPswdChk" onkeyup="isPwValidated(this)" required
@@ -31,7 +31,7 @@
                         <label class="input_label">새 비밀번호 확인</label>
                         <span class="input_line"></span>
                         <p class="error_message"></p>
-                        <button type="button" class="eye_img"><img src="${pageContext.request.contextPath}/statics/images/eye_off.png" alt="눈"></button>
+                        <button type="button" class="eye_img"><img src="../statics/images/eye_off.png" alt="눈"></button>
                     </div>
                     <button type="button" id="resetPwBtn" class="is-button password_btn">변경 완료</button>
                     <div class="login_bottom_item">

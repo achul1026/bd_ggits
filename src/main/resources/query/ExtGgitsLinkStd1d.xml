@@ -5,8 +5,8 @@
 	<sql id="extGgitsLinkStd1m-Where">
 		<if test="(strDt != '' and strDt != '') and (endDt != '' and endDt != null)">
 			AND exgls1.PROC_DATE 
-			BETWEEN TO_TIMESTAMP(#{strDt}|| ' 00:00:00', 'YYYY-MM-DD HH24:MI:SS') 
-		    	AND TO_TIMESTAMP(#{endDt}|| ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+			BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
+		    	AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
 		</if>
 		<if test="(strDt != '' and strDt != null) and (endDt == '' or endDt == null)">
 			<![CDATA[
@@ -31,7 +31,7 @@
                 </foreach>
 		</if>
 	</sql>
-
+	
 	<select id="findAllTrafficInfoStats" parameterType="commonEntity" resultType="extGgitsLinkStd1d">
 		SELECT 
 			cgslam.ROAD_NAME
@@ -48,8 +48,8 @@
 				WHEN gcil.ROAD_RANK ='107' THEN '시군도'
 				WHEN gcil.ROAD_RANK ='108' THEN '기타'
 				END AS ROAD_RANK
-		FROM BIGDATA.EXT_GGITS_LINK_STD_1D exgls1
-		INNER JOIN C_GM_STD_LINK GCIL
+		FROM GGITS_LINK_STD_1D exgls1
+		INNER JOIN C_GM_STD_LINK_TMP /*todo :: _TMP 제거*/ GCIL 
 			ON exgls1.LINK_ID = GCIL.LINK_ID
 		INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam
 			ON GCIL.LINK_ID  = cgslam.LINK_ID 
@@ -67,8 +67,8 @@
 		FROM (
 			SELECT 
 				cgslam.ROAD_NAME
-			FROM BIGDATA.EXT_GGITS_LINK_STD_1D exgls1
-			INNER JOIN C_GM_STD_LINK GCIL
+			FROM GGITS_LINK_STD_1D exgls1
+			INNER JOIN C_GM_STD_LINK_TMP /*todo :: _TMP 제거*/ GCIL 
 				ON exgls1.LINK_ID = GCIL.LINK_ID
 			INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam
 				ON GCIL.LINK_ID  = cgslam.LINK_ID 
@@ -83,8 +83,7 @@
 			cgslam.ROAD_NAME
 			, ROUND(SUM(exgls1.spd) / COUNT(cgslam.ROAD_NAME)::NUMERIC,2) as avgSpd
 			, ROUND(SUM(exgls1.VOL) / COUNT(cgslam.ROAD_NAME)::NUMERIC,2) as avgVol
-			, max(exgls1.CONG_GRADE)
-		FROM BIGDATA.EXT_GGITS_LINK_STD_1D exgls1
+		FROM GGITS_LINK_STD_1D exgls1
 		INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam
 			ON exgls1.LINK_ID  = cgslam.LINK_ID 
 		WHERE 1=1

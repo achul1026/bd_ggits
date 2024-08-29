@@ -17,6 +17,9 @@
 			AND TO_CHAR(TO_DATE(mrsra.RIDE_YMD, 'YYYYMMDD'), 'YYYY-MM-DD')  <= #{endDt}
 			]]>
 		</if>
+		<if test="(strDt == '' or strDt == null) and (endDt == '' or endDt == null)">
+			AND TO_DATE(mrsra.RIDE_YMD, 'YYYYMMDD') > now() - interval '1 weeks'
+		</if>
 		<if test="searchContent != null and searchContent != ''">
 			AND gbs.STATION_NM LIKE '%' || #{searchContent} || '%'
 		</if>
@@ -35,7 +38,7 @@
 		SELECT
 			COUNT(*)
 		FROM MRT_BUS_STTN_RUNG_ANAL mrsra
-		INNER JOIN BIGDATA.EXT_GGBIS_BUS_STATION gbs
+		INNER JOIN bigdata.EXT_GGBIS_BUS_STATION gbs
 			ON mrsra.BSTP_ID = gbs.STATION_ID
 		WHERE	
 			1=1
@@ -51,12 +54,12 @@
 			, mrsra.TRNSIT_USER_CNT
 			, mrsra.RIDE_YMD
 		FROM MRT_BUS_STTN_RUNG_ANAL mrsra
-		INNER JOIN BIGDATA.EXT_GGBIS_BUS_STATION gbs
+		INNER JOIN bigdata.EXT_GGBIS_BUS_STATION gbs
 			ON mrsra.BSTP_ID = gbs.STATION_ID
 		WHERE	
 			1=1
 			<include refid="mrtBusSttnRungAnal-Where"/>
-		ORDER BY TO_TIMESTAMP(mrsra.RIDE_YMD, 'YYYYMMDD') DESC
-		LIMIT 10 OFFSET (#{page} - 1) * 10
+		ORDER BY TO_TIMESTAMP(mrsra.RIDE_YMD, 'YYYYMMDD') DESC 
+		LIMIT 10 OFFSET (#{page} - 1) * 10 
 	</select>
 </mapper>

@@ -8,7 +8,7 @@
     	<input type="hidden" name="pageType" value="<c:out value='${type}'/>">
     	<input type="hidden" id="mapPage" name="page" value="1">
     	<input type="hidden" id="routeId" name="routeId" value="">
-	       <%-- <div class="tab_item_box flex-center">
+	        <div class="tab_item_box flex-center">
 	            <h5 class="tab_item_title">연도별</h5>
 	            <select class="selectBox radius" name="searchYear" id="searchYear">
 	                <option value="searchAllYear">전체</option>
@@ -16,7 +16,7 @@
 	                	<option value="<c:out value='${yearsList.year}'/>"><c:out value='${yearsList.year}'/>년</option>
 	           		</c:forEach>
 	            </select>
-	        </div>--%>
+	        </div>
 	        <div class="tab_item_box flex-center">
                 <h5 class="tab_item_title">날짜<span class="required-alert">*</span></h5>
                 <div class="calendar">
@@ -35,8 +35,7 @@
 <!-- 	                <option value="fclt">정류장</option> -->
 <!-- 	            </select> -->
 		        <input type="text" placeholder="노선명을 입력해주세요." name="searchContent" id="searchContent" class="input_same search_box radius">
-				<button type="button" class="is-darkgreen-btn ml8" id="srchBtn">검색</button>	 
-				<div style="font-size: 12px;font-weight: 300;">ex) 8202 , H123</div>       
+				<button type="button" class="is-darkgreen-btn ml8" id="srchBtn">검색</button>	        
 	        </div>
 			<div class="tab_item_box flex-center pt8 none" id="tableHeader">
 				<h5 class="tab_item_title"></h5>
@@ -53,14 +52,16 @@
 					        <col style="width:20%">
 					        <col style="width:20%">
 					        <col style="width:20%">
+					        <col style="width:10%">
 					    </colgroup>
 					    <thead>
 					        <tr>
 					            <th scope="col">선택</th>
-								<th scope="col">버스유형</th>
 					            <th scope="col">버스번호</th>
-					            <th scope="col">기점정류장</th>
-					            <th scope="col">종점정류장</th>
+					            <th scope="col">출발지</th>
+					            <th scope="col">도착지</th>
+					            <th scope="col">버스유형</th>
+					            <th scope="col">배차간격</th>
 					        </tr>
 					    </thead>
 					    <tbody>
@@ -118,20 +119,6 @@
 	})
 	
 	function fnSearchList(){
-			var startDate = $("#startDate").val();
-			var searchContent =  $("#searchContent").val();
-			
-			if(startDate == null || startDate == ''){
-				new ModalBuilder().init().alertBoby("날짜를 선택 해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
-				modalAlertWrap();
-				return false;
-			}
-			if(searchContent == null || searchContent == ''){
-				new ModalBuilder().init().alertBoby("검색어를 입력해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
-				modalAlertWrap();
-				return false;
-			}
-		
 	    	$("#modalPaging > .dashboard-pg-wrap").remove();
 	    	var page = $("#mapPage").val();
 	    	
@@ -152,46 +139,37 @@
 		    			$("#modalPaging > .dashboard-pg-wrap").remove();
 	    				$("#fcltTb>tbody>tr").remove();
 	    				$("#routeTb>tbody>tr").remove();
-	    				$("#tableHeader").removeClass("none");
 	    				
 		    			if(result.data.resultList.length > 0){
-		    				$(result.data.resultList).each(function(index, item){
-		        				var routeInterval = !isNull(item.routeInterval) ? item.routeInterval : '-';
-		        				html += '<tr>' +
-		    								'<td>' + '<input type="radio" id="listItem'+index+'" name="listItem" class="bigdata_input_radio" onclick=fnSetRouteId('+item.routeId+') >' + '</td>' +
-											'<td>' + '<label for="listItem'+index+'">' + item.routeTp + '</label>' + '</td>' +
-		    								'<td>' + '<label for="listItem'+index+'">' + item.routeNm + '</label>' + '</td>' +
-		    								'<td>' + '<label for="listItem'+index+'">' + item.stStaNm + '</label>' + '</td>' +
-		    								'<td>' + '<label for="listItem'+index+'">' + item.edStaNm + '</label>' + '</td>' +
-		    							'</tr>';    					
-		        					
-		        			});
-		        			$("#routeTb>tbody").append(html);
-		        			$("#fcltTb").addClass("none");
-		        			$("#routeTb").removeClass("none");
-			    			var paging = result.data.paging;
-			    			if(paging != null && paging != ''){
-			    				title += '<span id="totalCnt2">'+paging.totalCount+'</span>개의 검색결과를 찾았습니다.';
-			    				$("#modalPaging").append(getGisPagingHtml(paging, page));
-			    			}
-			    			$(".tableTitle").html(title);
-			    			startDate = result.data.searchOption.startDate;
-			    			endDate = result.data.searchOption.endDate;
-			    			$("#startDate").val(startDate.substring(0,10));
-			    			$("#endDate").val(endDate.substring(0,10));
-			    			var dataTotalCnt2 = paging.totalCount;
-			    			$("#totalCnt2").text(numberComma(dataTotalCnt2))
-		    			} else {
-		    				title += '<span id="totalCnt2">0</span>개의 검색결과를 찾았습니다.';
-		    				html += '<tr>' +
-		    						'<td colspan="5">조회된 결과가 없습니다.</td>'+
-		    						'</tr>';
-		    						
-			    			$(".tableTitle").html(title);
-		        			$("#routeTb>tbody").append(html);
-		        			$("#fcltTb").addClass("none");
-		        			$("#routeTb").removeClass("none");
+		    				$("#tableHeader").removeClass("none");
 		    			}
+	    				$(result.data.resultList).each(function(index, item){
+	        				var routeInterval = !isNull(item.routeInterval) ? item.routeInterval : '-';
+	        				html += '<tr>' +
+	    								'<td>' + '<input type="radio" id="listItem'+index+'" name="listItem" class="bigdata_input_radio" onclick=fnSetRouteId('+item.routeId+') >' + '</td>' +
+	    								'<td>' + '<label for="listItem'+index+'">' + item.routeNm + '</label>' + '</td>' +
+	    								'<td>' + '<label for="listItem'+index+'">' + item.stStaNm + '</label>' + '</td>' +
+	    								'<td>' + '<label for="listItem'+index+'">' + item.edStaNm + '</label>' + '</td>' +						
+	    								'<td>' + '<label for="listItem'+index+'">' + item.routeTp + '</label>' + '</td>' +
+	    								'<td>' + '<label for="listItem'+index+'">' + routeInterval + '</label>' + '</td>' +							
+	    							'</tr>';    					
+	        					
+	        			});
+	        			$("#routeTb>tbody").append(html);
+	        			$("#fcltTb").addClass("none");
+	        			$("#routeTb").removeClass("none");
+		    			var paging = result.data.paging;
+		    			if(paging != null && paging != ''){
+		    				title += '<span id="totalCnt2">'+paging.totalCount+'</span>개의 검색결과를 찾았습니다.';
+		    				$("#modalPaging").append(getGisPagingHtml(paging, page));
+		    			}
+		    			$(".tableTitle").html(title);
+		    			startDate = result.data.searchOption.startDate;
+		    			endDate = result.data.searchOption.endDate;
+		    			$("#startDate").val(startDate.substring(0,10));
+		    			$("#endDate").val(endDate.substring(0,10));
+		    			var dataTotalCnt2 = paging.totalCount;
+		    			$("#totalCnt2").text(numberComma(dataTotalCnt2))
 	    			}else{
 	    				endLoading();
 	    				new ModalBuilder().init().alertBoby("노선정보 조회에 실패 하였습니다.").footer(4,'확인',function(button, modal){modal.close();}).open();

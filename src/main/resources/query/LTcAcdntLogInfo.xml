@@ -74,7 +74,7 @@
      <select id="findOneLTcFcltsLogInfoByLogId" parameterType="String" resultType="lTcAcdntLogInfo">
      	SELECT
      		ltali.LOG_ID
-     		, TO_CHAR(ltali.OCCUR_DT,'YYYY-MM-DD HH24:MI:SS') AS OCCUR_DT_STR
+     		, TO_CHAR(ltali.OCCUR_DT,'YYYY-MM-DD') AS OCCUR_DT_STR
      		, ltali.LOG_TYPE
      		, ltali.SESN_ID
      		, ltali.RQSTR_NM
@@ -89,7 +89,7 @@
 		SELECT
 			ROW_NUMBER() OVER(ORDER BY ltali.OCCUR_DT) AS rownum,
 			ltali.LOG_ID,
-			TO_CHAR(ltali.OCCUR_DT,'YYYY-MM-DD HH24:MI:SS') AS OCCUR_DT_STR,
+			TO_CHAR(ltali.OCCUR_DT,'YYYY-MM-DD') AS OCCUR_DT_STR,
 			ltali.ACDNT_ID,
 			ltali.SESN_ID,
 			ltali.LGN_IP,

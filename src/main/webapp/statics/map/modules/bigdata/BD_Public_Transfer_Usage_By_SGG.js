@@ -5,12 +5,6 @@
  */
 const BD_Public_Transfer_Usage_By_SGG = async function(searchOption = ''){
     let list = await self.util.getJsonFormApi("/bigdata/getPublicTransferUsageBySGG.ajax?"+searchOption);
-    if(list?.noLogin){
-        return {
-            error : true,
-            noLogin : true
-        }
-    }
     let features = self.util.getSGGFeatures(self.env);
     let so = self.util.convertParamToObject(searchOption);
     if(so.sigunCdId && so.sigunCdId !== '' && so.sigunCdId !== 'searchAllLocation') {

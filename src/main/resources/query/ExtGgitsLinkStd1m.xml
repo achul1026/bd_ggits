@@ -3,33 +3,31 @@
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.ExtGgitsLinkStd1mMapper'>
 	<select id="findAllByRecent" resultType="extGgitsLinkStd1m">
-
-		select
-			egtsc.proc_date as coll_date,
-			/*egtsc.route_id,*/
-			egtsc.link_id,
-			/*egtsc.link_nm,
-			egtsc.route_kornm,
-			egtsc.start_node_id,
-			egtsc.start_node_nm,
-			egtsc.end_node_id,
-			egtsc.end_node_nm,*/
-			egtsc.spd,
-			egtsc.vol,
-			egtsc.trvl_time,
-			egtsc.cong_grade,
-			egtsc.tfinfo_cre_tp_cd
-			/*egtsc.route_way,
-			egtsc.route_seq,
-			egtsc.route_no,
-			egtsc.road_rank,
-			egtsc.link_length,
-			egtsc.trafficsmth_basic_trvlspd,
-			egtsc.congest_basic_trvlspd,
-			egtsc.link_length_1,
-			egtsc.org_code,
-			egtsc.etl_dt*/
-		from
-			bigdata.ext_ggits_traffic_std_cur egtsc
+		SELECT
+			EGLSM.PROC_DATE
+			 ,EGLSM.LINK_ID
+			 ,EGLSM.SPD
+			 ,EGLSM.VOL
+			 ,EGLSM.DENS
+			 ,EGLSM.TRVL_TIME
+			 ,EGLSM.LINK_DELAYTIME
+			 ,EGLSM.Q_LEN
+			 ,EGLSM.OCC
+			 ,EGLSM.CONG_GRADE
+			 ,EGLSM.DOW_CD
+			 ,EGLSM.WEATH_INFL_CD
+			 ,EGLSM.TFINFO_CRE_TP_CD
+			 ,EGLSM.RECURRENT_YN
+			 ,EGLSM.ORG_CODE
+			 ,EGLSM.COLL_DATE
+		FROM
+			BIGDATA.EXT_GGITS_LINK_STD_1M EGLSM
+				INNER JOIN (
+				SELECT
+					MAX(EGLSM.PROC_DATE) AS RCT_CLCT_DT
+					 ,EGLSM.LINK_ID
+				FROM BIGDATA.EXT_GGITS_LINK_STD_1M EGLSM
+				GROUP BY EGLSM.LINK_ID
+			) RCT ON RCT.LINK_ID = EGLSM.LINK_ID AND RCT.RCT_CLCT_DT = EGLSM.PROC_DATE
 	</select>
 </mapper>

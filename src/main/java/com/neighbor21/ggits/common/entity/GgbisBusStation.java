@@ -30,7 +30,6 @@ public class GgbisBusStation {
 	private String wbisYn;
 	private Long mobileNoSi;
 	private String dongCd;
-	private String staOrder;
 
 	private String routeNm;
 	private String routeId;
@@ -40,18 +39,6 @@ public class GgbisBusStation {
 	private String routeTp;
 	
 	private Long routeCnt;
-
-	private String stStationNm;
-	private String stStationId;
-	private Long stMobileNo;
-	private Double stMapX;
-	private Double stMapY;
-
-	private String edStationNm;
-	private String edStationId;
-	private Long edMobileNo;
-	private Double edMapX;
-	private Double edMapY;
 	
 	public String getStationId() {
 		return stationId;
@@ -340,92 +327,5 @@ public class GgbisBusStation {
 	public void setRouteCnt(Long routeCnt) {
 		this.routeCnt = routeCnt;
 	}
-
-	public String getStStationNm() {
-		return stStationNm;
-	}
-
-	public void setStStationNm(String stStationNm) {
-		this.stStationNm = stStationNm;
-	}
-
-	public String getStStationId() {
-		return stStationId;
-	}
-
-	public void setStStationId(String stStationId) {
-		this.stStationId = stStationId;
-	}
-
-	public Double getStMapX() {
-		return stMapX;
-	}
-
-	public void setStMapX(Double stMapX) {
-		this.stMapX = stMapX;
-	}
-
-	public Double getStMapY() {
-		return stMapY;
-	}
-
-	public void setStMapY(Double stMapY) {
-		this.stMapY = stMapY;
-	}
-
-	public String getEdStationNm() {
-		return edStationNm;
-	}
-
-	public void setEdStationNm(String edStationNm) {
-		this.edStationNm = edStationNm;
-	}
-
-	public String getEdStationId() {
-		return edStationId;
-	}
-
-	public void setEdStationId(String edStationId) {
-		this.edStationId = edStationId;
-	}
-
-	public Double getEdMapX() {
-		return edMapX;
-	}
-
-	public void setEdMapX(Double edMapX) {
-		this.edMapX = edMapX;
-	}
-
-	public Double getEdMapY() {
-		return edMapY;
-	}
-
-	public void setEdMapY(Double edMapY) {
-		this.edMapY = edMapY;
-	}
-
-	public String getStaOrder() {
-		return staOrder;
-	}
-
-	public void setStaOrder(String staOrder) {
-		this.staOrder = staOrder;
-	}
-
-	public Long getStMobileNo() {
-		return stMobileNo;
-	}
-
-	public void setStMobileNo(Long stMobileNo) {
-		this.stMobileNo = stMobileNo;
-	}
-
-	public Long getEdMobileNo() {
-		return edMobileNo;
-	}
-
-	public void setEdMobileNo(Long edMobileNo) {
-		this.edMobileNo = edMobileNo;
-	}
+	
 }

@@ -1,7 +1,6 @@
 package com.neighbor21.ggits.common.mapper;
 import java.util.List;
 
-import org.apache.ibatis.annotations.Param;
 import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
 
 import com.neighbor21.ggits.common.dto.MapFacilityMenuDTO;
@@ -12,7 +11,7 @@ public interface AdsiSmcrsrdCrsrdInfoMapper {
 
     public List<AdsiSmcrsrdCrsrdInfo> findAll();
 
-	public List<AdsiSmcrsrdCrsrdInfo> findAllOneHourStats(@Param("mngInstCd") String mngInstCd);
+	public List<AdsiSmcrsrdCrsrdInfo> findAllOneHourStats();
     
     /**
 	  * @Method Name : findAllSmartForFacility

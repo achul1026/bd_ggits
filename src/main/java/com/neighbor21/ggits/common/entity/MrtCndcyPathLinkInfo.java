@@ -10,10 +10,6 @@ public class MrtCndcyPathLinkInfo {
 
     private Double length;
     private Double lengthRatio;
-    private Double scoreImprv;
-    private Double lengthVar;
-    private Long numPsngr;
-    private Long numPsngrVar;
     private Long score;
     private String geojson;
     private String roadName;
@@ -113,37 +109,5 @@ public class MrtCndcyPathLinkInfo {
 
     public void setRoadRank(String roadRank) {
         this.roadRank = roadRank;
-    }
-
-    public Double getScoreImprv() {
-        return scoreImprv;
-    }
-
-    public void setScoreImprv(Double scoreImprv) {
-        this.scoreImprv = scoreImprv;
-    }
-
-    public Double getLengthVar() {
-        return lengthVar;
-    }
-
-    public void setLengthVar(Double lengthVar) {
-        this.lengthVar = lengthVar;
-    }
-
-    public Long getNumPsngr() {
-        return numPsngr;
-    }
-
-    public void setNumPsngr(Long numPsngr) {
-        this.numPsngr = numPsngr;
-    }
-
-    public Long getNumPsngrVar() {
-        return numPsngrVar;
-    }
-
-    public void setNumPsngrVar(Long numPsngrVar) {
-        this.numPsngrVar = numPsngrVar;
     }
 }

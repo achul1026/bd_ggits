@@ -55,8 +55,4 @@ public interface MrtBusRungLogAnalMapper {
 	 * @return
 	 */
 	List<MrtBusRungLogAnal> findAllGroupBySGGAndRouteTp(MapBigdataSearchDTO mapBigdataSearchDTO);
-
-	Integer countByRouteNmPaging(MapBigdataSearchDTO mapBigdataSearchDTO);
-
-	List<MrtBusRungLogAnal> findListByRouteNmPaging(MapBigdataSearchDTO mapBigdataSearchDTO);
 }

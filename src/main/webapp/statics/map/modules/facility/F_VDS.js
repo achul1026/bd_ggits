@@ -5,12 +5,6 @@
  */
 const F_VDS = async function(){
     let list = await self.util.getJsonFormApi("/facility/getVDSList.ajax");
-    if(list?.noLogin){
-        return {
-            error : true,
-            noLogin : true
-        }
-    }
     let features = [];
     for(const info of list) {
         const obj = {

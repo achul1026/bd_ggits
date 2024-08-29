@@ -226,9 +226,9 @@
 			                            </tr>
 		                            </thead>
 									<tbody id="minTrafficValPart">
-			                           <tr>
-			                           		<td colspan="3">데이터를 조회중입니다.</td>
-			                           </tr>
+			                          	<tr>
+			                          		<td colspan="3">데이터를 조회중입니다.</td>
+			                          	</tr>
 									</tbody>	    
 		                        </table>
 	                        </div>
@@ -252,9 +252,9 @@
 			                            </tr>
 		                            </thead>
 									<tbody id="smoothTrafficPart">
-			                          	<tr>
-			                          		<td colspan="3">데이터를 조회중입니다.</td>
-			                          	</tr>
+			                            <tr>
+			                            	<td colspan="3">데이터를 조회중입니다.</td>
+			                            </tr>
 									</tbody>	    
 		                        </table>
 	                        </div>

@@ -26,6 +26,11 @@
 		<url-pattern>*.do</url-pattern>
 	</filter-mapping>
     
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>classpath*:spring/context-*.xml</param-value>
+	</context-param>
+    
 	<listener>
 		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
 	</listener>
@@ -39,12 +44,7 @@
 		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
-
-	<context-param>
-		<param-name>contextConfigLocation</param-name>
-		<param-value>classpath*:spring/context-*.xml</param-value>
-	</context-param>
-
+    
 	<servlet-mapping>
 		<servlet-name>action</servlet-name>
 		<url-pattern>*.do</url-pattern>
@@ -64,7 +64,7 @@
 		<location>/WEB-INF/jsp/ggits/error/error_400.jsp</location>
 	</error-page>
 	<error-page>
-		<!--<error-code>404</error-code>-->
+		<error-code>404</error-code>
 		<location>/WEB-INF/jsp/ggits/error/error_404.jsp</location>
 	</error-page>
 	<error-page>

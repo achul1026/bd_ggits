@@ -5,17 +5,11 @@
  */
 const BD_Prediction_Cross_Traffic = async function(searchOption = ''){
     let list = await self.util.getJsonFormApi("/bigdata/getCrossRoadTrafficQuantityPrediction.ajax?"+searchOption);
-    /*let chartDataList = await self.util.getJsonFormApi("/bigdata/getCrossRoadTrafficQuantityPredictionForChat.ajax?"+searchOption);
-    if(chartDataList.length === 0) {
+    let chartDataList = await self.util.getJsonFormApi("/bigdata/getCrossRoadTrafficQuantityPredictionForChat.ajax?"+searchOption);
+    if(chartDataList.length) {
         return {
             error : true,
             errorMsg : "조회된 데이터가 없습니다."
-        }
-    }*/
-    if(list?.noLogin){
-        return {
-            error : true,
-            noLogin : true
         }
     }
     const so = self.util.convertParamToObject(searchOption);
@@ -31,33 +25,36 @@ const BD_Prediction_Cross_Traffic = async function(searchOption = ''){
         `;
         const obj = {
             'type': 'Feature',
-            'id' : item.acsRoadId,
+            'id' : item.nodeId,
             'properties' : {
                 description : popup
             },
-            'geometry': JSON.parse(item.st)
+            'geometry': {
+                'type': 'Point',
+                'coordinates': [item.lonCrdn, item.latCrdn]
+            }
         }
 
         for(const prop in item){
             obj.properties[prop] = item[prop];
         }
-       /* const timeContentArray = item.timeGroupTxt.split(",");
+        const timeContentArray = item.timeGroupTxt.split(",");
         item.timer = {};
         obj.properties.timer = {};
         for(const a of timeContentArray) {
             const cont = a.split("=");
             const date = cont[0];
             const trfvlmTotal = cont[1];
-            /!*const strghtTrfvlm = cont[1]; // 직진 데이터
+            /*const strghtTrfvlm = cont[1]; // 직진 데이터
             const trnghtTrfvlm = cont[2]; // 우회전 데이터
-            const trnlftTrfvlm = cont[3]; // 좌회전 데이터*!/
+            const trnlftTrfvlm = cont[3]; // 좌회전 데이터*/
             obj.properties["trfvlmTotal_"+date] = parseFloat(trfvlmTotal);
-        }*/
+        }
         features.push(obj);
     }
 
     //매트릭스 차트데이터 가공
-   /* let sggNmGroupList = [];
+    let sggNmGroupList = [];
     let sggCdGroupList = [];
     let dateGroupList = [];
     let start = new Date(so.startDate);
@@ -70,36 +67,24 @@ const BD_Prediction_Cross_Traffic = async function(searchOption = ''){
         let newDate = loop.setDate(loop.getDate() + 1);
         newDate = new Date(newDate);
         let day = newDate.getDate();
-        let month = newDate.getMonth()+1;
-        if(month < 10) {
-            month = "0"+month;
-        }
-        if(day < 10) {
-            day = "0"+day;
-        }
+        let month = newDate.getMonth();
         let year = newDate.getFullYear();
         loop = new Date(newDate);
-        dateGroupList.push(year+"-"+(month)+"-"+day);
+        dateGroupList.push(year+"-"+(month+1)+"-"+day);
     }
     let data = [];
     for(const data of chartDataList) {
         const sggInfo = self.util.getSGGInfoByCode(data.adstdgCd,GITS_ENV);
-
-        if(typeof sggInfo !== "undefined" && sggNmGroupList.indexOf(sggInfo.sggNm) === -1){
+        if(sggNmGroupList.indexOf(sggInfo.sggNm) === -1){
             sggNmGroupList.push(sggInfo.sggNm);
             sggCdGroupList.push(data.adstdgCd);
-        }else{
-            if(sggNmGroupList.indexOf("알수없음") === -1) {
-                sggNmGroupList.push("알수없음");
-                sggCdGroupList.push(null);
-            }
         }
-
     }
     let sggIdx = 0;
     for(const sggCode of sggCdGroupList) {
         for(const date of dateGroupList) {
             let d = chartDataList.filter((obj) => obj.adstdgCd == sggCode && obj.yyyymmdd == date)[0];
+            console.log("d", d);
             let dataset = {
                 x : date,
                 y : sggNmGroupList[sggIdx]
@@ -107,13 +92,7 @@ const BD_Prediction_Cross_Traffic = async function(searchOption = ''){
             if(d) {
                 dataset.v = d.trfvlmTotal
             }else{
-                const unsgg = chartDataList.filter((obj) => obj.adstdgCd === null && obj.yyyymmdd == date)[0];
-                if(unsgg) {
-                    dataset.v = unsgg.trfvlmTotal;
-                }else{
-                    dataset.v = 0
-                }
-
+                dataset.v = 0
             }
             data.push(dataset);
         }
@@ -162,12 +141,12 @@ const BD_Prediction_Cross_Traffic = async function(searchOption = ''){
                 }
             }
         }
-    };*/
+    };
 
     return {
         collection : self.util.wrapFeatureCollection(features),
-        /*matrixChartData : chartOption,
+        matrixChartData : chartOption,
         sggNmGroupList : sggNmGroupList,
-        dateGroupList : dateGroupList*/
+        dateGroupList : dateGroupList
     };
 }

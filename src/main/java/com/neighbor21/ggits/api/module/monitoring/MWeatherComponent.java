@@ -38,6 +38,10 @@ public class MWeatherComponent extends BaseMapDataComponent {
             date = BDDateFormatUtil.format(now, "yyyyMMdd");
             time = BDDateFormatUtil.format(now, "HH")+"00";
         }
+
+        // TODO :: 데이터 실시간 으로 들어오면 수정
+        date = "20230915";
+        time = "1600";
         return kmaShtrmWthrFrcstMapper.findAllWeatherListByFrcstDivCdAndPrdctnYmdAndprdctnTime("PTY", date, time);
     }
 }

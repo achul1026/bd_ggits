@@ -13,9 +13,9 @@
 			<div class="contents_wrap mt24">
 				<div class="group">
 					<div class="group_text">데이터셋 아이디</div>
-					<input type="text" class="input_same group_box input-width-long" value="<c:out value='${metadataInfo.dsetId}'/>">
+					<input type="text" class="input_same group_box" value="<c:out value='${metadataInfo.dsetId}'/>">
 				</div>
-				<c:if test="${metaDataList.tblType eq 'GPDB' or metaDataList.tblType eq 'NDAP'}">
+				<c:if test="${metaDataList.tblType ne 'GPDB' and metaDataList.tblType ne 'NDAP'}">
 					<div class="group">
 						<div class="group_text">유형</div>
 						<c:choose>
@@ -30,16 +30,16 @@
 				</c:if>
 				<div class="group">
 					<div class="group_text">서비스 이름(KOR)</div>
-					<input type="text" id="tblKoreanNm" class="input_same input-width-long group_box data-validate" data-valid-name="서비스 이름(KOR)" data-valid-required placeholder="서비스 이름을 입력해 주세요." onkeyup="keyupKorEvent(this)" value="<c:out value='${metadataInfo.tblKoreanNm}'/>">
+					<input type="text" id="tblKoreanNm" class="input_same group_box data-validate" data-valid-name="서비스 이름(KOR)" data-valid-required placeholder="서비스 이름을 입력해 주세요." onkeyup="keyupKorEvent(this)" value="<c:out value='${metadataInfo.tblKoreanNm}'/>">
 				</div>
 				<div class="group">
 					<div class="group_text">서비스 이름(ENG)</div>
-					<input type="text" id="tblEngNm" class="input_same input-width-long group_box data-validate" data-valid-name="서비스 이름(ENG)" data-valid-required placeholder="서비스 이름을 입력해 주세요." onkeyup="keyupColEvent(this)" value="<c:out value='${metadataInfo.tblEngNm}'/>">
+					<input type="text" id="tblEngNm" class="input_same group_box data-validate" data-valid-name="서비스 이름(ENG)" data-valid-required placeholder="서비스 이름을 입력해 주세요." onkeyup="keyupEngEvent(this)" value="<c:out value='${metadataInfo.tblEngNm}'/>">
 				</div>
 				<div class="group">
 					<div class="group_text">분류체계</div>
                     <div class="metadata_sort_container">
-						<input type="text" class="input_same group_box input-width-long" id="clschmNm" placeholder="분류체계를 입력해 주세요." value="<c:out value='${metadataInfo.clschmNm}'/>">
+						<input type="text" class="input_same group_box" id="clschmNm" placeholder="분류체계를 입력해 주세요." value="<c:out value='${metadataInfo.clschmNm}'/>">
 						<input type="hidden" class="input_same group_box" id="clschmId" placeholder="분류체계를 입력해 주세요." value="<c:out value='${metadataInfo.clschmId}'/>">
 						<div class="metadata_sort_box none">
 							<div class="metadata_sort_wrap">
@@ -53,122 +53,76 @@
 						</div>
                     </div>
 				</div>
-			</div>
-<!-- 				<div class="group"> -->
-<!-- 					<div class="group_text">유관기관</div> -->
-<!-- 					<select class="selectBox" id="rltinstId" data-valid-name="유관기관" data-valid-required> -->
-<!-- 						<option value="">선택하기</option> -->
-<%-- 						<c:forEach var="metaInfSysInfoList" items="${metaInfSysInfoList}"> --%>
-<%-- 							<option value="<c:out value='${metaInfSysInfoList.rltinstId}'/>" ${metaInfSysInfoList.rltinstId eq metadataInfo.rltinstId ? 'selected':''}><c:out value='${metaInfSysInfoList.rltinstNm}'/></option> --%>
-<%-- 						</c:forEach> --%>
-<!-- 					</select> -->
-<!-- 				</div> -->
-<!-- 				<div class="group"> -->
-<!-- 					<div class="group_text">원본 데이터 이름</div> -->
-<%-- 					<input type="text" class="input_same group_box" id="orgDataNm" value="<c:out value='${metadataInfo.orgDataNm}'/>"> --%>
-<!-- 				</div> -->
+				<div class="group">
+					<div class="group_text">유관기관</div>
+					<select class="selectBox" id="rltinstId" data-valid-name="유관기관" data-valid-required>
+						<option value="">선택하기</option>
+						<c:forEach var="metaInfSysInfoList" items="${metaInfSysInfoList}">
+							<option value="<c:out value='${metaInfSysInfoList.rltinstId}'/>" ${metaInfSysInfoList.rltinstId eq metadataInfo.rltinstId ? 'selected':''}><c:out value='${metaInfSysInfoList.rltinstNm}'/></option>
+						</c:forEach>
+					</select>
+				</div>
+				<div class="group">
+					<div class="group_text">원본 데이터 이름</div>
+					<input type="text" class="input_same group_box" id="orgDataNm" value="<c:out value='${metadataInfo.orgDataNm}'/>">
+				</div>
 				<div>
-				<c:if test="${mOpOperatorInfo.oprtrGrd eq 'SUPER' or isUserChk}">
 					<div class="group_wrap">
 						<div class="flex-center relative">
-							<div class="group_text">데이터 유형<span class="required-alert">*</span></div>
+							<div class="group_text">데이터 유형</div>
 							<div class="group_contents btn_search_wrap btn_search_wrap_left">
 								<ul>
 									<li>
-										<select id="dataType" class="selectBox">
-											<option value="">유형선택</option>
-											<c:forEach var="dataType" items="${dataTypeList}">
-												<option value="${dataType}"><c:out value="${dataType}"/></option>
-											</c:forEach>
-										</select>
-										<input type="text" id="colEngNm" class="input_same input-width-long group_box" placeholder="데이터 컬럼 명(ENG)을 입력해 주세요." onkeyup="keyupColEvent(this)">
-										<input type="text" id="colKoreanNm" class="input_same input-width-long group_box" placeholder="데이터 컬럼 명(KOR)을 입력해 주세요." onkeyup="keyupKorEvent(this)">
+										<input type="text" id="dataType" class="input_same group_box" placeholder="데이터 유형을 입력해 주세요.">
 									</li>
 									<li>
-										<button type="button" id="addDataTypeBtn" class="is-darkgreen-btn group_search_btn">추가</button>
+										<c:if test="${isUserChk}">
+											<button type="button" id="addDataTypeBtn" class="is-darkgreen-btn group_search_btn">추가</button>
+										</c:if>
+									</li>
+								</ul>
+						</div>
+						</div>
+						<div class="group_ex">
+								데이터 유형은 최대 3개 까지 입력 가능 합니다.
+						</div>	
+					</div>
+					<div id="dataTypeWrap" class="flex-center gap8 meta_append">
+						<c:forEach var="metaColInfoList" items="${metaColInfoList}" varStatus="status">
+							<div id="dataTypeContent<c:out value='${status.index}'/>">
+							<label class="is-darkgreen-btn"><c:out value='${metaColInfoList.dataType}'/></label>
+								<input type="hidden" class="dataTypeVal" value="<c:out value='${metaColInfoList.dataType}'/>" readonly/>
+								<c:if test="${isUserChk}">
+									<button type="button" onclick="deleteDataType('<c:out value='${status.index}'/>','<c:out value='${metaColInfoList.colSqno}'/>')" class="ftsize14">삭제</button>
+								</c:if>
+							</div>		
+						</c:forEach>
+					</div>
+				</div>
+				<div class="mt24">
+					<div class="group_wrap">
+						<div class="flex-center relative">
+							<div class="group_text">데이터 키워드</div>
+							<div class="group_contents btn_search_wrap btn_search_wrap_left">
+								<ul>
+									<li>
+										<input type="text" class="input_same group_box" id="dataKeyword" placeholder="데이터 키워드를 입력해 주세요." maxlength="10">
+									</li>
+									<li>
+										<c:if test="${isUserChk}">
+											<button type="button" id="addKeywordBtn" class="is-darkgreen-btn group_search_btn">추가</button>
+										</c:if>
 									</li>
 								</ul>
 							</div>
 						</div>
-	<!-- 						<div class="group_ex"> -->
-	<!-- 								데이터 유형은 최대 3개 까지 입력 가능 합니다. -->
-	<!-- 						</div>	 -->
+						<div class="group_ex">
+								키워드는 최대 10자 까지 입력  가능 합니다.<br>예시) 정류소 명칭, 버스 노선 명칭
+						</div>		
 					</div>
-				</c:if>
-					<div id="dataTypeWrap" class="flex-center data_type_append mb24">
-						<div class="group_text">데이터 유형 상세</div>
-						<div class="group_contents">
-							<table class="content-table-layout" style="width: 60rem">
-								<colgroup>
-									<col style="width:20%">
-									<col style="width:34%">
-									<col style="width:34%">
-									<col style="width:12%">
-								</colgroup>
-								<thead>
-									<tr>
-										<th>데이터 유형</th>
-										<th>컬럼명 (ENG)</th>
-										<th>컬럼명 (KOR)</th>
-										<th>삭제</th>
-									</tr>
-								</thead>
-								<tbody id="metaColInfoTr">
-								<c:forEach var="metaColInfoList" items="${metaColInfoList}" varStatus="status">
-									<tr id="dataTypeContent<c:out value='${status.index}'/>">
-										<td><c:out value='${metaColInfoList.dataType}'/><input type="hidden" class="dataTypeVal" value="<c:out value='${metaColInfoList.dataType}'/>" readonly/> </td>
-										<td><c:out value='${metaColInfoList.colEngNm}'/><input type="hidden" class="colEngNmVal" value="<c:out value='${metaColInfoList.colEngNm}'/>" readonly/> </td>
-										<td><c:out value='${metaColInfoList.colKoreanNm}'/> <input type="hidden" class="colKoreanNmVal" value="<c:out value='${metaColInfoList.colKoreanNm}'/>" readonly/> </td>
-										<td><span onclick="deleteDataType('<c:out value='${status.index}'/>','<c:out value='${metaColInfoList.colSqno}'/>')"><img src="/statics/images/delete.png" alt="삭제" class="datamng_img"></span></td>
-									</tr>
-								</c:forEach>
-								</tbody>
-							</table>
-						</div>
-						<div class="group_text"></div>
-					</div>
-<!-- 					<div id="dataTypeWrap" class="flex-center gap8 meta_append"> -->
-<%-- 						<c:forEach var="metaColInfoList" items="${metaColInfoList}" varStatus="status"> --%>
-<%-- 							<div id="dataTypeContent<c:out value='${status.index}'/>"> --%>
-<%-- 							<c:choose> --%>
-<%-- 								<c:when test="${metadataInfo.tblType eq 'GPDB' or metadataInfo.tblType eq 'NDAP'}"> --%>
-<%-- 									<label class="is-darkgreen-btn">컬럼 명 : <c:out value='${metaColInfoList.colEngNm}'/> <br> 데이터 타입: <c:out value='${metaColInfoList.dataType}'/></label> --%>
-<%-- 								</c:when> --%>
-<%-- 								<c:otherwise> --%>
-<%-- 									<label class="is-darkgreen-btn"><c:out value='${metaColInfoList.dataType}'/></label> --%>
-<%-- 								</c:otherwise> --%>
-<%-- 							</c:choose> --%>
-<%-- 								<input type="hidden" class="dataTypeVal" value="<c:out value='${metaColInfoList.dataType}'/>" readonly/> --%>
-<%-- 								<c:if test="${isUserChk}"> --%>
-<%-- 									<button type="button" onclick="deleteDataType('<c:out value='${status.index}'/>','<c:out value='${metaColInfoList.colSqno}'/>')" class="ftsize14">삭제</button> --%>
-<%-- 								</c:if> --%>
-<!-- 							</div>		 -->
-<%-- 						</c:forEach> --%>
-<!-- 					</div> -->
+					
+					<div id="keywordWrap" class="flex-center gap8 meta_append"></div>
 				</div>
-				<div class="mt24">
-<!-- 					<div class="group_wrap"> -->
-<!-- 						<div class="flex-center relative"> -->
-<!-- 							<div class="group_text">데이터 키워드</div> -->
-<!-- 							<div class="group_contents btn_search_wrap btn_search_wrap_left"> -->
-<!-- 								<ul> -->
-<!-- 									<li> -->
-<!-- 										<input type="text" class="input_same group_box" id="dataKeyword" placeholder="데이터 키워드를 입력해 주세요." maxlength="10"> -->
-<!-- 									</li> -->
-<!-- 									<li> -->
-<%-- 										<c:if test="${isUserChk}"> --%>
-<!-- 											<button type="button" id="addKeywordBtn" class="is-darkgreen-btn group_search_btn">추가</button> -->
-<%-- 										</c:if> --%>
-<!-- 									</li> -->
-<!-- 								</ul> -->
-<!-- 							</div> -->
-<!-- 						</div> -->
-<!-- 						<div class="group_ex"> -->
-<!-- 								키워드는 최대 10자 까지 입력  가능 합니다.<br>예시) 정류소 명칭, 버스 노선 명칭 -->
-<!-- 						</div>		 -->
-<!-- 					</div> -->
-<!-- 					<div id="keywordWrap" class="flex-center gap8 meta_append"></div> -->
-<!-- 					</div> -->
 <!-- 				<div class="group mt24"> -->
 <!-- 					<div class="group_text">데이터 수집 유형<span class="required-alert">*</span></div> -->
 <!-- 					<div class="flex-column gap8 meta-input"> -->
@@ -181,7 +135,7 @@
 <!-- 				</div> -->
 				<div class="group">
 					<div class="group_text">데이터 설명</div>
-										<textarea id="tblDescr" name="tblDescr" class="textarea_same" placeholder="설명을 입력해 주세요." style="display: block"><c:out value='${metadataInfo.tblDescr}'/></textarea>			
+					<input type="text" class="input_same group_box" id="tblDescr" value="<c:out value='${metadataInfo.tblDescr}'/>">
 				</div>
 				<c:if test="${isUserChk}">
 				<!-- 파일업로드 Start -->				
@@ -192,7 +146,8 @@
 								<div class="drag-area">
 								    <div class="mb16 center ftsize14">
 								        파일 이름은 50자를 넘을 수 없습니다.<br>
-										파일은 JSON, CSV, HWP, HWPX, PDF, XML, TXT, ZIP, DOCX, DOC 유형의 파일만 업로드가 가능합니다.
+								        파일 용량은 5MB 이하만 업로드가 가능합니다.<br>
+								        파일은 JSON, CSV, HWP, PDF, XML, TXT, ZIP 유형의 파일만 업로드가 가능합니다.
 								    </div>
 								    <div>
 								        <input type="file" id="uploadFiles" style="display: none;" multiple>
@@ -209,45 +164,43 @@
 				</c:if>
 						
 				<!-- 파일 다운드로드 Start -->
-				<c:if test="${metadataInfo.tblType ne 'GPDB' and metadataInfo.tblType ne 'NDAP'}">
-					<div class="group flex-start">
-						<div class="group_text">파일 다운로드</div>
-						<c:choose>
-							<c:when test="${not empty metaFileInfoList}">
-								<div class="flex-column">
-									<div class="download_wrap mj0">
-										<div id="download_list_box">
-								            <c:forEach var="metaFileInfo" items="${metaFileInfoList}">
-						                		<div class="list_item input_same group_box flex-center">
-						                			<div class="file_list">
-								                		<c:out value='${metaFileInfo.orgFileNm}'/>
-						                			</div>
-								                		<div class="flex-center gap8">
-								                			<a href="${pageContext.request.contextPath}/metadata/manage/file/download.do?fileId=<c:out value='${metaFileInfo.fileId}'/>" class="downloadBtn">
-									                			<img src="${pageContext.request.contextPath}/statics/images/download.png" alt="업로드파일 다운로드">
-								                			</a>
-														<c:if test="${isUserChk}">
-								                			<span class="pointer" onclick="deleteFile('<c:out value='${metaFileInfo.fileId}'/>')">
-									                			<img src="${pageContext.request.contextPath}/statics/images/upload_close.png" alt="업로드파일 삭제">
-								                			</span>
-							                			</c:if>
-							                		</div>
+				<div class="group flex-start">
+					<div class="group_text">파일 다운로드</div>
+					<c:choose>
+						<c:when test="${not empty metaFileInfoList}">
+							<div class="flex-column">
+								<div class="download_wrap mj0">
+									<div id="download_list_box">
+							            <c:forEach var="metaFileInfo" items="${metaFileInfoList}">
+					                		<div class="list_item input_same group_box flex-center">
+					                			<div class="file_list">
+							                		<c:out value='${metaFileInfo.orgFileNm}'/>
+					                			</div>
+							                		<div class="flex-center gap8">
+							                			<a href="${pageContext.request.contextPath}/metadatamng/file/download.do?fileId=<c:out value='${metaFileInfo.fileId}'/>" class="downloadBtn">
+								                			<img src="${pageContext.request.contextPath}/statics/images/download.png" alt="업로드파일 다운로드">
+							                			</a>
+													<c:if test="${isUserChk}">
+							                			<span class="pointer" onclick="deleteFile('<c:out value='${metaFileInfo.fileId}'/>')">
+								                			<img src="${pageContext.request.contextPath}/statics/images/upload_close.png" alt="업로드파일 삭제">
+							                			</span>
+						                			</c:if>
 						                		</div>
-											</c:forEach>
-										</div>	
-									</div>
+					                		</div>
+										</c:forEach>
+									</div>	
 								</div>
-							<!-- 파일 다운드로드 END -->		
-							</c:when>
-							<c:otherwise>
-								<div> 등록된 파일이 없습니다. </div>
-							</c:otherwise>
-						</c:choose>
-					</div>
-				</c:if>
+							</div>
+						<!-- 파일 다운드로드 END -->		
+						</c:when>
+						<c:otherwise>
+							<div> 등록된 파일이 없습니다. </div>
+						</c:otherwise>
+					</c:choose>
+				</div>
 				<div class="group btn_search_wrap_left btn_search_wrap">
 					<ul>
-						<c:if test="${isUserChk and authCd eq 'AUC000' or mOpOperatorInfo.oprtrGrd eq 'SUPER'}">
+						<c:if test="${isUserChk and authCd eq 'AUC000'}">
 							<li>
 								<button type="button" class="is-darkgreen-btn" id="updateMetadataBtn">저장</button> 
 							</li>
@@ -255,22 +208,8 @@
 								<button type="button" class="is-darkgreen-btn" id="deleteMetadataBtn">삭제</button> 
 							</li>
 						</c:if>
-						<c:if test="${downloadYn eq 'Y'}">
-							<li>
-	                			<a class="is-darkgreen-btn downloadBtn" href="${pageContext.request.contextPath}/metadata/manage/export.do?dsetId=<c:out value='${metadataInfo.dsetId}'/>">
-	                				데이터 다운로드
-	                			</a>
-							</li>
-						</c:if>
-						<c:if test="${mOpOperatorInfo.oprtrGrd ne 'SUPER'}">
-							<li>
-	                			<button type="button" class="is-darkgreen-btn" onclick="catlogAply('<c:out value='${metadataInfo.dsetId}'/>')">
-	                				데이터 이관 신청
-	                			</button>
-							</li>
-						</c:if>
 						<li>
-							<a href="${pageContext.request.contextPath}/metadata/manage/list.do" class="is-dark-btn">목록</a>
+							<a href="${pageContext.request.contextPath}/metadatamng/list.do" class="is-dark-btn">취소</a>
 						</li>
 					</ul>
 				</div>						
@@ -278,12 +217,13 @@
 		</form>
 	</section>
 </div>
-
+<button type="button" class="is-darkgreen-btn" onclick="catlogAply('<c:out value='${metadataInfo.dsetId}'/>')">
+	                				데이터 이관 신청
+	                			</button>
 <script>
-// 	function deleteKeyword(idx){
-// 		$("#keywordContent"+idx).remove();
-// 	}
-	
+	function deleteKeyword(idx){
+		$("#keywordContent"+idx).remove();
+	}
 	function deleteDataType(idx,colSqno = null){
 		var tblId = '<c:out value="${metadataInfo.tblId}"/>';
 		var dsetId = '<c:out value="${metadataInfo.dsetId}"/>';
@@ -310,7 +250,7 @@
 					contentType : "application/json; charset=UTF-8",
 					data : JSON.stringify(obj),
 					dataType : "json",
-					url : "${pageContext.request.contextPath}/metadata/manage/dataType/delete.ajax",
+					url : "${pageContext.request.contextPath}/metadatamng/dataType/delete.ajax",
 					success : function(data) {
 						if(data.code == 200){
 							new ModalBuilder().init().successBody("데이터 유형이 삭제 되었습니다.").footer(4,'확인',function(button, modal){
@@ -325,46 +265,36 @@
 						}
 					}
 				})
-			 },'취소하기',function(button, modal){modal.close();}).open();
+			 },'취소하기',function(button, modal){}).open();
 			}
 		}
 	
 	$("#addDataTypeBtn").on('click',function(){
 		var tblId = '<c:out value="${metadataInfo.tblId}"/>';
 		var dsetId = '<c:out value="${metadataInfo.dsetId}"/>';
-		
+		var rltinstId = '<c:out value="${metadataInfo.rltinstId}"/>';
+
 		var html = "";
 		var dataType = $("#dataType").val().trim();
-		var colEngNm = $("#colEngNm").val().trim();
-		var colKoreanNm = $("#colKoreanNm").val().trim();
+		
+		if(dataType == null || dataType == ''){
+			new ModalBuilder().init().alertBoby("데이터 유형을 입력해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
+			modalAlertWrap();
+			return false;
+		}
+		var dataTypeIdx = $(".dataTypeVal").length;
+		
+		if(3 <= dataTypeIdx){
+			new ModalBuilder().init().alertBoby("데이터 유형은 최대 3개까지 입력 가능합니다.").footer(4,'확인',function(button, modal){modal.close();}).open();
+			modalAlertWrap();
+			return false;
+		}
 		
 		var obj = new Object();
 		obj.tblId = tblId;
 		obj.dsetId = dsetId;
-// 		obj.rltinstId = rltinstId;
+		obj.rltinstId = rltinstId;
 		obj.dataType = dataType;
-		obj.colEngNm = colEngNm;
-		obj.colKoreanNm = colKoreanNm;
-		
-		if(dataType == null || dataType == ''){
-			new ModalBuilder().init().alertBoby("데이터 유형을 선택해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
-			modalAlertWrap();			
-			return false;
-		}
-		
-		if(colEngNm == null || colEngNm == ''){
-			new ModalBuilder().init().alertBoby("컬럼명(ENG)을 입력해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
-			modalAlertWrap();			
-			return false;
-		}
-		
-		if(colKoreanNm == null || colKoreanNm == ''){
-			new ModalBuilder().init().alertBoby("컬럼명(KOR)을 입력해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
-			modalAlertWrap();			
-			return false;
-		}
-		
-		var dataTypeIdx = $(".dataTypeVal").length;
 		
 		new ModalBuilder().init().alertBoby("데이터 유형을 추가 하시겠습니까?").footer(5,'추가하기',function(button, modal){
 			$.ajax({
@@ -372,21 +302,19 @@
 				contentType : "application/json; charset=UTF-8",
 				dataType : "json",
 				data : JSON.stringify(obj),
-				url : "${pageContext.request.contextPath}/metadata/manage/saveMetaColInfo.ajax",
+				url : "${pageContext.request.contextPath}/metadatamng/saveMetaColInfo.ajax",
 				success : function(result) {
 					if(result.code == 200){
-						html+='<tr id="dataTypeContent'+dataTypeIdx+'">';
-						html+='		<td>'+dataType+'<input type="hidden" class="dataTypeVal" value="'+dataType+'" readonly/> </td>';
-						html+='		<td>'+colEngNm+'<input type="hidden" class="colEngNmVal" value="'+colEngNm+'" readonly/> </td>';
-						html+='		<td>'+colKoreanNm+' <input type="hidden" class="colKoreanNmVal" value="'+colKoreanNm+'" readonly/> </td>';
-						html+='		<td><span onclick="deleteDataType(\''+dataTypeIdx+'\',\''+result.data+'\')"><img src="/statics/images/delete.png" alt="삭제" class="datamng_img"></span></td>';
-						html+='</tr>';
+						html += '<div id="dataTypeContent'+dataTypeIdx+'">';
+						html += '<label class="is-darkgreen-btn">'+dataType+'</label>';
+						html += 	'<input type="hidden" class="dataTypeVal" value="'+dataType+'" readonly/>';
+						html += 	'<button type="button" onclick="deleteDataType(\''+dataTypeIdx+'\',\''+result.data+'\')" class="ftsize14">삭제</button>';
+						html += '</div>';
 						new ModalBuilder().init().successBody("데이터 유형 추가에 성공헀습니다.").footer(4,'확인',function(button, modal){modal.close(); $(".modal_container").remove();}).open();
 						modalAlertWrap();
-						$("#metaColInfoTr").append(html);
+						
+						$("#dataTypeWrap").append(html);
 						$("#dataType").val("");
-						$("#colEngNm").val("");
-						$("#colKoreanNm").val("");
 					} else {
 						new ModalBuilder().init().alertBoby("데이터 유형 추가를 실패했습니다.").footer(4,'확인',function(button, modal){modal.close();}).open();
 						modalAlertWrap();
@@ -396,27 +324,26 @@
 		 },'취소하기',function(button, modal){}).open();
 	});
 	
-	
-// 	$("#addKeywordBtn").on('click',function(){
-// 		var html = "";
-// 		var dataKeyword = $("#dataKeyword").val().trim();
+	$("#addKeywordBtn").on('click',function(){
+		var html = "";
+		var dataKeyword = $("#dataKeyword").val().trim();
 		
-// 		if(dataKeyword == null || dataKeyword == ''){
-// 			new ModalBuilder().init().alertBoby("데이터 키워드를 입력해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
-// 			modalAlertWrap();			
-// 			return false;
-// 		}
-// 		var keywordIdx = $(".keyword").length;
+		if(dataKeyword == null || dataKeyword == ''){
+			new ModalBuilder().init().alertBoby("데이터 키워드를 입력해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
+			modalAlertWrap();			
+			return false;
+		}
+		var keywordIdx = $(".keyword").length;
 		
-// 		html += '<div id="keywordContent'+keywordIdx+'" class="keyword_item">';
-// 		html += '<label class="is-darkgreen-btn">'+dataKeyword+'</label>';
-// 		html += 	'<input type="hidden" class="keyword" vadddDlue="'+dataKeyword+'" readonly/>';
-// 		html += 	'<button type="button" onclick="deleteKeyword(\''+keywordIdx+'\')" class="ftsize14">삭제</button>';
-// 		html += '</div>';
+		html += '<div id="keywordContent'+keywordIdx+'" class="keyword_item">';
+		html += '<label class="is-darkgreen-btn">'+dataKeyword+'</label>';
+		html += 	'<input type="hidden" class="keyword" vadddDlue="'+dataKeyword+'" readonly/>';
+		html += 	'<button type="button" onclick="deleteKeyword(\''+keywordIdx+'\')" class="ftsize14">삭제</button>';
+		html += '</div>';
 		
-// 		$("#keywordWrap").append(html);
-// 		$("#dataKeyword").val("");
-// 	});
+		$("#keywordWrap").append(html);
+		$("#dataKeyword").val("");
+	});
 	
 	// 분류 체계 키업
 	$("#clschmNm").on('mouseenter', function(){
@@ -429,32 +356,35 @@
 	
 	//<![CDATA[
 		$(document).ready(function(){
-// 			var dataKeyword = '<c:out value="${metadataInfo.dataKeyword}"/>';
+			var dataKeyword = '<c:out value="${metadataInfo.dataKeyword}"/>';
 			var collectionTypeCd = '<c:out value="${metadataInfo.opngDataListNm}"/>';
 			var isUserChk = '<c:out value="${isUserChk}"/>';
 			
-// 			var dataKeywordArr = dataKeyword.split(',');
+			var dataKeywordArr = dataKeyword.split(',');
 			var collectionTypeCdArr = collectionTypeCd.split(',');
 			var collectionType = $(".collectionType");
 			
 			//작성자 체크후 disabled처리
 			if (isUserChk === 'false') {
+				console.log(!isUserChk);
 				$("input[type=text]").addClass("is-disabled");
 				$("select").addClass("is-disabled");
 				collectionType.parent('label').addClass("is-disabled");
 			}
+
 			
 			//데이터 키워드 그리기
-// 			for(var i = 0; i < dataKeywordArr.length; i++){
-// 				var html = "";
-// 				html += '<div id="keywordContent'+i+'" class="keyword_item">'
-// 				html += 	'<label class="is-darkgreen-btn">'+dataKeywordArr[i]+'</label>';
-// 				html += 	'<input type="hidden" class="keyword" value="'+dataKeywordArr[i]+'"/>';
-// 				html += 	'<button type="button" onclick="deleteKeyword(\''+i+'\')" class="ftsize14">삭제</button>';
-// 				html += '</div>';
-// 				$("#keywordWrap").append(html);
-// 			}
-			
+			for(var i = 0; i < dataKeywordArr.length; i++){
+				var html = "";
+				html += '<div id="keywordContent'+i+'" class="keyword_item">'
+				html += 	'<label class="is-darkgreen-btn">'+dataKeywordArr[i]+'</label>';
+				html += 	'<input type="hidden" class="keyword" value="'+dataKeywordArr[i]+'"/>';
+				<c:if test="${isUserChk}">
+				html += 	'<button type="button" onclick="deleteKeyword(\''+i+'\')" class="ftsize14">삭제</button>';
+				</c:if>				
+				html += '</div>';
+				$("#keywordWrap").append(html);
+			}
 			//수집 유형 선택
 			for(var i = 0; i < collectionType.length; i++){
 				for(var j = 0; j < collectionTypeCdArr.length; j++){
@@ -475,40 +405,40 @@
 		var tblKoreanNm = $("#tblKoreanNm").val();
 		var tblEngNm  = $("#tblEngNm").val();
 		var clschmId = $("#clschmId").val();
-// 		var clschmNm = $("#clschmNm").val();
-// 		var rltinstId = $("#rltinstId").val();
-// 		var orgDataNm = $("#orgDataNm").val();
+		var clschmNm = $("#clschmNm").val();
+		var rltinstId = $("#rltinstId").val();
+		var orgDataNm = $("#orgDataNm").val();
 		var uploadFiles = $("#uploadFiles")[0];
-// 		var dataKeyword = "";
-// 		var collDataType = "";
+		var dataKeyword = "";
+		var collDataType = "";
 		
 		var tblDescr = $("#tblDescr").val();
 		
 // 		var collectionType = $(".collectionType");
-// 		var keyword = $(".keyword");
+		var keyword = $(".keyword");
 		
 		if(!$("#metadataRegForm").soValid()){
 			return false;
 		}
 
-// 		if(keyword.length == 0){
-// 			new ModalBuilder().init().alertBoby("데이터 키워드를 추가 해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
-// 			modalAlertWrap();			
-// 			return false;
-// 		} else {
-// 			for(var i = 0; i < keyword.length; i++){
-// 				if(dataKeyword == ''){
-// 					dataKeyword += keyword.eq(i).val();
-// 				} else {
-// 					dataKeyword += ","+keyword.eq(i).val();
-// 				}
-// 			}			
-// 		}
+		if(keyword.length == 0){
+			new ModalBuilder().init().alertBoby("데이터 키워드를 추가 해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
+			modalAlertWrap();			
+			return false;
+		} else {
+			for(var i = 0; i < keyword.length; i++){
+				if(dataKeyword == ''){
+					dataKeyword += keyword.eq(i).val();
+				} else {
+					dataKeyword += ","+keyword.eq(i).val();
+				}
+			}			
+		}
 		
 // 		if(!collectionType.is(":checked")){
 // 			new ModalBuilder().init().alertBoby("수집 유형을 선택해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
 // 			modalAlertWrap();
-
+			
 // 			return false;
 // 		} else {
 // 			for(var i = 0; i < collectionType.length; i++){
@@ -529,9 +459,9 @@
 		obj.tblEngNm = tblEngNm;
 		obj.clschmId = clschmId;
 		obj.clschmNm = clschmNm;
-// 		obj.rltinstId = rltinstId;
-// 		obj.orgDataNm = orgDataNm;
-// 		obj.dataKeyword = dataKeyword;
+		obj.rltinstId = rltinstId;
+		obj.orgDataNm = orgDataNm;
+		obj.dataKeyword = dataKeyword;
 // 		obj.collDataType = collDataType;
 		obj.tblDescr = tblDescr;
 		
@@ -552,12 +482,12 @@
 			processData : false,
 			enctype : "multipart/form-data;charset=UTF-8",
 			dataType : "json",
-			url : "${pageContext.request.contextPath}/metadata/manage/update.ajax",
+			url : "${pageContext.request.contextPath}/metadatamng/update.ajax",
 			success : function(data) {
 				if(data.code == 200){
 					new ModalBuilder().init().successBody("메타데이터 수정에 성공 하였습니다.").footer(4,'확인',function(button, modal){
 						modal.close();
-						location.href="${pageContext.request.contextPath}/metadata/manage/list.do";
+						location.href="${pageContext.request.contextPath}/metadatamng/list.do";
 					}).open();
 					modalAlertWrap();
 				} else {
@@ -584,12 +514,12 @@
 				contentType : "application/json; charset=UTF-8",
 				data : JSON.stringify(obj),
 				dataType : "json",
-				url : "${pageContext.request.contextPath}/metadata/manage/delete.ajax",
+				url : "${pageContext.request.contextPath}/metadatamng/delete.ajax",
 				success : function(data) {
 					if(data.code == 200){
 						new ModalBuilder().init().successBody("메타데이터가 삭제 되었습니다.").footer(4,'확인',function(button, modal){
 							modal.close();
-							location.href="${pageContext.request.contextPath}/metadata/manage/list.do";
+							location.href="${pageContext.request.contextPath}/metadatamng/list.do";
 						}).open();
 						modalAlertWrap();
 					} else {
@@ -600,6 +530,8 @@
 			})
 		 },'취소하기',function(button, modal){}).open();				
 	})
+
+
 	
 	function deleteFile(fileId){
 		if(fileId == null || fileId == ''){
@@ -613,7 +545,7 @@
 					"fileId" : fileId
 				},
 				dataType : "json",
-				url : "${pageContext.request.contextPath}/metadata/manage/uploadfile/delete.ajax",
+				url : "${pageContext.request.contextPath}/metadatamng/uploadfile/delete.ajax",
 				success : function(data) {
 					if(data.code == 200){
 						new ModalBuilder().init().successBody("파일이 삭제 되었습니다.").footer(4,'확인',function(button, modal){
@@ -630,6 +562,7 @@
 			})
 		 },'취소하기',function(button, modal){}).open();
 	};
+	
 	
 	function fileUploadChange(obj){
 		var fileNm = obj.value;
@@ -825,13 +758,8 @@
             }
         }
         return true;
-    }
+    }	
     
-    function exportMetaData(dsetId){
-		
-    }
-    
-    //카탈로그 이관 신청
     function catlogAply(dsetId){
 		var obj = new Object();
 		obj.aplyDsetId = dsetId;

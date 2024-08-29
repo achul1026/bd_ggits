@@ -1,6 +1,5 @@
 package com.neighbor21.ggits.api.module.monitoring;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,10 +10,6 @@ import com.neighbor21.ggits.common.entity.ScsEmrgVhclCurInfo;
 import com.neighbor21.ggits.common.entity.TsDggdVhclRungInfoCur;
 import com.neighbor21.ggits.common.mapper.ScsEmrgVhclCurInfoMapper;
 import com.neighbor21.ggits.common.mapper.TsDggdVhclRungInfoCurMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 /**
  * 긴급차량 이동현황
@@ -33,28 +28,12 @@ public class MEmergencyComponent extends BaseMapDataComponent {
     @Autowired
     TsDggdVhclRungInfoCurMapper tsDggdVhclRungInfoCurMapper;
 
-    List<TsDggdVhclRungInfoCur>  savedTsDggdVhclData = new ArrayList<>();
-
-    List<TsDggdVhclRungInfoCur> savedWarningDggdVhclData = new ArrayList<>();
-
     /**
      * 긴급차량 현재 이동상황 조회
      * @return
      */
     public List<ScsEmrgVhclCurInfo> getEmergencyVehicleMoveInfoList(){
         return scsEmrgVhclCurInfoMapper.findAll();
-    }
-
-    /**
-     * 위험물 차량 실시간 정보 조회
-     * @return
-     */
-    public List<TsDggdVhclRungInfoCur> getDggdVechicleMoveInfoListAll(){
-        return savedTsDggdVhclData;
-    }
-
-    public void setSavedTsDggdVhclData(List<TsDggdVhclRungInfoCur> savedTsDggdVhclData){
-        this.savedTsDggdVhclData = savedTsDggdVhclData;
     }
 
 
@@ -64,6 +43,7 @@ public class MEmergencyComponent extends BaseMapDataComponent {
      */
     public List<TsDggdVhclRungInfoCur> getDggdVechicleMoveInfoList(){
         return tsDggdVhclRungInfoCurMapper.findAllByRungPlanYnIsY();
+
     }
 
     /**
@@ -71,10 +51,7 @@ public class MEmergencyComponent extends BaseMapDataComponent {
      * @return
      */
     public List<TsDggdVhclRungInfoCur> getDggdVechicleMoveInfoListByWarning(){
-        return savedWarningDggdVhclData;
-    }
+        return tsDggdVhclRungInfoCurMapper.findAllByRungPlanYnIsYByWarning();
 
-    public void setSavedWarningDggdVhclData(List<TsDggdVhclRungInfoCur> warningDggdVhclData) {
-        this.savedWarningDggdVhclData = warningDggdVhclData;
     }
 }

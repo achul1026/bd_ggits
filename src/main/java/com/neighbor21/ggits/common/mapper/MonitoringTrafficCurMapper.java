@@ -1,12 +1,12 @@
 package com.neighbor21.ggits.common.mapper;
 
-import java.util.List;
-
+import com.neighbor21.ggits.common.dto.MapBigdataSearchDTO;
+import com.neighbor21.ggits.common.dto.MapMonitoringMenuDTO;
+import com.neighbor21.ggits.common.dto.MonitoringTrafficCurDto;
 import org.apache.ibatis.annotations.Param;
 import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
 
-import com.neighbor21.ggits.common.dto.MapMonitoringMenuDTO;
-import com.neighbor21.ggits.common.dto.MonitoringTrafficCurDto;
+import java.util.List;
 
 /**
  * 모니터링 교통현황 매퍼
@@ -25,16 +25,6 @@ public interface MonitoringTrafficCurMapper {
 
     List<MonitoringTrafficCurDto> findAllTrafficVolumeBySmartForChart(@Param("timeType") String timeType);
 
-    /*스마트교차로 방향별 - 시군구 그룹*/
-    List<MonitoringTrafficCurDto> findAllTrafficVolumeBySmartDrctGroupByMngInstCdForChart(@Param("timeType") String timeType);
-
-    /*스마트교차로 방향별 - 차종별 그룹*/
-    List<MonitoringTrafficCurDto> findAllTrafficVolumeBySmartDrctGroupByVhclDivForChart(@Param("timeType") String timeType);
-
-
-    List<MonitoringTrafficCurDto> findAllTrafficVolumeByDSRCForChart(@Param("timeType") String timeType);
-
-
 
 
     /*시간대별 평균속도 */
@@ -43,11 +33,6 @@ public interface MonitoringTrafficCurMapper {
 
     List<MonitoringTrafficCurDto> findAllAvgSpeedBySmartForChart(@Param("timeType") String timeType);
 
-    /*스마트교차로 방향별 - 시군구 그룹*/
-    List<MonitoringTrafficCurDto> findAllAvgSpeedBySmartDrctGroupByMngInstCdForChart(@Param("timeType") String timeType);
-
-    /*스마트교차로 방향별 - 차종별 그룹*/
-    List<MonitoringTrafficCurDto> findAllAvgSpeedBySmartDrctGroupByVhclDivForChart(@Param("timeType") String timeType);
 
     List<MonitoringTrafficCurDto> findAllAvgSpeedByDSRCForChart(@Param("timeType") String timeType);
 
@@ -70,19 +55,7 @@ public interface MonitoringTrafficCurMapper {
 
     Integer countTrafficVolumeVDSBySearchOption(MapMonitoringMenuDTO mapMonitoringMenuDTO);
 
-    List<MonitoringTrafficCurDto> findAllTrafficVolumeDSRCBySearchOptionPaging(MapMonitoringMenuDTO mapMonitoringMenuDTO);
-
-    Integer countTrafficVolumeDSRCBySearchOption(MapMonitoringMenuDTO mapMonitoringMenuDTO);
-
     List<MonitoringTrafficCurDto> findAllTrafficVolumeSmartBySearchOptionPaging(MapMonitoringMenuDTO mapMonitoringMenuDTO);
 
     Integer countTrafficVolumeSmartBySearchOption(MapMonitoringMenuDTO mapMonitoringMenuDTO);
-
-    List<MonitoringTrafficCurDto> getVolumeSmartForGIS();
-    List<MonitoringTrafficCurDto> getVolumeSmartDcrtForGIS();
-
-
-    List<MonitoringTrafficCurDto> getVolumeVDSForGIS();
-
-    List<MonitoringTrafficCurDto> findOneCumulativeTrafficVolumeByVhclDiv();
 }

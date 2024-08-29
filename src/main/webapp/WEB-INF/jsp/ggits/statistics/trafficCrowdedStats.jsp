@@ -206,12 +206,12 @@
 		if(endDt != null && endDt != ''){
 			$("#endDt").val(endDt.substring(0,10));
 		}
-// 		if(strTime != null && strTime != ''){
-// 			$("#startTime").val(strTime).prop("selected",true);
-// 		}
-// 		if(endTime != null && endTime != ''){
-// 			$("#endTime").val(endTime).prop("selected",true);
-// 		}
+		if(strTime != null && strTime != ''){
+			$("#startTime").val(strTime).prop("selected",true);
+		}
+		if(endTime != null && endTime != ''){
+			$("#endTime").val(endTime).prop("selected",true);
+		}
 		if(sigunCdId != null && sigunCdId != ''){
 			$("#sigunCdId").val(sigunCdId).prop("selected",true);
 		}

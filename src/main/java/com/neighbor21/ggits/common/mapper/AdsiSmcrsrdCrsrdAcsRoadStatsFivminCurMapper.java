@@ -25,12 +25,4 @@ public interface AdsiSmcrsrdCrsrdAcsRoadStatsFivminCurMapper {
 	 */	
 	int countsmcrsrdColctInfo(AdsiSmcrsrdCrsrdAcsRoadStatsFivminCur adsiSmcrsrdCrsrdAcsRoadStatsFivminCur);
 
-	/**
-	 * @Method Name : findSmcrdTop10Info
-	 * @작성일 : 2023. 01. 04.
-	 * @작성자 : KY.LEE
-	 * @Method 설명 : 모니터링 대시보드 -> 스마트교차로 교차로별 top 10 
-	 */	
-	List<AdsiSmcrsrdCrsrdAcsRoadStatsFivminCur> findSmcrdTop10Info();
-	
 }

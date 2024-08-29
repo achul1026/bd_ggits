@@ -2,7 +2,6 @@ package com.neighbor21.ggits.api.module.bigdata;
 
 import java.util.List;
 
-import com.neighbor21.ggits.common.entity.TsLogDriveanal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -27,7 +26,7 @@ public class BDPublicTransferDangerComponent extends BaseMapDataComponent {
     /**
      * 버스안전 운행분석
      */
-    public List<TsLogDriveanal> getBusDtgDangerSectionInfo(MapBigdataSearchDTO  mapBigdataSearchDTO){
+    public List<MrtDtgDangerSectn> getBusDtgDangerSectionInfo(MapBigdataSearchDTO  mapBigdataSearchDTO){
         return mrtDtgDangerSectnMapper.findAllBySearchOption(mapBigdataSearchDTO);
     }
 

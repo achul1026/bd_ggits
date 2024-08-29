@@ -2,22 +2,22 @@
 <!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN' 'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
 
 <mapper namespace='com.neighbor21.ggits.common.mapper.OpenApiPvsnLogMapper'>
+	
 
-
-
+	
 	<insert id="saveOpenApiPvsnLog" parameterType="openApiPvsnLog">
-	INSERT INTO OPEN_API_PVSN_LOG (
-									CLCT_DT,
-									DSET_ID,
-									OPRTR_IP,
-									API_NM,
-									API_CALL_URL,
-									MNG_INST_CD,
+	INSERT INTO OPEN_API_PVSN_LOG ( 
+									CLCT_DT, 
+									DSET_ID, 
+									OPRTR_IP, 
+									API_NM, 
+									API_CALL_URL, 
+									MNG_INST_CD, 
 									CONTENTS,
-									OPRTR_ID,
+									OPRTR_ID, 
 									API_DESCR
 								  ) VALUES (
-								  	NOW(),
+								  	NOW(), 
 								  	#{dsetId},
 								  	#{oprtrIp},
 									#{apiNm},
@@ -41,8 +41,8 @@
 			OPRTR_ID = #{oprtrId}
 		WHERE DT = #{dsetId}
 	</update>
-
-
+	
+	
 	<select id="countDataUseStatsList" parameterType="commonEntity" resultType="int">
 		SELECT
 			COUNT(oapl.*)
@@ -64,7 +64,7 @@
 			</if>
 		</if>
 	</select>
-
+	
 	<select id="findAllDataUseStatsList" parameterType="commonEntity" resultType="openApiPvsnLog">
 		SELECT
 			ROW_NUMBER() OVER(ORDER BY oapl.CLCT_DT) AS rownum
@@ -78,7 +78,7 @@
 			,oapl.OPRTR_ID
 			,oapl.API_DESCR
 			, mop.OPRTR_NM || '(' || mop.OPRTR_EMAIL || ')' as oprtrIdStr
-		FROM
+		FROM 
 			 OPEN_API_PVSN_LOG oapl
 		INNER JOIN M_OP_OPERATOR mop
 			ON oapl.oprtr_id = mop.oprtr_id
@@ -96,10 +96,10 @@
 					AND mop.OPRTR_NM LIKE '%' || #{searchContent} || '%'
 				</if>
 			</if>
-		ORDER BY ROWNUM DESC
+		ORDER BY ROWNUM DESC 
 		LIMIT 10 OFFSET (#{page} - 1) * 10
 	</select>
-
+	
 	<select id="findAllOpenApiPvsnLogList" parameterType="openApiPvsnLog" resultType="openApiPvsnLog">
 		SELECT
 			ROW_NUMBER() OVER(ORDER BY oapl.CLCT_DT) AS rownum
@@ -114,7 +114,7 @@
 			,oapl.API_DESCR
 			, moo.OPRTR_NM
 			, moo.OPRTR_EMAIL
-		FROM
+		FROM 
 			OPEN_API_PVSN_LOG oapl
 		LEFT JOIN M_OP_OPERATOR moo
 		ON moo.OPRTR_ID = oapl.OPRTR_ID
@@ -126,7 +126,7 @@
 		</if>
 		<if test="strDt != null and strDt != ''">
 			<![CDATA[
-			   AND oapl.CLCT_DT >= TO_TIMESTAMP(#{strDt}|| ' 00:00:00','YYYY-MM-DD HH24:mi:ss')
+			   AND oapl.CLCT_DT >= TO_TIMESTAMP(#{strDt}|| ' 00:00:00','YYYY-MM-DD HH24:mi:ss') 
 			]]>
 		</if>
 		<if test="endDt != null and endDt != ''">
@@ -134,10 +134,10 @@
 			   AND oapl.CLCT_DT <= TO_TIMESTAMP(#{endDt}|| ' 23:59:59','YYYY-MM-DD HH24:mi:ss')
 			]]>
 		</if>
-		ORDER BY ROWNUM DESC
+		ORDER BY ROWNUM DESC 
 		LIMIT 10 OFFSET (#{page} - 1) * 10
 	</select>
-
+	
 	<select id="countAllOpenApiPvsnLogBySearchOption" parameterType="openApiPvsnLog" resultType="int">
 		SELECT COUNT(*)
 		FROM OPEN_API_PVSN_LOG oapl
@@ -148,7 +148,7 @@
 		</if>
 		<if test="strDt != null and strDt != ''">
 			<![CDATA[
-			   AND oapl.CLCT_DT >= TO_TIMESTAMP(#{strDt}|| ' 00:00:00','YYYY-MM-DD HH24:mi:ss')
+			   AND oapl.CLCT_DT >= TO_TIMESTAMP(#{strDt}|| ' 00:00:00','YYYY-MM-DD HH24:mi:ss') 
 			]]>
 		</if>
 		<if test="endDt != null and endDt != ''">
@@ -157,9 +157,9 @@
 			]]>
 		</if>
 	</select>
-
+	
 	<select id="findOneForOpenApiLogHistory" parameterType="openApiPvsnLog" resultType="openApiPvsnLog">
-		SELECT
+		SELECT 
 			oapl.CLCT_DT
 			,oapl.DSET_ID
 			,oapl.OPRTR_IP
@@ -172,6 +172,6 @@
 		FROM OPEN_API_PVSN_LOG oapl
 		WHERE oapl.DSET_ID = #{dsetId}
 	</select>
-
-
+	
+	
 </mapper>

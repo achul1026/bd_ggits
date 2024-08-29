@@ -5,12 +5,6 @@
  */
 const F_Signal = async function(){
     let list = await self.util.getJsonFormApi("/facility/getSignalList.ajax");
-    if(list?.noLogin){
-        return {
-            error : true,
-            noLogin : true
-        }
-    }
     let features = [];
     for(const info of list) {
         const obj = {

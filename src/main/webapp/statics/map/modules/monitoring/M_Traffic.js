@@ -4,14 +4,8 @@
  * @returns {Promise<any>}
  * @constructor
  */
-const M_Traffic = async function(minimize = "false"){
-    const list = await self.util.getJsonFormApi("/monitoring/getTrafficInfo.ajax?minimize="+minimize);
-    if(list?.noLogin){
-        return {
-            error : true,
-            noLogin : true
-        }
-    }
+const M_Traffic = async function(){
+    const list = await self.util.getJsonFormApi("/monitoring/getTrafficInfo.ajax");
     return list;
 
 }

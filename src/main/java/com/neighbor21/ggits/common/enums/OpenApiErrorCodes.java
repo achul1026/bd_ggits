@@ -6,7 +6,7 @@ public enum OpenApiErrorCodes {
 	ACCESS_DENIED(403,"잘못된 파라미터나 잘못된 접근입니다."),
 	METHOD_NOT_ALLOWED(405,"잘못된 API 호출 방식입니다."),
 	API_NOT_FOUND(404,"API를 찾지 못했습니다."),
-	SERVER_ERROR(500,"서버 상태가 원활 하지 않습니다. 잠시 후 다시 확인 해주세요.");
+	SERVER_ERROR(500,"서버 상태가 원할 하지 않습니다. 잠시 후 다시 확인 해주세요.");
 	
 	private int code; 
 	private String message;

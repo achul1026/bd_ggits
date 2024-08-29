@@ -15,16 +15,16 @@
 		</select>
 	</div>
 	<div class="tab_item_box flex-center">
-		<h5 class="tab_item_title">시군구</h5>
-		<select class="selectBox radius result_change change-detect"<%-- onchange="getDongListBySggCd(this.value, '#sggDongSelect')"--%> name="mngInstCd">
+		<h5 class="tab_item_title">행정동</h5>
+		<select class="selectBox radius result_change change-detect" onchange="getDongListBySggCd(this.value, '#sggDongSelect')" name="mngInstCd">
 			<option value="">시군구 전체</option>
 			<c:forEach var="sggCd" items="${sggCdList}" varStatus="status">
 				<option value="<c:out value='${sggCd.cdId}'/>"><c:out value='${sggCd.cdNm}'/></option>
 			</c:forEach>
 		</select>
-		<%--<select class="selectBox radius result_change change-detect" id="sggDongSelect" name="dongNm">
+		<select class="selectBox radius result_change change-detect" id="sggDongSelect" name="dongNm">
 			<option value="">전체</option>
-		</select>--%>
+		</select>
 	</div>
 	<div class="tab_item_box flex-center">
 		<h5 class="tab_item_title">도로명</h5>
@@ -41,11 +41,11 @@
 			<col width="25%">
 		</colgroup>
 		<thead>
-			<tr>
-				<th>순위</th>
-				<th>도로명</th>
-				<th>평균속도</th>
-			</tr>
+		<tr>
+			<th>순위</th>
+			<th>도로명</th>
+			<th>속도</th>
+		</tr>
 		</thead>
 		<tbody id="modalTbody">
 		<c:choose>
@@ -84,34 +84,19 @@
 		$("#mapPage").val("1");
 		fnSearchList();
 	});
-	$(document).ready(function() {
-		$('#schRoadName').keydown(function() {
-			if (event.keyCode === 13) {
-				event.preventDefault();
-			}
-		});
-	});
-	/*$("#monitoringModalForm select").on("change", function(){
+	$("#monitoringModalForm select").on("change", function(){
 		$("#mapPage").val("1");
 		fnSearchList();
-	})*/
-	let loadingAjax = null;
+	})
 	function fnSearchList(){
-		if(loadingAjax) loadingAjax.abort();
-		loadingAjax = $.ajax({
+		$("#modalTbody > tr").remove();
+		$("#modalPaging > .dashboard-pg-wrap").remove();
+
+		$.ajax({
 			type : "get",
 			data : $("#monitoringModalForm").serialize(),
 			url : "${pageContext.request.contextPath}/map/monitoring/traffic/M_TRAFFIC_007/data.ajax",
-			beforeSend : function(){
-				gitsApp.startLoading();
-			},
-			error : function(){
-				gitsApp.endLoading();
-			},
 			success : function(result) {
-				gitsApp.endLoading();
-				$("#modalTbody > tr").remove();
-				$("#modalPaging > .dashboard-pg-wrap").remove();
 				var html = '';
 				var title = '';
 				var totalCnt = result.data.totalCnt;
@@ -128,10 +113,10 @@
 							'<td colspan="3">데이터가 없습니다.</td>'+
 							'</tr>';
 				}
-				$("#modalTbody").html(html)
+				$("#modalTbody").append(html)
 				var paging = result.data.paging;
 				if(paging != null && paging != '' && totalCnt > 0){
-					$("#modalPaging").html(getGisPagingHtml(paging,$("#mapPage").val()));
+					$("#modalPaging").append(getGisPagingHtml(paging,$("#mapPage").val()));
 				}
 			}
 		});

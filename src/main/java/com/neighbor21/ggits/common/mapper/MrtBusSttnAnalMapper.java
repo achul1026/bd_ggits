@@ -53,21 +53,4 @@ public interface MrtBusSttnAnalMapper {
      * @return
      */
 	Map<String, Object> findAllBusStatsList(CommonEntity commonEntity);
-
-	/**
-	 * @Method Name : findMaxRideYmd
-	 * @작성일 : 2023. 01. 04.
-	 * @작성자 : KY.LEE
-	 * @Method 설명 : RideYmd 최대 날짜 조회
-	 */	
-	String findMaxRideYmd();
-
-	/**
-    * @Method Name : findBusStationUsageInit
-    * @작성일 : 2023. 01. 04.
-    * @작성자 : KY.LEE
-    * @Method 설명 : 모니터링 대시보드 -> 버스정류장 이용량
-    */	
-	List<MrtBusSttnAnal> findBusStationUsageInit(String rideYmd);
-
 }

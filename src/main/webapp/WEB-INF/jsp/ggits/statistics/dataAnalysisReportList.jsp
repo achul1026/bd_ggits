@@ -92,7 +92,7 @@
 			}
 		});
 	});
-
+	
 	var dataTotalCnt = '<c:out value="${paging.totalCount}"/>';
 	$("#totalCnt").text(numberComma(dataTotalCnt))
 

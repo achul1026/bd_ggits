@@ -1,6 +1,9 @@
 package com.neighbor21.ggits.api.module.bigdata;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -29,7 +32,6 @@ import com.neighbor21.ggits.common.mapper.TaasTruckAcdntDstrctMapper;
 import com.neighbor21.ggits.common.mapper.TaasTwhlvhAcdntDstrctMapper;
 import com.neighbor21.ggits.common.mapper.UticRoadDngrSttsFrcstMapper;
 import com.neighbor21.ggits.common.util.BDStringUtil;
-import com.neighbor21.ggits.common.util.GgitsCommonUtils;
 
 /**
  * 교통위험 구간분석
@@ -106,11 +108,6 @@ public class BDDangerZoneComponent extends BaseMapDataComponent {
      * @return
      */
     public List<UticRoadDngrSttsFrcst> getRoadDangerInfo(MapBigdataSearchDTO mapBigdataSearchDTO){
-    	if(!GgitsCommonUtils.isNull(mapBigdataSearchDTO.getDangerType())) {
-    		if(mapBigdataSearchDTO.getDangerType().contains(",")) {
-    			mapBigdataSearchDTO.setDangerTypeList(mapBigdataSearchDTO.getDangerType().split(","));
-    		}
-    	}
         return uticRoadDngrSttsFrcstMapper.findAllBySearchOptionForMap(mapBigdataSearchDTO);
     }
 
@@ -151,10 +148,9 @@ public class BDDangerZoneComponent extends BaseMapDataComponent {
     public TaasMaster getAccidentInfoAllAndSGG(MapBigdataSearchDTO mapBigdataSearchDTO){
         TaasMaster taasMaster = new TaasMaster();
         List<TaasAcdntDstrctMaster> list = getAccidentInfoAll(mapBigdataSearchDTO);
-        /*Map<String, TaasAcdntDstrctMaster> map =
+        Map<String, TaasAcdntDstrctMaster> map =
                 list.stream()
-                        .collect(Collectors.toMap(TaasAcdntDstrctMaster::getSggCd, Function.identity(), TaasAcdntDstrctMaster::merge));*/
-        Map<String, TaasAcdntDstrctMaster> map = new HashMap<>();
+                        .collect(Collectors.toMap(TaasAcdntDstrctMaster::getSggCd, Function.identity(), TaasAcdntDstrctMaster::merge));
         taasMaster.setSggGroup(map);
         taasMaster.setPositions(list);
         return taasMaster;

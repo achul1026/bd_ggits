@@ -32,7 +32,7 @@
      	FROM M_OP_CODE
      	WHERE GRP_CD_ID = #{grpCdId}
      	<include refid="mOpCode-Where"/>
-     	ORDER BY ROWNUM DESC
+     	ORDER BY ROWNUM DESC 
 		LIMIT 10 OFFSET (#{page} - 1) * 10
     </select>
 
@@ -45,14 +45,12 @@
      	    , CRT_DT
      		, UPTUSR_ID
      		, UPDT_DT
-			, DESCR
-			, USE_YN
      	FROM M_OP_CODE
      	WHERE GRP_CD_ID = #{grpCdId}
      	ORDER BY SORT_NO
     </select>
     
-   	<select id="findAllCodeListByGrpCdIdForMonitoring" parameterType="Long" resultType="mOpCode">
+   	<select id="findAllCodeListByGrpCdIdForMonitoring" parameterType="String" resultType="mOpCode">
 		SELECT
 	 		DISTINCT MOC.CD_ID
 	     		, MOC.CD_NM
@@ -61,13 +59,11 @@
 	     	    , MOC.CRT_DT
 	     		, MOC.UPTUSR_ID
 	     		, MOC.UPDT_DT
-     	FROM M_OP_MENU MOM
-     	INNER JOIN M_OP_ATHR_MENU MOAM ON MOAM.MENU_ID = MOM.MENU_ID 
-     	INNER JOIN M_OP_CODE MOC ON MOC.CD_ID = MOM.CATEG_CD
-     	WHERE MOC.GRP_CD_ID = 'MENU_CTGRY_CD'
+     	FROM M_OP_CODE MOC
+     	INNER JOIN M_OP_MENU MOM ON MOC.CD_ID = MOM.CATEG_CD
+     	WHERE MOC.GRP_CD_ID = #{grpCdId}
      	AND MOM.USE_YN ='Y'
-     	AND MOAM.AUTH_ID = #{authId}
-     	ORDER BY MOC.CD_ID
+     	ORDER BY MOC.CD_ID 
     </select>
      
 	<select id="countCodeBygrpCdIdAndCdId" parameterType="mOpCode" resultType="int">
@@ -117,7 +113,6 @@
      	<if test="grpCdId != null and grpCdId != ''">
      		AND GRP_CD_ID = #{grpCdId}
      	</if>
-		 ORDER BY SORT_NO ASC
      </select>
      
      <select id="findOneMOpCodeLikeCdIdAndGrpCdId" parameterType="mOpCode" resultType="mOpCode">
@@ -133,7 +128,6 @@
      	<if test="grpCdId != null and grpCdId != ''">
      		AND GRP_CD_ID = #{grpCdId}
      	</if>
-		 ORDER BY SORT_NO ASC
      </select>
      
      <select id="findOndeMOpCodeCdNmAndGrpCdId" parameterType="mOpCode" resultType="mOpCode">

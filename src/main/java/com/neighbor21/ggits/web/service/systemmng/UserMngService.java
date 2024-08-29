@@ -132,7 +132,7 @@ public class UserMngService{
 		
 		MOpAuthority mOpAuthority = mOpAuthorityMapper.findOneByAuthId(mOpGrpInfo.getAuthId());
 		
-		if("AUC000".equals(mOpAuthority.getAuthCd()) || "SUPER".equals(sessionMOpOperator.getOprtrGrd()) || mOpOperator.getOprtrId() == sessionMOpOperator.getOprtrId()) {
+		if("AUC000".equals(mOpAuthority.getAuthCd()) || "SUPER".equals(mOpOperator.getOprtrGrd()) || mOpOperator.getOprtrId() == sessionMOpOperator.getOprtrId()) {
 			if(userDetailInfo == null) {
 				throw new CommonException(ErrorCode.ENTITY_DATA_NULL,"유저 정보가 존재하지 않습니다.");
 			}
@@ -162,7 +162,7 @@ public class UserMngService{
 		//권한 체크 로직
 		MOpOperator sessionMOpOperator = LoginSessionUtils.getMOpOperatorInfo();
 		
-		if(sessionMOpOperator != null && "SUPER".equals(sessionMOpOperator.getOprtrGrd())) {
+		if(sessionMOpOperator != null && "SUPER".equals(mOpOperator.getOprtrGrd())) {
 			if(mOpOperator.getOprtrId() == null) {
 				throw new CommonException(ErrorCode.ENTITY_UPDATE_FAIL,"유저 정보가 삭제되지 않았습니다. 관리자에게 문의하세요.");
 			}
@@ -176,9 +176,7 @@ public class UserMngService{
 			lOpUseMenuMapper.deleteByOprtrId(oprtrId);
 			
 			mOpLayoutMstInfoMapper.deleteByOprtrId(oprtrId);
-
-			mOpUserCntnSystemMenuMapper.deleteByOprtrId(oprtrId);
-
+			
 			mOpOperatorMapper.deleteByOprtrId(oprtrId);
 		} else {
 			throw new CommonException(ErrorCode.NO_PERMISSION);
@@ -228,7 +226,7 @@ public class UserMngService{
 		//Email 중복 체크
 		int emailDupleChk = mOpOperatorMapper.countMOpOperatorByOprtrEmail(mOpOperator);
 		if(emailDupleChk > 0) {
-			throw new CommonException(ErrorCode.USER_INFO_IS_EXIST);
+			throw new CommonException(ErrorCode.USER_INFO_IS_EXIST, "중복된 아이디 입니다.");
 		}
 		
 		//관리자 권한 확인

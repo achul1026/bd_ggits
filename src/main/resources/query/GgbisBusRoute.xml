@@ -16,9 +16,10 @@
 					BIGDATA.EXT_GGBIS_BUS_ROUTE gbr
 				inner JOIN MRT_BUS_RUNG_LOG_ANAL mbrla
 					ON gbr.ROUTE_ID = mbrla.BUS_ROUTE_ID
-				<where>
+				WHERE
+					1=1
 				<if test="searchTime != null and searchTime != ''">
-					AND mbrla.CLCT_YMD = replace(#{searchTime},'-','')
+					AND TO_CHAR(TO_DATE(mbrla.CLCT_YMD,'YYYYMMDD'),'YYYY-MM-DD') = #{searchTime}
 				</if>
 				<if test="routeTp != null and routeTp != ''">
 					AND gbr.ROUTE_TP = #{routeTp}
@@ -26,7 +27,6 @@
 				<if test="sigunCdId != null and sigunCdId != '' and sigunCdId != 'searchAllLocation'">
 					AND gbr.SIDO_CD = #{sigunCdId}
 				</if>
-					</where>
 				GROUP BY gbr.ROUTE_NM
 				ORDER BY BUS_USER_CNT DESC
 				LIMIT 5
@@ -54,9 +54,10 @@
 							BIGDATA.EXT_GGBIS_BUS_ROUTE gbr
 					inner JOIN MRT_BUS_RUNG_LOG_ANAL mbrla
 						ON gbr.ROUTE_ID = mbrla.BUS_ROUTE_ID
-					<where>
+					WHERE
+						1=1
 					<if test="searchTime != null and searchTime != ''">
-						AND mbrla.CLCT_YMD = replace(#{searchTime},'-','')
+						AND TO_CHAR(TO_DATE(mbrla.CLCT_YMD,'YYYYMMDD'),'YYYY-MM-DD') = #{searchTime}
 					</if>
 					<if test="routeTp != null and routeTp != ''">
 						AND gbr.ROUTE_TP = #{routeTp}
@@ -64,7 +65,6 @@
 					<if test="sigunCdId != null and sigunCdId != '' and sigunCdId != 'searchAllLocation'">
 						AND gbr.SIDO_CD = #{sigunCdId}
 					</if>
-					</where>
 					GROUP BY gbr.ROUTE_NM
 					ORDER BY TRSFR_CNT DESC
 					LIMIT 5
@@ -110,7 +110,6 @@
              ,GBR.LASTVEH_FLAG
              ,GBR.TURNPROCESS_FLAG
              ,GBR.FIRSTVEH_FLAG
-        	,GBS.ETL_DT
         FROM
 			BIGDATA.EXT_GGBIS_BUS_ROUTE GBR
                 INNER JOIN BIGDATA.EXT_GGBIS_BUSROUTE_STATION GBS ON GBS.ROUTE_ID = GBR.ROUTE_ID
@@ -119,7 +118,7 @@
     
     <select id="countPubTrfRouteInfo" parameterType="mapBigdataSearchDTO" resultType="int">
     	SELECT
-    		COUNT(1)
+    		COUNT(*)
     	FROM BIGDATA.EXT_GGBIS_BUS_ROUTE GBR
     	WHERE GBR.ROUTE_NM LIKE '%' || #{routeNm} || '%'
     </select>
@@ -133,7 +132,6 @@
     		, CASE WHEN GBR.ROUTE_TP ='11' THEN '직행좌석형시내버스'
 				WHEN GBR.ROUTE_TP ='12' THEN '좌석형시내버스'
 				WHEN GBR.ROUTE_TP ='13' THEN '일반형시내버스'
-			   WHEN GBR.ROUTE_TP ='14' THEN '광역버스'
 				WHEN GBR.ROUTE_TP ='21' THEN '직행좌석형농어촌버스'
 				WHEN GBR.ROUTE_TP ='22' THEN '좌석형농어촌버스'
 				WHEN GBR.ROUTE_TP ='23' THEN '일반형농어촌버스'
@@ -147,46 +145,6 @@
 				END AS ROUTE_TP
     	FROM BIGDATA.EXT_GGBIS_BUS_ROUTE GBR
     	WHERE GBR.ROUTE_NM LIKE '%' || #{routeNm} || '%'
-		order by (case when GBR.ROUTE_NM = #{routeNm} then 1 else 2 end, GBR.ROUTE_NM)
     	LIMIT 5 OFFSET (#{page} - 1) * 5
     </select>
-
-	<select id="findOneByRouteId"  resultType="ggbisBusRoute">
-		SELECT
-		    distinct
-			GBR.ROUTE_ID
-			 ,GBR.ROUTE_NM
-			 ,GBR.ROUTE_TP
-			 ,GBR.ROUTE_LENGTH
-			 ,GBR.ROUTE_INTERVAL
-			 ,GBR.ST_STA_NM
-			 ,GBR.ED_STA_NM
-			 ,GBR.ST_STA_ID
-			 ,GBR.ED_STA_ID
-			 ,GBR.SIDO_CD
-			 ,GBR.MANAGE_TP
-			 ,GBR.PERM_VOL
-			 ,GBR.BEGIN_DATE
-			 ,GBR.CLOSE_DATE
-			 ,GBR.ROUTE_EX
-			 ,GBR.COMPANY_ID
-			 ,GBR.COMPANY_NM
-			 ,GBR.ADMIN_NM
-			 ,GBR.TURN_SEQ
-			 ,GBR.ROUTE_ALLOC
-			 ,GBR.EB_ROUTE_ID
-			 ,GBR.ROUTE_ALLOC_COMPNAY_ID
-			 ,GBR.USE_YN
-			 ,GBR.REMARK
-			 ,GBR.AREA_CD
-			 ,GBR.TURN_STA_ID
-			 ,GBR.TURN_USE_YN
-			 ,GBR.TURNINFO_FLAG
-			 ,GBR.LASTVEH_FLAG
-			 ,GBR.TURNPROCESS_FLAG
-			 ,GBR.FIRSTVEH_FLAG
-		FROM
-			BIGDATA.EXT_GGBIS_BUS_ROUTE GBR
-		WHERE GBR.ROUTE_ID = #{routeId}
-	</select>
 </mapper>

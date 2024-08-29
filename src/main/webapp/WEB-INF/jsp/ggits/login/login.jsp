@@ -75,14 +75,7 @@
 					type : "post",
 					data : $("#loginForm").serialize(),
 					url : "${pageContext.request.contextPath}/login/user/detail.ajax",
-					beforeSend : function(){
-						startLoading();
-					},
-					error : function(){
-						endLoading();
-					},
 					success : function(loginResult) {
-						endLoading();
 						var resultCode = loginResult.code;
 						if(resultCode == '200'){
 
@@ -118,14 +111,7 @@
 					type : "post",
 					data : $("#loginForm").serialize(),
 					url : "${pageContext.request.contextPath}/login/user/detail.ajax",
-					beforeSend : function(){
-						startLoading();
-					},
-					error : function(){
-						endLoading();
-					},
 					success : function(loginResult) {
-						endLoading();
 						var resultCode = loginResult.code;
 						if(resultCode == '200'){
 							
@@ -135,7 +121,7 @@
 							$("#oprtrNm").val(oprtrNm);
 							$("#oprtrTel").val(oprtrTel);
 							
-							if(ggitsMode === 'prd'){
+							if(ggitsMode === 'prd1'){
 								$("#loginType").val("ULC005");
 								identityPrc(oprtrNm,oprtrTel);
 							}else{
@@ -211,16 +197,13 @@
 							//로그인 AJAX
 							//로그인 이름 /전화번호 - > 본인인증 이름/ 전화번호 비교
 							if((loginUserName == identityUserName) && (loginUserTel == identityTel)){
-								new ModalBuilder().init().alertBoby("본인인증이 완료 되었습니다.").footer(4,'확인',function(button, modal){
-									modal.close();
-									loginPrc();
-								}).open();
-								modalAlertWrap();
+								new ModalBuilder().init().alertBoby("본인인증이 완료 되었습니다.").footer(4,'확인',function(button, modal){modal.close();}).open();
+								modalAlertWrap();				    										
+								loginPrc();
 							}else{
-								new ModalBuilder().init().alertBoby("로그인 정보와 본인인증 정보가 일치하지 않습니다.").footer(4,'확인',function(button, modal){
-									modal.close();
-								}).open();
-								modalAlertWrap();
+								new ModalBuilder().init().alertBoby("로그인 정보와 본인인증 정보가 일치하지 않습니다.").footer(4,'확인',function(button, modal){modal.close();}).open();
+								modalAlertWrap();			    											
+								window.location.reload();
 								return false;
 							}
 						} else {

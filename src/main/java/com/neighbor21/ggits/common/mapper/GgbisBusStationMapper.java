@@ -43,12 +43,4 @@ public interface GgbisBusStationMapper {
 	  * @return
 	  */
 	List<GgbisBusStation> findAllBusSttnInfo(MapBigdataSearchDTO mapBigdataSearchDTO);
-
-
-	/**
-	 * 노선 기점 종점 정류장 조회
-	 * @param routeId
-	 * @return
-	 */
-	GgbisBusStation findOneStartEndStationInfoByRouteId(@Param("routeId") String routeId);
 }

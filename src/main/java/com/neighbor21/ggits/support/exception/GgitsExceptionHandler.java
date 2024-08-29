@@ -21,10 +21,10 @@ import com.neighbor21.ggits.openapi.service.OpenApiService;
 @ControllerAdvice
 @RestControllerAdvice
 public class GgitsExceptionHandler extends ResponseEntityExceptionHandler{
-
+	
 	@Autowired
-	OpenApiService openApiService;
-
+	OpenApiService openApiService; 
+	
 	@ExceptionHandler(value = Exception.class)
 	public ModelAndView exceptionHandler(Exception e){
 		e.printStackTrace();
@@ -37,15 +37,10 @@ public class GgitsExceptionHandler extends ResponseEntityExceptionHandler{
 	
 	// LoginCheckException
 	@ExceptionHandler(value = NoLoginException.class)
-	public Object loginChkExceptionHandler(NoLoginException ne,HttpServletRequest request) {
+	public ModelAndView loginChkExceptionHandler(NoLoginException ne) {
 		ModelAndView mav = new ModelAndView();
 		mav.setViewName("redirect:/login.do");
-		if(request.getHeader("X-GGITS-MAP-DATA") != null){
-			return new ResponseEntity<>(null,HttpStatus.UNAUTHORIZED);
-		}else{
-			return mav;
-		}
-
+		return mav;
 	}
 	
 	// customRuntimeException 
@@ -72,11 +67,6 @@ public class GgitsExceptionHandler extends ResponseEntityExceptionHandler{
 		openApiService.insertOpenApiLog(OpenApiInfo.getApiInfoForApiUrl(currentURI), parameterStr, 0, ResultStatus.FAILED,"");
 		
 		return new ResponseEntity<OpenApiCommonResult>(response, HttpStatus.OK);
-	}
-
-	private boolean isAjax(HttpServletRequest request) {
-		String requestedWithHeader = request.getHeader("X-Requested-With");
-		return "XMLHttpRequest".equals(requestedWithHeader);
 	}
 	
 }

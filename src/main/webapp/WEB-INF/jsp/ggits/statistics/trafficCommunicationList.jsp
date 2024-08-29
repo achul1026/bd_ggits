@@ -347,7 +347,7 @@
 		                    </div>
 		                    <c:if test="${tabNum eq '1' or tabNum eq '2' or tabNum eq '3' or tabNum eq '4'}">
 		                       	<div class="chart">
-		                       		<div class="tab_box_title left mb16">차종 <span>총 <c:out value='${totCntVhcl}'/>대</span></div>
+		                       		<div class="tab_box_title left mb16">차종 총 <span id="totCntVhcl">0</span>대</div>
 		                       		<div style="height:380px">
 			                       		<canvas id="tab1_1_chart"></canvas>
 		                       		</div>

@@ -1,6 +1,6 @@
 // 차트 라이브러리 커스텀
 
-const GITSChartType = {POLAR : "polarArea", SCATTER : "scatter",RADAR : "radar", BAR : "bar", LINE : "line", DOUGHNUT : "doughnut", MATRIX : "matrix"};
+const GITSChartType = {BAR : "bar", LINE : "line", DOUGHNUT : "doughnut", MATRIX : "matrix"};
 let GITSChart = function(type){
     //GITSChart 의 function
     let _self = this;
@@ -22,7 +22,7 @@ let GITSChart = function(type){
 
     //옵션
     let _opt = {};
-    let _isViewLabel = false;
+
     // bar, line 의 옵션
     let _typeOpts = {
         bar : {
@@ -157,101 +157,6 @@ let GITSChart = function(type){
                 },
             },
 		},
-        polarArea : {
-            animation: {
-                duration: 0
-            },
-            maintainAspectRatio :false,
-            plugins: {
-                legend: {
-                    position:'bottom',
-                    labels: {
-                        padding:10,
-                        color:"#fff",
-                        boxWidth:16,
-                        font: {
-                            size:12,
-                        }
-                    }
-                },
-            },
-        },
-        scatter : {
-            animation: {
-                duration: 0
-            },
-            maintainAspectRatio :false,
-            elements: {
-                point: {
-                    radius: 2,
-                },
-            },
-            options:{
-                indexAxis:'y',
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize:1,
-                        color :'#fff',
-                        font: {
-                            family:'Pretendard',
-                        },
-                    },
-                    grid: {
-                        color:'rgba(255, 255, 255, 0.44)',
-                        tickColor:'transparent'
-                    }
-                },
-                x: {
-                    beginAtZero: true,
-                    ticks: {
-                        color:'#fff',
-                        font: {
-                            family:'Pretendard',
-                        }
-                    },
-                    grid: {
-                        color:'rgba(255, 255, 255, 0.44)',
-                        tickColor:'transparent',
-                        display:false
-                    }
-                },
-            },
-            plugins: {
-                legend: {
-                    position:'bottom',
-                    labels: {
-                        padding:10,
-                        color:"#fff",
-                        boxWidth:16,
-                        font: {
-                            size:12,
-                        }
-                    }
-                },
-            },
-        },
-        radar : {
-            animation: {
-                duration: 0
-            },
-            maintainAspectRatio :false,
-            plugins: {
-                legend: {
-                    position:'bottom',
-                    labels: {
-                        padding:10,
-                        color:"#fff",
-                        boxWidth:16,
-                        font: {
-                            size:12,
-                        }
-                    }
-                },
-            },
-        },
         matrix :{
             aspectRatio: 5,
             plugins: {
@@ -302,6 +207,7 @@ let GITSChart = function(type){
             }
         }
     }
+
     const clearData = function(){
         let _element = null;
         let _data = {};
@@ -322,41 +228,6 @@ let GITSChart = function(type){
     // 옵션 값 받아오기
     _self.setOption = function(opt) {
         _opt = $.extend(_opt, opt, {});
-        return _self;
-    }
-    _self.setLittleFontSize = function() {
-        _opt = $.extend(_opt, {
-            scales : {
-                y: {
-                    ticks: {
-                        font: {
-                            size: 10
-                        }
-                    }
-                },
-                x: {
-                    ticks: {
-                        font: {
-                            size: 10
-                        }
-                    }
-                },
-            },
-            plugins: {
-                legend: {
-                    labels: {
-                        font: {
-                            size:10,
-                        }
-                    },
-
-                },
-            }
-        }, {});
-        return _self;
-    }
-    _self.setViewLabel = function(){
-        _isViewLabel = true;
         return _self;
     }
 
@@ -565,19 +436,10 @@ let GITSChart = function(type){
             console.error("chart.js가 import 되어 있지 않습니다.");
             return;
         }
-        let obj = {
+        return new Chart(_element, {
             type:_type,
             data: _data,
             options: _opt
-        };
-        if(_isViewLabel) obj.plugins = [ChartDataLabels];
-        return new Chart(_element, obj);
+        });
     }
-
-	_self.setLabelPosition = function(position) {
-		try {
-		_opt.plugins.legend.position = position
-		} catch(e) {console.error('option error')}
-		return _self;
-	}
 }

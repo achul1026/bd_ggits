@@ -19,23 +19,46 @@
          ,INJ_DCLR_CNT
          ,LON_CRDN
          ,LAT_CRDN
-         /*,ACDNT_DSTRCT_PYN*/
+         ,ACDNT_DSTRCT_PYN
     </sql>
     
     <sql id="commonWhere">
-        <where>
-            <!-- 연도별 검색 -->
-            <if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
-                and acdnt_dstrct_id LIKE #{searchYear}||'%'
-            </if>
-            <!-- 월별 검색 -->
-            <if test="searchMonth != null and searchMonth != ''">
-                and acdnt_dstrct_id LIKE #{searchYear}||#{searchMonth}||'%'
-            </if>
-            <if test="searchLocation != null and searchLocation != '' and searchLocation != 'searchAllLocation'">
-                AND ADSTDG_CD LIKE CONCAT(substring(#{searchLocation}, 0 ,5),'%')
-            </if>
-        </where>
+        WHERE 1=1
+        <!-- 연도별 검색 -->
+        <if test="searchYear != null and searchYear != '' and searchYear != 'searchAllYear' ">
+            AND TO_CHAR(CLCT_DT, 'YYYY') = #{searchYear}
+        </if>
+        <!-- 기간 검색 -->
+        <if test="searchPeriod != null and searchPeriod != ''">
+            <choose>
+                <when test="searchPeriod == 'weekday' ">
+                    AND TO_CHAR(CLCT_DT,'D') BETWEEN '2' AND '6'
+                </when>
+                <when test="searchPeriod == 'weekend' ">
+                    AND (TO_CHAR(CLCT_DT,'D') = '1' OR TO_CHAR(CLCT_DT,'D') =  '7')
+                </when>
+                <otherwise>
+                    AND TO_CHAR(CLCT_DT, 'YYYY-MM-DD') BETWEEN #{startDate} AND #{endDate}
+                </otherwise>
+            </choose>
+        </if>
+        <!-- 시간 검색 -->
+        <if test="searchTime != null and searchTime != ''">
+            <choose>
+                <when test="searchTime == 'workingTime' ">
+                    AND TO_CHAR(CLCT_DT, 'HH24') BETWEEN '06' AND '10'
+                </when>
+                <when test="searchTime == 'workingEndTime' ">
+                    AND TO_CHAR(CLCT_DT, 'HH24') BETWEEN '17' AND '20'
+                </when>
+                <otherwise>
+                    AND TO_CHAR(CLCT_DT, 'HH24') BETWEEN #{startTime} AND #{endTime}
+                </otherwise>
+            </choose>
+        </if>
+        <if test="searchLocation != null and searchLocation != '' and searchLocation != 'searchAllLocation'">
+            AND ADSTDG_CD LIKE CONCAT(#{searchLocation},'%')
+        </if>
     </sql>
     
     <sql id="statsColumns">
@@ -54,12 +77,12 @@
    		WHERE 1=1
    		<choose>
    			<when test="dataOption != null and dataOption == 'town'">
-					AND ADSTDG_CD = substring(#{searchLocation}, 0, 5)
+					AND ADSTDG_CD = #{searchLocation}
 					AND ADSI_NM = #{searchLocationNm}
    			</when>
    			<otherwise>
 		        <if test="searchLocation != null and searchLocation != '' and searchLocation != 'searchAllLocation'">
-					AND SUBSTRING(ADSTDG_CD,0,5) LIKE CONCAT(substring(#{searchLocation}, 0 ,5),'%')
+					AND SUBSTRING(ADSTDG_CD,0,5) LIKE CONCAT(#{searchLocation},'%')
 		        </if>
    			</otherwise>
    		</choose>
@@ -135,7 +158,7 @@
         ,INJ_DCLR_CNT
         ,LON_CRDN
         ,LAT_CRDN
-        /*,ST_ASGEOJSON(ACDNT_DSTRCT_PYN) AS ACDNT_DSTRCT_PYN*/
+        ,ST_ASGEOJSON(ACDNT_DSTRCT_PYN) AS ACDNT_DSTRCT_PYN
         ,'TRUCK' AS TYPE
         FROM BIGDATA.EXT_taas_truck_acdnt_dstrct /*화물차 사고 구역*/
         <include refid="commonWhere"/>
@@ -223,7 +246,7 @@
         ,INJ_DCLR_CNT
         ,LON_CRDN
         ,LAT_CRDN
-        /*,ST_ASGEOJSON(ACDNT_DSTRCT_PYN) AS ACDNT_DSTRCT_PYN*/
+        ,ST_ASGEOJSON(ACDNT_DSTRCT_PYN) AS ACDNT_DSTRCT_PYN
         ,'TRUCK' AS TYPE
         FROM BIGDATA.EXT_taas_truck_acdnt_dstrct /*화물차 사고 구역*/
         UNION
@@ -231,11 +254,6 @@
         <include refid="columns"/>
         ,'OLMAN' AS TYPE
         FROM BIGDATA.EXT_taas_pdst_olman_acdnt_dstrct /*노인 보행자 사고 구역*/
-        UNION
-        SELECT
-        <include refid="columns"/>
-        ,'CHILD' AS TYPE
-        FROM BIGDATA.ext_taas_pdst_chid_acdnt_dstrct /*어린이 보행자 사고 구역*/
         ) C
 	GROUP BY "adstdgNm" , "adstdgCd"
 	ORDER BY "acdntCnt" DESC
@@ -249,7 +267,7 @@
 		<include refid="statsColumns"/>
 		,'BCYCL' AS type
 		FROM
-          BIGDATA.EXT_TAAS_BCYCL_ACDNT_DSTRCT /* 자전거 사고 구역 */
+			TAAS_BCYCL_ACDNT_DSTRCT /* 자전거 사고 구역 */
 			<include refid="statsWhere"/>
 			<include refid="statsGroupBy"/>
 		UNION
@@ -257,7 +275,7 @@
 			<include refid="statsColumns"/>
 			,'JAYWK' AS type
 		FROM
-          BIGDATA.EXT_TAAS_JAYWK_PDST_ACDNT_DSTRCT /*무단횡단 보행자 사고구역*/
+			TAAS_JAYWK_PDST_ACDNT_DSTRCT /*무단횡단 보행자 사고구역*/
 			<include refid="statsWhere"/>
 			<include refid="statsGroupBy"/>
 		UNION
@@ -265,7 +283,7 @@
 			<include refid="statsColumns"/>
 			,'LAWVLTN' AS type
 		FROM
-          BIGDATA.EXT_TAAS_LAW_VLTN_PDST_ACDNT_DSTRCT /*법위반 보행자 사고구역*/
+			TAAS_LAW_VLTN_PDST_ACDNT_DSTRCT /*법위반 보행자 사고구역*/
 			<include refid="statsWhere"/>
 			<include refid="statsGroupBy"/>
 		UNION
@@ -273,7 +291,7 @@
 			<include refid="statsColumns"/>
 			,'HLDY' AS type
 		FROM
-          BIGDATA.EXT_TAAS_HLDY_PERIOD_ACDNT_DSTRCT /*휴일기간 보행자 사고구역*/
+			TAAS_HLDY_PERIOD_ACDNT_DSTRCT /*휴일기간 보행자 사고구역*/
 			<include refid="statsWhere"/>
 			<include refid="statsGroupBy"/>
 		UNION
@@ -281,7 +299,7 @@
 			<include refid="statsColumns"/>
 			, 'FROST' AS type
 		FROM
-          BIGDATA.EXT_TAAS_FROST_ACDNT_DSTRCT /*결빙사고 구역*/
+			TAAS_FROST_ACDNT_DSTRCT /*결빙사고 구역*/
 			<include refid="statsWhere"/>
 			<include refid="statsGroupBy"/>
 		UNION
@@ -289,7 +307,7 @@
 			<include refid="statsColumns"/>
 			,'TWHLVH' AS type
 		FROM
-          BIGDATA.EXT_TAAS_TWHLVH_ACDNT_DSTRCT /*이륜차 사고 구역*/
+			TAAS_TWHLVH_ACDNT_DSTRCT /*이륜차 사고 구역*/
 			<include refid="statsWhere"/>
 			<include refid="statsGroupBy"/>
 		UNION
@@ -297,7 +315,7 @@
 			<include refid="statsColumns"/>
 			,'PDSN' AS type
 		FROM
-          BIGDATA.EXT_TAAS_PDSN_ACDNT_DSTRCT /*보행자 사고 구역*/
+			TAAS_PDSN_ACDNT_DSTRCT /*보행자 사고 구역*/
 			<include refid="statsWhere"/>
 			<include refid="statsGroupBy"/>
 		UNION
@@ -305,7 +323,7 @@
 			<include refid="statsColumns"/>
 			,'DRNKG' AS type
 		FROM
-          BIGDATA.EXT_TAAS_DRNKG_ACDNT_DSTRCT /*음주 사고 구역*/
+			TAAS_DRNKG_ACDNT_DSTRCT /*음주 사고 구역*/
 			<include refid="statsWhere"/>
 			<include refid="statsGroupBy"/>
 		UNION
@@ -313,7 +331,7 @@
 			<include refid="statsColumns"/>
 			,'TRUCK' AS type
 		FROM
-          BIGDATA.EXT_TAAS_TRUCK_ACDNT_DSTRCT /*화물차 사고 구역*/
+			TAAS_TRUCK_ACDNT_DSTRCT /*화물차 사고 구역*/
 			<include refid="statsWhere"/>
 			<include refid="statsGroupBy"/>
 		UNION
@@ -321,69 +339,61 @@
 			<include refid="statsColumns"/>
 			,'OLMAN' AS type
 		FROM
-          BIGDATA.EXT_TAAS_PDST_OLMAN_ACDNT_DSTRCT /*노인 보행자 사고 구역*/
+			TAAS_PDST_OLMAN_ACDNT_DSTRCT /*노인 보행자 사고 구역*/
 			<include refid="statsWhere"/>
 			<include refid="statsGroupBy"/>
-          UNION
-          SELECT
-          <include refid="statsColumns"/>
-          ,'CHILD' AS type
-          FROM
-          BIGDATA.ext_taas_pdst_chid_acdnt_dstrct /*어린이 보행자 사고 구역*/
-          <include refid="statsWhere"/>
-          <include refid="statsGroupBy"/>
       </select>
 
     <select id="findAllDataYears" resultType="map">
     	SELECT
-            substring(acdnt_dstrct_id, 0, 5) AS "year"
+			TO_CHAR(CLCT_DT,'YYYY') AS "year"
         FROM BIGDATA.EXT_TAAS_BCYCL_ACDNT_DSTRCT /* 자전거 사고 구역 */
-        GROUP BY substring(acdnt_dstrct_id, 0, 5)
+        GROUP BY TO_CHAR(CLCT_DT,'YYYY')
         UNION
         SELECT
-            substring(acdnt_dstrct_id, 0, 5) AS "year"
+        	TO_CHAR(CLCT_DT,'YYYY') AS "year"
         FROM BIGDATA.EXT_TAAS_JAYWK_PDST_ACDNT_DSTRCT /*무단횡단 보행자 사고구역*/
-        GROUP BY substring(acdnt_dstrct_id, 0, 5)
+        GROUP BY TO_CHAR(CLCT_DT,'YYYY')
         UNION
         SELECT
-            substring(acdnt_dstrct_id, 0, 5) AS "year"
+       		TO_CHAR(CLCT_DT,'YYYY') AS "year"
         FROM BIGDATA.EXT_TAAS_LAW_VLTN_PDST_ACDNT_DSTRCT /*법위반 보행자 사고구역*/
-        GROUP BY substring(acdnt_dstrct_id, 0, 5)
+        GROUP BY TO_CHAR(CLCT_DT,'YYYY')
         UNION
         SELECT
-            substring(acdnt_dstrct_id, 0, 5) AS "year"
+       		TO_CHAR(CLCT_DT,'YYYY') AS "year"
         FROM BIGDATA.EXT_TAAS_HLDY_PERIOD_ACDNT_DSTRCT /*휴일기간 보행자 사고구역*/
-        GROUP BY substring(acdnt_dstrct_id, 0, 5)
+        GROUP BY TO_CHAR(CLCT_DT,'YYYY')
         UNION
         SELECT
-            substring(acdnt_dstrct_id, 0, 5) AS "year"
+        	TO_CHAR(CLCT_DT,'YYYY') AS "year"
         FROM BIGDATA.EXT_TAAS_FROST_ACDNT_DSTRCT /*결빙사고 구역*/
-        GROUP BY substring(acdnt_dstrct_id, 0, 5)
+        GROUP BY TO_CHAR(CLCT_DT,'YYYY')
         UNION
         SELECT
-            substring(acdnt_dstrct_id, 0, 5) AS "year"
+        	TO_CHAR(CLCT_DT,'YYYY') AS "year"
         FROM BIGDATA.EXT_TAAS_TWHLVH_ACDNT_DSTRCT /*이륜차 사고 구역*/
-        GROUP BY substring(acdnt_dstrct_id, 0, 5)
+        GROUP BY TO_CHAR(CLCT_DT,'YYYY')
         UNION
         SELECT
-            substring(acdnt_dstrct_id, 0, 5) AS "year"
+       		TO_CHAR(CLCT_DT,'YYYY') AS "year"
         FROM BIGDATA.EXT_TAAS_PDSN_ACDNT_DSTRCT /*보행자 사고 구역*/
-        GROUP BY substring(acdnt_dstrct_id, 0, 5)
+        GROUP BY TO_CHAR(CLCT_DT,'YYYY')
         UNION
         SELECT
-            substring(acdnt_dstrct_id, 0, 5) AS "year"
+        TO_CHAR(CLCT_DT,'YYYY') AS "year"
         FROM BIGDATA.EXT_TAAS_DRNKG_ACDNT_DSTRCT /*음주 사고 구역*/
-        GROUP BY substring(acdnt_dstrct_id, 0, 5)
+        GROUP BY TO_CHAR(CLCT_DT,'YYYY')
         UNION
         SELECT
-            substring(acdnt_dstrct_id, 0, 5) AS "year"
+        	TO_CHAR(CLCT_DT,'YYYY') AS "year"
         FROM BIGDATA.EXT_TAAS_TRUCK_ACDNT_DSTRCT /*화물차 사고 구역*/
-        GROUP BY substring(acdnt_dstrct_id, 0, 5)
+        GROUP BY TO_CHAR(CLCT_DT,'YYYY')
         UNION
         SELECT
-            substring(acdnt_dstrct_id, 0, 5) AS "year"
+        	TO_CHAR(CLCT_DT,'YYYY') AS "year"
         FROM BIGDATA.EXT_TAAS_PDST_OLMAN_ACDNT_DSTRCT /*노인 보행자 사고 구역*/
-        GROUP BY substring(acdnt_dstrct_id, 0, 5)
+        GROUP BY TO_CHAR(CLCT_DT,'YYYY')  
         ORDER BY YEAR DESC
         </select>
 </mapper>

@@ -10,7 +10,7 @@ import java.util.Map;
 public interface TaasAdsiAcdntDstrctMapper {
 
     public List<TaasAdsiAcdntDstrct> findAll();
-    
+
     /**
      * @Method Name : findAllAcdntGenLogInfo
      * @작성일 : 2024. 04. 09.
@@ -37,4 +37,5 @@ public interface TaasAdsiAcdntDstrctMapper {
      * @return
      */
 	public Map<String, Object> findAllAcdntGenLogMap(CommonEntity commonEntity);
+
 }

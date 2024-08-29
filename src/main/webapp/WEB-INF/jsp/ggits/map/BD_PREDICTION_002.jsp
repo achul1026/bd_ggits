@@ -5,10 +5,25 @@
     <div class="original_box clearfix">
         <form id="searchForm" class="result_change">
         	<input type="hidden" name="pageType" value="${type}">
+	        <div class="tab_item_box flex-center">
+	            <h5 class="tab_item_title">연도별</h5>
+	            <select class="selectBox radius" name="searchYear">
+	                <option value="searchAllYear">전체</option>
+	           	<c:forEach var="yearsList" items="${yearsList}">
+	                <option value="<c:out value='${yearsList.year}'/>"><c:out value='${yearsList.year}'/>년</option>
+	           	</c:forEach>
+	            </select>
+	        </div>
 	        <div class="tab_item_box">
 	            <div class="flex-center">
-	                <h5 class="tab_item_title">날짜<span class="required-alert">*</span></h5>
+	                <h5 class="tab_item_title">기간<span class="required-alert">*</span></h5>
 		            <input type="text" class="date_picker input_same mr8 input_picker" name="startDate" placeholder="날짜를 선택해주세요." autocomplete="off">
+		            ~
+			        <input type="text" class="end_date_picker input_same mr8 ml8 input_picker" name="endDate" placeholder="날짜를 선택해주세요." autocomplete="off">
+	            </div>
+	            <div class="flex-center mt8">
+	            	<h5 class="tab_item_title"></h5>
+	            	<div class="ftsize12 color-item-title">＊지정일자로 부터 일주일간 예측 정보를 분석합니다.</div>
 	            </div>
 	        </div>
 	        <div class="tab_item_box">
@@ -72,7 +87,7 @@
 	        var remarksItem =$(`
 	    	        <div class="remarks_container">
 	    		        <div class="remarks_title_box">
-	    		            <h6 class="remarks_title">범례 - 교통량예측</h6>
+	    		            <h6 class="remarks_title">범례 - 교통량변화</h6>
 	    		        </div>
 	    	        	<div class="remarks_wrap" style="padding:0.5rem 1.5rem 0.5rem 0.5rem;">
 	    	            	<div>
@@ -80,7 +95,7 @@
 	    		                	<div class="remarks_gradient_wrap">
 										<div class="remarks_gradient"></div>
 		    		                	<div class="remarks_gradinent_txt_wrap">
-		    		                		<div class="remarks_gradinent_txt">20,000</div>
+		    		                		<div class="remarks_gradinent_txt">10000</div>
 		    		                		<div class="remarks_gradinent_txt">0</div>
 		    		                	</div>
 	    		                	</div>
@@ -88,8 +103,7 @@
 	    	            	</div>
 	    		            <div class="unit">단위 : 대</div>
 	    	        	</div>
-	    	    	</div>`)
-			$('#map-container').find(".remarks_container").remove();
+	    	    	</div>`)        
 			$('#map-container').append(remarksItem);
 			legendToggle();
 			resultChange();

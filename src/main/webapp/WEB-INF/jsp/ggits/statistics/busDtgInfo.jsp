@@ -350,7 +350,7 @@
 		})
 		$.ajax({
    			type : "get",
-   			url : "${pageContext.request.contextPath}/statistics/traffic/analysis/public/bus_dtg_info/data.ajax",
+   			url : "${pageContext.request.contextPath}/statistics/traffic/analysis/communication/list.ajax",
    			data : {
    				"routeId" : routeId
    			},

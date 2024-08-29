@@ -7,7 +7,6 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.jcodings.exception.ErrorCodes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -39,7 +38,6 @@ import com.neighbor21.ggits.common.util.BDDateFormatUtil;
 import com.neighbor21.ggits.common.util.GgitsCommonUtils;
 import com.neighbor21.ggits.common.util.LoginSessionUtils;
 import com.neighbor21.ggits.support.exception.CommonException;
-import com.neighbor21.ggits.support.exception.ErrorCode;
 import com.neighbor21.ggits.web.service.login.LoginService;
 import com.neighbor21.ggits.web.service.systemmng.UserMngService;
 
@@ -131,13 +129,10 @@ public class LoginController {
     			}
     		}
     	}catch (CommonException e) {
-    		if(e.getErrorCode().getCode() == 1004) {
-    			return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST , ErrorCode.PASSWORD_MISMATCH.getMessage());
-    		}
     		return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST , "로그인중 문제가 발생했습니다.");
 		}
-//    	return CommonResponse.ResponseSuccess(HttpStatus.OK , "로그인 성공","/monitoring.do",resultMap);
-    	return CommonResponse.ResponseSuccess(HttpStatus.OK , "로그인 성공","/intro.do",resultMap);
+    	return CommonResponse.ResponseSuccess(HttpStatus.OK , "로그인 성공","/monitoring.do",resultMap);
+//    	return CommonResponse.ResponseSuccess(HttpStatus.OK , "로그인 성공","/intro.do",resultMap);
     }
     
     @PostMapping("/login/user/detail.ajax")

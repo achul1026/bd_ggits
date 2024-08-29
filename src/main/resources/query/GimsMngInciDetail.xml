@@ -4,8 +4,7 @@
 <mapper namespace='com.neighbor21.ggits.common.mapper.GimsMngInciDetailMapper'>
 
 	<select id="findAllWarningList" parameterType="map" resultType="gimsMngInciDetail">
-		SELECT
-		distinct
+		SELECT 	
 				gmid.MNG_ID,
 				gmid.DETAIL_SEQ,
 				gmid.UPDATE_CATE,
@@ -70,7 +69,7 @@
                     #{item}
                 </foreach>
 		</if>
-    	ORDER BY BEGIN_DATE desc
+    	ORDER BY TO_TIMESTAMP(gmid.BEGIN_DATE,'YYYYMMDDHH24miss') DESC 
     	<if test="page != null and page != ''">
     		LIMIT 10 OFFSET (#{page} - 1) * 10
     	</if>
@@ -137,58 +136,8 @@
 	  GROUP BY B.CNT
 	</select>
 
-	<select id="findAllUTICWarningListForMapMarker" resultType="gimsMngInciDetail">
-		select
-			max(etl_dt),
-			st_asgeojson(ST_GeomFromText(locationdata)) as geojson,
-			moc.cd_nm as inci_cate_nm,
-			incidentid as mngId,
-		   1 as  detail_seq,
-		    case when incidentetypecd = '1' then '2'		/* 사고 */
-		    		when incidentetypecd = '2' then '6' 	/* 공사 */
-		    		when incidentetypecd = '3' then '12'		/* 행사 */
-		    		when incidentetypecd = '4' then '3'		/* 기상 */
-		    		when incidentetypecd = '5' then '13'		/* 통제 */
-		    		when incidentetypecd = '6' then '8'		/* 재난 */
-		    		ELSE '1'	/* 기타 */ END AS inci_cate,
-			TO_CHAR(startdate,'YYYY년 MM월 DD일 hh24시 mi분') AS TIME_DATA,
-			incidentesubtypecd,
-		   roadname AS roadway_nm,
-		   lane as 	occurred_lane,
-		   lane as closed_lane,
-			addressjibun ,
-			locationdatax AS gps_x,
-			locationdatay AS gps_y,
-			incidenttitle AS description,
-			startdate AS begin_date,
-			enddate AS end_date,
-			'UTIC' AS INFO_SRC_ORG
-		from bigdata.ext_utic_trf_unxp_info eutui
-		 inner join m_op_code moc on moc.grp_cd_id ='incidentesubtypecd' and moc.cd_id = eutui.incidentetypecd ||'-'||eutui.incidentesubtypecd
-		where
-			addressjibuncd  like '41%'
-		  and startdate is not null
-		  and (enddate is null or enddate >= now())
-		  and locationdata is not null
-		  and moc.cd_nm != '도로파손'
-		group by
-			moc.cd_nm,
-			incidentid ,
-			locationdata,
-			incidentetypecd ,
-			incidentesubtypecd,
-			roadname,
-			lane,
-			addressjibun ,
-			locationdatax ,
-			locationdatay ,
-			incidenttitle ,
-			startdate ,
-			enddate
-			order by startdate desc
-	</select>
 	<!-- 돌발상황 마커 그리기를 위한 데이터 -->
-	<select id="findAllWarningListForMapMarker" resultType="gimsMngInciDetail">
+	<select id="findAllWarningListForMapMarker"  resultType="gimsMngInciDetail">
 		select
 			GMID.mng_id
 			 ,GMID.detail_seq
@@ -208,98 +157,56 @@
 			 ,GMID.is_auto_term
 			 ,GMID.roadway_nm
 			 ,GMID.subway_call_num
-			 ,GMIM.INFO_SRC_ORG
 		from
 			BIGDATA.EXT_gims_mng_inci_detail GMID,
 			(SELECT MAX(GMID.DETAIL_SEQ) as RECENT_DETAIL_SEQ
-				  , MAX(GMID.etl_dt) as RECENT_ETL_DT
 				  , GMID.mng_id
 			 FROM BIGDATA.EXT_gims_mng_inci_detail GMID
-			 GROUP BY MNG_ID) RCT,
-			(SELECT MNG_ID,CUR_STATUS,INFO_SRC_ORG FROM BIGDATA.EXT_gims_mng_inci_master WHERE CUR_STATUS != '3' ) GMIM
+			 GROUP BY MNG_ID) RCT
 		where
-			GMID.MNG_ID = GMIM.MNG_ID
-		  AND GMID.mng_id  = RCT.MNG_ID
+			GMID.mng_id  = RCT.MNG_ID
 		  and GMID.detail_seq  = RCT.RECENT_detail_seq
-		  and gmid.etl_dt = RCT.RECENT_ETL_DT
 		  and GMID.update_cate  != 'TERM'
 	</select>
 	
 	<select id="findAllWarningListForList"  resultType="gimsMngInciDetail">
-		SELECT
-		GMID.mng_id
-		,GMID.detail_seq
-		,GMID.update_cate
-		,GMID.inci_cate
-		,GMID.begin_date
-		,TO_CHAR(TO_TIMESTAMP(GMID.begin_date,'YYYYMMDDHH24MISS'),'YYYY년 MM월 DD일 hh24시 mi분') AS TIME_DATA
-		,GMID.end_date
-		,GMID.occurred_lane
-		,GMID.gps_x
-		,GMID.gps_y
-		,GMID.description
-		,GMID.roadway_nm
-		,GMIM.INFO_SRC_ORG
-		FROM
-		BIGDATA.EXT_GIMS_MNG_INCI_DETAIL GMID
-		INNER JOIN BIGDATA.EXT_GIMS_MNG_INCI_MASTER GMIM ON GMID.MNG_ID = GMIM.MNG_ID
-		WHERE UPDATE_CATE = 'INIT'
-		  <![CDATA[
-		  AND BEGIN_DATE  >= TO_CHAR(NOW(),'YYYYMMDD0000') AND BEGIN_DATE <= TO_CHAR(NOW(),'YYYYMMDD2359')
-		]]>
-		GROUP BY GMID.mng_id,
-		GMID.detail_seq,
-		GMID.begin_date,
-		GMID.inci_cate,
-		GMID.roadway_nm,
-		GMID.end_date,
-		GMID.occurred_lane,
-		GMID.update_cate,
-		GMID.gps_x,
-		GMID.gps_y,
-		GMID.description,
-		GMIM.INFO_SRC_ORG
-		UNION all
-		SELECT
-		incidentid as mng_id,
-		1 as  detail_seq,
-		incidenttypecd||'-'||incidentsubtypecd AS update_cate,
-		CASE WHEN incidenttypecd = '1' THEN '2'      /* 사고 */
-		WHEN incidenttypecd = '2' THEN '6'    /* 공사 */
-		WHEN incidenttypecd = '3' THEN '12'      /* 행사 */
-		WHEN incidenttypecd = '4' THEN '3'      /* 기상 */
-		WHEN incidenttypecd = '5' THEN '13'      /* 통제 */
-		WHEN incidenttypecd = '6' THEN '8'      /* 재난 */
-		ELSE '1'   /* 기타 */ END AS inci_cate,
-		TO_CHAR(startdate,'YYYYMMDDHH24MISS') AS begin_date,
-		TO_CHAR(startdate,'YYYY년 MM월 DD일 hh24시 mi분') AS TIME_DATA,
-		TO_CHAR(enddate,'YYYYMMDDHH24MISS') AS end_date,
-		lane as    occurred_lane,
-		locationdatax  AS gps_x,
-		locationdatay AS gps_y,
-		incidenttitle AS description,
-		roadname AS roadway_nm,
-		'UTIC' AS INFO_SRC_ORG
-		FROM ggits.utic_trf_unxp_info_cur eutui
-		INNER JOIN m_op_code moc on moc.grp_cd_id ='incidentesubtypecd' AND moc.cd_id = eutui.incidenttypecd  ||'-'||eutui.incidentsubtypecd
-		WHERE addressjibuncd  like '41%'
-		AND startdate >= CURRENT_DATE
-		AND locationdata is not null
-		AND moc.cd_nm != '도로파손'
-		GROUP BY
-		moc.cd_nm,
-		incidentid ,
-		locationdata,
-		incidenttypecd  ,
-		incidentsubtypecd,
-		roadname,
-		lane,
-		addressjibun ,
-		locationdatax ,
-		locationdatay ,
-		incidenttitle ,
-		startdate ,
-		enddate
+		select
+			GMID.mng_id
+			 ,GMID.detail_seq
+			 ,GMID.update_cate
+			 ,GMID.inci_cate
+			 ,GMID.begin_date
+			 ,TO_CHAR(TO_TIMESTAMP(GMID.begin_date,'YYYYMMDDHH24MISS'),'YYYY년 MM월 DD일 hh24시 mi분') AS TIME_DATA
+			 ,GMID.end_date
+			 ,GMID.occurred_lane
+			 ,GMID.gps_x
+			 ,GMID.gps_y
+			 ,GMID.description
+			 ,GMID.roadway_nm
+		from
+			BIGDATA.EXT_gims_mng_inci_detail GMID,
+			(SELECT MAX(GMID.DETAIL_SEQ) as RECENT_DETAIL_SEQ
+				  , GMID.mng_id
+			 FROM BIGDATA.EXT_gims_mng_inci_detail GMID
+			 GROUP BY MNG_ID) RCT,
+			(SELECT MNG_ID,CUR_STATUS FROM BIGDATA.EXT_gims_mng_inci_master WHERE CUR_STATUS != '3' ) GMIM
+		where
+			GMID.MNG_ID = GMIM.MNG_ID
+		  AND GMID.mng_id  = RCT.MNG_ID
+		  and GMID.detail_seq  = RCT.RECENT_detail_seq
+		  and GMID.update_cate  != 'TERM'
+		  group by 	GMID.mng_id,
+		  			GMID.detail_seq,
+		  			GMID.begin_date,
+		  			GMID.inci_cate,
+		  			GMID.roadway_nm,
+		  			GMID.end_date,
+		  			GMID.occurred_lane,
+		  			GMID.update_cate,
+		  			GMID.gps_x,
+			 		GMID.gps_y,
+			 		GMID.description
+
 	</select>
 	
 	<select id="findWarningTabInfo" resultType="map" parameterType="gimsMngInciDetail">
@@ -313,7 +220,6 @@
 		FROM
 			BIGDATA.EXT_GIMS_MNG_INCI_DETAIL GMID,
 			(SELECT MAX(GMID.DETAIL_SEQ) AS RECENT_DETAIL_SEQ
-				  , MAX(GMID.etl_dt) as RECENT_ETL_DT
 				  , GMID.MNG_ID
 			 FROM BIGDATA.EXT_GIMS_MNG_INCI_DETAIL GMID
 			 GROUP BY MNG_ID) RCT,
@@ -322,7 +228,6 @@
 			GMID.MNG_ID = GMIM.MNG_ID
 		  AND GMID.MNG_ID  = RCT.MNG_ID
 		  AND GMID.DETAIL_SEQ  = RCT.RECENT_DETAIL_SEQ
-		  and gmid.etl_dt = RCT.RECENT_ETL_DT
 		  AND GMID.UPDATE_CATE  != 'TERM'
 	</select>
 
@@ -348,21 +253,45 @@
 		from
 			BIGDATA.EXT_gims_mng_inci_detail GMID,
 			(SELECT MAX(GMID.DETAIL_SEQ) as RECENT_DETAIL_SEQ
-				  , MAX(GMID.etl_dt) as RECENT_ETL_DT
 				  , GMID.mng_id
 			 FROM BIGDATA.EXT_gims_mng_inci_detail GMID
-			 GROUP BY MNG_ID) RCT,
-			(SELECT MNG_ID,CUR_STATUS FROM BIGDATA.EXT_gims_mng_inci_master WHERE CUR_STATUS != '3' ) GMIM
+			 GROUP BY MNG_ID) RCT
 		where
-			GMID.MNG_ID = GMIM.MNG_ID
-		  AND GMID.mng_id  = RCT.MNG_ID
+			GMID.mng_id  = RCT.MNG_ID
 		  and GMID.detail_seq  = RCT.RECENT_detail_seq
-		  and gmid.etl_dt = RCT.RECENT_ETL_DT
 		  and GMID.update_cate  != 'TERM'
 		and GMID.LOG_DATE::date >= now()::date
 	</select>
 
+	<select id="findAllDailyWarningList" parameterType="map" resultType="gimsMngInciDetail">
+		SELECT
+				GMID.MNG_ID ,
+				GMID.DETAIL_SEQ,
+				GMID.UPDATE_CATE,
+				GMID.INCI_CATE ,
+				GMID.CLOSED_LANE ,
+				GMID.SEVERITY_LVL ,
+				GMID.SUBWAY_CALL_NUM ,
+				GMID.OPER_ID ,
+				GMIL.LINK_ID ,
+				GMID.GPS_X ,
+				GMID.GPS_Y ,
+				GMID.DESCRIPTION,
+				TO_CHAR(TO_TIMESTAMP(GMID.BEGIN_DATE,'YYYYMMDDHH24miss'),'yyyy-MM-dd HH:mm:ss') AS "beginDate",
+				GMID.OCCURRED_LANE ,
+				GMID.ROADWAY_NM
+		FROM	BIGDATA.EXT_GIMS_MNG_INCI_DETAIL GMID
+		INNER JOIN BIGDATA.EXT_GIMS_MNG_INCI_LINKS GMIL ON GMID.MNG_ID = GMIL.MNG_ID AND GMID.DETAIL_SEQ = GMIL.DETAIL_SEQ
+		<if test="(startToday != null and startToday != '') and (endToday != null and endToday != '')">
+		WHERE	<![CDATA[	
+    			TO_TIMESTAMP(GMID.BEGIN_DATE,'YYYYMMDDHH24miss')  >= TO_TIMESTAMP(#{startToday},'YYYY-MM-DD HH24:mi:ss') 
+		AND 	TO_TIMESTAMP(GMID.BEGIN_DATE,'YYYYMMDDHH24miss') <= TO_TIMESTAMP(#{endToday},'YYYY-MM-DD HH24:mi:ss')
+				]]>
+		</if>
+		
+	</select>
 
+	
 	<select id="countGimsMngInciDetailList" parameterType="map" resultType="int">
 		SELECT
 			COUNT(*)
@@ -482,7 +411,7 @@
         	ROUND(100.0*COUNT(A.INCI_CATE) / (SELECT COUNT(INCI_CATE) FROM BIGDATA.EXT_GIMS_MNG_INCI_DETAIL
         		<if test="(startToday != null and startToday != '') and (endToday != null and endToday != '')">
         		WHERE 
-            	TO_CHAR(TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss'),'YYYYMMDD HH24') between #{startToday} || ' 00' and #{endToday} || ' 23'
+            	TO_CHAR(TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss'),'YYYYMMDD HH24') between #{startToday}|| ' 00' and #{endToday}|| ' 23'
         		</if>
             	 )::numeric,2) as RATEVALUE,
         	A.INCI_CATE
@@ -666,137 +595,5 @@
 		FROM
 			BIGDATA.EXT_gims_mng_inci_detail
 		WHERE TO_CHAR(TO_TIMESTAMP(BEGIN_DATE,'YYYYMMDDHH24miss'),'YYYY-MM-DD') = TO_CHAR(NOW(),'YYYY-MM-DD')
-	</select>
-	
-	
-	<select id="findWarningByMnginstcd" resultType="gimsMngInciDetail">
-		SELECT
-		GMIM.INFO_SRC_ORG,
-		COUNT(1) AS TOTAL_CNT
-		FROM BIGDATA.EXT_GIMS_MNG_INCI_DETAIL GMID
-		INNER JOIN BIGDATA.EXT_GIMS_MNG_INCI_MASTER GMIM ON GMID.MNG_ID = GMIM.MNG_ID
-		WHERE
-		UPDATE_CATE = 'INIT'
-		  <![CDATA[
-		  AND BEGIN_DATE  >= TO_CHAR(NOW(),'YYYYMMDD0000') AND BEGIN_DATE <= TO_CHAR(NOW(),'YYYYMMDD2359')
-		]]>
-		GROUP BY INFO_SRC_ORG
-		union all
-		SELECT
-		'UTIC' as INFO_SRC_ORG,
-		COUNT(1)
-		FROM (
-		SELECT
-		MAX(utuic.etl_dt),
-		moc.cd_nm as inci_cate_nm,
-		utuic.incidentid as mngId,
-		1 as  detail_seq,
-		utuic.incidentsubtypecd,
-		utuic.roadname AS roadway_nm,
-		utuic.lane as    occurred_lane,
-		utuic.lane as closed_lane,
-		utuic.addressjibun ,
-		utuic.locationdatax AS gps_x,
-		utuic.locationdatay AS gps_y,
-		utuic.incidenttitle AS description,
-		utuic.startdate AS begin_date,
-		utuic.enddate AS end_date,
-		'UTIC' AS INFO_SRC_ORG
-		FROM ggits.utic_trf_unxp_info_cur utuic
-		left outer JOIN m_op_code moc ON moc.grp_cd_id ='incidentesubtypecd' AND moc.cd_id = utuic.incidenttypecd ||'-'||utuic.incidentsubtypecd
-		WHERE utuic.addressjibuncd  between '41111129' and '41830410'
-		AND utuic.locationdata is not null
-		AND moc.cd_nm != '도로파손'
-		GROUP BY
-		moc.cd_nm,
-		utuic.incidentid ,
-		utuic.locationdata,
-		utuic.incidenttypecd ,
-		utuic.incidentsubtypecd,
-		utuic.roadname,
-		utuic.lane,
-		utuic.addressjibun ,
-		utuic.locationdatax ,
-		utuic.locationdatay ,
-		utuic.incidenttitle ,
-		utuic.startdate ,
-		utuic.enddate
-		) CNT
-	</select>
-	<select id="findAllWarningInfoToday" resultType="gimsMngInciDetail">
-		SELECT
-		GMID.mng_id
-		,GMID.detail_seq
-		,GMID.update_cate
-		,GMID.inci_cate
-		,GMID.begin_date
-		,TO_CHAR(TO_TIMESTAMP(GMID.begin_date,'YYYYMMDDHH24MISS'),'YYYY년 MM월 DD일 hh24시 mi분') AS TIME_DATA
-		,GMID.end_date
-		,GMID.occurred_lane
-		,GMID.gps_x
-		,GMID.gps_y
-		,GMID.description
-		,GMID.roadway_nm
-		,GMIM.INFO_SRC_ORG
-		FROM
-		BIGDATA.EXT_GIMS_MNG_INCI_DETAIL GMID
-		INNER JOIN BIGDATA.EXT_GIMS_MNG_INCI_MASTER GMIM ON GMID.MNG_ID = GMIM.MNG_ID
-		WHERE UPDATE_CATE = 'INIT'
-		  <![CDATA[
-		  AND BEGIN_DATE  >= TO_CHAR(NOW(),'YYYYMMDD0000') AND BEGIN_DATE <= TO_CHAR(NOW(),'YYYYMMDD2359')
-		]]>
-		GROUP BY GMID.mng_id,
-		GMID.detail_seq,
-		GMID.begin_date,
-		GMID.inci_cate,
-		GMID.roadway_nm,
-		GMID.end_date,
-		GMID.occurred_lane,
-		GMID.update_cate,
-		GMID.gps_x,
-		GMID.gps_y,
-		GMID.description,
-		GMIM.INFO_SRC_ORG
-		UNION all
-		SELECT
-		incidentid as mng_id,
-		1 as  detail_seq,
-		incidenttypecd||'-'||incidentsubtypecd AS update_cate,
-		CASE WHEN incidenttypecd = '1' THEN '2'      /* 사고 */
-		WHEN incidenttypecd = '2' THEN '6'    /* 공사 */
-		WHEN incidenttypecd = '3' THEN '12'      /* 행사 */
-		WHEN incidenttypecd = '4' THEN '3'      /* 기상 */
-		WHEN incidenttypecd = '5' THEN '13'      /* 통제 */
-		WHEN incidenttypecd = '6' THEN '8'      /* 재난 */
-		ELSE '1'   /* 기타 */ END AS inci_cate,
-		TO_CHAR(startdate,'YYYYMMDDHH24MISS') AS begin_date,
-		TO_CHAR(startdate,'YYYY년 MM월 DD일 hh24시 mi분') AS TIME_DATA,
-		TO_CHAR(enddate,'YYYYMMDDHH24MISS') AS end_date,
-		lane as    occurred_lane,
-		locationdatax  AS gps_x,
-		locationdatay AS gps_y,
-		incidenttitle AS description,
-		roadname AS roadway_nm,
-		'UTIC' AS INFO_SRC_ORG
-		FROM ggits.utic_trf_unxp_info_cur eutui
-		INNER JOIN m_op_code moc on moc.grp_cd_id ='incidentesubtypecd' AND moc.cd_id = eutui.incidenttypecd  ||'-'||eutui.incidentsubtypecd
-		WHERE addressjibuncd  like '41%'
-		AND startdate >= CURRENT_DATE
-		AND locationdata is not null
-		AND moc.cd_nm != '도로파손'
-		GROUP BY
-		moc.cd_nm,
-		incidentid ,
-		locationdata,
-		incidenttypecd  ,
-		incidentsubtypecd,
-		roadname,
-		lane,
-		addressjibun ,
-		locationdatax ,
-		locationdatay ,
-		incidenttitle ,
-		startdate ,
-		enddate
 	</select>
 </mapper>

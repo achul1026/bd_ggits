@@ -103,9 +103,7 @@
 			}
 		});
 	});
-
-	var dataTotalCnt = '<c:out value="${totalCnt}"/>';
-	$("#totalCnt").text(numberComma(dataTotalCnt))
+	
 	/* 수집데이터 */
 	$('.smart_data_modal').on("click", function(){
 		var dsetId = $(this).data("index");

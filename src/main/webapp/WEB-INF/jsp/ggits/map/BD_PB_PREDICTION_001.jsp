@@ -83,7 +83,7 @@
              datasets: [{
             	 label:'유동인구',
             	 data: flatPopltnDataArr.split(','),
-            	 backgroundColor:['#F00','#AD49FB','#00BCB1','#F90','#0075FF','#00E0FF','#00D870','#FFF500','#FFB800','#FF7CD3']
+            	 backgroundColor:['#00BCB1','#AD49FB','#F00','#F90','#0075FF']
              }]
          })	
     .setTickStepX(10)
@@ -101,7 +101,7 @@
               datasets: [{
              	 label:'평가점수',
              	 data: scoreArr.split(','),
-            	 backgroundColor:['#F00','#AD49FB','#00BCB1','#F90','#0075FF','#00E0FF','#00D870','#FFF500','#FFB800','#FF7CD3']
+             	 backgroundColor:['#00BCB1','#AD49FB','#F00','#F90','#0075FF']
               }]
           })	
      .setTickStepX(10)
@@ -146,7 +146,7 @@
                  datasets: [{
                 	 label:'평가점수',
                 	 data: scoreArr.split(','),
-                	 backgroundColor:['#F00','#AD49FB','#00BCB1','#F90','#0075FF','#00E0FF','#00D870','#FFF500','#FFB800','#FF7CD3']
+                	 backgroundColor:['#00BCB1','#AD49FB','#F00','#F90','#0075FF']
                  }]
              })	
         .setTickStepX(10)

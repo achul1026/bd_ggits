@@ -1,11 +1,9 @@
 package com.neighbor21.ggits.api.module.monitoring.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.apache.log4j.Logger;
 
 
 public class Msgheader {
-private static Logger log = Logger.getLogger(Msgheader.class.getName());
 
 	@JsonProperty("headerCd")
     String headercd="";

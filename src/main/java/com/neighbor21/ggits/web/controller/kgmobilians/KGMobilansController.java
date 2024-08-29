@@ -62,14 +62,14 @@ public class KGMobilansController {
     public @ResponseBody CommonResponse<?> baseInfo(HttpServletRequest request){
     	
     	Map<String,Object> resultMap = new HashMap<String, Object>();
-    	String protocol = "https://";
-    	String serverName = "ggdata.gg.go.kr";
-//    	String host = request.getRemoteHost();리
+    	String protocol = request.isSecure() ? "https://" : "http://";
+    	String serverName = request.getServerName();
+//    	String host = request.getRemoteHost();
     	String okUrl = protocol+serverName;
     	String port = String.valueOf(request.getServerPort());
-//    	if(!GgitsCommonUtils.isNull(port)) {
-//    		okUrl = okUrl+":"+ port;
-//    	}
+    	if(!GgitsCommonUtils.isNull(port)) {
+    		okUrl = okUrl+":"+ port;
+    	}
     	okUrl = okUrl + OK_URL;
     	
     	resultMap.put("CASH_GB", CASH_GB);

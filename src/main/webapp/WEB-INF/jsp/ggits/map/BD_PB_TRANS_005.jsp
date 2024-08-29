@@ -7,18 +7,9 @@
     	<form id="searchForm" method="get">
     		<input type="hidden" id="mapPage" name="page" value="1"/>
     		<input type="hidden" name="pageType" value="<c:out value='${type}'/>">
-			<div class="tab_item_box flex-center">
-				<h5 class="tab_item_title">지역별</h5>
-				<select id="busStationLocationFilterSelector" class="selectBox radius" name="searchLocation">
-					<option value="">전체 지역</option>
-					<c:forEach var="sggCdList" items="${sggCdList}">
-						<option value="<c:out value='${sggCdList.cdId}'/>"><c:out value='${sggCdList.cdNm}'/></option>
-					</c:forEach>
-				</select>
-			</div>
 	        <div class="tab_item_box flex-center border-none">
 		        <h5 class="tab_item_title">정류장<span class="required-alert">*</span></h5>
-		        <input type="text" placeholder="정류장 이름 입력" name="searchContent" id="searchContent" class="input_same search_box radius">
+		        <input type="text" placeholder="정류장ID 또는 이름 입력" name="searchContent" id="searchContent" class="input_same search_box radius">
 		        <input type="button" class="is-darkgreen-btn ml8 pointer" id="srchBtn" value="검색">
 	        </div>
         </form>
@@ -35,7 +26,7 @@
 				        <tr>
 				            <th scope="col">선택</th>
 				            <th scope="col">정류장명</th>
-<!-- 				            <th scope="col">BIT 수</th> -->
+				            <th scope="col">BIT 수</th>
 				        </tr>
 				    </thead>
 				    <tbody>
@@ -67,15 +58,9 @@
 		$('#searchContent').keydown(function() {
 			  if (event.keyCode === 13) {
 			    event.preventDefault();
-			  }
+			  };
 		});
-	});
-
-	$("#busStationLocationFilterSelector").on("change", function(){
-		if($(this).val() == "") return;
-		if(__Map.getLayer(GITS_ENV.LAYER.BD_BUS_STATION))
-			__Map.setFilter(GITS_ENV.LAYER.BD_BUS_STATION, ['in', $(this).val().substring(0,4), ['string', ['get', 'sidoCd']]]);
-	});
+	})
 	
 	$('#srchBtn').on('click', function(){
 		$("#mapPage").val("1");
@@ -109,10 +94,10 @@
 	   				$(result.data.resultList).each(function(index, item){
 	   					var bitTp = !isNull(item.bitTp) ? item.bitTp : '0';
 	   					var bitCount = !isNull(item.bitCount) ? item.bitCount : '0';
-	   					html += '<tr>' +
-	   								'<td onclick="fnSttnLocation(this,'+item.mapX+','+item.mapY+')">' + '<input type="radio" id="listItem'+index+'" name="listItem" class="bigdata_input_radio">' + '</td>' +
+	   					html += '<tr onclick=fnSttnLocation(this,'+item.mapX+','+item.mapY+')>' +
+	   								'<td>' + '<input type="radio" id="listItem'+index+'" name="listItem" class="bigdata_input_radio">' + '</td>' +
 	   								'<td>' + '<label for="listItem'+index+'">' + item.stationNm + '</label>' + '</td>' +
-// 	   								'<td>' + '<label for="listItem'+index+'">' + bitCount + '</label>' + '</td>' +					
+	   								'<td>' + '<label for="listItem'+index+'">' + bitCount + '</label>' + '</td>' +					
 	   							'</tr>';    					
 	       					
 	       			});

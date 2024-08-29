@@ -46,14 +46,5 @@ public interface MrtTrfAcdntDngrPrdctnMapper {
 	  * @return List<TrafficAccidentPredictionInfoResponse> 
 	  */
 	List<TrafficAccidentPredictionInfoResponse> findTrafficAccidentPredictionInfo(TrafficAccidentPredictionInfoRequest trafficAccidentPredictionInfoRequest);
-
-
-	   /**
-	    * @Method Name : findAcdntPredictionTop10Info
-	    * @작성일 : 2023. 01. 04.
-	    * @작성자 : KY.LEE
-	    * @Method 설명 : 모니터링 대시보드 -> 사고예측구간 지수 top 10
-	    */	
-	public List<MrtTrfAcdntDngrPrdctn> findAcdntPredictionTop10Info();
 	
 }

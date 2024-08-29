@@ -60,7 +60,7 @@
 		    	COLLECT_LIST(
 		     		NAMED_STRUCT(
 		        		'psgvhclTrfvlm', TICTI.PSGVHCL_TRFVLM,
-		        		'busTrfvlm', TICTI.BUS_SMLSZ_TRFVLM,
+		        		'busTrfvlm', TICTI.bus_smlsz_trfvlm,
 		        		'busLrgszTrfvlm', TICTI.BUS_LRGSZ_TRFVLM,
 		        		'frghtSmlszTrfvlm', TICTI.FRGHT_SMLSZ_TRFVLM,
 		        		'frghtMdmszTrfvlm', TICTI.FRGHT_MDMSZ_TRFVLM,

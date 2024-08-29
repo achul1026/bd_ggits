@@ -13,14 +13,5 @@ public interface ExtGgitsLinkStd1mMapper {
 	 * @return
 	 */
 	List<ExtGgitsLinkStd1m> findAllByRecent();
-	List<ExtGgitsLinkStd1m> findAllByRecent2();
-
-
-	/**
-	 * 초기 소통정보 조회 (ROADRANK = 101, 102, 103)
-	 * @return
-	 */
-	List<ExtGgitsLinkStd1m> findAllByRecentLowerRoadRank();
-	List<ExtGgitsLinkStd1m> findAllByRecentLowerRoadRank2();
 	
 }

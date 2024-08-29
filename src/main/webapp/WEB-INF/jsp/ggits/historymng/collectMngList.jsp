@@ -101,9 +101,7 @@
 			                            </td>
 			                            <td><c:out value='${collectList.cdNm ne null ? collectList.cdNm : "-"}'/></td>
 			                            <td><c:out value='${collectList.jobNm}'/></td>
-			                            <td>
-											<fmt:formatNumber value="${collectList.clctDataCnt}" type="number" />건
-										</td>
+			                            <td><c:out value='${collectList.clctDataCnt}'/></td>
 			                            <td><c:out value='${collectList.procTime ne null ? collectList.procTime : "-"}'/></td>
 			                        </tr>
 	                        	</c:forEach>

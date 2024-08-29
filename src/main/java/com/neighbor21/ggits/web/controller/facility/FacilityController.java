@@ -60,10 +60,10 @@ public class FacilityController {
      * @return the response entity
      */
     @GetMapping("/getSmartIntersection.ajax")
-    public @ResponseBody ResponseEntity<?> getSmartIntersection(@RequestParam(name = "mngInstCd" ,required = false) String mngInstCd){
+    public @ResponseBody ResponseEntity<?> getSmartIntersection(){
         /*List<SmartIntersectionDTO> list = new ArrayList<>();
         list = smartIntersectionComponent.getSmartIntersectionInfo();*/
-        List<AdsiSmcrsrdCrsrdInfo> list = facilityGeoMetricInfoComponent.getSmartCrossRoadList(mngInstCd);
+        List<AdsiSmcrsrdCrsrdInfo> list = facilityGeoMetricInfoComponent.getSmartCrossRoadList();
         return new ResponseEntity<>(list, HttpStatus.OK);
     }
 
@@ -87,10 +87,9 @@ public class FacilityController {
 
     @GetMapping("/getVDSCollectList.ajax")
     public @ResponseBody ResponseEntity<?> getVDSCollectList(
-            @RequestParam(name = "vdsId") String vdsId,
-            @RequestParam(name = "mngInstCd") String mngInstCd
+            @RequestParam(name = "vdsId") String vdsId
     ){
-        List<AdsiVdsColctInfo> list = facilityGeoMetricInfoComponent.getVDSCollectInfo(vdsId, mngInstCd);
+        List<AdsiVdsColctInfo> list = facilityGeoMetricInfoComponent.getVDSCollectInfo(vdsId);
         return new ResponseEntity<>(list, HttpStatus.OK);
     }
 

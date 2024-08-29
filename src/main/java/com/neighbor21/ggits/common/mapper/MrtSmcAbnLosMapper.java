@@ -2,7 +2,6 @@ package com.neighbor21.ggits.common.mapper;
 
 import java.util.List;
 
-import com.neighbor21.ggits.common.dto.MapBigdataSearchDTO;
 import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
 
 import com.neighbor21.ggits.common.entity.CommonEntity;
@@ -29,8 +28,6 @@ public interface MrtSmcAbnLosMapper {
      * @return
      */
 	List<MrtSmcAbnLos> findAllSmcAbnLosList(CommonEntity commonEntity);
-
-	List<MrtSmcAbnLos> findAllSmcAbnLosListForMap(MapBigdataSearchDTO mapBigdataSearchDTO);
 	
 	
 	/**

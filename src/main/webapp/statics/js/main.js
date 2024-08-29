@@ -112,7 +112,7 @@ function imporovement(){
     })
 }
 function introcheck(){
-	const label = document.querySelectorAll('.label');
+	const label = document.querySelector('.label');
 	const options = document.querySelectorAll('.optionItem');
 	
 	const handleSelect = (item) => {
@@ -123,14 +123,13 @@ function introcheck(){
 		option.addEventListener('click', () => handleSelect(option))
 	})
 	
-	label.forEach(item => {
-		item.addEventListener('click', () => {
-			if(item.parentNode.parentNode.classList.contains('active')) {
-				item.parentNode.parentNode.classList.remove('active');
-			} else {
-				item.parentNode.parentNode.classList.add('active');
-			}
-		})
+	label.addEventListener('click', () => {
+		
+	  if(label.parentNode.parentNode.classList.contains('active')) {
+	  	label.parentNode.parentNode.classList.remove('active');
+	  } else {
+	  	label.parentNode.parentNode.classList.add('active');
+	  }
 	})
 }
 //datePicker

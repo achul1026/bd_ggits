@@ -13,22 +13,22 @@
             </aside>
             <section class="main_section">
                 <h2 class="blind">메타데이터 관리</h2>         
-                <form id="searchFrm" name="searchFrm" action="${pageContext.request.contextPath}/metadata/manage/list.do" method="get">
+                <form id="searchFrm" name="searchFrm" action="${pageContext.request.contextPath}/metadatamng/list.do" method="get">
                 <input type="hidden" id="page" name="page" value="1"/>
 	                <div class="table_btn_wrap">
 	                    <div class="table_btn_left flex-between">
 	                    	<div class="btn_search_wrap">
 	                    		<ul>
-<!-- 	                    			<li> -->
-<!-- 	                    				 <select class="selectBox big_selcetbox fncOnchange" id="clschmId" name="clschmId"> -->
-<!-- 				                            <option value="">분류 체계</option> -->
-<%-- 				                            <c:if test="${not empty clschmIdList}"> --%>
-<%-- 					                            <c:forEach var="clschmId" items="${clschmIdList}" varStatus="status"> --%>
-<%-- 						                            <option value="<c:out value='${clschmId}'/>" ${searchOption.clschmId eq clschmId ? 'selected':''}><c:out value='${clschmNmList[status.index]}'/></option> --%>
-<%-- 					                            </c:forEach> --%>
-<%-- 				                            </c:if> --%>
-<!-- 				                        </select> -->
-<!-- 	                    			</li> -->
+	                    			<li>
+	                    				 <select class="selectBox big_selcetbox fncOnchange" id="clschmId" name="clschmId">
+				                            <option value="">분류 체계</option>
+				                            <c:if test="${not empty clschmIdList}">
+					                            <c:forEach var="clschmId" items="${clschmIdList}" varStatus="status">
+						                            <option value="<c:out value='${clschmId}'/>" ${searchOption.clschmId eq clschmId ? 'selected':''}><c:out value='${clschmNmList[status.index]}'/></option>
+					                            </c:forEach>
+				                            </c:if>
+				                        </select>
+	                    			</li>
 	                    			<li>
 	                    				<select class="selectBox fncOnchange" id="dataType" name="dataType">
 				                            <option value="">데이터 유형 선택</option>
@@ -39,16 +39,16 @@
 				                            </c:if>
 				                        </select>
 	                    			</li>
-<!-- 	                    			<li> -->
-<!-- 	                    				 <select class="selectBox fncOnchange" id="opngDataListNm" name="opngDataListNm"> -->
-<!-- 				                            <option value="">수집 유형 선택</option> -->
-<%--                 				            <c:if test="${not empty collTyCdList}"> --%>
-<%-- 					                            <c:forEach var="collTyCdList" items="${collTyCdList}"> --%>
-<%-- 						                            <option value="<c:out value='${collTyCdList.cdId}'/>" ${searchOption.opngDataListNm eq collTyCdList.cdId ? 'selected':''}><c:out value='${collTyCdList.cdNm}'/></option> --%>
-<%-- 					                            </c:forEach> --%>
-<%-- 					                        </c:if> --%>
-<!-- 				                        </select> -->
-<!-- 	                    			</li> -->
+	                    			<li>
+	                    				 <select class="selectBox fncOnchange" id="opngDataListNm" name="opngDataListNm">
+				                            <option value="">수집 유형 선택</option>
+                				            <c:if test="${not empty collTyCdList}">
+					                            <c:forEach var="collTyCdList" items="${collTyCdList}">
+						                            <option value="<c:out value='${collTyCdList.cdId}'/>" ${searchOption.opngDataListNm eq collTyCdList.cdId ? 'selected':''}><c:out value='${collTyCdList.cdNm}'/></option>
+					                            </c:forEach>
+					                        </c:if>
+				                        </select>
+	                    			</li>
 	                    		</ul>
 	                    	</div>
 		                    <div class="flex-center">
@@ -70,7 +70,7 @@
 		                        		</li>
 		                        		<c:if test="${authCd eq 'AUC000'}">
 			                        		<li>
-			                        			<a href="${pageContext.request.contextPath}/metadata/manage/save.do" class="is-darkgreen-btn mj0">등록하기</a>
+			                        			<a href="${pageContext.request.contextPath}/metadatamng/save.do" class="is-darkgreen-btn mj0">등록하기</a>
 			                        		</li>
 		                        		</c:if>
 		                        	</ul>
@@ -88,16 +88,16 @@
                         </div>
                     </div>
                     <c:forEach var="metaDataList" items="${metaDataList}">
-	                   <div class="search_bigbox pointer" onclick="location.href='${pageContext.request.contextPath}/metadata/manage/${metaDataList.tblId}/detail.do'">
+	                   <div class="search_bigbox pointer" onclick="location.href='${pageContext.request.contextPath}/metadatamng/${metaDataList.tblId}/detail.do'">
 	                        <div class="search_wrap is-hover">
-	                            <div class="search_txt"><c:out value='${metaDataList.tblKoreanNm}'/></div>
 	                            <h5 class="search_title"><c:out value='${metaDataList.tblEngNm}'/></h5>
+	                            <div class="search_txt"><c:out value='${metaDataList.tblKoreanNm}'/></div>
 	                            <div class="search_ft_box">
 	                                <div class="search_day_data_box">
-	                                	<fmt:formatDate var="updtDt" pattern="yyyy년 MM월 dd일" value="${metaDataList.updtDt}"/>
+	                                	 <fmt:formatDate var="updtDt" pattern="yyyy년 MM월 dd일" value="${metaDataList.updtDt}"/>
 	                                    <div class="fertilization">수정일 : <c:out value='${updtDt}'/></div>
 	                                    <div class="registrant">등록자 : <c:out value='${metaDataList.tblOwnrNm}'/></div>
-	                                	<c:if test="${metaDataList.tblType eq 'GPDB' or metaDataList.tblType eq 'NDAP'}">
+	                                    <c:if test="${metaDataList.tblType eq 'GPDB' or metaDataList.tblType eq 'NDAP'}">
 		                                	<c:choose>
 		                                    	<c:when test="${metaDataList.fileExstYn == 'Y'}">
 				                                    <div class="tblType">유형 : DATABASE, FILE</div>	                                    	                                    	
@@ -153,7 +153,7 @@
 	});
 	
 	function fnSearchList(){
-		document.getElementById('searchFrm').action= "${pageContext.request.contextPath}/metadata/manage/list.do";
+		document.getElementById('searchFrm').action= "${pageContext.request.contextPath}/metadatamng/list.do";
 		document.getElementById('searchFrm').submit();
 	}		
 </script>

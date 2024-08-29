@@ -6,43 +6,44 @@
     	<form id="searchForm" class="result_change">
 			<input type="hidden" name="type" value="quantity">
 			<input type="hidden" name="pageType" value="<c:out value='${type}'/>">
-			<div class="tab_item_box flex-center">
-				<h5 class="tab_item_title">수집원별</h5>
-				<select class="selectBox radius result_change" name="collectType">
-					<option value="smc">스마트교차로</option>
-					<option value="vds">VDS</option>
-<!-- 					<option value="dsrc">DSRC</option> -->
-				</select>
-			</div>
 	        <div class="tab_item_box flex-center">
 	            <h5 class="tab_item_title">연도별</h5>
 	            <select class="selectBox radius result_change" name="searchYear">
+	                <option value="searchAllYear">전체</option>
 	           	<c:forEach var="yearsList" items="${yearsList}">
 	                <option value="<c:out value='${yearsList.year}'/>"><c:out value='${yearsList.year}'/>년</option>
 	           	</c:forEach>
 	            </select>
 	        </div>
-			<div class="tab_item_box">
-				<div class="flex-center">
-					<h5 class="tab_item_title">기간<span class="required-alert">*</span></h5>
-					<div class="calendar" id="directDate">
-						<input type="text" class="date_picker input_same mr8 input_picker" name="startDate" placeholder="날짜를 선택해주세요." autocomplete="off">
-						~
-						<div class="end_calendar_box">
-							<div class="date_picker_block"></div>
-							<input type="text" class="end_date_picker input_same mr8 ml8 input_picker" name="endDate" placeholder="날짜를 선택해주세요." autocomplete="off">
-						</div>
-					</div>
+	        <div class="tab_item_box">
+	            <div class="flex-center">
+	                <h5 class="tab_item_title">기간</h5>
+	                <label class="group_btn_item is-dark-btn radius inpd is-darkgreen-btn"><input type="checkbox" class="none" name="searchPeriod" value="weekday" checked="checked">평일</label>
+	                <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" class="none" name="searchPeriod" value="weekend">주말</label>
+	                <label class="group_btn_item is-dark-btn radius inpd direct"><input type="checkbox" class="none" name="searchPeriod" value="directDate">직접입력</label>
+	            </div>
+	            <div class="calendar direct_time none" id="directDate">
+		            <input type="text" class="date_picker input_same mr8 input_picker" name="startDate" placeholder="날짜를 선택해주세요." autocomplete="off">
+		            ~
+		            <div class="end_calendar_box">
+						<div class="date_picker_block"></div>								            
+			            <input type="text" class="end_date_picker input_same mr8 ml8 input_picker" name="endDate" placeholder="날짜를 선택해주세요." autocomplete="off">
+		            </div>		            
 				</div>
-			</div>
-			<div class="tab_item_box">
-				<div class="flex-center">
-					<h5 class="tab_item_title">기간구분<span class="required-alert">*</span></h5>
-					<label class="group_btn_item is-dark-btn is-darkgreen-btn radius inpd"><input type="checkbox" name="searchPeriod" class="none" value="" checked>전체</label>
-					<label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" name="searchPeriod" class="none" value="weekday">평일</label>
-					<label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" name="searchPeriod" class="none" value="weekend">주말</label>
-				</div>
-			</div>
+	        </div>
+	        <div class="tab_item_box">
+	            <div class="flex-center">
+	                <h5 class="tab_item_title">시간</h5>
+	                <label class="group_btn_item is-dark-btn radius inpd is-darkgreen-btn"><input type="checkbox" class="none" name="searchTime" value="workingTime" checked="checked">출근 <span class="group_btn_span">(06시~10시)</span></label>
+	                <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" class="none" name="searchTime" value="workingEndTime">퇴근 <span class="group_btn_span">(17시~20시)</span></label>
+	                <label class="group_btn_item is-dark-btn radius inpd direct"><input type="checkbox" class="none" name="searchTime" value="directTime">시간 설정</label>
+	            </div>
+	            <div class="calendar direct_time none" id="directTime">
+					<select class="selectBox selectTime" name="startTime" id="startTime"></select>
+	                ~
+					<select class="selectBox selectTime ml8" name="endTime" id="endTime"></select>
+	            </div>
+	        </div>
 	        <div class="tab_item_box flex-center">
 	            <h5 class="tab_item_title">지역별</h5>
 	            <select class="selectBox radius" name="searchLocation">
@@ -59,6 +60,11 @@
 		            <c:import url="/WEB-INF/jsp/ggits/common/modalRoadRankList.jsp" />
 	            </div>
 	        </div>
+	        <div class="tab_item_box flex-center">
+	            <h5 class="tab_item_title">집계기준</h5>
+	            <label class="group_btn_item is-dark-btn radius inpd is-darkgreen-btn"><input type="checkbox" class="none" name="searchResultType" value="totalSum" checked="checked">누적</label>
+	            <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" class="none" name="searchResultType" value="totalAvg">평균</label>
+	        </div>
         </form>
         <div class="bottom_btn">
             <button type="button" class="is-darkgreen-btn radius original_result_btn" onclick="trafficResultEvent();">결과보기</button>
@@ -70,6 +76,8 @@
 	gisCheckInit();
 	datePickerInit();
 	dateTiemInit();
+	
+	settingBigdataSearchParam("BD_PATTERN_002");
 	
 	$("#searchAllRoadRankBtn").on("click",function(){
 		var allChkVal = $(this).hasClass("is-darkgreen-btn");
@@ -88,8 +96,6 @@
 	});
 	
 	function trafficResultEvent(){
-		var startDate = $("input[name='startDate']");
-		var endtDate = $("input[name='endDate']");
 		var roadRank = $("input[name='roadRank']");
 		var roadRankCheckedVal = roadRank.is(":checked");
 		if(!roadRankCheckedVal){
@@ -97,12 +103,6 @@
 			modalAlertWrap();
 			return;
 		}
-		if(!startDate.val() || !endtDate.val()) {
-			new ModalBuilder().init().alertBoby("날짜를 선택해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
-			modalAlertWrap();
-			return;
-		}
-
 		var roadRankVal = "";
 		roadRank.each(function(idx,item){
 			if($(item).parent().hasClass("is-darkgreen-btn")){
@@ -128,7 +128,7 @@
         var remarksItem =$(`
 	        <div class="remarks_container">
 		        <div class="remarks_title_box">
-		            <h6 class="remarks_title">범례 - 교통량</h6>
+		            <h6 class="remarks_title">범례 - 누적교통량</h6>
 		        </div>
 	        	<div class="remarks_wrap">
 	            	<div>
@@ -142,8 +142,7 @@
 	            	</div>
 		            <div class="unit">단위 : (대)</div>
 	        	</div>
-	    	</div>`)
-		$('#map-container').find(".remarks_container").remove();
+	    	</div>`)        
         $('#map-container').append(remarksItem);
         legendToggle();
         resultChange();        

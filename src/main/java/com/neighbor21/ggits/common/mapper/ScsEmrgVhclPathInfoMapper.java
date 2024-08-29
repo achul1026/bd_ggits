@@ -19,16 +19,6 @@ public interface ScsEmrgVhclPathInfoMapper {
 	  * @return
 	  */
 	public List<ScsEmrgVhclPathInfo> findAllEmergencyList(Map<String,Object> paramMap);
-
-	/**
-	 * @Method Name : findAllEmergencyListForToday
-	 * @작성일 : 2024. 01. 19.
-	 * @작성자 : KY.LEE
-	 * @Method 설명 : 일일 긴급 차량 이동 이력 목록
-	 * @param paramMap
-	 * @return
-	 */
-	public List<ScsEmrgVhclPathInfo> findAllEmergencyListForToday();
 	
 	/**
 	  * @Method Name : findOneByServiceid

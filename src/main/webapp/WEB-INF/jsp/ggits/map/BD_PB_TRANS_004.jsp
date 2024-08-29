@@ -12,6 +12,7 @@
 	            <input type="hidden" id="startYear" value="<c:out value='${yearsList[0].year}'/>">
             	<input type="hidden" id="endYear" value="<c:out value='${yearsList[fn:length(yearsList) -1].year}'/>">
 	            <select class="selectBox radius" name="searchYear" id="searchYear">
+	                <option value="searchAllYear">전체</option>
 	           		<c:forEach var="yearsList" items="${yearsList}" varStatus="status">
 	                	<option value="<c:out value="${yearsList.year}"/>"><c:out value="${yearsList.year}"/>년</option>
 	           		</c:forEach>
@@ -114,8 +115,7 @@
 		            	</div>
 			            <div class="unit">단위 : 승하차/환승 횟수</div>
 		        	</div>
-		    	</div>`)
-		$('#map-container').find(".remarks_container").remove();
+		    	</div>`)        
 	        $('#map-container').append(remarksItem);
 	        legendToggle();
 

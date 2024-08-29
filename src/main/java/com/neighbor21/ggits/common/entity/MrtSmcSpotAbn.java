@@ -18,7 +18,7 @@ public class MrtSmcSpotAbn extends CommonEntity {
     private String acsRoadNm;	// 도로명
     private String roadRank;	// 도로 등급
     private String roadName;
-    private Double avgTrfvlm;			// 평균 교통량
+	private Double avgTrfvlm;			// 평균 교통량
 	private Double avgSpd;				// 평균 속도
 	private Double sumTrfvlm;			// 누적 교통량
 

@@ -84,7 +84,7 @@
 			}
 		});
 	});
-
+	
 	$("#searchBtn").on('click',function(){
 		fnSearchList();
 	});

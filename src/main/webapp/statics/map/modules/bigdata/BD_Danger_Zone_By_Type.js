@@ -5,18 +5,6 @@
  */
 const BD_Danger_Zone_By_Type = async function(searchOption = ''){
     let data = await self.util.getJsonFormApi("/bigdata/getAllAccidentInfo.ajax?"+searchOption);
-    if(data?.noLogin){
-        return {
-            error : true,
-            noLogin : true
-        }
-    }
-    if(data.positions.length === 0) {
-        return {
-            error : true,
-            errorMsg : "해당일자에 조회된 데이터가 없습니다."
-        }
-    }
     let features = [];
     for(const point of data.positions) {
         const obj = {
@@ -27,11 +15,11 @@ const BD_Danger_Zone_By_Type = async function(searchOption = ''){
                 'coordinates': [point.lonCrdn, point.latCrdn]
             }
         }
-        /*const accidentPolygon = {
+        const accidentPolygon = {
             'type': 'Feature',
             'properties' : {},
             'geometry': JSON.parse(point.acdntDstrctPyn)
-        }*/
+        }
         /*
         BCYCL : 자전거 사고 구역
         JAYWK : 무단횡단 보행자 사고구역
@@ -45,14 +33,23 @@ const BD_Danger_Zone_By_Type = async function(searchOption = ''){
         OLMAN : 노인 보행자 사고 구역
          */
         for(const prop in point){
-            /*accidentPolygon.properties[prop] = point[prop];*/
+            accidentPolygon.properties[prop] = point[prop];
             obj.properties[prop] = point[prop];
             if(prop === "type" && !obj.properties.icon) {
+                console.log(prop["type"]);
                 obj.properties.icon = "accident_"+point["type"];
+                /*switch (point['type']) {
+                    case "BCYCL" :
+
+                        break;
+                    case "DRNKG" :
+                        obj.properties.icon = "location_yellow";
+                        break;
+                }*/
             }
         }
         features.push(obj);
-        /*features.push(accidentPolygon);*/
+        features.push(accidentPolygon);
     }
     /*
     acdntCnt : 사고수

@@ -4,7 +4,7 @@
 <mapper namespace='com.neighbor21.ggits.common.mapper.ScsTConIntlcMapper'>
     <select id="findAll" resultType="scsTConIntlc">
         SELECT
-         stci.int_lcno
+            stci.int_lcno
         ,stci.update_date
         ,stci.int_name
         ,stci.int_type
@@ -16,12 +16,12 @@
         ,stci.int_lng
         ,stci.int_lat
         ,stci.ppc_type
-        from scs_t_con_intlc_cur stci
+        from scs_t_con_intlc stci
          INNER JOIN (
             SELECT MAX(stci.UPDATE_DATE) AS RCT_ETL_DT
                  , stci.int_lcno
-            FROM scs_t_con_intlc_cur stci
+            FROM scs_t_con_intlc stci
             GROUP BY stci.int_lcno
-        ) RCT_STCI ON RCT_STCI.int_lcno = stci.int_lcno AND RCT_STCI.RCT_ETL_DT = stci.UPDATE_DATE
+        ) RCT_STCI ON RCT_STCI.int_lcno = stci.int_lcno AND RCT_STCI.RCT_ETL_DT = ASCI.UPDATE_DATE
     </select>
 </mapper>

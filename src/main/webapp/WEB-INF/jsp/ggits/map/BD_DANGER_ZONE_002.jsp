@@ -1,6 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="c"   uri="http://java.sun.com/jsp/jstl/core" %>
 <div class="tab_bigbox_close">
     <div class="original_box clearfix">
@@ -9,15 +8,13 @@
 	        <div class="tab_item_box flex-center">
 	            <h5 class="tab_item_title">연도별</h5>
 	            <select class="selectBox radius" name="searchYear">
-					<option value="">전체</option>
-		           	<c:forEach var="yearsList" items="${yearsList}">
-						<c:if test="${fn:startsWith(yearsList.year, '20')}">
-		                <option value="<c:out value='${yearsList.year}'/>"><c:out value='${yearsList.year}'/>년</option>
-						</c:if>
-		           	</c:forEach>
+	                <option value="searchAllYear">전체</option>
+	           	<c:forEach var="yearsList" items="${yearsList}">
+	                <option value="<c:out value='${yearsList.year}'/>"><c:out value='${yearsList.year}'/>년</option>
+	           	</c:forEach>
 	            </select>
 	        </div>
-	        <%--<div class="tab_item_box">
+	        <div class="tab_item_box">
 	            <div class="flex-center">
 	                <h5 class="tab_item_title">기간</h5>
 	                <label class="group_btn_item is-dark-btn radius inpd is-darkgreen-btn"><input type="checkbox" class="none" name="searchPeriod" value="weekday" checked="checked">평일</label>
@@ -33,8 +30,8 @@
 			            <input type="text" class="end_date_picker input_same mr8 ml8 input_picker" name="endDate" placeholder="날짜를 선택해주세요." autocomplete="off">
 			        </div>	  		            
 				</div>
-	        </div>--%>
-	        <%--<div class="tab_item_box">
+	        </div>
+	        <div class="tab_item_box">
 	            <div class="flex-center">
 	                <h5 class="tab_item_title">시간</h5>
 	                <label class="group_btn_item is-dark-btn radius inpd is-darkgreen-btn"><input type="checkbox" class="none" name="searchTime" value="workingTime" checked="checked">출근 <span class="group_btn_span">(06시~10시)</span></label>
@@ -46,22 +43,31 @@
 	                ~
 					<select class="selectBox selectTime" name="endTime" id="endTime"></select>
 	            </div>
-	        </div>--%>
+	        </div>
 	        <div class="tab_item_box flex-center">
 	            <h5 class="tab_item_title">지역별</h5>
 	            <select class="selectBox radius"  name="searchLocation">
 	                <option value="searchAllLocation">전체 지역</option>
 					<c:forEach var="sggCdList" items="${sggCdList}">
-	                	<option value="<c:out value='${sggCdList.cdNm}'/>"><c:out value='${sggCdList.cdNm}'/></option>
+	                	<option value="<c:out value='${sggCdList.cdId}'/>"><c:out value='${sggCdList.cdNm}'/></option>
 					</c:forEach>
 	            </select>
 	        </div>
-	       	<div class="tab_item_box flex-center">
-	            <h5 class="tab_item_title">유형<span class="required-alert">*</span></h5>
-	            <div class="road_rank_list_box">
-					<button type="button" class="is-dark-btn danger_zone_all_selector radius is-darkgreen-btn mb8" id="searchAllDangerZoneBtn">전체선택/해제</button>
-		            <c:import url="/WEB-INF/jsp/ggits/common/modalDangerZoneList.jsp" />
-	            </div>
+	        <div class="tab_item_box flex-center">
+	            <h5 class="tab_item_title">도로 위험<br>유형별</h5>
+	            <select class="selectBox radius" name="dangerType">
+	                <option value="">전체</option>
+	                <option value="SF20202">안전거리미확보</option>
+					<option value="SF20306">미끄러운도로</option>
+					<option value="SF20302">급커브(굽은도로)</option>
+					<option value="SF20304">급경사(내리막)</option>
+					<option value="SF20313">기상-결빙</option>
+					<option value="SF20310">기상-비</option>
+					<option value="SF20311">기상-눈</option>
+					<option value="SF20309">침수</option>
+					<option value="SF20204">과속</option>
+					
+	            </select>
 	        </div>
         </form>
         <div class="bottom_btn">
@@ -79,29 +85,10 @@
 	
 	
 	function dangerZoneResultEvent(){
-		
-		var searchPeriod = $("input[name='searchPeriod']:checked").val();
-		
-		if($("input[name='dangerType']:checked").length == 0){
-			new ModalBuilder().init().alertBoby("도로유형을 선택해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
-			modalAlertWrap();			
-			return false;
-		}
-		
-		if(searchPeriod === 'directDate'){
-			let startDate = $("input[name='startDate']").val();
-			let endDate = $("input[name='endDate']").val();
-			if(startDate == '' || endDate == ''){
-				new ModalBuilder().init().alertBoby("날짜를 선택해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
-				modalAlertWrap();			
-				return false;
-			}
-		}
-		
 	    var remarksItem =$(`
 	    	<div class="remarks_container">
 		        <div class="remarks_title_box">
-		            <h6 class="remarks_title">범례 - 위험 도로 유형</h6>
+		            <h6 class="remarks_title">범례 - 도로 유형</h6>
 		        </div>
 	        	<div class="remarks_wrap">
 	            	<div>
@@ -135,10 +122,9 @@
 		                    </div>
 		                </div>
 	            	</div>
-		            <div class="unit">단위 : 위험 도로 유형</div>
+		            <div class="unit">단위 : 도로 유형</div>
 	        	</div>
-	    	</div>`)
-		$('#map-container').find(".remarks_container").remove();
+	    	</div>`)        
 	        $('#map-container').append(remarksItem);
 	        legendToggle();
 			map.bigdata.getRoadDangerInfo($("#searchForm").serialize());
@@ -146,27 +132,6 @@
 			
 			resultChange();
 			
-	} 
+	}
 
-	/*$("#searchAllDangerZoneBtn").on("click",function(){
-		var allChkVal = $(this).hasClass("is-darkgreen-btn");
-		var dangerType = $("input[name='dangerType']");
-		var dangerTypeVal = "";
-		if(allChkVal){
-			dangerType.each(function(idx,item){
-				if(idx == 0){
-					dangerTypeVal = $(item).val();
-				}else{
-					dangerTypeVal += ","+$(item).val();
-				}
-				$(this).prop("checked",true);
-			})
-		}else{
-			dangerType.each(function(idx,item){
-				$(this).prop("checked",false);
-			});
-		}
-		$("#searchDangerType").val(dangerTypeVal);
-	});*/
-	
 </script>

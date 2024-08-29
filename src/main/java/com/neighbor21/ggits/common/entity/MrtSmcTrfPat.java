@@ -1,10 +1,7 @@
 package com.neighbor21.ggits.common.entity;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-
 import java.sql.Timestamp;
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class MrtSmcTrfPat {
     private String mngInstCd;        //관리 기관 코드
     private Timestamp anlsDt;        //분석 일시
@@ -40,7 +37,6 @@ public class MrtSmcTrfPat {
     private String remark;
     private String geom;
     private String geojson;
-    private String time;
 
 
     public String getMngInstCd() {
@@ -287,13 +283,5 @@ public class MrtSmcTrfPat {
 
     public void setGeojson(String geojson) {
         this.geojson = geojson;
-    }
-
-    public String getTime() {
-        return time;
-    }
-
-    public void setTime(String time) {
-        this.time = time;
     }
 }

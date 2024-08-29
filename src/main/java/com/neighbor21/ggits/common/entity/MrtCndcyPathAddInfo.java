@@ -8,10 +8,6 @@ public class MrtCndcyPathAddInfo {
     private Double length;
     private Double lengthRatio;
     private Long score;
-    private Double scoreImprv;
-    private Double lengthVar;
-    private Long numPsngr;
-    private Long numPsngrVar;
     private String etlDt;
 
     public String getBaseym() {
@@ -76,37 +72,5 @@ public class MrtCndcyPathAddInfo {
 
     public void setEtlDt(String etlDt) {
         this.etlDt = etlDt;
-    }
-
-    public Double getScoreImprv() {
-        return scoreImprv;
-    }
-
-    public void setScoreImprv(Double scoreImprv) {
-        this.scoreImprv = scoreImprv;
-    }
-
-    public Double getLengthVar() {
-        return lengthVar;
-    }
-
-    public void setLengthVar(Double lengthVar) {
-        this.lengthVar = lengthVar;
-    }
-
-    public Long getNumPsngr() {
-        return numPsngr;
-    }
-
-    public void setNumPsngr(Long numPsngr) {
-        this.numPsngr = numPsngr;
-    }
-
-    public Long getNumPsngrVar() {
-        return numPsngrVar;
-    }
-
-    public void setNumPsngrVar(Long numPsngrVar) {
-        this.numPsngrVar = numPsngrVar;
     }
 }

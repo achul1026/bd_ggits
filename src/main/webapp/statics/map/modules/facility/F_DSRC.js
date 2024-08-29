@@ -3,49 +3,54 @@
  * @returns {Promise<any>}
  * @constructor
  */
-const F_DSRC = async function(type ="all"){
+const F_DSRC = async function(){
+    let list = await self.util.getJsonFormApi("/facility/getDSRCList.ajax");
+    let sectionLinkList = await self.util.getJsonFormApi("/facility/getDSRCSectionInfoList.ajax");
     let features = [];
-    if(type === "all" || type === "dsrc"){
-        let list = await self.util.getJsonFormApi("/facility/getDSRCList.ajax");
-        if(list?.noLogin){
-            return {
-                error : true,
-                noLogin : true
+    for(const info of list) {
+        const obj = {
+            'type': 'Feature',
+            'properties' : {},
+            'geometry': {
+                'type': 'Point',
+                'coordinates': [info.lonCrdn, info.latCrdn]
             }
         }
-        for(const info of list) {
-            const obj = {
-                'type': 'Feature',
-                'properties' : {
-                    type : "dsrc"
-                },
-                'geometry': {
-                    'type': 'Point',
-                    'coordinates': [info.lonCrdn, info.latCrdn]
+        for(const prop in info){
+            if(prop === "colctInfo" && info[prop]) {
+                obj.properties["colctInfo"] = [];
+                let clctInfoList = info[prop].split(",");
+                for(const clctInfoStr of  clctInfoList) {
+                    let clctInfo = clctInfoStr.split("$$");
+                    let dsrcSctnNm = clctInfo[0];
+                    let speed = clctInfo[1];
+                    let dsrcSctnLen = clctInfo[2];
+                    let startRseId = clctInfo[3];
+                    let endRseId = clctInfo[4];
+                    obj.properties["colctInfo"].push({
+                        dsrcSctnNm : dsrcSctnNm,
+                        speed : speed,
+                        dsrcSctnLen : dsrcSctnLen,
+                        startRseId : startRseId,
+                        endRseId : endRseId,
+                    });
                 }
-            }
-            for (const prop in info) {
+            }else {
                 obj.properties[prop] = info[prop];
             }
-            features.push(obj);
         }
+        features.push(obj);
     }
-    if(type === "all" || type === "link") {
-        let sectionLinkList = await self.util.getJsonFormApi("/facility/getDSRCSectionInfoList.ajax");
-        console.log("sectionLinkList", sectionLinkList);
-        for (const info2 of sectionLinkList) {
-            const obj2 = {
-                'type': 'Feature',
-                'properties': {
-                    type : "dsrc_link"
-                },
-                'geometry': JSON.parse(info2.geojson)
-            }
-            for (const prop2 in info2) {
-                obj2.properties[prop2] = info2[prop2];
-            }
-            features.push(obj2);
+    for(const info of sectionLinkList) {
+        const obj = {
+            'type': 'Feature',
+            'properties' : {},
+            'geometry': JSON.parse(info.geojson)
         }
+        for(const prop in info){
+            obj.properties[prop] = info[prop];
+        }
+        features.push(obj);
     }
     return self.util.wrapFeatureCollection(features);
 }

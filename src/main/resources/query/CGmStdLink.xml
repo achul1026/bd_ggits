@@ -26,19 +26,19 @@
 			ST_X(ST_ASTEXT(ST_CENTROID(GEOMETRY))) AS "X",
 			ST_Y(ST_ASTEXT(ST_CENTROID(GEOMETRY))) AS "Y"
 		FROM
-			C_GM_STD_LINK GCIL
+			C_GM_STD_LINK_TMP /*todo :: _TMP 제거*/ GCIL
 		ORDER BY ROWNUM DESC
 		LIMIT 5
 		</select>
 		
 	<select id="countAll" resultType="int">
-		SELECT COUNT(1)
-		FROM C_GM_STD_LINK GCIL
+		SELECT COUNT(GCIL.*)
+		FROM C_GM_STD_LINK_TMP /*todo :: _TMP 제거*/ GCIL
 	</select>
 	
 	<select id="countByLinkId" resultType="int" parameterType="gyCommInfoLink">
-		SELECT COUNT(1)
-		FROM C_GM_STD_LINK GCIL
+		SELECT COUNT(GCIL.*)
+		FROM C_GM_STD_LINK_TMP /*todo :: _TMP 제거*/ GCIL
 		WHERE 1=1
 		<if test="linkId != null and linkId != ''">
 			AND LINK_ID LIKE CONCAT('%',#{linkId},'%')
@@ -71,7 +71,7 @@
 			ST_X(ST_ASTEXT(ST_CENTROID(GEOMETRY))) AS "X",
 			ST_Y(ST_ASTEXT(ST_CENTROID(GEOMETRY))) AS "Y"
 		FROM
-		C_GM_STD_LINK  GCIL
+		C_GM_STD_LINK_TMP /*todo :: _TMP 제거*/ GCIL
 		WHERE 1=1
 		<if test="linkId != null and linkId != ''">
 			AND LINK_ID LIKE CONCAT('%',#{linkId},'%')
@@ -81,37 +81,5 @@
 		</if>
 		ORDER BY ROWNUM DESC
 		LIMIT 5 OFFSET (#{page} - 1) * 5
-	</select>
-
-	<select id="findOneByLinkIdForCrsrdPrediction" resultType="cGmStdLink">
-		select
-			ST_Azimuth(
-					ST_PointN(st_linemerge(cgsl.geometry) , ST_NPoints(st_linemerge(cgsl.geometry))-1)
-				, ST_PointN(st_linemerge(cgsl.geometry) , ST_NPoints(st_linemerge(cgsl.geometry)))
-				)/(2*pi())*360 as angle,
-			st_asgeojson(ST_PointN(st_linemerge(cgsl.geometry) , ST_NPoints(st_linemerge(cgsl.geometry)))) as st,
-			st_asgeojson(ST_PointN(st_linemerge(cgsl.geometry) , ST_NPoints(st_linemerge(cgsl.geometry))-1)) as ed
-		from
-		C_GM_STD_LINK  cgsl
-		where cgsl.link_id = #{linkId}
-	</select>
-
-	<select id="findOneWithNodeByLinkInfo" resultType="cGmStdLink">
-		SELECT
-			CGSL.LINK_ID ,
-			CGSL.F_NODE ,
-			CGSL.T_NODE,
-			CGSL.LANES ,
-		   	CGSL.ROAD_NAME,
-			CGSL.ROAD_RANK ,
-			CGSL.ROAD_TYPE ,
-			CGSL.MAX_SPD,
-			F_CGSN.NODE_NAME AS F_NODE_NM,
-			T_CGSN.NODE_NAME AS T_NODE_NM
-		FROM
-			C_GM_STD_LINK CGSL
-				LEFT OUTER JOIN C_GM_STD_NODE F_CGSN ON CGSL.F_NODE = F_CGSN.NODE_ID
-				LEFT OUTER JOIN C_GM_STD_NODE T_CGSN ON CGSL.T_NODE = T_CGSN.NODE_ID
-		WHERE LINK_ID = #{linkId}
 	</select>
 </mapper>

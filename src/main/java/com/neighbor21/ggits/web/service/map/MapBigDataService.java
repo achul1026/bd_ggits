@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.mvel2.util.ArrayTools;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -192,7 +191,8 @@ public class MapBigDataService {
 		MapChartDataDTO mapChartDataDTO = new MapChartDataDTO();
 		String dataOption = String.valueOf(paramMap.get("dataOption"));
 		String dataType = String.valueOf(paramMap.get("dataType"));
-
+		
+		//TODO:: 테이블 확인후 항목 을 한번에 조회가능한지 파악해야함 ex)혼잡강도,교통량,평균속도,돌발위험
 		switch(dataOption) {
 		case "city":
 			break;
@@ -292,7 +292,6 @@ public class MapBigDataService {
 			int[] drnkgChartData = new int[4];
 			int[] truckChartData = new int[4];
 			int[] olmanChartData = new int[4];
-			int[] childChartData = new int[4];
 			
 			MapBigdataSearchDTO mapBigdataSearchDTO = new MapBigdataSearchDTO();
 			mapBigdataSearchDTO.setLimit(4L);
@@ -315,46 +314,43 @@ public class MapBigDataService {
 								switch(taasAcdntDstrctMaster.getType()) {
 								//자전거 사고 구역
 								case "BCYCL" :
-									bcyclChartData[i] += taasAcdntDstrctMaster.getAcdntCnt().intValue();
+									bcyclChartData[i] += (int) taasAcdntDstrctMaster.getAcdntCnt();
 									break;
 								//무단횡단 보행자 사고 구역
 								case "JAYWK" :
-									jaywkChartData[i] += taasAcdntDstrctMaster.getAcdntCnt().intValue();
+									jaywkChartData[i] += (int) taasAcdntDstrctMaster.getAcdntCnt();
 									break;
 								//법위반 보행자 사고 구역
 								case "LAWVLTN" :
-									lawvltnChartData[i] += taasAcdntDstrctMaster.getAcdntCnt().intValue();
+									lawvltnChartData[i] += (int) taasAcdntDstrctMaster.getAcdntCnt();
 									break;
 								//휴일기간 보행자 사고 구역
 								case "HLDY" :
-									hldyChartData[i] += taasAcdntDstrctMaster.getAcdntCnt().intValue();
+									hldyChartData[i] += (int) taasAcdntDstrctMaster.getAcdntCnt();
 									break;
 								//결빙사고 사고 구역
 								case "FROST" :
-									frostChartData[i] += taasAcdntDstrctMaster.getAcdntCnt().intValue();
+									frostChartData[i] += (int) taasAcdntDstrctMaster.getAcdntCnt();
 									break;
 								//이륜차 사고 구역
 								case "TWHLVH" :
-									twhlvhChartData[i] += taasAcdntDstrctMaster.getAcdntCnt().intValue();
+									twhlvhChartData[i] += (int) taasAcdntDstrctMaster.getAcdntCnt();
 									break;
 								//보행자 사고 구역
 								case "PDSN" :
-									pdsnChartData[i] += taasAcdntDstrctMaster.getAcdntCnt().intValue();
+									pdsnChartData[i] += (int) taasAcdntDstrctMaster.getAcdntCnt();
 									break;
 								//음주 사고 구역
 								case "DRNKG" :
-									drnkgChartData[i] += taasAcdntDstrctMaster.getAcdntCnt().intValue();
+									drnkgChartData[i] += (int) taasAcdntDstrctMaster.getAcdntCnt();
 									break;
 								//화물차 사고 구역
 								case "TRUCK" :
-									truckChartData[i] += taasAcdntDstrctMaster.getAcdntCnt().intValue();
+									truckChartData[i] += (int) taasAcdntDstrctMaster.getAcdntCnt();
 									break;
 								//노인 보행자 사고 구역
 								case "OLMAN" :
-									olmanChartData[i] += taasAcdntDstrctMaster.getAcdntCnt().intValue();
-									break;
-								case "CHILD" :
-									childChartData[i] += taasAcdntDstrctMaster.getAcdntCnt().intValue();
+									olmanChartData[i] += (int) taasAcdntDstrctMaster.getAcdntCnt();
 									break;
 								}
 							}
@@ -377,46 +373,43 @@ public class MapBigDataService {
 								switch(taasAcdntDstrctMaster.getType()) {
 								//자전거 사고 구역
 								case "BCYCL" :
-									bcyclChartData[i] += taasAcdntDstrctMaster.getAcdntCnt().intValue();
+									bcyclChartData[i] += (int) taasAcdntDstrctMaster.getAcdntCnt();
 									break;
 								//무단횡단 보행자 사고 구역
 								case "JAYWK" :
-									jaywkChartData[i] += taasAcdntDstrctMaster.getAcdntCnt().intValue();
+									jaywkChartData[i] += (int) taasAcdntDstrctMaster.getAcdntCnt();
 									break;
 								//법위반 보행자 사고 구역
 								case "LAWVLTN" :
-									lawvltnChartData[i] += taasAcdntDstrctMaster.getAcdntCnt().intValue();
+									lawvltnChartData[i] += (int) taasAcdntDstrctMaster.getAcdntCnt();
 									break;
 								//휴일기간 보행자 사고 구역
 								case "HLDY" :
-									hldyChartData[i] += taasAcdntDstrctMaster.getAcdntCnt().intValue();
+									hldyChartData[i] += (int) taasAcdntDstrctMaster.getAcdntCnt();
 									break;
 								//결빙사고 사고 구역
 								case "FROST" :
-									frostChartData[i] += taasAcdntDstrctMaster.getAcdntCnt().intValue();
+									frostChartData[i] += (int) taasAcdntDstrctMaster.getAcdntCnt();
 									break;
 								//이륜차 사고 구역
 								case "TWHLVH" :
-									twhlvhChartData[i] += taasAcdntDstrctMaster.getAcdntCnt().intValue();
+									twhlvhChartData[i] += (int) taasAcdntDstrctMaster.getAcdntCnt();
 									break;
 								//보행자 사고 구역
 								case "PDSN" :
-									pdsnChartData[i] += taasAcdntDstrctMaster.getAcdntCnt().intValue();
+									pdsnChartData[i] += (int) taasAcdntDstrctMaster.getAcdntCnt();
 									break;
 								//음주 사고 구역
 								case "DRNKG" :
-									drnkgChartData[i] += taasAcdntDstrctMaster.getAcdntCnt().intValue();
+									drnkgChartData[i] += (int) taasAcdntDstrctMaster.getAcdntCnt();
 									break;
 								//화물차 사고 구역
 								case "TRUCK" :
-									truckChartData[i] += taasAcdntDstrctMaster.getAcdntCnt().intValue();
+									truckChartData[i] += (int) taasAcdntDstrctMaster.getAcdntCnt();
 									break;
 								//노인 보행자 사고 구역
 								case "OLMAN" :
-									olmanChartData[i] += taasAcdntDstrctMaster.getAcdntCnt().intValue();
-									break;
-								case "CHILD" :
-									childChartData[i] += taasAcdntDstrctMaster.getAcdntCnt().intValue();
+									olmanChartData[i] += (int) taasAcdntDstrctMaster.getAcdntCnt();
 									break;
 								}
 							}
@@ -436,7 +429,6 @@ public class MapBigDataService {
  			chartDataMap.put("drnkgChartData", Arrays.toString(drnkgChartData).replaceAll("[\\['\\]]",""));
  			chartDataMap.put("truckChartData", Arrays.toString(truckChartData).replaceAll("[\\['\\]]",""));
  			chartDataMap.put("olmanChartData", Arrays.toString(olmanChartData).replaceAll("[\\['\\]]",""));
-			chartDataMap.put("childChartData", Arrays.toString(childChartData).replaceAll("[\\['\\]]",""));
  			
  			mapChartDataDTO.setObjectData(chartDataMap);
  			

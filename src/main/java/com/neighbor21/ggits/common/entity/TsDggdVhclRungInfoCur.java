@@ -10,7 +10,6 @@ public class TsDggdVhclRungInfoCur {
     private String rungPlanYn;
     private String dggdCd;
     private String dggdNm;
-    private String acdntYn;
 
     private Double targetLon;
     private Double targetLat;
@@ -121,12 +120,5 @@ public class TsDggdVhclRungInfoCur {
 	public void setMapOccurDtFormat(String mapOccurDtFormat) {
 		this.mapOccurDtFormat = mapOccurDtFormat;
 	}
-
-    public String getAcdntYn() {
-        return acdntYn;
-    }
-
-    public void setAcdntYn(String acdntYn) {
-        this.acdntYn = acdntYn;
-    }
+    
 }

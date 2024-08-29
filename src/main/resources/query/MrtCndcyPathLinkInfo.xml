@@ -7,29 +7,33 @@
         SELECT
             MCPLI.ST_LINK_ID ,
             MCPLI.CAND_ROUTE_ID,
-            MCPLI.BTC_ID,
-            MCPLI.BASEYM,
             CGSL.ROAD_NAME ,
             CGSL.ROAD_RANK ,
             MCPAI.LENGTH ,
             MCPAI.LENGTH_RATIO ,
-            MCPAI.SCORE,
-            MCPAI.SCORE_IMPRV,
-            MCPAI.LENGTH_VAR,
-            MCPAI.NUM_PSNGR,
-            MCPAI.NUM_PSNGR_VAR,
+            MCPAI.SCORE ,
             ST_ASGEOJSON(ST_LINEMERGE(CGSL.GEOMETRY)) AS GEOJSON
         FROM
             MRT_CNDCY_PATH_LINK_INFO MCPLI
                 INNER JOIN MRT_CNDCY_PATH_ADD_INFO MCPAI ON MCPLI.CAND_ROUTE_ID = MCPAI.CAND_ROUTE_ID
-                AND MCPLI.BTC_ID = MCPAI.BTC_ID AND MCPLI.BASEYM = MCPAI.BASEYM
-                INNER JOIN C_GM_STD_LINK CGSL ON MCPLI.ST_LINK_ID = CGSL.LINK_ID
+                INNER JOIN C_GM_STD_LINK_TMP CGSL ON MCPLI.ST_LINK_ID = CGSL.LINK_ID
         WHERE
             MCPLI.CAND_ROUTE_ID = #{candRouteId}
-        and MCPAI.obj_func_id = '2'
-        AND MCPLI.BASEYM = #{baseym}
-        AND MCPLI.BTC_ID = #{btcId}
         ORDER BY MCPLI.LINK_SEQ ASC
     </select>
 
+    <select id="findOneByCandRouteId" resultType="mrtCndcyPathLinkInfo">
+        select
+            mcpai.length ,
+            mcpai.length_ratio ,
+            mcpai.score ,
+            ST_UNION(ST_LINEMERGE(cgsl.geometry)) as geojson
+        from
+            mrt_cndcy_path_link_info mcpli
+                inner join mrt_cndcy_path_add_info mcpai on mcpli.cand_route_id = mcpai.cand_route_id
+                inner join c_gm_std_link_tmp cgsl on mcpli.st_link_id = cgsl.link_id
+        where
+            mcpli.cand_route_id = #{candRouteId}
+        group by mcpai.length ,mcpai.length_ratio ,mcpai.score
+    </select>
 </mapper>

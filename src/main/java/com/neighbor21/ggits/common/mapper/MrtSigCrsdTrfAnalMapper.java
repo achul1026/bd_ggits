@@ -22,10 +22,6 @@ public interface MrtSigCrsdTrfAnalMapper {
 	  */
 	List<MrtSigCrsdTrfAnal> findAllGroupByLinkId(MapBigdataSearchDTO mapBigdataSearchDTO);
 
-	List<MrtSigCrsdTrfAnal> findAllGroupBySvcLinkId(MapBigdataSearchDTO mapBigdataSearchDTO);
-
-	List<MrtSigCrsdTrfAnal> findAllBySvcLinkIdOrRoadNm(MapBigdataSearchDTO mapBigdataSearchDTO);
-
 	/**
 	 * 교통활동 효과분석 병합 데이터
 	 * @param mapBigdataSearchDTO
@@ -33,13 +29,15 @@ public interface MrtSigCrsdTrfAnalMapper {
 	 */
 	List<MrtSigCrsdTrfAnal> findAllMergeDataGroupByLinkId(MapBigdataSearchDTO mapBigdataSearchDTO);
 
-	List<MrtSigCrsdTrfAnal> findAllForChart(MapBigdataSearchDTO mapBigdataSearchDTO);
 
-	List<MrtSigCrsdTrfAnal> findAllSvcLinkForChart(MapBigdataSearchDTO mapBigdataSearchDTO);
-
-
-
-
+	/**
+	 * 모니터링 최근 도로 소통정보 조회
+	 * @param mapBigdataSearchDTO
+	 * @return
+	 */
+	List<MrtSigCrsdTrfAnal> findAllRecent();
+	
+	
 	/**
     * @Method Name : findAllDataYears
     * @작성일 : 2023. 10. 5.
@@ -57,6 +55,4 @@ public interface MrtSigCrsdTrfAnalMapper {
 	 * @return
 	 */
 	List<Map<String,Object>> findTop5DelayTrfInfo(MrtSigCrsdTrfAnal mrtSigCrsdTrfAnal);
-
-
 }

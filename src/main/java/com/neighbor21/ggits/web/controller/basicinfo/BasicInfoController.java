@@ -5,18 +5,23 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import com.neighbor21.ggits.common.entity.*;
-import com.neighbor21.ggits.common.mapper.CGmStdLinkMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.neighbor21.ggits.common.component.validate.ValidateBuilder;
 import com.neighbor21.ggits.common.component.validate.ValidateChecker;
 import com.neighbor21.ggits.common.component.validate.ValidateResult;
+import com.neighbor21.ggits.common.entity.CommonResponse;
+import com.neighbor21.ggits.common.entity.MGmStdLinkNodeMngInfo;
+import com.neighbor21.ggits.common.entity.Paging;
 import com.neighbor21.ggits.common.mapper.MGmStdLinkNodeMngInfoMapper;
 import com.neighbor21.ggits.common.util.GgitsCommonUtils;
 import com.neighbor21.ggits.common.util.LoginSessionUtils;
@@ -27,9 +32,6 @@ public class BasicInfoController {
 	
 	@Autowired
 	MGmStdLinkNodeMngInfoMapper mGmStdLinkNodeMngInfoMapper;
-
-	@Autowired
-	CGmStdLinkMapper cGmStdLinkMapper;
 	
 	/**
      * @Method Name : viewDashboard
@@ -46,6 +48,7 @@ public class BasicInfoController {
    
    /**
     * 노드/링크 현황보기 ViewPage
+    * @param type the type
     * @return the bigdata sub page
     */
    @GetMapping("/nodelink/current/list.do")
@@ -55,6 +58,7 @@ public class BasicInfoController {
 
    /**
     * 노드/링크 자료실 ViewPage
+    * @param type the type
     * @return the bigdata sub page
     */
    @GetMapping("/nodelink/reference/list.do")
@@ -148,15 +152,6 @@ public class BasicInfoController {
 	   mGmStdLinkNodeMngInfoMapper.updateMGmStdLinkNodeMngInfo(mGmStdLinkNodeMngInfo);
 	   
 	   return CommonResponse.ResponseCodeAndMessage(HttpStatus.OK, "노드/링크 자료를 수정 했습니다.");
-   }
-
-   @GetMapping("/nodelink/getLinkInfo.ajax")
-   public @ResponseBody
-   ResponseEntity<?> getDangerVehicleInfo(
-		   @RequestParam("linkId") String linkId
-   ){
-	   CGmStdLink linkData = cGmStdLinkMapper.findOneWithNodeByLinkInfo(linkId);
-	   return new ResponseEntity<>(linkData, HttpStatus.OK);
    }
    
 }

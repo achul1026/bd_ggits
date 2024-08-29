@@ -34,7 +34,7 @@
 	
 	<select id="countTrafficInfoLogList" parameterType="commonEntity" resultType="int">
 		SELECT
-			COUNT(mslsi.*)
+			COUNT(*)
 		FROM MRT_STD_LINK_SECTN_INFO mslsi
 		INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam
 			ON mslsi.LINK_ID = cgslam.LINK_ID
@@ -69,7 +69,7 @@
 			GCIL.ROAD_NAME AS "roadName",
 			GCIL.ROAD_RANK AS "roadRank"
 		FROM MRT_STD_LINK_SECTN_INFO MSLSI 
-		INNER JOIN C_GM_STD_LINK  GCIL ON MSLSI.LINK_ID = GCIL.LINK_ID
+		INNER JOIN C_GM_STD_LINK_TMP /*todo :: _TMP 제거*/ GCIL ON MSLSI.LINK_ID = GCIL.LINK_ID
 		WHERE 1=1
 		<if test="strDt != null and endDt != null">
 			AND MSLSI.ANLS_DT BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
@@ -99,7 +99,7 @@
 			 ]]>
 			END AS "delayStts" 
 		FROM MRT_STD_LINK_SECTN_INFO MSLSI 
-		INNER JOIN C_GM_STD_LINK  GCIL ON MSLSI.LINK_ID = GCIL.LINK_ID
+		INNER JOIN C_GM_STD_LINK_TMP /*todo :: _TMP 제거*/ GCIL ON MSLSI.LINK_ID = GCIL.LINK_ID
 		WHERE 1=1
 		<if test="strDt != null and endDt != null">
 			AND MSLSI.ANLS_DT BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
@@ -121,7 +121,7 @@
              ,GCIL.ROAD_NAME
              ,GCIL.ROAD_TYPE
         FROM MRT_STD_LINK_SECTN_INFO MSLSI
-                 INNER JOIN C_GM_STD_LINK  GCIL ON MSLSI.LINK_ID = GCIL.LINK_ID
+                 INNER JOIN C_GM_STD_LINK_TMP /*todo :: _TMP 제거*/ GCIL ON MSLSI.LINK_ID = GCIL.LINK_ID
                  INNER JOIN (
             SELECT
                 MAX(MSLSI.ANLS_DT) AS RCT_ANLS_DT
@@ -203,7 +203,7 @@
 						CGSLT.ROAD_NAME   AS ROAD_NAME
 				FROM
 						MRT_STD_LINK_SECTN_INFO MSLSI
-				INNER JOIN C_GM_STD_LINK CGSLT ON CGSLT.LINK_ID = MSLSI.LINK_ID
+				INNER JOIN C_GM_STD_LINK_TMP CGSLT ON CGSLT.LINK_ID = MSLSI.LINK_ID  
 				WHERE	<![CDATA[
 						MSLSI.ANLS_DT >= TO_TIMESTAMP(#{beforeTime},'YYYY-MM-DD HH24')
 				AND 	MSLSI.ANLS_DT <= TO_TIMESTAMP(#{currentTime},'YYYY-MM-DD HH24')
@@ -225,19 +225,19 @@
 						CGSLT.ROAD_NAME   AS ROAD_NAME
 				FROM
 						MRT_STD_LINK_SECTN_INFO MSLSI
-				INNER JOIN C_GM_STD_LINK CGSLT ON CGSLT.LINK_ID = MSLSI.LINK_ID
+				INNER JOIN C_GM_STD_LINK_TMP CGSLT ON CGSLT.LINK_ID = MSLSI.LINK_ID  
 				WHERE	<![CDATA[
-						TO_CHAR(MSLSI.ANLS_DT,'YYYY-MM-DD') = TO_CHAR(NOW()::DATE, 'YYYY-MM-DD')
+						TO_CHAR(MSLSI.ANLS_DT,'YYYY-MM-DD') = TO_CHAR(TO_TIMESTAMP(#{currentTime},'YYYY-MM-DD'),'YYYY-MM-DD')
 						]]>
-				GROUP BY CGSLT.ROAD_NAME
+				GROUP BY CGSLT.LINK_ID
 		) AVCI
 		ORDER BY AVCI.TOTAL_TRFVLM DESC 
 		LIMIT 5 
 	</select>
 	
 	<select id="findOneTrafficAvgSpeedByTimeZone" parameterType="mapMonitoringMenuDTO" resultType="mapMonitoringMenuDTO">
-		SELECT 	COALESCE(ROUND(TRAFFIC_AVG_SPEED_INFO.TODAY_AVG_SPEED,0),0) AS "averageCnt", 
-				COALESCE(ROUND((TRAFFIC_AVG_SPEED_INFO.TODAY_AVG_SPEED - TRAFFIC_AVG_SPEED_INFO.YESTERDAY_AVG_SPEED)/TRAFFIC_AVG_SPEED_INFO.YESTERDAY_AVG_SPEED*100,0),0) AS "compareCnt"
+		SELECT 	COALESCE(ROUND(TRAFFIC_AVG_SPEED_INFO.TODAY_AVG_SPEED,2),0) AS "averageCnt", 
+				COALESCE(ROUND((TRAFFIC_AVG_SPEED_INFO.TODAY_AVG_SPEED - TRAFFIC_AVG_SPEED_INFO.YESTERDAY_AVG_SPEED)/TRAFFIC_AVG_SPEED_INFO.YESTERDAY_AVG_SPEED*100,2),0) AS "compareCnt"
 		FROM (
 				SELECT
 						AVG(SPEED) AS TODAY_AVG_SPEED , 
@@ -264,7 +264,7 @@
 		WITH TRAFFIC_GRAPH_DATA AS (
 			SELECT 
 					TO_CHAR(TO_TIMESTAMP(TIME_DATA.GRAPH_TIME,'YYYY-MM-DD HH24'),'HH24'||'시') AS TIME_DATA,
-					COALESCE(ROUND(AVG(GRAPH_DATA.SPEED),0),0) AS CNT_DATA
+					COALESCE(ROUND(AVG(GRAPH_DATA.SPEED),2),0) AS CNT_DATA
 			FROM (
 				SELECT 
 						TO_CHAR(
@@ -302,11 +302,11 @@
 			AVCI.ROAD_NAME as "roadName" 
 		FROM(	
 				SELECT
-						COALESCE(ROUND(AVG(MSLSI.SPEED),0),0) AS TOTAL_AVG_SPEED,
+						COALESCE(ROUND(AVG(MSLSI.SPEED),2),0) AS TOTAL_AVG_SPEED,
 						CGSLT.ROAD_NAME 
 				FROM
 						MRT_STD_LINK_SECTN_INFO MSLSI
-				INNER JOIN C_GM_STD_LINK CGSLT ON CGSLT.LINK_ID = MSLSI.LINK_ID
+				INNER JOIN C_GM_STD_LINK_TMP CGSLT ON CGSLT.LINK_ID = MSLSI.LINK_ID  
 				WHERE	<![CDATA[
 						MSLSI.ANLS_DT >= TO_TIMESTAMP(#{beforeTime},'YYYY-MM-DD HH24')
 				AND 	MSLSI.ANLS_DT <= TO_TIMESTAMP(#{currentTime},'YYYY-MM-DD HH24')
@@ -318,10 +318,10 @@
 	</select>
 	
 	<select id="findOneCumulativeTrafficVolumeByTimeZoneAndRoad" parameterType="mapMonitoringMenuDTO" resultType="com.neighbor21.ggits.common.dto.MapMonitoringMenuDTO$TrafficInfo">
-		SELECT
+		SELECT 
 				RESULT_DATA.ANLS_DT AS "anlsDt",
-				RESULT_DATA.ROAD_NAME AS "roadName",
-				SUM(RESULT_DATA.TOTAL_CNT) AS "totalCnt"
+				RESULT_DATA.ROAD_NAME AS "roadName", 
+				SUM(RESULT_DATA.TOTAL_CNT) AS "totalCnt" 
 		FROM (
 			SELECT
 					SUM(MSLSI.TRFVLM) AS TOTAL_CNT,
@@ -329,18 +329,18 @@
 					CGSLT.ROAD_NAME   AS ROAD_NAME
 			FROM
 					MRT_STD_LINK_SECTN_INFO MSLSI
-			INNER JOIN C_GM_STD_LINK CGSLT ON CGSLT.LINK_ID = MSLSI.LINK_ID
+			INNER JOIN C_GM_STD_LINK_TMP CGSLT ON CGSLT.LINK_ID = MSLSI.LINK_ID  
 			WHERE  	TO_CHAR(MSLSI.ANLS_DT,'YYYY-MM-DD') = TO_CHAR(TO_TIMESTAMP(#{currentTime},'YYYY-MM-DD'),'YYYY-MM-DD')
 			<if test="schTime != null and schTime != ''">
-			AND	 	TO_CHAR(MSLSI.ANLS_DT, 'HH24') = #{schTime}
+			AND	 	TO_CHAR(MSLSI.ANLS_DT, 'HH24') = #{schTime} 
 			</if>
 			<if test="schRoadName != null and schRoadName != ''">
-			AND	 	CGSLT.ROAD_NAME LIKE '%' || #{schRoadName} || '%'
+			AND	 	CGSLT.ROAD_NAME LIKE '%' || #{schRoadName} || '%' 
 			</if>
 			GROUP BY CGSLT.LINK_ID,MSLSI.ANLS_DT
 		) RESULT_DATA
 		GROUP BY RESULT_DATA.ANLS_DT,RESULT_DATA.ROAD_NAME
-		ORDER BY SUM(RESULT_DATA.TOTAL_CNT) DESC
+		ORDER BY RESULT_DATA.ANLS_DT DESC
 		<if test="page != null and page != '' and page != 0 ">
             LIMIT 5 OFFSET (#{page} - 1) * 5
         </if>
@@ -348,7 +348,7 @@
 	</select>
 	
 	<select id="countCumulativeTrafficVolumeByTimeZoneAndRoad" parameterType="mapMonitoringMenuDTO" resultType="int">
-		SELECT
+		SELECT 
 				COUNT(RESULT_DATA.*)
 		FROM (
 			SELECT
@@ -357,17 +357,17 @@
 					CGSLT.ROAD_NAME   AS ROAD_NAME
 			FROM
 					MRT_STD_LINK_SECTN_INFO MSLSI
-			INNER JOIN C_GM_STD_LINK CGSLT ON CGSLT.LINK_ID = MSLSI.LINK_ID
+			INNER JOIN C_GM_STD_LINK_TMP CGSLT ON CGSLT.LINK_ID = MSLSI.LINK_ID  
 			WHERE  	TO_CHAR(MSLSI.ANLS_DT,'YYYY-MM-DD') = TO_CHAR(TO_TIMESTAMP(#{currentTime},'YYYY-MM-DD'),'YYYY-MM-DD')
 			<if test="schTime != null and schTime != ''">
-			AND	 	TO_CHAR(MSLSI.ANLS_DT, 'HH24') = #{schTime}
+			AND	 	TO_CHAR(MSLSI.ANLS_DT, 'HH24') = #{schTime} 
 			</if>
 			<if test="schRoadName != null and schRoadName != ''">
-			AND	 	CGSLT.ROAD_NAME LIKE '%' || #{schRoadName} || '%'
+			AND	 	CGSLT.ROAD_NAME LIKE '%' || #{schRoadName} || '%' 
 			</if>
 			GROUP BY CGSLT.LINK_ID,TO_CHAR(MSLSI.ANLS_DT, 'HH24')
 		) RESULT_DATA
-
+		
 	</select>
 	
 	<select id="findOneAverageEntrainmentSpeedByTimeZoneAndRoad" parameterType="mapMonitoringMenuDTO" resultType="com.neighbor21.ggits.common.dto.MapMonitoringMenuDTO$TrafficInfo">
@@ -382,13 +382,13 @@
 					CGSLT.ROAD_NAME   AS ROAD_NAME
 			FROM
 					MRT_STD_LINK_SECTN_INFO MSLSI
-			INNER JOIN C_GM_STD_LINK CGSLT ON CGSLT.LINK_ID = MSLSI.LINK_ID
+			INNER JOIN C_GM_STD_LINK_TMP CGSLT ON CGSLT.LINK_ID = MSLSI.LINK_ID  
 			WHERE  	TO_CHAR(MSLSI.ANLS_DT,'YYYY-MM-DD') = TO_CHAR(TO_TIMESTAMP(#{currentTime},'YYYY-MM-DD'),'YYYY-MM-DD')
 			<if test="schTime != null and schTime != ''">
-			AND	 	TO_CHAR(MSLSI.ANLS_DT, 'HH24') = #{schTime}
+			AND	 	TO_CHAR(MSLSI.ANLS_DT, 'HH24') = #{schTime} 
 			</if>
 			<if test="schRoadName != null and schRoadName != ''">
-			AND	 	CGSLT.ROAD_NAME LIKE '%' || #{schRoadName} || '%'
+			AND	 	CGSLT.ROAD_NAME LIKE '%' || #{schRoadName} || '%' 
 			</if>
 			GROUP BY CGSLT.LINK_ID,MSLSI.ANLS_DT
 		) RESULT_DATA
@@ -400,7 +400,7 @@
 	</select>
 	
 	<select id="countAverageEntrainmentSpeedByTimeZoneAndRoad" parameterType="mapMonitoringMenuDTO" resultType="int">
-		SELECT
+		SELECT 
 				COUNT(RESULT_DATA.*)
 		FROM (
 			SELECT
@@ -409,13 +409,13 @@
 					CGSLT.ROAD_NAME   AS ROAD_NAME
 			FROM
 					MRT_STD_LINK_SECTN_INFO MSLSI
-			INNER JOIN C_GM_STD_LINK CGSLT ON CGSLT.LINK_ID = MSLSI.LINK_ID
+			INNER JOIN C_GM_STD_LINK_TMP CGSLT ON CGSLT.LINK_ID = MSLSI.LINK_ID  
 			WHERE  	TO_CHAR(MSLSI.ANLS_DT,'YYYY-MM-DD') = TO_CHAR(TO_TIMESTAMP(#{currentTime},'YYYY-MM-DD'),'YYYY-MM-DD')
 			<if test="schTime != null and schTime != ''">
-			AND	 	TO_CHAR(MSLSI.ANLS_DT, 'HH24') = #{schTime}
+			AND	 	TO_CHAR(MSLSI.ANLS_DT, 'HH24') = #{schTime} 
 			</if>
 			<if test="schRoadName != null and schRoadName != ''">
-			AND	 	CGSLT.ROAD_NAME LIKE '%' || #{schRoadName} || '%'
+			AND	 	CGSLT.ROAD_NAME LIKE '%' || #{schRoadName} || '%' 
 			</if>
 		GROUP BY CGSLT.LINK_ID,TO_CHAR(MSLSI.ANLS_DT, 'HH24')
 		) RESULT_DATA
@@ -444,15 +444,15 @@
 	
 	<select id="findTop5ByAnlsDtOrderByVhclTrfVlm" parameterType="mrtStdLinkSectnInfo" resultType="map">
 		SELECT
-			SUM(MSLSI.TRFVLM) AS "trfvlm"
+			ROW_NUMBER() OVER(ORDER BY MSLSI.ANLS_DT) AS "rownum"
+			, MSLSI.TRFVLM AS "trfvlm"
 			, CGSLT.ROAD_NAME AS "roadName"
 		FROM MRT_STD_LINK_SECTN_INFO MSLSI
-		LEFT JOIN C_GM_STD_LINK CGSLT
+		LEFT JOIN C_GM_STD_LINK_TMP CGSLT  
 		ON MSLSI.LINK_ID = CGSLT.LINK_ID  
 		WHERE 1=1
 		AND ANLS_DT BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
 		AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
-		group by CGSLT.ROAD_NAME
 		ORDER BY TRFVLM DESC
 		LIMIT 5
 	</select>
@@ -480,15 +480,15 @@
 	
 	<select id="findTop5ByAvgVhclSpeedOrderByAvgVhclSpeed" parameterType="mrtStdLinkSectnInfo" resultType="map">
 		SELECT
-			round(AVG(MSLSI.SPEED),0) AS "speed"
+			ROW_NUMBER() OVER(ORDER BY MSLSI.ANLS_DT) AS "rownum"
+			, MSLSI.SPEED AS "speed"
 			, CGSLT.ROAD_NAME AS "roadName"
 		FROM MRT_STD_LINK_SECTN_INFO MSLSI
-		LEFT JOIN C_GM_STD_LINK CGSLT
+		LEFT JOIN C_GM_STD_LINK_TMP CGSLT  
 		ON MSLSI.LINK_ID = CGSLT.LINK_ID  
 		WHERE 1=1
 		AND ANLS_DT BETWEEN TO_TIMESTAMP(#{strDt}, 'YYYY-MM-DD HH24:MI:SS') 
 		AND TO_TIMESTAMP(#{endDt}, 'YYYY-MM-DD HH24:MI:SS')
-		group by CGSLT.ROAD_NAME
 		ORDER BY SPEED DESC
 		LIMIT 5
 	</select>
@@ -507,7 +507,7 @@
 	<select id="findTrafficSpeedByTimezone" parameterType="TrafficSpeedByTimezoneRequest" resultType="trafficSpeedByTimezoneResponse">
 		SELECT
 			LINK_ID,
-			ROUND(AVG(SPEED),0) AS SPEED
+			ROUND(AVG(SPEED),2) AS SPEED
 		FROM MRT_STD_LINK_SECTN_INFO MSLSI
 		WHERE MSLSI.ANLS_DT BETWEEN TO_TIMESTAMP(#{date}||' '||#{time}||':00:00', 'YYYYMMDD HH24:MI:SS') 
 		AND TO_TIMESTAMP(#{date}||' '||#{time}||':59:59', 'YYYYMMDD HH24:MI:SS')

@@ -3,7 +3,6 @@ package com.neighbor21.ggits.common.mapper;
 import java.util.List;
 import java.util.Map;
 
-import com.neighbor21.ggits.common.entity.TsLogDriveanal;
 import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
 
 import com.neighbor21.ggits.common.dto.MapBigdataSearchDTO;
@@ -36,7 +35,7 @@ public interface MrtDtgDangerSectnMapper {
 	 * @param mapBigdataSearchDTO
 	 * @return
 	 */
-	List<TsLogDriveanal> findAllBySearchOption(MapBigdataSearchDTO mapBigdataSearchDTO);
+	List<MrtDtgDangerSectn> findAllBySearchOption(MapBigdataSearchDTO mapBigdataSearchDTO);
 	
 	/**
      * @Method Name : countAllPubTrfSafeDrvAnal
@@ -105,5 +104,4 @@ public interface MrtDtgDangerSectnMapper {
 	 * @return
 	 */
 	List<MrtDtgDangerSectn> findByRouteIdGroupRoadNameAndHHForChart(MapBigdataSearchDTO mapBigdataSearchDTO);
-
 }

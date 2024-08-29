@@ -23,12 +23,12 @@
 		                        <input type="text" class="input_same group_box data-validate" name="oprtrNm" value="<c:out value='${userDetail.oprtrNm}'/>"
 		                        	data-valid-name="사용자 이름" data-valid-required maxlength="4" readonly="readonly"/>
 		                    </div>
-                        	<c:if test="${mOpOperatorInfo.oprtrGrd eq 'SUPER' or (mOpOperatorInfo.oprtrGrd eq 'GENERAL' and mOpOperatorInfo.oprtrId eq userDetail.oprtrId)}">
-			                    <div class="group">
-			                        <div class="group_text">비밀번호</div>
-	                        		<input type="button" class="is-darkgreen-btn mj0 pwchange" value="변경하기" data-chk-value="Y">
-			                    </div>
-                   			</c:if>
+		                    <div class="group">
+		                        <div class="group_text">비밀번호</div>
+		                        	<c:if test="${mOpOperatorInfo.oprtrGrd eq 'SUPER' or (mOpOperatorInfo.oprtrGrd eq 'GENERAL' and mOpOperatorInfo.oprtrId eq userDetail.oprtrId)}">
+		                        		<input type="button" class="is-darkgreen-btn mj0 pwchange" value="변경하기" data-chk-value="Y">
+                        			</c:if>
+		                    </div>
 		                    <div class="group group_update_pswd none">
 <!-- 		                    s -->
 			                    <div class="flex-column gap24">
@@ -67,7 +67,7 @@
 <%-- 		                        	data-valid-name="연락처" data-valid-required oninput="keyupPhoneEvent(this)" maxlength="13" ${mOpOperatorInfo.oprtrGrd eq 'SUPER' or (mOpOperatorInfo.oprtrGrd eq 'GENERAL' and mOpOperatorInfo.oprtrId eq userDetail.oprtrId)?'':'readonly'}/> --%>
 		                    </div>
 		                    <div class="group">
-		                        <div class="group_text">행정구역</div>
+		                        <div class="group_text">소속행정동</div>
 		                        <input type="hidden" class="data-validate" id="addngCd" name="addngCd" value="<c:out value='${userDetail.addngCd}'/>"/>
 		                        <div class="input_same group_box div_input_style" id="addngCdNm"><c:out value="${userDetail.cdNm}"/></div>
 		                        <c:if test="${mOpOperatorInfo.oprtrGrd eq 'SUPER' or (mOpOperatorInfo.oprtrGrd eq 'GENERAL' and mOpOperatorInfo.oprtrId eq userDetail.oprtrId)}">
@@ -88,32 +88,16 @@
 		                        	data-valid-name="그룹" data-valid-required/>
 		                        <div class="input_same group_box div_input_style" id="grpNm"><c:out value="${userDetail.grpNm}"/></div>
 		                        <c:if test="${mOpOperatorInfo.oprtrGrd eq 'SUPER' or (mOpOperatorInfo.oprtrGrd eq 'GENERAL' and mOpOperatorInfo.oprtrId eq userDetail.oprtrId)}">
-		                        	<input type="button" class="is-darkgreen-btn group_search_btn ml8" value="찾기">
-								</c:if>
+		                        <input type="button" class="is-darkgreen-btn group_search_btn ml8" value="찾기">
+		                        </c:if>
 		                    </div>
 		                    <div class="group">
 		                        <div class="group_text">상태</div>
-		                        <c:choose>
-		                        	<c:when test="${mOpOperatorInfo.oprtrGrd eq 'SUPER' or (mOpOperatorInfo.oprtrGrd eq 'GENERAL' and mOpOperatorInfo.oprtrId eq userDetail.oprtrId)}">
-				                        <select class="selectBox" name="oprtrSttsCd" >
-				                            <option value="OSC001" <c:if test="${userDetail.oprtrSttsCd eq 'OSC001'}">selected="selected"</c:if>>미승인</option>
-				                            <option value="OSC002" <c:if test="${userDetail.oprtrSttsCd eq 'OSC002'}">selected="selected"</c:if>>승인</option>
-				                            <option value="OSC003" <c:if test="${userDetail.oprtrSttsCd eq 'OSC003'}">selected="selected"</c:if>>중지</option>
-				                        </select>
-		                        	</c:when>
-		                        	<c:otherwise>
-            			            <input type="hidden"  name="oprtrSttsCd" value="${userDetail.oprtrSttsCd}"/>
-            			             <c:if test="${userDetail.oprtrSttsCd eq 'OSC001'}">
-			                        	<div class="input_same group_box div_input_style">미승인</div>
-            			             </c:if>
-            			             <c:if test="${userDetail.oprtrSttsCd eq 'OSC002'}">
-			                        	<div class="input_same group_box div_input_style">승인</div>
-            			             </c:if>
-            			             <c:if test="${userDetail.oprtrSttsCd eq 'OSC003'}">
-			                        	<div class="input_same group_box div_input_style">중지</div>
-            			             </c:if>
-		                        	</c:otherwise>
-		                        </c:choose>
+		                        <select class="selectBox" name="oprtrSttsCd" >
+		                            <option value="OSC001" <c:if test="${userDetail.oprtrSttsCd eq 'OSC001'}">selected="selected"</c:if>>미승인</option>
+		                            <option value="OSC002" <c:if test="${userDetail.oprtrSttsCd eq 'OSC002'}">selected="selected"</c:if>>승인</option>
+		                            <option value="OSC003" <c:if test="${userDetail.oprtrSttsCd eq 'OSC003'}">selected="selected"</c:if>>중지</option>
+		                        </select>
 		                    </div>
                         	<c:if test="${mOpOperatorInfo.oprtrGrd eq 'SUPER'}">
 			                    <div class="group">
@@ -143,7 +127,7 @@
 				var checkbox = $(".cntnSystemCd");
 				var useArr = "";
 				var notUseArr = "";
-
+				
 				for(var i = 0; i < checkbox.length; i++){
 					var isChecked = checkbox.eq(i).is(':checked');
 					if(isChecked){
@@ -160,7 +144,7 @@
 						}
 					}
 				}
-
+				
 				$.ajax({
 					type : "post",
 					data : {
@@ -205,16 +189,16 @@
 	    						modal.close();
 		    					window.location.reload();
 	    					}).open();
-	    					modalAlertWrap();
+	    					modalAlertWrap();    					
 	    				}else{
 	    					new ModalBuilder().init().alertBoby("유저 정보 수정을 실패하였습니다.").footer(4,'확인',function(button, modal){modal.close();}).open();
-	    					modalAlertWrap();
+	    					modalAlertWrap();    					
 	    				}
 		  			}
-	   			});
+	   			});    		
 	    	}
 	    })
-
+       	
     	/* 비밀번호변경 */
     	var pswdChKVal = false;
         $('.pwchange').on("click", function(){
@@ -365,11 +349,11 @@
 			}
 		})
 		</c:if>
-
+		
 	    <c:if test="${mOpOperatorInfo.oprtrGrd eq 'SUPER'}">
     	$("#userInfoDeleteBtn").on("click",function(){
     		var oprtrId = $("#oprtrId").val();
-
+    		
     		new ModalBuilder().init().alertBoby("삭제하시면 다시 복구 할 수 없습니다.<br>삭제하시겠습니까?").footer(5,'삭제하기',function(button, modal){
         		$.ajax({
         			type : "get",
@@ -382,16 +366,16 @@
         						modalAlertClose();
     	    					window.location.href="${pageContext.request.contextPath}/system/user/list.do";
         					}).open();
-        					modalAlertWrap();
+        					modalAlertWrap();    						
         				}else{
         					new ModalBuilder().init().alertBoby("유저 정보 삭제를 실패하였습니다.").footer(4,'확인',function(button, modal){modal.close();}).open();
-        					modalAlertWrap();
+        					modalAlertWrap();    					
         				}
     	  			}
        			});
     		},'취소하기',function(button, modal){
-    			modalAlertClose();
-    		}).open();
+    			modalAlertClose();    
+    		}).open();	
     	})
    	</c:if>
     </script>

@@ -3,16 +3,10 @@
  * @returns {Promise<{featureCollection: {features: *, type: string}}>}
  * @constructor
  */
-const CM_BusRoute = async function(routeId, direction, updown){
+const CM_BusRoute = async function(routeId){
     let param = "";
     if(routeId) {
         param = "?routeId="+routeId;
-        if(direction) {
-            param = param+"&direction="+direction;
-        }
-        if(updown) {
-            param = param+"&updown=updown";
-        }
     }
     let list =  await self.util.getJsonFormApi("/monitoring/getBusRouteInfo.ajax"+param);
     let features = [];

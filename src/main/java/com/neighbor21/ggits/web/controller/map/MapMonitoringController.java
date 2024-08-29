@@ -1,12 +1,14 @@
 package com.neighbor21.ggits.web.controller.map;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import com.neighbor21.ggits.api.module.monitoring.MWarningComponent;
 import com.neighbor21.ggits.common.dto.MonitoringTrafficCurDto;
 import com.neighbor21.ggits.common.entity.*;
 import com.neighbor21.ggits.common.mapper.*;
-import com.neighbor21.ggits.common.util.BDDateFormatUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +26,6 @@ import com.neighbor21.ggits.api.module.monitoring.MTrafficComponent;
 import com.neighbor21.ggits.common.dto.MapMonitoringLinkDataDTO;
 import com.neighbor21.ggits.common.dto.MapMonitoringMenuDTO;
 import com.neighbor21.ggits.common.enums.MapMonitoringSubMenuCd;
-import com.neighbor21.ggits.common.enums.RouteTpCd;
 import com.neighbor21.ggits.common.util.GgitsCommonUtils;
 import com.neighbor21.ggits.common.util.LoginSessionUtils;
 import com.neighbor21.ggits.support.exception.CommonException;
@@ -43,9 +44,6 @@ public class MapMonitoringController {
     
     @Autowired
     MBusComponent mBusComponent;
-
-	@Autowired
-	MWarningComponent mWarningComponent;
     
     @Autowired
     MapMonitoringService mapMonitoringService;
@@ -69,9 +67,6 @@ public class MapMonitoringController {
 	CGmStdLinkAdstdgMppgMapper cGmStdLinkAdstdgMppgMapper;
 
 	@Autowired
-	GgsplBusRouteVltnInfoMapper ggsplBusRouteVltnInfoMapper;
-
-	@Autowired
 	MOpCodeMapper mOpCodeMapper;
     
     /**
@@ -85,8 +80,10 @@ public class MapMonitoringController {
       */
     @GetMapping("/traffic/{type}.ajax")
     public String getMonitoringTrafficPage(@PathVariable String type, MapMonitoringMenuDTO mapMonitoringMenuDTO, Model model) {
+    	
     	MapMonitoringMenuDTO trafficInfo = new MapMonitoringMenuDTO(); 
     	
+
     	int totalCnt = 0;
 
     	mapMonitoringMenuDTO.setPage(mapMonitoringMenuDTO.getPage() == 0 ? 1 : mapMonitoringMenuDTO.getPage());
@@ -100,7 +97,7 @@ public class MapMonitoringController {
 			case AVERAGE_ENTRAINMENT_SPEED_BY_TIME_ZONE: // 시간대별 평균동행속도
 //				trafficInfo = mapMonitoringService.findOneAverageEntrainmentSpeedByTimeZone(mapMonitoringMenuDTO);
 				break;
-			case CUMULATIVE_TRAFFIC_VOLUME_BY_ROAD: // 도로별 교통량
+			case CUMULATIVE_TRAFFIC_VOLUME_BY_ROAD: // 도로별 누적교통량
 				trafficInfo = mapMonitoringService.findOneCumulativeTrafficVolumeByRoad(mapMonitoringMenuDTO);
 				break;
 			case AVERAGE_ENTRAINMENT_SPEED_BY_ROAD: // 도로별 평균동행속도
@@ -122,8 +119,6 @@ public class MapMonitoringController {
 				sggCdList = mOpCodeMapper.findAllCodeListByGrpCdId("SGG_CD");
 				list = monitoringTrafficCurMapper.findAllAvgSpeedVDSBySearchOptionPaging(mapMonitoringMenuDTO);
 				totalCnt = monitoringTrafficCurMapper.countAvgSpeedVDSBySearchOption(mapMonitoringMenuDTO);
-				break;
-			case CUMULATIVE_TRAFFIC_VOLUME_BY_VHCL_DIV:
 				break;
 			default:
 				break;
@@ -153,25 +148,9 @@ public class MapMonitoringController {
 		List<MonitoringTrafficCurDto> list = mapMonitoringService.getMonitoringChartData(type, collectType, collectTimeType);
 		return new ResponseEntity<>(list, HttpStatus.OK);
 	}
-
-	
-	/**
-	 * @Method Name : getMonitoringTrafficData
-	 * @작성일 : 2024. 01. 17.
-	 * @작성자 : KY.LEE
-	 * @Method 설명 : 모니터링 -> 교통현황 -> 차종별 교통량 그래프
-	 * @param mapMonitoringMenuDTO
-	 * @param model
-	 * @return
-	 */
-	@GetMapping("/traffic/vhclDivChartData.ajax")
-	public @ResponseBody ResponseEntity<?> getMonitoringTrafficData() {
-		List<MonitoringTrafficCurDto> list = mapMonitoringService.findOneCumulativeTrafficVolumeByVhclDiv();
-		return new ResponseEntity<>(list, HttpStatus.OK);
-	}
     
     /**
-     * @Method Name : getMonitoringTrafficData
+     * @Method Name : getMonitoringTrafficPage
      * @작성일 : 2023. 9. 19.
      * @작성자 : NK.KIM
      * @Method 설명 : 교통 현황 
@@ -194,10 +173,6 @@ public class MapMonitoringController {
 				case "vds" :
 					list = monitoringTrafficCurMapper.findAllTrafficVolumeVDSBySearchOptionPaging(mapMonitoringMenuDTO);
 					totalCnt = monitoringTrafficCurMapper.countTrafficVolumeVDSBySearchOption(mapMonitoringMenuDTO);
-					break;
-				case "dsrc" :
-					list = monitoringTrafficCurMapper.findAllTrafficVolumeDSRCBySearchOptionPaging(mapMonitoringMenuDTO);
-					totalCnt = monitoringTrafficCurMapper.countTrafficVolumeDSRCBySearchOption(mapMonitoringMenuDTO);
 					break;
 				case "smc" :
 					list = monitoringTrafficCurMapper.findAllTrafficVolumeSmartBySearchOptionPaging(mapMonitoringMenuDTO);
@@ -240,7 +215,7 @@ public class MapMonitoringController {
     }
     
     /**
-     * @Method Name : getMonitoringSignalPage
+     * @Method Name : getMonitoringTrafficPage
      * @작성일 : 2023. 9. 19.
      * @작성자 : NK.KIM
      * @Method 설명 : 실시간 교통신호
@@ -260,48 +235,25 @@ public class MapMonitoringController {
     	
     	return "map/"+type;
     }
-
-
+    
+    
     /**
-     * @Method Name : getMonitoringWarningPage
+     * @Method Name : getMonitoringTrafficPage
      * @작성일 : 2023. 9. 19.
      * @작성자 : NK.KIM
-     * @Method 설명 : 돌발현황
+     * @Method 설명 : 돌발현황 
      * @param model
      * @return
      */
     @GetMapping("/warning/{type}.ajax")
     public String getMonitoringWarningPage(@PathVariable String type, Map<String,Object> paramMap, Model model) {
-		switch(type) {
-			case "M_WARNING_001" :
-				String baseYmd = BDDateFormatUtil.format(new Date(), "yyyy년 MM월 dd일 HH시mm분");
-				List<GimsMngInciDetail> waringList = mWarningComponent.findAllForMapMarker();
-
-				model.addAttribute("baseYmd", baseYmd);
-				model.addAttribute("waringList",waringList);
-				break;
-			case "M_WARNING_002" :
-				break;
-		}
+    	List<GimsMngInciDetail> waringList = gimsMngInciDetailMapper.findAllWarningListForList();
+    	model.addAttribute("waringList",waringList);
     	return "map/"+type;
     }
-
-	/**
-	 * 위험물 이동현황
-	 * @param type
-	 * @param paramMap
-	 * @param model
-	 * @return
-	 */
-	@GetMapping("/danger/{type}.ajax")
-	public String getMonitoringDangerPage(@PathVariable String type, Map<String,Object> paramMap, Model model) {
-		/*List<GimsMngInciDetail> waringList = gimsMngInciDetailMapper.findAllWarningListForList();
-		model.addAttribute("waringList",waringList);*/
-		return "map/"+type;
-	}
     
     /**
-     * @Method Name : getMonitoringWeatherPage
+     * @Method Name : getMonitoringTrafficPage
      * @작성일 : 2023. 9. 19.
      * @작성자 : NK.KIM
      * @Method 설명 : 기상현황
@@ -314,7 +266,7 @@ public class MapMonitoringController {
     }
     
     /**
-     * @Method Name : getMonitoringEmergencyPage
+     * @Method Name : getMonitoringTrafficPage
      * @작성일 : 2023. 9. 19.
      * @작성자 : NK.KIM
      * @Method 설명 : 긴급차량 이동현황
@@ -324,12 +276,13 @@ public class MapMonitoringController {
     @GetMapping("/emergency/{type}.ajax")
     public String getMonitoringEmergencyPage(@PathVariable String type, Map<String,Object> paramMap, Model model) {
     	
-//    	String startToday 	= GgitsCommonUtils.getCalculationDateToString(0, "yyyy-MM-dd 00:00:00", Calendar.HOUR);
-//    	String endToday 	= GgitsCommonUtils.getCalculationDateToString(0, "yyyy-MM-dd 23:59:59", Calendar.HOUR);
-//    	paramMap.put("startToday", startToday);
-//    	paramMap.put("endToday", endToday);
+    	String startToday 	= GgitsCommonUtils.getCalculationDateToString(0, "yyyy-MM-dd 00:00:00", Calendar.HOUR);
+    	String endToday 	= GgitsCommonUtils.getCalculationDateToString(0, "yyyy-MM-dd 23:59:59", Calendar.HOUR);
     	
-    	List<ScsEmrgVhclPathInfo> emergencyList = scsEmrgVhclPathInfoMapper.findAllEmergencyListForToday();
+    	paramMap.put("startToday", startToday);
+    	paramMap.put("endToday", endToday);
+    	
+    	List<ScsEmrgVhclPathInfo> emergencyList = scsEmrgVhclPathInfoMapper.findAllEmergencyList(paramMap);
     	
     	model.addAttribute("emergencyList",emergencyList);
     	
@@ -339,20 +292,20 @@ public class MapMonitoringController {
     @GetMapping("/emergency/{type}/data.ajax")
     public @ResponseBody CommonResponse<?> getMonitoringEmergencyData(@PathVariable String type, Map<String,Object> paramMap, Model model) {
     	
-//    	String startToday 	= GgitsCommonUtils.getCalculationDateToString(0, "yyyy-MM-dd 00:00:00", Calendar.HOUR);
-//    	String endToday 	= GgitsCommonUtils.getCalculationDateToString(0, "yyyy-MM-dd 23:59:59", Calendar.HOUR);
-//    	
-//    	paramMap.put("startToday", startToday);
-//    	paramMap.put("endToday", endToday);
+    	String startToday 	= GgitsCommonUtils.getCalculationDateToString(0, "yyyy-MM-dd 00:00:00", Calendar.HOUR);
+    	String endToday 	= GgitsCommonUtils.getCalculationDateToString(0, "yyyy-MM-dd 23:59:59", Calendar.HOUR);
     	
-       	List<ScsEmrgVhclPathInfo> emergencyList = scsEmrgVhclPathInfoMapper.findAllEmergencyListForToday();
+    	paramMap.put("startToday", startToday);
+    	paramMap.put("endToday", endToday);
+    	
+    	List<ScsEmrgVhclPathInfo> emergencyList = scsEmrgVhclPathInfoMapper.findAllEmergencyList(paramMap);
     	
     	return CommonResponse.ResponseCodeAndMessage(HttpStatus.OK,"",emergencyList);
     }
     
     
     /**
-     * @Method Name : getMonitoringEmergencyDetail
+     * @Method Name : getMonitoringTrafficPage
      * @작성일 : 2023. 9. 19.
      * @작성자 : NK.KIM
      * @Method 설명 : 긴급차량 이동현황 상세정보
@@ -371,7 +324,7 @@ public class MapMonitoringController {
 
     
     /**
-     * @Method Name : getMonitoringBusPage
+     * @Method Name : getMonitoringTrafficPage
      * @작성일 : 2023. 9. 19.
      * @작성자 : NK.KIM
      * @Method 설명 : 시내버스 이동현황
@@ -380,39 +333,23 @@ public class MapMonitoringController {
      */
     @GetMapping("/bus/{type}.ajax")
     public String getMonitoringBusPage(@PathVariable String type, Model model, GgsplBusPeriodicinfo ggsplBusPeriodicinfo) {
-
-		int totalCnt = 0;
-		switch(type) {
-			case "M_BUS_001" :
-				List<GgsplBusPeriodicinfo>  list = mBusComponent.getRealtimeBusMoveInfo(ggsplBusPeriodicinfo);
-				totalCnt = mBusComponent.getRealtimeBusMoveInfoTotalCnt(ggsplBusPeriodicinfo);
-				model.addAttribute("list",list);
-				break;
-			case "M_BUS_002" :
-				List<GgsplBusRouteVltnInfo> vllist = ggsplBusRouteVltnInfoMapper.findAllBySearchOption(ggsplBusPeriodicinfo);
-				totalCnt = ggsplBusRouteVltnInfoMapper.countAllBySearchOption(ggsplBusPeriodicinfo);
-				model.addAttribute("list",vllist);
-				break;
-		}
+		List<GgsplBusPeriodicinfo>  list = mBusComponent.getRealtimeBusMoveInfo(ggsplBusPeriodicinfo);
+    	int totalCnt = mBusComponent.getRealtimeBusMoveInfoTotalCnt(ggsplBusPeriodicinfo);
     	
     	Paging paging = new Paging();
 		paging.setPageSize(5);
 		paging.setPageNo(ggsplBusPeriodicinfo.getPage());
 		paging.setTotalCount(totalCnt);
-
-		List<MOpCode> sggCdList = mOpCodeMapper.findAllCodeListByGrpCdId("SGG_CD");
-
-		model.addAttribute("sggCdList",sggCdList);
+		
 		model.addAttribute("paging", paging);
-
+    	model.addAttribute("list",list);
     	model.addAttribute("totalCnt",totalCnt);
-    	
     	
     	return "map/"+type;
     }
     
     /**
-     * @Method Name : getMonitoringBusData
+     * @Method Name : getMonitoringTrafficPage
      * @작성일 : 2023. 9. 19.
      * @작성자 : NK.KIM
      * @Method 설명 : 시내버스 이동현황
@@ -422,28 +359,15 @@ public class MapMonitoringController {
     @GetMapping("/bus/{type}/data.ajax")
     public @ResponseBody CommonResponse<?> getMonitoringBusData(@PathVariable String type, Model model, GgsplBusPeriodicinfo ggsplBusPeriodicinfo) {
     	Map<String,Object> resultMap = new HashMap<String, Object>();
-    	if(!GgitsCommonUtils.isNull(ggsplBusPeriodicinfo.getRouteTp())) {
-    		ggsplBusPeriodicinfo.setRouteTpList(RouteTpCd.getRouteTpListFromRouteTpCd(ggsplBusPeriodicinfo.getRouteTp()));
-    	}
-
-		int totalCnt = 0;
-		switch(type) {
-			case "M_BUS_001" :
-				List<GgsplBusPeriodicinfo>  list = mBusComponent.getRealtimeBusMoveInfo(ggsplBusPeriodicinfo);
-				totalCnt = mBusComponent.getRealtimeBusMoveInfoTotalCnt(ggsplBusPeriodicinfo);
-				resultMap.put("list", list);
-				break;
-			case "M_BUS_002" :
-				List<GgsplBusRouteVltnInfo> vllist = ggsplBusRouteVltnInfoMapper.findAllBySearchOption(ggsplBusPeriodicinfo);
-				totalCnt = ggsplBusRouteVltnInfoMapper.countAllBySearchOption(ggsplBusPeriodicinfo);
-				resultMap.put("list", vllist);
-				break;
-		}
+		List<GgsplBusPeriodicinfo>  list = mBusComponent.getRealtimeBusMoveInfo(ggsplBusPeriodicinfo);
+    	int totalCnt = mBusComponent.getRealtimeBusMoveInfoTotalCnt(ggsplBusPeriodicinfo);
+    	
     	Paging paging = new Paging();
     	paging.setPageSize(5);
     	paging.setPageNo(ggsplBusPeriodicinfo.getPage());
     	paging.setTotalCount(totalCnt);
-
+    	
+    	resultMap.put("list", list);
     	resultMap.put("paging", paging);
     	resultMap.put("totalCnt", totalCnt);
     	
@@ -451,7 +375,7 @@ public class MapMonitoringController {
     }
     
     /**
-     * @Method Name : getMonitoringPopulationPage
+     * @Method Name : getMonitoringTrafficPage
      * @작성일 : 2023. 9. 19.
      * @작성자 : NK.KIM
      * @Method 설명 : 유동인구 밀집예측
@@ -466,7 +390,7 @@ public class MapMonitoringController {
     }
     
     /**
-     * @Method Name : getMonitoringLinkdataPage
+     * @Method Name : getMonitoringTrafficPage
      * @작성일 : 2023. 9. 19.
      * @작성자 : NK.KIM
      * @Method 설명 : 연계대상 데이터 
@@ -501,7 +425,7 @@ public class MapMonitoringController {
     }
     
     /**
-     * @Method Name : getMonitoringOperationPage
+     * @Method Name : getMonitoringTrafficPage
      * @작성일 : 2023. 9. 19.
      * @작성자 : NK.KIM
      * @Method 설명 : 서비스 운영현황 
@@ -530,7 +454,7 @@ public class MapMonitoringController {
     }
     
     /**
-     * @Method Name : getMonitoringUsecasePage 
+     * @Method Name : getMonitoringTrafficPage 
      * @작성일 : 2023. 9. 19.
      * @작성자 : NK.KIM
      * @Method 설명 : 유스케이스 항목접속현황 
@@ -544,7 +468,7 @@ public class MapMonitoringController {
     	return "map/"+type;
     }
     /**
-     * @Method Name : getMonitoringBigdataPage
+     * @Method Name : getMonitoringTrafficPage
      * @작성일 : 2023. 9. 19.
      * @작성자 : NK.KIM
      * @Method 설명 : 유스케이스 항목접속현황 

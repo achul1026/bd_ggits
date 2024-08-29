@@ -3,7 +3,7 @@ package com.neighbor21.ggits.common.entity;
 import java.sql.Timestamp;
 
 // link 표준링크 1일 통계 소통정보
-public class ExtGgitsLinkStd1d {
+public class ExtGgitsLinkStd1d{
 	private Timestamp procDate;		// 1분 소통정보가공시각
 	private String linkId;				// 링크를 고유키로 식별하기 위해 생성 도로구분(1자리) + 링크(1자리) + 방향(1자리) + 행정구역(2자리) + 일련번호(4자리) 예) ALW100001
 	private Long spd;					// 1분 동안의 링크의 평균속도
@@ -213,5 +213,9 @@ public class ExtGgitsLinkStd1d {
 	public void setRoadRank(String roadRank) {
 		this.roadRank = roadRank;
 	}
+
+	
+	
+	
 }
 

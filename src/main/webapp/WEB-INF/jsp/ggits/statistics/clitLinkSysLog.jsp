@@ -21,7 +21,7 @@
     	<input type="hidden" id="page" name="page"  value="1"/>
         <h2 class="blind">수집/연계 시스템 이력</h2>
         <div class="table_btn_wrap tab_fc">
-            <div class="btn_search_wrap">
+            <div class="btn_search_wrap_left btn_search_wrap">
             	<ul>
 <!--             		<li> -->
 <%--             			 <button type="button" class="tab_btn_item is-dark-btn" onclick="location.href='${pageContext.request.contextPath}/statistics/data/use/open_api_use_log/list.do'" >Open API 활용 이력</button> --%>
@@ -34,8 +34,8 @@
             		</li>
             	</ul>
             </div>
-          </div>
-          <div class="contents_wrap tab_area">
+         </div>
+         <div class="contents_wrap tab_area">
          	<div class="">
             	<div class="group2">
 	            	<div class="btn_search_wrap">
@@ -152,20 +152,18 @@
 </div>
 
 <script>
-	var dataTotalCnt = '<c:out value="${totalCnt}"/>';
-	$("#totalCnt").text(numberComma(dataTotalCnt))
-	$(document).ready(function(){
-		var strDt = '<c:out value="${searchInfo.strDt}"/>';
-		var endDt = '<c:out value="${searchInfo.endDt}"/>';
-	
-		//searchOption dataInit
-		if(strDt != null && strDt != ''){
-			$("#strDt").val(strDt.substring(0,10));
-		}
-		if(endDt != null && endDt != ''){
-			$("#endDt").val(endDt.substring(0,10));
-		}
-	})
+$(document).ready(function(){
+	var strDt = '<c:out value="${searchInfo.strDt}"/>';
+	var endDt = '<c:out value="${searchInfo.endDt}"/>';
+
+	//searchOption dataInit
+	if(strDt != null && strDt != ''){
+		$("#strDt").val(strDt.substring(0,10));
+	}
+	if(endDt != null && endDt != ''){
+		$("#endDt").val(endDt.substring(0,10));
+	}
+})
 	/* modal start */
 	/* 실패사유 */
 	$('.fail_info').on("click", function(){

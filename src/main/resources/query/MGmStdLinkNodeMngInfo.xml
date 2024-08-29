@@ -22,12 +22,9 @@
 	</insert>
 	
 	<select id="countByStdInfoNm" parameterType="mGmStdLinkNodeMngInfo" resultType="int">
-		SELECT COUNT(1)
+		SELECT COUNT(*)
 		FROM M_GM_STD_LINK_NODE_MNG_INFO
 		WHERE 1=1
-		<if test="searchType != null and searchType != '' ">
-			and STD_APLCN_TYPE = #{searchType}
-		</if>
 		<if test="stdInfoNm != null and stdInfoNm != ''">
 			AND STD_INFO_NM LIKE CONCAT('%', #{stdInfoNm}, '%')
 		</if>
@@ -51,9 +48,6 @@
 		FROM
 			M_GM_STD_LINK_NODE_MNG_INFO
 		WHERE 1=1
-		<if test="searchType != null and searchType != '' ">
-		  	and STD_APLCN_TYPE = #{searchType}
-		</if>
 		<if test="stdInfoNm != null and stdInfoNm != ''">
 			AND STD_INFO_NM LIKE CONCAT('%', #{stdInfoNm}, '%')
 		</if>

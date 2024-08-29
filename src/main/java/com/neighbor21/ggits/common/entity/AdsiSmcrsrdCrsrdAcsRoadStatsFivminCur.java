@@ -21,9 +21,6 @@ public class AdsiSmcrsrdCrsrdAcsRoadStatsFivminCur extends CommonEntity{
 	private Double avgTrfvlm;			// 평균 교통량
 	private Double avgSpd;				// 평균 속도
 	
-	//#AdsiSmcrsrdCrsrdInfo
-	private String crsrdNm;				//교차로 이름
-	
 	public String getMngInstCd() {
 		return mngInstCd;
 	}
@@ -113,12 +110,6 @@ public class AdsiSmcrsrdCrsrdAcsRoadStatsFivminCur extends CommonEntity{
 	}
 	public void setAvgSpd(Double avgSpd) {
 		this.avgSpd = avgSpd;
-	}
-	public String getCrsrdNm() {
-		return crsrdNm;
-	}
-	public void setCrsrdNm(String crsrdNm) {
-		this.crsrdNm = crsrdNm;
 	}
 	
 }

@@ -13,6 +13,7 @@
                         교통DB화 통계정보를 <br>조회합니다.
                     </div>
                     <div class="side_btn">
+                        <a href="${pageContext.request.contextPath}/statistics/traffic/database/list.do" class="on" onclick="startLoading()">교통총괄지표</a>
                         <a href="${pageContext.request.contextPath}/statistics/traffic/database/impact/list.do" onclick="startLoading()">교통영향평가</a>
                     </div>
                 </div>

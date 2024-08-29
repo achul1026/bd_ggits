@@ -14,8 +14,6 @@
             MRT_CNDCY_PATH_ROUTE_BSTP_INFO MCPRBI
                 INNER JOIN BIGDATA.EXT_GGBIS_BUS_STATION EGBS ON MCPRBI.STATION_ID  = EGBS.STATION_ID
         WHERE
-            MCPRBI.CAND_ROUTE_ID = #{candRouteId}
-          AND MCPRBI.BASEYM = #{baseym}
-          AND MCPRBI.BTC_ID = #{btcId}
+            CAND_ROUTE_ID = #{candRouteId}
     </select>
 </mapper>

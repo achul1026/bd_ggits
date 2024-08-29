@@ -1,4 +1,4 @@
-@charset "UTF-8";
+@charset 'UTF-8';
 
 @import url(jquery-ui.css);
 
@@ -8,7 +8,7 @@
 
 @import url(fonts.css);
 
-@import url(common.css?v=1.1);
+@import url(common.css);
 
 @import url(variable.css);
 
@@ -331,9 +331,7 @@
 	height: 1.25rem;
 	cursor: pointer;
 }
-.facility_input.is-lightgrey {
-	border-color:lightgrey;
-}
+
 .facility_input::before {
 	position: absolute;
 	left: 0;
@@ -345,17 +343,15 @@
 	transition: left 250ms linear;
 	content: "";
 }
-.facility_input.is-lightgrey::before {
-	background-color: lightgrey;
-}
+
 .facility_input:checked {
-	border-color: var(--key-color-600) !important;
-	background-color: var(--key-color-600) !important;
+	border-color: var(--key-color-600);
+	background-color: var(--key-color-600);
 }
 
 .facility_input:checked::before {
 	left: 1rem;
-	background-color: var(--main-txt-color) !important;
+	background-color: var(--main-txt-color);
 }
 
 .facility_input:disabled {
@@ -1465,14 +1461,6 @@ d3_label_item:nth-child(4) {
 }
 
 /* 대시보드 */
-.loadingPart.loading-dashboard {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    margin-top:0;
-    transform: translate(-50%, -50%);
-}
-
 .chart_legend_box {
 	margin-left:0.875rem;
 }
@@ -1636,10 +1624,8 @@ d3_label_item:nth-child(4) {
 	display:block;
 }
 #bit-station-wrapper {
-	/*width:80%;
-	float:left;*/
-	max-height: 200px;
-	overflow-y: auto;
+	width:80%;
+	float:left;
 }
 #bit-station-click-result-wrapper {
 	width:20%;
@@ -1648,10 +1634,6 @@ d3_label_item:nth-child(4) {
 #bit-station-click-result-wrapper table th,
 #bit-station-click-result-wrapper table td {
 	border:1px solid rgba(255,255,255,0.5);
-}
-.bit-station:hover {
-	cursor: pointer;
-	color:#FF4C4C;
 }
 .bit-station.direction-left {
 	float:right;
@@ -1675,8 +1657,7 @@ d3_label_item:nth-child(4) {
 	padding:0 10px;
 }
 .bit-station .bit-station-inner {
-	position: relative;
-	z-index: 2;
+
 }
 .bit-station .bit-station-inner img {
 	width:24px;
@@ -1686,105 +1667,47 @@ d3_label_item:nth-child(4) {
 }
 .bit-station .bit-station-inner p {
 	word-break: break-all;
-	background: rgba(0,0,0,1);
 }
 .bit-station.direction-right:before,
 .bit-station.direction-left:before {
-	content: "";
-	position: absolute;
-	top: 14px;
-	width: 84px;
-	height: 2px;
-	background: white;
-	/*content:"";
+	content:"";
 	position:absolute;
 	top:50%;
 	width:16px;
 	height:16px;
-	!* background:white; *!
+	/* background:white; */
 	background-image:url('/statics/images/white_arrow.png');
 	background-size:100%;
-	background-repeat:no-repeat;*/
+	background-repeat:no-repeat;
 }
 .bit-station.direction-right:before {
-	/*left:100%;
-	margin-left:-10px;*/
-	left: 65px;
-	margin-left: 0;
+	left:100%;
+	margin-left:-10px;
 }
 .bit-station-row .bit-station.direction-right:last-child:before {
 	width:2px;
-	height: 60px;
-	top: 37%;
+	height:16px;
+	top:100%;
 	left:50%;
 	right:auto;
 	margin:0;
-	margin-top:5px;
 }
 .bit-station.direction-left:before {
-	/*right:100%;
-	margin-right:-10px;*/
-	right: 61%;
-	margin-right: 0;
+	right:100%;
+	margin-right:-10px;
 }
 .bit-station-row .bit-station.direction-left:last-child:before {
-	top: 38%;
-	left: auto;
-	right: 50%;
-	width: 2px;
-	height: 60px;
+	top:100%;
+	left:auto;
+	right:50%;
+	width:16px;
+	height:16px;
 	margin:0;
-	/*background-image:url('/statics/images/white_arrow.png');
+	background-image:url('/statics/images/white_arrow.png');
 	background-size:100%;
 	background-repeat:no-repeat;
-	transform:rotate(90deg);*/
+	transform:totate(90deg);
 }
-
 .bit-station-row .bit-station.is-last:before {
 	display:none;
-}
-
-.mini_box_error_message {
-	position:absolute;
-	top:50%;
-	left:50%;
-	transform:translate(-50%, -50%);
-	font-size:0.875rem;
-}
-
-.mapbox_tablehead{
-	position :sticky;
-	top : 0;
-	left : 0;
-	right : 0;
-	z-index : 3;
-}
-
-.mapbox_popup_select {
-	display:block;
-	color:#000;
-	border:none;
-	text-align:left;
-	margin-bottom: 8px;
-}
-
-.mapbox_popup_select::-webkit-scrollbar {
- 	width: 7px;
- 	height: 7px;
-}
-.mapbox_popup_select::-webkit-scrollbar-thumb {
-	width: 10px;
- 	background-color: #000;
- 	border-radius: 10px;
-}
-.mapbox_popup_select::-webkit-scrollbar-track {
-	background-color:#fff;
-}
-
-.none_use_chart_data{
-	position:absolute;
-	top:50%;
-	left:50%;
-	transform:translate(-50%, -50%);
-	font-size:0.875rem;
 }

@@ -69,13 +69,11 @@ public class DataUseStatisticsController {
      */
 	@GetMapping("/data/use/{type}/list.do")
     public String viewDataUseStats(Model model, CommonEntity commonEntity, @PathVariable String type){
-		
 		// 처음 접근 시
 		if(GgitsCommonUtils.isNull(commonEntity.getStrDt()) && GgitsCommonUtils.isNull(commonEntity.getEndDt())) {
 			commonEntity.setStrDt(BDDateFormatUtil.isDateCal("yyyy-MM-dd", -7));
 			commonEntity.setEndDt(BDDateFormatUtil.isNowStr("yyyy-MM-dd"));
 		}
-		
 		int totalCnt = 0;
 		switch (type) {
 		case "open_api_use_log":
@@ -172,13 +170,11 @@ public class DataUseStatisticsController {
 	public String viewDataRecode(@PathVariable String type, Model model, CommonEntity commonEntity) throws ParseException{
 		
 		int totalCnt = 0;
-		
 		// 처음 접근 시
 		if(GgitsCommonUtils.isNull(commonEntity.getStrDt()) && GgitsCommonUtils.isNull(commonEntity.getEndDt())) {
 			commonEntity.setStrDt(BDDateFormatUtil.isDateCal("yyyy-MM-dd", -7));
 			commonEntity.setEndDt(BDDateFormatUtil.isNowStr("yyyy-MM-dd"));
 		}
-		
 		if(!GgitsCommonUtils.isNull(commonEntity.getDayOfTheWeekStr())) {
 			String[] dayOfTheWeekArr = commonEntity.getDayOfTheWeekStr().split(",");
 			commonEntity.setDayOfTheWeek(Arrays.asList(dayOfTheWeekArr));

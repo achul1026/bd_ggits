@@ -39,6 +39,7 @@ public class SmartIntersectionComponent {
      */
     public List<SmartIntersectionDTO> getSmartIntersectionInfo(){
         List<SmartIntersectionDTO> data = new ArrayList<>();
+
         List<AdsiSmcrsrdCrsrdInfo> adsiSmcrsrdCrsrdInfoList = adsiSmcrsrdCrsrdInfoMapper.findAll();
         try {
             for (AdsiSmcrsrdCrsrdInfo adsiSmcrsrdCrsrdInfo : adsiSmcrsrdCrsrdInfoList) {

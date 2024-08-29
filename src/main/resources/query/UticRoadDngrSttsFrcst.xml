@@ -9,8 +9,7 @@
 
     <select id="findAllBySearchOptionForMap" parameterType="mapFacilityMenuDTO" resultType="uticRoadDngrSttsFrcst">
         SELECT
-        EURDSF.ETL_DT
-            ,EURDSF.SAFE_DATA_ID
+            EURDSF.SAFE_DATA_ID
              ,EURDSF.DNGR_STTS_NM
              ,EURDSF.DNGR_STTS_GRD
              ,EURDSF.DATA_TYPE
@@ -54,26 +53,16 @@
                     AND TO_CHAR(TO_TIMESTAMP(EURDSF.ETL_DT, 'YYYYMMDDHH24MISSMS'), 'HH24') BETWEEN '17' AND '20'
                 </when>
                 <otherwise>
-                    AND TO_CHAR(TO_TIMESTAMP(EURDSF.ETL_DT, 'YYYYMMDDHH24MISSMS'), 'HH24') BETWEEN #{startTime} AND #{endTime}
+                    AND TO_CHAR(TO_TIMESTAMP(EURDSF.ETL_DT, 'YYYYMMDDHH24MISSMS') 'HH24') BETWEEN #{startTime} AND #{endTime}
                 </otherwise>
             </choose>
         </if>
         <if test="searchLocation != null and searchLocation != '' and searchLocation != 'searchAllLocation'">
-            AND EURDSF.ROAD_NM_ADDR LIKE '경기도 '||CONCAT(#{searchLocation},'%')
+            AND EURDSF.ROAD_NM_ADDR LIKE CONCAT(#{searchLocation},'%')
         </if>
-        <choose>
-        	<when test="dangerTypeList != null">
-				 AND EURDSF.DNGR_STTS_NM IN 
-					<foreach collection="dangerTypeList" item="dangerType" index="index" separator="," open="(" close=")">
-	                    #{dangerType}
-	                </foreach>
-        	</when>
-        	<otherwise>
-		        <if test="dangerType != null and dangerType != ''">
-		            AND EURDSF.DNGR_STTS_NM = #{dangerType}
-		        </if>
-        	</otherwise>
-        </choose>
+        <if test="dangerType != null and dangerType != ''">
+            AND EURDSF.DNGR_STTS_NM = #{dangerType}
+        </if>
     </select>
     
     <select id="findTop4DangerZoneStatisticsCity" parameterType="String" resultType="map">
@@ -106,14 +95,6 @@
 		GROUP BY "lotnoAddr","roadNmAddr"
 		ORDER BY "totalCnt" DESC
 		limit 4
-	</select>
 	
-	<select id="findAllDataYears" resultType="map">
-		SELECT 
-			SUBSTRING(EURDSF.ETL_DT, 0, 5) AS "year"
-		FROM BIGDATA.EXT_UTIC_ROAD_DNGR_STTS_FRCST EURDSF 
-		GROUP BY SUBSTRING(EURDSF.ETL_DT, 0, 5)
-		ORDER BY SUBSTRING(EURDSF.ETL_DT, 0, 5) DESC
 	</select>
-	
 </mapper>

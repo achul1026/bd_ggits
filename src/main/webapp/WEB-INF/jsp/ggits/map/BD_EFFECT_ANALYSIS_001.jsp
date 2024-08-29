@@ -5,7 +5,7 @@
     	<div class="tab_fc pd16">
 	        <ul>
 	            <li><button type="button" class="sub_data_btn dataCtgryBtn" data-value="delay" data-index="1">정체 개선 순위</button></li>
-	            <li><button type="button" class="sub_data_btn dataCtgryBtn" data-value="emergency" data-index="2">광역 긴급차량<br>이동 도로 분석</button></li>
+	            <li><button type="button" class="sub_data_btn dataCtgryBtn" data-value="emergency" data-index="2">주요 긴급차량<br>이동 도로 분석</button></li>
 	        </ul>
     	</div>
         <div class="tab_area">
@@ -120,7 +120,7 @@
         	<div class="tab tab2 tab-none">
 	            <div>
 					<div class="tab_box_sub_header">
-						<div class="tab_box_title">광역 긴급차량 이동 도로 분석</div>
+						<div class="tab_box_title">주요 긴급차량 이동 도로 분석</div>
 						<div class="tab_box_close">
 							<div class="opa_slider ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all">
 								<div class="ui-slider-range ui-widget-header ui-corner-all ui-slider-range-min" style="width: 100%;"></div>

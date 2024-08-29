@@ -12,7 +12,7 @@
              ,ST_ASGEOJSON(ST_LINEMERGE(GCIL.GEOMETRY)) AS GEOJSON
              ,GCIL.ROAD_NAME
         from BIGDATA.EXT_adsi_vds_sctn_stlink_mppg avssm
-         inner join C_GM_STD_LINK gcil on avssm.std_link_id = gcil.link_id
+         inner join C_GM_STD_LINK_TMP /*todo :: _TMP 제거*/ gcil on avssm.std_link_id = gcil.link_id
         WHERE
         avssm.vds_sctn_id = #{vdsSctnId}
     </select>

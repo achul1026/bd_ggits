@@ -11,7 +11,7 @@
     <div class="header_container">
         <div class="logo_box">
             <h1 class="logo">
-                <a href="${pageContext.request.contextPath}/monitoring/dashboard.do" class="logo_title">
+                <a href="${pageContext.request.contextPath}/monitoring.do" class="logo_title">
                     <img src="${pageContext.request.contextPath}/statics/images/hd_logo.png" alt="경기도 교통 빅데이터 시스템">
                 </a>
             </h1>
@@ -25,7 +25,7 @@
 	               <a href="${pageContext.request.contextPath}/monitoring/dashboard.do"><img src="${pageContext.request.contextPath}/statics/images/monitor_dash.png" alt="모니터링대쉬보드"></a>
 	           </div>
             </div>
-            <c:if test="${parentsUrl == 'monitoring' && urlFirst != '/monitoring/dashboard'}">
+            <c:if test="${parentsUrl == 'monitoring'}">
 	            <div>
 	                <label class="flex-center">
 	                    <span>날씨정보</span>
@@ -33,12 +33,7 @@
 	                </label>
 	            </div>
             </c:if>
-			<div>
-				<label class="flex-center">
-					<span>시군영역 표시</span>
-					<input role="switch" type="checkbox" class="facility_input" id="sggLayerToggleBtn" checked/>
-				</label>
-			</div>
+            
             <div class="day_weather_box flex-center">
                 <div class="day_data"><c:out value="${today}"/></div>
             </div>
@@ -58,17 +53,12 @@
                 			<img src="/statics/images/logout_icon.png">로그아웃 
                 		</a>
                 	</div>
-					<div class="userinfo">
-						<a href="https://gits.gg.go.kr/web/main/index.do" target="_blank">
-							경기도 교통정보센터 포털
-						</a>
-					</div>
                 </div>
             </div>
         </div>
     </div>
     <nav class="nav_container">
-    	<c:if test="${not empty gnbMenuDTO and urlFirst ne '/monitoring/dashboard'}">
+    	<c:if test="${not empty gnbMenuDTO}">
         <ul class="gnb">
         	<c:forEach var="gnbMenuDTO" items="${gnbMenuDTO}">
 				<c:set var="menuUrlSplit" value="${fn:split(gnbMenuDTO.urlAddr,'.')}" />
@@ -216,22 +206,7 @@
 $("#weatherInfoBtn").on("click",function(){
 	gitsApp.callMenuAction('EVC003',$(this).is(":checked"))
 })
-$("#sggLayerToggleBtn").on("click",function(){
-	if($(this).is(":checked")) {
-		window.map.control.showLayer(GITS_ENV.LAYER.SGG);
-		window.map.control.showLayer(GITS_ENV.LAYER.SGG_LINE);
-	}else{
-		window.map.control.hideLayer(GITS_ENV.LAYER.SGG);
-		window.map.control.hideLayer(GITS_ENV.LAYER.SGG_LINE);
-	}
-});
-$("#congestionLayerToggleBtn").on("click", function(){
-	if($(this).is(":checked")) {
-		window.map.control.showLayer(GITS_ENV.LAYER.LINK);
-	}else{
-		window.map.control.hideLayer(GITS_ENV.LAYER.LINK);
-	}
-})
+
 function logout(_this){
 	new ModalBuilder().init().alertBoby("로그아웃 하시겠습니까?").footer(5,'로그아웃',function(button, modal){
 		$.ajax({
@@ -246,9 +221,7 @@ function logout(_this){
 				}
 			}
 		});	
-	},'취소하기',function(button, modal){
-		modal.close();
-	}).open();
+	},'취소하기',function(button, modal){}).open();	
 }
 		
 

@@ -13,8 +13,6 @@ import com.neighbor21.ggits.common.dto.MapBigdataSearchDTO;
 @Mapper
 public interface GgbisBusRouteMapper {
 
-
-    GgbisBusRoute findOneByRouteId(@Param("routeId") String routeId);
     /**
      * 정류장 버스노선정보 조회
      * @param stationId 정류장아이디

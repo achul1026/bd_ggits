@@ -67,18 +67,18 @@
                                 	<li>
                                 		<input type="text" class="date_picker input_same input_picker" placeholder="날짜를 선택해주세요." name="strDt" id="strDt" autocomplete="off">
                                 	</li>
-<!--                                 	<li> -->
-<!--                                 		<select class="selectBox selectTime" name="startTime" id="startTime"></select> -->
-<!--                                 	</li> -->
+                                	<li>
+                                		<select class="selectBox selectTime" name="startTime" id="startTime"></select>
+                                	</li>
                                 	<li>
                                 		~
                                 	</li>
                                 	<li>
                                 		<input type="text" class="end_date_picker input_same input_picker" placeholder="날짜를 선택해주세요." name="endDt" id="endDt" autocomplete="off">
                                 	</li>
-<!--                                 	<li> -->
-<!--                                 		<select class="selectBox selectTime" name="endTime" id="endTime"></select>  -->
-<!--                                 	</li> -->
+                                	<li>
+                                		<select class="selectBox selectTime" name="endTime" id="endTime"></select> 
+                                	</li>
                                 </ul>
                             </div>
                         </div>
@@ -284,6 +284,8 @@
 	$(document).ready(function(){
 		var strDt = '<c:out value="${searchOption.strDt}"/>';
 		var endDt = '<c:out value="${searchOption.endDt}"/>';
+		var strTime = '<c:out value="${searchOption.startTime}"/>';
+		var endTime = '<c:out value="${searchOption.endTime}"/>';
 		var dayOfTheWeekStr = '<c:out value="${searchOption.dayOfTheWeekStr}"/>';
 		var sigunCdId = '<c:out value="${searchOption.sigunCdId}"/>';
 	
@@ -293,6 +295,12 @@
 		}
 		if(endDt != null && endDt != ''){
 			$("#endDt").val(endDt.substring(0,10));
+		}
+		if(strTime != null && strTime != ''){
+			$("#startTime").val(strTime).prop("selected",true);
+		}
+		if(endTime != null && endTime != ''){
+			$("#endTime").val(endTime).prop("selected",true);
 		}
 		if(sigunCdId != null && sigunCdId != ''){
 			$("#sigunCdId").val(sigunCdId).prop("selected",true);
@@ -365,7 +373,7 @@
 	
     var sigunColorEx = ['#FF6666', '#FF8B66', '#FF9D66', '#FFB966', '#FFD466', '#FFF066', '#F3FF66', '#C5FF66', '#8EFF66', '#66FF75', '#66FF9A', '#66FFBF', '#66FFF6', '#66E3FF', '#66B6FF', '#669AFF', '#6688FF', '#6675FF', '#666CFF', '#7B66FF', '#9766FF', '#A966FF', '#BC66FF', '#D766FF', '#F366FF', '#FF66D4', '#FF66B9', '#FF668B', '#FF778F', '#C9C9C9', '#FFFFFF'];
 
- // chart1
+	// chart1
 	var cdNmArr = '<c:out value="${cdNmArr}"/>';
 	var acdntCntArr = '<c:out value="${acdntCntArr}"/>';
 	var casltCntArr = '<c:out value="${casltCntArr}"/>';
@@ -468,4 +476,5 @@
     .setAxisStackedX(false)
     .setLabelDisplay(false)
     .draw();
+	
 </script>

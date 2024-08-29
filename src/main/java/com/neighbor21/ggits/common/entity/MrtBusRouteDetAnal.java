@@ -7,7 +7,7 @@ public class MrtBusRouteDetAnal {
     private String busRouteId;        //버스 노선 아이디
     private String routeNm;        //노선 명
     private String rungType;        //운행 유형
-    private Double routeLen;        //노선 길이
+    private Long routeLen;        //노선 길이
     private Long rungIntv;        //운행 간격
     private String addngCd;        //행정동 코드
     private Long totBstpCnt;        //전체 버스정류장 수
@@ -17,9 +17,6 @@ public class MrtBusRouteDetAnal {
 
     private String stStaNm;        // 출발지명
     private String edStaNm;        // 도착지명
-    private String districtSnm;
-    private String districtGnm;
-    private String routeTp;
 
     public Timestamp getAnlsDt() {
         return anlsDt;
@@ -53,11 +50,11 @@ public class MrtBusRouteDetAnal {
         this.rungType = rungType;
     }
 
-    public Double getRouteLen() {
+    public Long getRouteLen() {
         return routeLen;
     }
 
-    public void setRouteLen(Double routeLen) {
+    public void setRouteLen(Long routeLen) {
         this.routeLen = routeLen;
     }
 
@@ -123,29 +120,5 @@ public class MrtBusRouteDetAnal {
 
     public void setEdStaNm(String edStaNm) {
         this.edStaNm = edStaNm;
-    }
-
-    public String getDistrictSnm() {
-        return districtSnm;
-    }
-
-    public void setDistrictSnm(String districtSnm) {
-        this.districtSnm = districtSnm;
-    }
-
-    public String getDistrictGnm() {
-        return districtGnm;
-    }
-
-    public void setDistrictGnm(String districtGnm) {
-        this.districtGnm = districtGnm;
-    }
-
-    public String getRouteTp() {
-        return routeTp;
-    }
-
-    public void setRouteTp(String routeTp) {
-        this.routeTp = routeTp;
     }
 }

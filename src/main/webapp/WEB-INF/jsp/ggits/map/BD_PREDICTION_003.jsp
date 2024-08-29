@@ -94,7 +94,7 @@
         var remarksItem =$(`
     	        <div class="remarks_container">
     		        <div class="remarks_title_box">
-    		            <h6 class="remarks_title">범례 - 사고예측 도로 위험 지수</h6>
+    		            <h6 class="remarks_title">범례 - 도로 위험 지수</h6>
     		        </div>
     	        	<div class="remarks_wrap">
     	            	<div>
@@ -102,13 +102,15 @@
 			                    <li class="check_line_box remarks-red">심각</li>
 			                    <li class="check_line_box remarks-orange">위험</li>
 			                    <li class="check_line_box remarks-light-orange">주의</li>
-								<li class="check_line_box remarks-green">안전</li>
+			                    <li class="check_line_box remarks-green">안전</li>
+			                    <li class="check_line_box remarks-bright-purple">속도 누락</li>
+			                    <li class="check_line_box remarks-light-purple">속도 초과</li>
+			                    <li class="check_line_box remarks-purple">링크 정보 누락</li>
     		                </ul>
     	            	</div>
     		            <div class="unit">단위 : 위험 지수 단계</div>
     	        	</div>
-    	    	</div>`)
-		$('#map-container').find(".remarks_container").remove();
+    	    	</div>`)        
             $('#map-container').append(remarksItem);
             legendToggle();
         resultChange();

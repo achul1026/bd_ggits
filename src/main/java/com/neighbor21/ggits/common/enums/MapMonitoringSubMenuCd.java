@@ -23,9 +23,6 @@ public enum MapMonitoringSubMenuCd {
 	//모니터링 > 교통현황 > 도로/시간대별 평균동행속도
 	AVERAGE_ENTRAINMENT_SPEED_BY_TIME_ZONE_AND_ROAD("M_TRAFFIC_007","도로/시간대별 평균동행속도"),
 
-	//모니터링 > 교통현황 > 차종별 평균 교통량
-	CUMULATIVE_TRAFFIC_VOLUME_BY_VHCL_DIV("M_TRAFFIC_008","차종별 평균 교통량 그래프"),
-
 	//모니터링 > 서비스 운영 현황 
 	//전체서비스 운영현황
 	ALL_SERVICE_OPERATION_STATUS("M_SERVICE_OPERATION_001","전체 서비스 운영현황"),

@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.neighbor21.ggits.common.entity.AdsiDsrcColctInfoCur;
+import com.neighbor21.ggits.common.entity.AdsiSmcrsrdCrsrdAcsRoadStatsFivminCur;
 import com.neighbor21.ggits.common.entity.AdsiSmcrsrdCrsrdAcsRoadStatsOnhr;
 import com.neighbor21.ggits.common.entity.AdsiVdsColctInfoCur;
 import com.neighbor21.ggits.common.entity.AirkrAdsiArqltMsrmtInfo;
@@ -159,6 +160,8 @@ public class TrafficInfoStatisticsAnalysisController {
 	@Autowired
 	TaasAdsiAcdntDstrctMapper taasAdsiAcdntDstrctMapper;
 	
+
+	
 	/**
      * @Method Name : viewtraffic_info_statsReport
      * @작성일 : 2023. 9. 7.
@@ -176,7 +179,7 @@ public class TrafficInfoStatisticsAnalysisController {
 			commonEntity.setStrDt(BDDateFormatUtil.isDateCal("yyyy-MM-dd", -7));
 			commonEntity.setEndDt(BDDateFormatUtil.isNowStr("yyyy-MM-dd"));
 		}
-		
+
 		if(!GgitsCommonUtils.isNull(commonEntity.getDayOfTheWeekStr())) {
 			String[] dayOfTheWeekArr = commonEntity.getDayOfTheWeekStr().split(",");
 			commonEntity.setDayOfTheWeek(Arrays.asList(dayOfTheWeekArr));
@@ -244,6 +247,12 @@ public class TrafficInfoStatisticsAnalysisController {
 			break;
 		case "bus_rout_stats":
 			// 시내버스 이동현황 통계(mrt_bus_tot_move_info)
+			// 처음 접근 시
+			if(GgitsCommonUtils.isNull(commonEntity.getStrDt()) && GgitsCommonUtils.isNull(commonEntity.getEndDt())) {
+				commonEntity.setStrDt(BDDateFormatUtil.isDateCal("yyyy-MM-dd", -7));
+				commonEntity.setEndDt(BDDateFormatUtil.isNowStr("yyyy-MM-dd"));
+			}
+			
 			totalCnt = mrtBusTotMoveInfoMapper.countBusTotMoveInfoList(commonEntity);
 			List<MrtBusTotMoveInfo> busTotMoveInfoList = mrtBusTotMoveInfoMapper.findAllMrtBusToMoveInfo(commonEntity);
 			
@@ -325,8 +334,8 @@ public class TrafficInfoStatisticsAnalysisController {
 	public String viewTrafficCommunicationList(Model model, String initAppchYn, AdsiSmcrsrdCrsrdAcsRoadStatsOnhr adsiSmcrsrdCrsrdAcsRoadStatsOnhr) throws ParseException{
 		if(!GgitsCommonUtils.isNull(initAppchYn) && initAppchYn.equals("Y")) {
 		// 처음 접근일시
-		adsiSmcrsrdCrsrdAcsRoadStatsOnhr.setStrDt(BDDateFormatUtil.isDateCal("yyyy-MM-dd", -1));
-		adsiSmcrsrdCrsrdAcsRoadStatsOnhr.setEndDt(BDDateFormatUtil.isDateCal("yyyy-MM-dd", -1));
+		adsiSmcrsrdCrsrdAcsRoadStatsOnhr.setStrDt(BDDateFormatUtil.isNowStr("yyyy-MM-dd"));
+		adsiSmcrsrdCrsrdAcsRoadStatsOnhr.setEndDt(BDDateFormatUtil.isNowStr("yyyy-MM-dd"));
 		}
 		
 		model.addAttribute("strDt", adsiSmcrsrdCrsrdAcsRoadStatsOnhr.getStrDt());
@@ -431,6 +440,7 @@ public class TrafficInfoStatisticsAnalysisController {
 			break;
 		case "7":
 			// 스마트교차로
+//			mrt_smc_spot_abn
 			MrtSmcSpotAbn mrtSmcSpotAbn = new MrtSmcSpotAbn();
 			mrtSmcSpotAbn.setSearchContent(adsiSmcrsrdCrsrdAcsRoadStatsOnhr.getSearchContent());
 			mrtSmcSpotAbn.setPage(adsiSmcrsrdCrsrdAcsRoadStatsOnhr.getPage());
@@ -447,7 +457,7 @@ public class TrafficInfoStatisticsAnalysisController {
 	    	model.addAttribute("paging", paging);
 	    	model.addAttribute("comunicationList", smcSpotAbnList);
 	    	model.addAttribute("totalCnt", totalCnt);
-			
+
 			break;
 		}
 		
@@ -602,10 +612,6 @@ public class TrafficInfoStatisticsAnalysisController {
 	@PostMapping("/traffic/analysis/communication/list/chart.ajax")
 	public @ResponseBody CommonResponse<?> getComunicationChartData(AdsiSmcrsrdCrsrdAcsRoadStatsOnhr adsiSmcrsrdCrsrdAcsRoadStatsOnhr){
     	Map<String, Object> resultMap = new HashMap<String, Object>();
-    	
-    	adsiSmcrsrdCrsrdAcsRoadStatsOnhr.setStrDt(BDDateFormatUtil.isDateCal("yyyyMMdd", -1));
-		adsiSmcrsrdCrsrdAcsRoadStatsOnhr.setEndDt(BDDateFormatUtil.isDateCal("yyyyMMdd", -1));
-		
     	resultMap.put("totCntVhcl", adsiSmcrsrdCrsrdAcsRoadStatsOnhrMapper.countVhclDivInfo(adsiSmcrsrdCrsrdAcsRoadStatsOnhr));
     	
     	Map<String, Object> vhclInfoArrayMap = adsiSmcrsrdCrsrdAcsRoadStatsOnhrMapper.findOneVhclDivInfo(adsiSmcrsrdCrsrdAcsRoadStatsOnhr);
@@ -632,6 +638,25 @@ public class TrafficInfoStatisticsAnalysisController {
 		if(GgitsCommonUtils.isNull(commonEntity.getStrDt()) && GgitsCommonUtils.isNull(commonEntity.getEndDt())) {
 			commonEntity.setStrDt(BDDateFormatUtil.isDateCal("yyyy-MM-dd", -7));
 			commonEntity.setEndDt(BDDateFormatUtil.isNowStr("yyyy-MM-dd"));
+		}
+		
+		String startToday = "";
+		String endToday = "";
+		if(!GgitsCommonUtils.isNull(commonEntity.getStrDt())) {
+			startToday = GgitsCommonUtils.dateToDatetimeStr(commonEntity.getStrDt(), "startDate");
+			if(!GgitsCommonUtils.isNull(commonEntity.getStartTime())) {
+				int startTime = Integer.parseInt(commonEntity.getStartTime());
+				startToday = GgitsCommonUtils.setDateTimeToDateString(startToday,startTime,"yyyy-MM-dd HH:mm:ss",Calendar.HOUR);
+			}
+			commonEntity.setStrDt(startToday);
+		}
+		if(!GgitsCommonUtils.isNull(commonEntity.getEndDt())) {
+			endToday = GgitsCommonUtils.dateToDatetimeStr(commonEntity.getEndDt(), "endDate");			
+			if(!GgitsCommonUtils.isNull(commonEntity.getEndTime())) {
+				int endTime = Integer.parseInt(commonEntity.getEndTime());
+				endToday = GgitsCommonUtils.setDateTimeToDateString(endToday,endTime,"yyyy-MM-dd HH:mm:ss",Calendar.HOUR);
+			}
+			commonEntity.setEndDt(endToday);
 		}
 		
 		if(!GgitsCommonUtils.isNull(commonEntity.getDayOfTheWeekStr())) {
@@ -694,6 +719,27 @@ public class TrafficInfoStatisticsAnalysisController {
 		if(GgitsCommonUtils.isNull(commonEntity.getStrDt()) && GgitsCommonUtils.isNull(commonEntity.getEndDt())) {
 			commonEntity.setStrDt(BDDateFormatUtil.isDateCal("yyyy-MM-dd", -7));
 			commonEntity.setEndDt(BDDateFormatUtil.isNowStr("yyyy-MM-dd"));
+		}
+		
+		String startToday = "";
+		String endToday = "";
+		if(!type.equals("bus_sttn_pasnr")) {
+			if(!GgitsCommonUtils.isNull(commonEntity.getStrDt())) {
+				startToday = GgitsCommonUtils.dateToDatetimeStr(commonEntity.getStrDt(), "startDate");
+				if(!GgitsCommonUtils.isNull(commonEntity.getStartTime())) {
+					int startTime = Integer.parseInt(commonEntity.getStartTime());
+					startToday = GgitsCommonUtils.setDateTimeToDateString(startToday,startTime,"yyyy-MM-dd HH:mm:ss",Calendar.HOUR);
+				}
+				commonEntity.setStrDt(startToday);
+			}
+			if(!GgitsCommonUtils.isNull(commonEntity.getEndDt())) {
+				endToday = GgitsCommonUtils.dateToDatetimeStr(commonEntity.getEndDt(), "endDate");			
+				if(!GgitsCommonUtils.isNull(commonEntity.getEndTime())) {
+					int endTime = Integer.parseInt(commonEntity.getEndTime());
+					endToday = GgitsCommonUtils.setDateTimeToDateString(endToday,endTime,"yyyy-MM-dd HH:mm:ss",Calendar.HOUR);
+				}
+				commonEntity.setEndDt(endToday);
+			}
 		}
 		
 		if(!GgitsCommonUtils.isNull(commonEntity.getDayOfTheWeekStr())) {
@@ -826,6 +872,25 @@ public class TrafficInfoStatisticsAnalysisController {
 			commonEntity.setEndDt(BDDateFormatUtil.isNowStr("yyyy-MM-dd"));
 		}
 		
+		String startToday = "";
+		String endToday = "";
+		if(!GgitsCommonUtils.isNull(commonEntity.getStrDt())) {
+			startToday = GgitsCommonUtils.dateToDatetimeStr(commonEntity.getStrDt(), "startDate");
+			if(!GgitsCommonUtils.isNull(commonEntity.getStartTime())) {
+				int startTime = Integer.parseInt(commonEntity.getStartTime());
+				startToday = GgitsCommonUtils.setDateTimeToDateString(startToday,startTime,"yyyy-MM-dd HH:mm:ss",Calendar.HOUR);
+			}
+			commonEntity.setStrDt(startToday);
+		}
+		if(!GgitsCommonUtils.isNull(commonEntity.getEndDt())) {
+			endToday = GgitsCommonUtils.dateToDatetimeStr(commonEntity.getEndDt(), "endDate");			
+			if(!GgitsCommonUtils.isNull(commonEntity.getEndTime())) {
+				int endTime = Integer.parseInt(commonEntity.getEndTime());
+				endToday = GgitsCommonUtils.setDateTimeToDateString(endToday,endTime,"yyyy-MM-dd HH:mm:ss",Calendar.HOUR);
+			}
+			commonEntity.setEndDt(endToday);
+		}
+		
 		if(!GgitsCommonUtils.isNull(commonEntity.getDayOfTheWeekStr())) {
 			String[] dayOfTheWeekArr = commonEntity.getDayOfTheWeekStr().split(",");
 			commonEntity.setDayOfTheWeek(Arrays.asList(dayOfTheWeekArr));
@@ -884,18 +949,36 @@ public class TrafficInfoStatisticsAnalysisController {
 	 * @Method Name : trafficFacilitiesList
 	 * @작성일 : 2023. 9. 14.
 	 * @작성자 : KC.KIM
-	 * @Method 설명 : 통계분석 > 교통정보 통계 분석 > 교통시설물 통계(메뉴 숨김)
+	 * @Method 설명 : 통계분석 > 교통정보 통계 분석 > 교통시설물 통계
 	 * @return
 	 * @throws ParseException 
 	 */
 	@GetMapping("/traffic/analysis/facilities/{type}/list.do")
 	public String viewTrafficFacilitiesList(@PathVariable String type, CommonEntity commonEntity, Model model) throws ParseException{
 		int totalCnt = 0;
-		
 		// 처음 접근 시
 		if(GgitsCommonUtils.isNull(commonEntity.getStrDt()) && GgitsCommonUtils.isNull(commonEntity.getEndDt())) {
 			commonEntity.setStrDt(BDDateFormatUtil.isDateCal("yyyy-MM-dd", -7));
 			commonEntity.setEndDt(BDDateFormatUtil.isNowStr("yyyy-MM-dd"));
+		}
+		
+		String startToday = "";
+		String endToday = "";
+		if(!GgitsCommonUtils.isNull(commonEntity.getStrDt())) {
+			startToday = GgitsCommonUtils.dateToDatetimeStr(commonEntity.getStrDt(), "startDate");
+			if(!GgitsCommonUtils.isNull(commonEntity.getStartTime())) {
+				int startTime = Integer.parseInt(commonEntity.getStartTime());
+				startToday = GgitsCommonUtils.setDateTimeToDateString(startToday,startTime,"yyyy-MM-dd HH:mm:ss",Calendar.HOUR);
+			}
+			commonEntity.setStrDt(startToday);
+		}
+		if(!GgitsCommonUtils.isNull(commonEntity.getEndDt())) {
+			endToday = GgitsCommonUtils.dateToDatetimeStr(commonEntity.getEndDt(), "endDate");			
+			if(!GgitsCommonUtils.isNull(commonEntity.getEndTime())) {
+				int endTime = Integer.parseInt(commonEntity.getEndTime());
+				endToday = GgitsCommonUtils.setDateTimeToDateString(endToday,endTime,"yyyy-MM-dd HH:mm:ss",Calendar.HOUR);
+			}
+			commonEntity.setEndDt(endToday);
 		}
 		
 		if(!GgitsCommonUtils.isNull(commonEntity.getDayOfTheWeekStr())) {

@@ -3,8 +3,6 @@ package com.neighbor21.ggits.web.service.systemmng;
 import java.sql.SQLException;
 import java.util.Map;
 
-import javax.servlet.http.HttpSession;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -54,7 +52,7 @@ public class MenuMngService{
 		mOpMenu.setDescr(mOpMenu.getMenuNm());
 		mOpMenu.setSortNo(sortNo);
 		mOpMenu.setCategCd(mOpMenu.getCategCd());
-		mOpMenu.setCdDivCd("CDC000");
+		mOpMenu.setCategCd("CDC000");
 		//메인메뉴는 무조건 0번
 		mOpMenu.setSbmnuSortNo(0L);
 		
@@ -90,6 +88,7 @@ public class MenuMngService{
 		}
 		String menuNm = String.valueOf(paramMap.get("menuNm"));
 		String urlAddr = String.valueOf(paramMap.get("urlAddr"));
+		String cdDivCd = String.valueOf(paramMap.get("cdDivCd"));
 		Long menuLvl = MenuLvl.SUB_MENU.getLevel();
 		String useYn = paramMap.get("useYn")!=null && !"".equals(paramMap.get("useYn"))?String.valueOf(paramMap.get("useYn")):"N";
 		Long sbmnuSortNo = this.getSubMenuCount(mainMenuId)+1;
@@ -107,7 +106,7 @@ public class MenuMngService{
 		mOpMenu.setDescr(menuNm);
 		mOpMenu.setSbmnuSortNo(sbmnuSortNo);
 		mOpMenu.setCategCd(categCd);
-		mOpMenu.setCdDivCd("CDC000");
+		mOpMenu.setCdDivCd(cdDivCd);
 		
 		mOpMenuMapper.save(mOpMenu);
 		return mOpMenu;
@@ -162,16 +161,5 @@ public class MenuMngService{
 		lOpUseMenu.setLgnIp(LoginSessionUtils.getUserIpAddr());
 		
 		lOpUseMenuMapper.saveLOpUseMenu(lOpUseMenu);
-	}
-	
-	public void removeMenuSession() {
- 		//기존 메뉴값 재세팅
- 		HttpSession session = LoginSessionUtils.getSessionRequest().getSession();
- 		
- 		if(session != null) {
- 			session.removeAttribute("gnbMenuDTO");
- 			session.removeAttribute("streamMenuList");
- 			session.removeAttribute("menuCtgryList");
- 		}
 	}
 }

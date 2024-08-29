@@ -10,7 +10,6 @@ import java.util.List;
 public interface GgbisBusrouteLinkMapper {
 
     List<GgbisBusrouteLink> findAllByRouteId(@Param("routeId") String routeId);
-    List<GgbisBusrouteLink> findAllUpDownByRouteId(@Param("routeId") String routeId);
 
     List<GgbisBusrouteLink> findAll();
 
@@ -19,8 +18,4 @@ public interface GgbisBusrouteLinkMapper {
      * @return
      */
     List<GgbisBusrouteLink> findRouteLinkByStStationIdAndEdStationIdAndRouteId(@Param("startStationId") String startStationId, @Param("endStationId") String endStationId, @Param("routeId") String routeId);
-
-    List<GgbisBusrouteLink> findAllByRouteIdAndReverse(@Param("routeId")String routeId, @Param("turnSeq") Long turnSeq);
-
-    List<GgbisBusrouteLink> findAllByRouteIdAndForward(@Param("routeId") String routeId, @Param("turnSeq") Long turnSeq);
 }

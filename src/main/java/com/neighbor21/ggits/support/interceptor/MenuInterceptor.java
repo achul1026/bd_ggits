@@ -13,7 +13,6 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.neighbor21.ggits.api.module.facility.dto.GnbMenuDTO;
 import com.neighbor21.ggits.common.entity.MOpAuthority;
-import com.neighbor21.ggits.common.entity.MOpCode;
 import com.neighbor21.ggits.common.entity.MOpGrpInfo;
 import com.neighbor21.ggits.common.entity.MOpMenu;
 import com.neighbor21.ggits.common.entity.MOpOperator;
@@ -47,69 +46,53 @@ public class MenuInterceptor implements HandlerInterceptor  {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 		List<GnbMenuDTO> data = new ArrayList<>();
 		List<MOpMenu> streamMenuList = new ArrayList<>();
-		List<MOpCode> menuCtgryList = new ArrayList<>();
-		
 		MOpOperator mOpOperatorInfo = null;
 		if (request.getSession() != null) {
 			mOpOperatorInfo = (MOpOperator) request.getSession().getAttribute("mOpOperatorInfo");
-		}
+		} 
 		
 		if (mOpOperatorInfo == null) {
 			throw new NoLoginException(ErrorCode.NOT_FOUNT_USER_INFO);
 		}
 		
-		if(request.getSession().getAttribute("gnbMenuDTO") != null &&
-				request.getSession().getAttribute("streamMenuList") != null &&
-				request.getSession().getAttribute("menuCtgryList") != null ) {
-			data = (List<GnbMenuDTO>) request.getSession().getAttribute("gnbMenuDTO");
-			streamMenuList = (List<MOpMenu>) request.getSession().getAttribute("streamMenuList");
-			menuCtgryList = (List<MOpCode>) request.getSession().getAttribute("menuCtgryList");
-		} else {
-			if(mOpOperatorInfo.getGrpId() != null && !"".equals(mOpOperatorInfo.getGrpId())) {
-				String grpId = mOpOperatorInfo.getGrpId();
-				MOpGrpInfo paramGrp = new MOpGrpInfo();
-				paramGrp.setGrpId(grpId);
-				MOpGrpInfo mOpGrpInfo =  mOpGrpInfoMapper.findOneGroupDetailByGrpId(paramGrp);
-				
-				MOpAuthority mOpAuthority = mOpAuthorityMapper.findOneByAuthId(mOpGrpInfo.getAuthId());
-				
-				if(mOpGrpInfo != null) {
-					mOpOperatorInfo.setAuthId(mOpGrpInfo.getAuthId());
-					List<MOpMenu> mOpMenuList = mOpMenuMapper.findAllByAuthId(mOpOperatorInfo);
-					if(!mOpMenuList.isEmpty()) {
-						for (MOpMenu mOpMenu : mOpMenuList) {
-							GnbMenuDTO gnbMenuDTO = new GnbMenuDTO(mOpMenu);
-							mOpMenu.setUpperMenuId(mOpMenu.getMenuId());
-							mOpMenu.setAuthId(mOpGrpInfo.getAuthId());
-							List<MOpMenu> subMenuList = mOpMenuMapper.findAllByUpperMenuIdAndAuthId(mOpMenu);
-							streamMenuList.addAll(subMenuList);
-							gnbMenuDTO.setmOpMenuList(subMenuList);
-							data.add(gnbMenuDTO);
-						}
+		if(mOpOperatorInfo.getGrpId() != null && !"".equals(mOpOperatorInfo.getGrpId())) {
+			String grpId = mOpOperatorInfo.getGrpId();
+			MOpGrpInfo paramGrp = new MOpGrpInfo();
+			paramGrp.setGrpId(grpId);
+			MOpGrpInfo mOpGrpInfo =  mOpGrpInfoMapper.findOneGroupDetailByGrpId(paramGrp);
+			
+			MOpAuthority mOpAuthority = mOpAuthorityMapper.findOneByAuthId(mOpGrpInfo.getAuthId());
+			request.setAttribute("authCd", mOpAuthority.getAuthCd());
+			
+			if(mOpGrpInfo != null) {
+				mOpOperatorInfo.setAuthId(mOpGrpInfo.getAuthId());
+				List<MOpMenu> mOpMenuList = mOpMenuMapper.findAllByAuthId(mOpOperatorInfo);
+				if(!mOpMenuList.isEmpty()) {
+					for (MOpMenu mOpMenu : mOpMenuList) {
+						GnbMenuDTO gnbMenuDTO = new GnbMenuDTO(mOpMenu);
+						mOpMenu.setUpperMenuId(mOpMenu.getMenuId());
+						mOpMenu.setAuthId(mOpGrpInfo.getAuthId());
+						List<MOpMenu> subMenuList = mOpMenuMapper.findAllByUpperMenuIdAndAuthId(mOpMenu);
+						streamMenuList.addAll(subMenuList);
+						gnbMenuDTO.setmOpMenuList(subMenuList);
+						data.add(gnbMenuDTO);
 					}
-					menuCtgryList = mOpCodeMapper.findAllCodeListByGrpCdIdForMonitoring(mOpAuthority.getAuthId());
-					
+				}
+				request.setAttribute("gnbMenuDTO", data);
+				String grpCdId = "MENU_CTGRY_CD";
+				request.setAttribute("menuCtgryList", mOpCodeMapper.findAllCodeListByGrpCdIdForMonitoring(grpCdId));
 				}
 			}
-			request.getSession().setAttribute("gnbMenuDTO", data);
-			request.getSession().setAttribute("menuCtgryList", menuCtgryList);
-			request.getSession().setAttribute("streamMenuList", streamMenuList);
-		}
-		request.setAttribute("gnbMenuDTO", data);
-		request.setAttribute("menuCtgryList", menuCtgryList);
-		request.setAttribute("streamMenuList", streamMenuList);
-		
-	    AntPathMatcher pathMatcher = new AntPathMatcher();
+		    AntPathMatcher pathMatcher = new AntPathMatcher();
 
-		//권한관련 메뉴  리스트 조회
-		String currentURI = request.getRequestURI().toString();
-		boolean isAuthChk = false;
+			//권한관련 메뉴  리스트 조회
+			String currentURI = request.getRequestURI().toString();
+			boolean isAuthChk = false;
 //			권한 없으면 error페이지
-		isAuthChk = streamMenuList.stream().anyMatch(x -> pathMatcher.match(x.getUrlPttrn(), currentURI));
-	    if(!isAuthChk) {
-	    	response.sendRedirect("/errorMenuAuth.do");
-	    }
-	    
+			isAuthChk = streamMenuList.stream().anyMatch(x -> pathMatcher.match(x.getUrlPttrn(), currentURI));
+		    if(!isAuthChk) {
+		    	response.sendRedirect("/errorMenuAuth.do");
+		    }
 		return true;
     }
 

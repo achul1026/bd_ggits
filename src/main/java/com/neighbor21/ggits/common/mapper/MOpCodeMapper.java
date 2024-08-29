@@ -34,7 +34,7 @@ public interface MOpCodeMapper {
 	 * @작성자 : KY.LEE
 	 * @Method 설명 : 모니터링 리스트 조회
 	 */
-	public List<MOpCode> findAllCodeListByGrpCdIdForMonitoring(Long authId);
+	public List<MOpCode> findAllCodeListByGrpCdIdForMonitoring(String grpCdId);
 
     /**
      * @Method Name : countCodeBygrpCdIdAndCdId

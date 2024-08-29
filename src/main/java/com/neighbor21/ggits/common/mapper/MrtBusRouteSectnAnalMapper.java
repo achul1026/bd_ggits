@@ -3,7 +3,6 @@ package com.neighbor21.ggits.common.mapper;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.ibatis.annotations.Param;
 import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
 
 import com.neighbor21.ggits.common.dto.MapBigdataSearchDTO;
@@ -40,19 +39,4 @@ public interface MrtBusRouteSectnAnalMapper {
      * @return
      */
 	List<MrtBusRouteSectnAnal> findAllPubTrfDuplSetAdequacyList(MapBigdataSearchDTO mapBigdataSearchDTO);
-
-
-	List<MrtBusRouteSectnAnal> findAllDuplicateSectionInfoGeometry(MapBigdataSearchDTO mapBigdataSearchDTO);
-
-	List<MrtBusRouteSectnAnal> findAllDuplicateSectionInfo(MapBigdataSearchDTO mapBigdataSearchDTO);
-
-	List<MrtBusRouteSectnAnal> findTop10ByRouteId(MapBigdataSearchDTO mapBigdataSearchDTO);
-
-	Integer countDuplicateSectionInfo(MapBigdataSearchDTO mapBigdataSearchDTO);
-
-
-
-	List<MrtBusRouteSectnAnal> findAllBySectionId(@Param("sectionIds") List<Map<String,String>> sectionIds);
-
-
 }

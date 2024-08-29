@@ -95,6 +95,7 @@
 	var dataTotalCnt = '<c:out value="${paging.totalCount}"/>';
 	$("#totalCnt").text(numberComma(dataTotalCnt))
 	
+	
 	$(document).ready(function() {
 		$('#searchContent').keydown(function() {
 			if (event.keyCode === 13) {

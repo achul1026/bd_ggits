@@ -7,7 +7,6 @@ import com.neighbor21.ggits.common.mapper.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,12 +33,7 @@ public class BDPublicTransferPredictionComponent extends BaseMapDataComponent {
      * @return
      */
     public List<MrtDynmcPopltnCell500Rslt> getPopulationInfoBySearchDto(MapBigdataSearchDTO mapBigdataSearchDTO){
-        List<MrtDynmcPopltnCell500Rslt> searchedList = new ArrayList<>();
-        searchedList = mrtDynmcPopltnCell500RsltMapper.findAllBySearchDto(mapBigdataSearchDTO);
-        if(searchedList.isEmpty()){
-            searchedList = mrtDynmcPopltnCell500RsltMapper.findAllBySearchDtoMax(mapBigdataSearchDTO);
-        }
-        return searchedList;
+        return mrtDynmcPopltnCell500RsltMapper.findAllBySearchDto(mapBigdataSearchDTO);
     }
 
     /**
@@ -48,20 +42,15 @@ public class BDPublicTransferPredictionComponent extends BaseMapDataComponent {
      * @return
      */
     public List<MrtDynmcPopltnCell500Rslt> getPopulationInfoBySearchDtoForChart(MapBigdataSearchDTO mapBigdataSearchDTO){
-        List<MrtDynmcPopltnCell500Rslt> searchedList = new ArrayList<>();
-        searchedList = mrtDynmcPopltnCell500RsltMapper.findAllBySearchDtoForChart(mapBigdataSearchDTO);
-        if(searchedList.isEmpty()) {
-            searchedList = mrtDynmcPopltnCell500RsltMapper.findAllBySearchDtoForChartMax(mapBigdataSearchDTO);
-        }
-        return searchedList;
+        return mrtDynmcPopltnCell500RsltMapper.findAllBySearchDtoForChart(mapBigdataSearchDTO);
     }
 
     /**
      * 최적화 후보경로의 링크정보 조회
      * @param candRouteId
      */
-    public List<MrtCndcyPathLinkInfo> getPublicTransferCndcyPathLinkInfo(String btcId, String baseym, String candRouteId) {
-        return mrtCndcyPathLinkInfoMapper.findAllByCandRouteId(btcId, baseym, candRouteId);
+    public List<MrtCndcyPathLinkInfo> getPublicTransferCndcyPathLinkInfo(String candRouteId) {
+        return mrtCndcyPathLinkInfoMapper.findAllByCandRouteId(candRouteId);
     }
 
     /**
@@ -69,8 +58,8 @@ public class BDPublicTransferPredictionComponent extends BaseMapDataComponent {
      * @param candRouteId
      * @return
      */
-    public List<MrtCndcyPathRouteBstpInfo> getPublicTransferCndcyStationInfo(String btcId, String baseym,String candRouteId) {
-        return mrtCndcyPathRouteBstpInfoMapper.findAllByCandRouteId(btcId, baseym, candRouteId);
+    public List<MrtCndcyPathRouteBstpInfo> getPublicTransferCndcyStationInfo(String candRouteId) {
+        return mrtCndcyPathRouteBstpInfoMapper.findAllByCandRouteId(candRouteId);
     }
 
 }

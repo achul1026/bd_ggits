@@ -143,8 +143,8 @@
 		                <thead>
 			                <tr>
 			                    <th scope="col" class="">노선번호</th>
-			                    <th scope="col">기점정류장</th>
-			                    <th scope="col">종점정류장</th>
+			                    <th scope="col">출발정류장</th>
+			                    <th scope="col">도착정류장</th>
 			                    <th scope="col">거리</th>
 			                </tr>
 		                </thead>
@@ -204,8 +204,8 @@
 		var sigunCdId = '<c:out value="${searchOption.sigunCdId}"/>';
 		var strDt = '<c:out value="${searchOption.strDt}"/>';
 		var endDt = '<c:out value="${searchOption.endDt}"/>';
-// 		var strTime = '<c:out value="${searchOption.startTime}"/>';
-// 		var endTime = '<c:out value="${searchOption.endTime}"/>';
+		var strTime = '<c:out value="${searchOption.startTime}"/>';
+		var endTime = '<c:out value="${searchOption.endTime}"/>';
 		var searchContent = '<c:out value="${searchOption.searchContent}"/>';
 		var dayOfTheWeekStr = '<c:out value="${searchOption.dayOfTheWeekStr}"/>';
 	
@@ -219,12 +219,12 @@
 		if(endDt != null && endDt != ''){
 			$("#endDt").val(endDt.substring(0,10));
 		}
-// 		if(strTime != null && strTime != ''){
-// 			$("#startTime").val(strTime).prop("selected",true);
-// 		}
-// 		if(endTime != null && endTime != ''){
-// 			$("#endTime").val(endTime).prop("selected",true);
-// 		}
+		if(strTime != null && strTime != ''){
+			$("#startTime").val(strTime).prop("selected",true);
+		}
+		if(endTime != null && endTime != ''){
+			$("#endTime").val(endTime).prop("selected",true);
+		}
 		if(!isNull(searchContent)){
 			$("#searchContent").val(searchContent);
 		}

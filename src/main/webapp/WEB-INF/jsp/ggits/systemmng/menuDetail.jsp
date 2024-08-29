@@ -4,8 +4,8 @@
         <div class="main_container">
         	<div style="width:500px">
         	
-	         메인 메뉴정보<br>
-	         <input type="hidden" id="menuId" value="<c:out value='${mOpMenu.menuId}"/>'/>메인메뉴 명 
+<!-- 	         메인 메뉴정보<br> -->
+<%-- 	         <input type="hidden" id="menuId" value="<c:out value='${mOpMenu.menuId}"/>'/>메인메뉴 명  --%>
 
 	         <input type="text" id="mainMenuNm" value="<c:out value='${mOpMenu.menuNm}'/>"/><br>
 	         메인메뉴 URL 패턴 <input type="text" id="mainUrlPttrn" value="<c:out value='${mOpMenu.urlPttrn}'/>"/> <br>
@@ -16,7 +16,7 @@
 	         
 	         
 	         
-			서브메뉴
+<!-- 			서브메뉴 -->
 			<table style="width:500px">
 				<tr>
 					<th>노출순위</th>

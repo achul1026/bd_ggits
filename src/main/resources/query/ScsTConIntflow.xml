@@ -11,7 +11,7 @@
 				STCIC.INT_LNG							AS "lon",
 				STCIC.INT_LAT							AS "lat"
 		FROM
-			SCS_T_CON_INTLC_CUR STCIC
+			SCS_T_CON_INTLC STCIC
 		WHERE 
 				1=1
 			<if test="name != null and name != ''">
@@ -31,7 +31,7 @@
 		SELECT
 				COUNT(*)
 		FROM
-			SCS_T_CON_INTLC_CUR STCIC
+		SCS_T_CON_INTLC STCIC
 		WHERE 
 				1=1
 		AND (STCIC.INT_LNG != 0 and STCIC.INT_LNG != 0)
@@ -51,8 +51,8 @@
 				CGSN.NODE_NAME							AS "label", 
 				CGSN.NODE_NAME 							AS "value"
 		FROM
-			bigdata.ext_SCS_T_CON_INTFLOW STCI
-		INNER JOIN bigdata.ext_SCS_T_CON_INTLC STCIC ON STCI.INT_LCNO = STCIC.INT_LCNO
+			SCS_T_CON_INTFLOW STCI
+		INNER JOIN SCS_T_CON_INTLC STCIC ON STCI.INT_LCNO = STCIC.INT_LCNO
 		INNER JOIN C_GM_STD_NODE CGSN ON STCIC.INT_NODE_ID = CGSN.NODE_ID
 		GROUP BY CGSN.GEOMETRY,CGSN.NODE_NAME ,CGSN.NODE_ID
 	</select>
@@ -71,7 +71,7 @@
 		,STCI.flow_m_lat
 		,STCI.flow_e_lng
 		,STCI.flow_e_lat
-		from  bigdata.ext_SCS_T_CON_INTFLOW STCI
+		from  SCS_T_CON_INTFLOW STCI
 		WHERE
 		STCI.int_lcno = #{intLcno}
 	</select>

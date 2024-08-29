@@ -8,14 +8,6 @@
     		<input type="hidden" id="mapPage" name="page" value="1"/>
     		<input type="hidden" id="routeId" name="routeId"/>
     		<input type="hidden" name="pageType" value="<c:out value='${type}'/>">
-       		<div class="tab_item_box flex-center">
-	            <h5 class="tab_item_title">연도별</h5>
-	            <select class="selectBox radius" name="searchYear" id="searchYear">
-	           		<c:forEach var="yearsList" items="${yearsList}" varStatus="status">
-	                	<option value="<c:out value="${yearsList.year}"/>"><c:out value="${yearsList.year}"/>년</option>
-	           		</c:forEach>
-	            </select>
-	        </div>
 	        <div class="tab_item_box">
 	            <div class="flex-center">
 	                <h5 class="tab_item_title">기간<span class="required-alert">*</span></h5>
@@ -32,30 +24,10 @@
 		            </div>	            
 				</div>
 	        </div>
-			<div class="tab_item_box flex-center">
-				<h5 class="tab_item_title">시군구</h5>
-				<select class="selectBox radius change-detect" <%--onchange="getDongListBySggCd(this.value, '#sggDongSelect')"--%> name="districtGnm">
-					<option value="">시군구 전체</option>
-					<c:forEach var="sggCd" items="${sggCdList}" varStatus="status">
-						<option value="<c:out value='${sggCd.cdNm}'/>"><c:out value='${sggCd.cdNm}'/></option>
-					</c:forEach>
-				</select>
-			</div>
-			<div class="tab_item_box flex-center">
-				<h5 class="tab_item_title">버스종류</h5>
-				<select class="selectBox radius change-detect" id="routeTp" name="routeTp">
-					<option value="">전체</option>
-					<option value="RTC000">시외버스</option>
-					<option value="RTC001">일반버스</option>
-					<option value="RTC002">마을버스</option>
-					<option value="RTC003">광역버스</option>
-					<option value="RTC004">공항버스</option>
-				</select>
-			</div>
 			<div class="tab_item_box flex-column gap8">
 				<div class="flex-center">
 					<h5 class="tab_item_title">노선</h5>
-					<input type="text" placeholder="노선을 입력해주세요." name="routeNm" class="input_same search_box radius">
+					<input type="text" placeholder="노선을 입력해주세요." name="searchContent" class="input_same search_box radius">
 					<button type="button" class="is-darkgreen-btn ml8" onclick="fnSearchList();">검색</button>
 				</div>
 			</div>
@@ -73,18 +45,14 @@
 						<col style="">
 						<col style="">
 						<col style="">
-						<col style="">
-						<col style="">
 					</colgroup>
 					<thead>
 					<tr>
 						<th scope="col">회사명</th>
-						<th scope="col">버스유형</th>
 						<th scope="col">버스번호</th>
-						<th scope="col">지역</th>
 						<th scope="col">이용자수</th>
-						<th scope="col">수익</th>
-						<th scope="col">노선보기</th>
+						<th scope="col">매출</th>
+						<th scope="col">-</th>
 					</tr>
 					</thead>
 					<tbody>
@@ -121,43 +89,20 @@
 			success : function(result){
 				let html = '';
 				let title = '';
-				let startDate = $("#startDate").val();
-				let endDate = $("#endDate").val();
-				
-				let searchOption = result.data.searchOption;
-				let PeriodText = '';
-				
-				if(typeof(searchOption) != 'undefined'){
-					Year = searchOption.searchYear;
-					switch(searchOption.searchPeriod){
-					case'weekday':
-						PeriodText = searchOption.searchYear+'년 평일';
-						break;
-					case'weekend':
-						PeriodText = searchOption.searchYear+'년 주말';
-						break;	
-					case'directDate':
-						PeriodText = startDate+"일 ~ "+endDate+"일";
-						break;	
-					default:
-						break;
-					}
-				}
-				
+				let startDate = '';
+				let endDate = '';
 				if(result.data.resultList.length == 0){
 					html += '<tr>' +
 							'<td colspan="5">노선 정보를 찾을 수 없습니다.</td>' +
 							'</tr>';
 				}else{
 					$(result.data.resultList).each(function(index, item){
-						html += '<tr onclick="viewDetailUseCalc(this,'+item.routeId+','+item.busUseTotAmt+', '+item.card1+', '+item.card2+', '+item.card3+', '+item.etc+', '+item.busUserCnt+', '+item.user1+', '+item.user2+', '+item.user3+', '+item.userEtc+')" data-conm="'+item.coNm+'" data-routetp="'+(GITS_ENV.ROUTE_TP[item.routeTy] ? GITS_ENV.ROUTE_TP[item.routeTy] : item.routeTy)+'" data-routeno="'+item.busRouteNo+'" data-period="'+PeriodText+'">'+
+						html += '<tr onclick="viewDetailUseCalc(this, '+item.routeId+','+item.busUseTotAmt+', '+item.card1+', '+item.card2+', '+item.card3+', '+item.etc+', '+item.busUserCnt+', '+item.user1+', '+item.user2+', '+item.user3+', '+item.userEtc+')" data-conm="'+item.coNm+'" data-routetp="'+(GITS_ENV.ROUTE_TP[item.routeTy] ? GITS_ENV.ROUTE_TP[item.routeTy] : item.routeTy)+'" data-routeno="'+item.busRouteNo+'">' +
 								'<td>' + '<label for="listItem'+index+'">' + item.coNm + '</label>' + '</td>' +
-								'<td>' + '<label for="listItem'+index+'">' + item.routeTy + '</label>' + '</td>' +
-								'<td>' + '<label for="listItem'+index+'">' + item.busRouteNo + '</label>' + '</td>' +
-								'<td>' + '<label for="listItem'+index+'">' + (item.districtGnm ? item.districtGnm : item.districtSnm) + '</label>' + '</td>' +
+								'<td>' + '<label for="listItem'+index+'">('+(GITS_ENV.ROUTE_TP[item.routeTy] ? GITS_ENV.ROUTE_TP[item.routeTy] : item.routeTy)+')<br/>' + item.busRouteNo + '</label>' + '</td>' +
 								'<td>' + '<label for="listItem'+index+'">' + numberComma(item.busUserCnt) + ' 명</label>' + '</td>' +
 								'<td>' + '<label for="listItem'+index+'">' + numberComma(item.busUseTotAmt) + ' 원</label>' + '</td>' +
-								'<td>' + '<label for="listItem'+index+'">노선보기</label>' + '</td>' +
+								'<td>' + '<label for="listItem'+index+'">자세히보기</label>' + '</td>' +
 								'</tr>';
 					})
 				}
@@ -174,7 +119,7 @@
 			}
 		});
 	}
-	function viewDetailUseCalc(_this,routeId, busUseTotAmt, card1, card2, card3, etc, busUserCnt, user1, user2, user3, userEtc){
+	function viewDetailUseCalc(_this, routeId, busUseTotAmt, card1, card2, card3, etc, busUserCnt, user1, user2, user3, userEtc){
 		card1 = typeof card1 === "undefined" || card1 == null ? 0 : card1;
 		card2 = typeof card2 === "undefined" || card2 == null ? 0 : card2;
 		card3 = typeof card3 === "undefined" || card3 == null ? 0 : card3;
@@ -186,12 +131,11 @@
 		const conm = $(_this).data("conm");
 		const routetp = $(_this).data("routetp");
 		const routeno = $(_this).data("routeno");
-		const searchPeriod = $(_this).data("period");
 
 		$("#routeId").val(routeId);
 		window.map.bigdata.getPublicTransferUseCalc($("#searchForm").serialize());
 
-		let busOptimizationItem = $(GITS_ENV.UI.BD_PB_TRANS_008(__contextPath__, conm,routetp,routeno,routeId,busUserCnt,busUseTotAmt,card1,card2,card3,etc, user1, user2, user3, userEtc, searchPeriod));
+		let busOptimizationItem = $(GITS_ENV.UI.BD_PB_TRANS_008(__contextPath__, conm,routetp,routeno,routeId,busUserCnt,busUseTotAmt,card1,card2,card3,etc, user1, user2, user3, userEtc));
 
 		$('#map-container').append(busOptimizationItem);
 		$('.optimization_close').on('click', function(){

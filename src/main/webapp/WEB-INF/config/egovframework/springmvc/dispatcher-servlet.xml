@@ -8,7 +8,7 @@
                 http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
                 http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
 
-	 <!-- 여기 추가 -->
+    <!-- 여기 추가 -->
     <context:component-scan base-package="com.neighbor21.ggits.web.controller.*" />
     <context:component-scan base-package="com.neighbor21.ggits.openapi.controller" />
     <context:component-scan base-package="com.neighbor21.ggits.support.*" />
@@ -71,14 +71,12 @@
             <mvc:mapping path="/facility/**"/>
             <mvc:mapping path="/historymng/**"/>
             <mvc:mapping path="/statistics/**"/>
-            <mvc:mapping path="/metadata/**"/>
+            <mvc:mapping path="/metadatamng/**"/>
             <mvc:mapping path="/datamng/**"/>
-            <mvc:mapping path="/bbs/**"/>
             <bean class="com.neighbor21.ggits.support.interceptor.MenuInterceptor"/>
         </mvc:interceptor>
         <mvc:interceptor>
             <mvc:mapping path="/monitoring.do"/>
-            <mvc:mapping path="/monitoring/**"/>
             <mvc:mapping path="/intro.do"/>
             <mvc:mapping path="/bigdata/**"/>
             <mvc:mapping path="/system/**"/>
@@ -86,9 +84,8 @@
             <mvc:mapping path="/facility/**"/>
             <mvc:mapping path="/historymng/**"/>
             <mvc:mapping path="/statistics/**"/>
-            <mvc:mapping path="/metadata/**"/>
+            <mvc:mapping path="/metadatamng/**"/>
             <mvc:mapping path="/datamng/**"/>
-            <mvc:mapping path="/bbs/**"/>
             <bean class="com.neighbor21.ggits.support.interceptor.LoginSessionInterceptor"/>
         </mvc:interceptor>
     </mvc:interceptors>

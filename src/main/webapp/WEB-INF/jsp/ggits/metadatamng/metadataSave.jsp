@@ -13,16 +13,16 @@
 			<div class="contents_wrap mt24">
 				<div class="group">
 					<div class="group_text">서비스 이름(KOR)<span class="required-alert">*</span></div>
-					<input type="text" id="tblKoreanNm" class="input_same group_box input-width-long data-validate" data-valid-name="서비스 이름(KOR)" data-valid-required placeholder="서비스 이름을 입력해 주세요." onkeyup="keyupKorEvent(this)">
+					<input type="text" id="tblKoreanNm" class="input_same group_box data-validate" data-valid-name="서비스 이름(KOR)" data-valid-required placeholder="서비스 이름을 입력해 주세요." onkeyup="keyupKorEvent(this)">
 				</div>
 				<div class="group">
 					<div class="group_text">서비스 이름(ENG)<span class="required-alert">*</span></div>
-					<input type="text" id="tblEngNm" class="input_same group_box input-width-long data-validate" data-valid-name="서비스 이름(ENG)" data-valid-required placeholder="서비스 이름을 입력해 주세요." onkeyup="keyupColEvent(this)">
+					<input type="text" id="tblEngNm" class="input_same group_box data-validate" data-valid-name="서비스 이름(ENG)" data-valid-required placeholder="서비스 이름을 입력해 주세요." onkeyup="keyupEngEvent(this)">
 				</div>
 				<div class="group">
 					<div class="group_text">분류체계</div>
                     <div class="metadata_sort_container">
-						<input type="text" class="input_same group_box input-width-long" id="clschmId"  placeholder="분류체계를 입력해 주세요.">
+						<input type="text" class="input_same group_box " id="clschmId"  placeholder="분류체계를 입력해 주세요.">
 						<div class="metadata_sort_box none">
 							<div class="metadata_sort_wrap">
 								<div class="metadata_sort_title">등록된 분류체계</div>
@@ -38,33 +38,26 @@
 						</div>
                     </div>
 				</div>
-<!-- 				<div class="group"> -->
-<!-- 					<div class="group_text">유관기관<span class="required-alert">*</span></div> -->
-<!-- 					<select class="selectBox data-validate" id="rltinstId" data-valid-name="유관기관" data-valid-required> -->
-<!-- 						<option value="">선택하기</option> -->
-<%-- 						<c:forEach var="metaInfSysInfoList" items="${metaInfSysInfoList}"> --%>
-<%-- 							<option value="<c:out value='${metaInfSysInfoList.rltinstId}'/>"><c:out value='${metaInfSysInfoList.rltinstNm}'/></option> --%>
-<%-- 						</c:forEach> --%>
-<!-- 					</select> -->
-<!-- 				</div> -->
-<!-- 				<div class="group"> -->
-<!-- 					<div class="group_text">원본 데이터 이름<span class="required-alert">*</span></div> -->
-<!-- 					<input type="text" id="orgDataNm" class="input_same group_box data-validate" data-valid-name="원본 데이터 이름" data-valid-required placeholder="원본 데이터 이름을 입력해 주세요."> -->
-<!-- 				</div> -->
+				<div class="group">
+					<div class="group_text">유관기관<span class="required-alert">*</span></div>
+					<select class="selectBox data-validate" id="rltinstId" data-valid-name="유관기관" data-valid-required>
+						<option value="">선택하기</option>
+						<c:forEach var="metaInfSysInfoList" items="${metaInfSysInfoList}">
+							<option value="<c:out value='${metaInfSysInfoList.rltinstId}'/>"><c:out value='${metaInfSysInfoList.rltinstNm}'/></option>
+						</c:forEach>
+					</select>
+				</div>
+				<div class="group">
+					<div class="group_text">원본 데이터 이름<span class="required-alert">*</span></div>
+					<input type="text" id="orgDataNm" class="input_same group_box data-validate" data-valid-name="원본 데이터 이름" data-valid-required placeholder="원본 데이터 이름을 입력해 주세요.">
+				</div>
 				<div class="group_wrap">
 					<div class="flex-center relative">
 						<div class="group_text">데이터 유형<span class="required-alert">*</span></div>
 						<div class="group_contents btn_search_wrap btn_search_wrap_left">
 							<ul>
 								<li>
-									<select id="dataType" class="selectBox">
-										<option value="">유형선택</option>
-										<c:forEach var="dataType" items="${dataTypeList}">
-											<option value="${dataType}"><c:out value="${dataType}"/></option>
-										</c:forEach>
-									</select>
-									<input type="text" id="colEngNm" class="input_same group_box input-width-long" placeholder="데이터 컬럼 명(ENG)을 입력해 주세요." onkeyup="keyupColEvent(this)">
-									<input type="text" id="colKoreanNm" class="input_same group_box input-width-long" placeholder="데이터 컬럼 명(KOR)을 입력해 주세요." onkeyup="keyupKorEvent(this)">
+									<input type="text" id="dataType" class="input_same group_box" placeholder="데이터 유형을 입력해 주세요.">
 								</li>
 								<li>
 									<button type="button" id="addDataTypeBtn" class="is-darkgreen-btn group_search_btn">추가</button>
@@ -72,56 +65,32 @@
 							</ul>
 						</div>
 					</div>
-					<div class="group_ex mb24">
-<!-- 						데이터 유형은 최대 3개 까지 입력 가능 합니다. -->
+					<div class="group_ex mb8">
+						데이터 유형은 최대 3개 까지 입력 가능 합니다.
 					</div>
-					<div id="dataTypeWrap" class="flex-center data_type_append mb24">
-						<div class="group_text">데이터 유형 상세</div>
-						<div class="group_contents">
-							<table class="content-table-layout" style="width: 60rem">
-								<colgroup>
-									<col style="width:20%">
-									<col style="width:34%">
-									<col style="width:34%">
-									<col style="width:12%">
-								</colgroup>
-								<thead>
-									<tr>
-										<th>데이터 유형</th>
-										<th>컬럼명 (ENG)</th>
-										<th>컬럼명 (KOR)</th>
-										<th>삭제</th>
-									</tr>
-								</thead>
-								<tbody id="metaColInfoTr">
-									<tr id="isNullTr">
-										<td colspan="4">데이터 유형을 추가해 주세요</td>
-									</tr>
-								</tbody>
-							</table>
-						</div>
+					<div id="dataTypeWrap" class="flex-center data_type_append">
 						<div class="group_text"></div>
 					</div>
 				</div>
-<!-- 				<div class="group_wrap"> -->
-<!-- 					<div class="flex-center relative"> -->
-<!-- 						<div class="group_text">데이터 키워드<span class="required-alert">*</span></div> -->
-<!-- 						<div class="group_contents btn_search_wrap btn_search_wrap_left"> -->
-<!-- 							<ul> -->
-<!-- 								<li> -->
-<!-- 									<input type="text" class="input_same group_box" id="dataKeyword" placeholder="데이터 키워드를 입력해 주세요." maxlength="10"> -->
-<!-- 								</li> -->
-<!-- 								<li> -->
-<!-- 									<button type="button" id="addKeywordBtn" class="is-darkgreen-btn group_search_btn">추가</button> -->
-<!-- 								</li> -->
-<!-- 							</ul> -->
-<!-- 						</div> -->
-<!-- 					</div> -->
-<!-- 					<div class="group_ex mb8"> -->
-<!-- 						키워드는 최대 10자 까지 입력 가능 합니다.<br>예시) 정류소 명칭, 버스 노선 명칭 -->
-<!-- 					</div>		 -->
-<!-- 					<div id="keywordWrap" class="flex-center"></div> -->
-<!-- 				</div> -->
+				<div class="group_wrap">
+					<div class="flex-center relative">
+						<div class="group_text">데이터 키워드<span class="required-alert">*</span></div>
+						<div class="group_contents btn_search_wrap btn_search_wrap_left">
+							<ul>
+								<li>
+									<input type="text" class="input_same group_box" id="dataKeyword" placeholder="데이터 키워드를 입력해 주세요." maxlength="10">
+								</li>
+								<li>
+									<button type="button" id="addKeywordBtn" class="is-darkgreen-btn group_search_btn">추가</button>
+								</li>
+							</ul>
+						</div>
+					</div>
+					<div class="group_ex mb8">
+						키워드는 최대 10자 까지 입력 가능 합니다.<br>예시) 정류소 명칭, 버스 노선 명칭
+					</div>		
+					<div id="keywordWrap" class="flex-center"></div>
+				</div>
 <!-- 				<div class="group flex-center-remove"> -->
 <!-- 					<div class="group_text">데이터 수집 유형<span class="required-alert">*</span></div> -->
 <!-- 					<div class="flex-center gap8"> -->
@@ -132,7 +101,7 @@
 <!-- 				</div> -->
 				<div class="group">
 					<div class="group_text">데이터 설명</div>
-					<textarea id="tblDescr" name="tblDescr" class="textarea_same" placeholder="설명을 입력해 주세요." style="display: block"></textarea>			
+					<input type="text" id="tblDescr" class="input_same group_box" placeholder="설명을 입력해 주세요.">
 				</div>
 				<div class="group flex-start">
 					<div class="group_text">파일 업로드</div>
@@ -141,10 +110,11 @@
 							<div class="drag-area">
 							    <div class="mb16 center ftsize14">
 							        파일 이름은 50자를 넘을 수 없습니다.<br>
-									파일은 JSON, CSV, HWP, HWPX, PDF, XML, TXT, ZIP, DOCX, DOC 유형의 파일만 업로드가 가능합니다.
+							        파일 용량은 5MB 이하만 업로드가 가능합니다.<br>
+							        파일은 JSON, CSV, HWP, PDF, XML, TXT, ZIP 유형의 파일만 업로드가 가능합니다.
 							    </div>
 							    <div>
-							        <input type="file" id="uploadFiles" style="display: none;">
+							        <input type="file" id="uploadFiles" style="display: none;" multiple>
 							        <button type="button" id="uploadBtn" class="is-darkgreen-btn mj0">파일 업로드</button>
 							    </div>
 							</div>
@@ -156,7 +126,7 @@
 				</div>
 				<div class="group group_search">
 					<input type="button" id="metadataSaveBtn" class="is-darkgreen-btn" value="저장"> 
-					<a href="${pageContext.request.contextPath}/metadata/manage/list.do" class="is-dark-btn">취소</a>
+					<a href="${pageContext.request.contextPath}/metadatamng/list.do" class="is-dark-btn">취소</a>
 				</div>
 			</div>
 		</form>
@@ -171,10 +141,6 @@
 	
 	function deleteDataType(idx){
 		$("#dataTypeContent"+idx).remove();
-		var dataTypeValLength = $(".dataTypeVal").length;
-		if(dataTypeValLength == 0){
-			$("#isNullTr").removeClass('none');
-		}
 	}
 	
 	// 분류 체계 키업
@@ -185,81 +151,54 @@
 		$(this).siblings('.metadata_sort_box').addClass('none');
 	})
 	//
-	
 	$("#addDataTypeBtn").on('click',function(){
 		var html = "";
 		var dataType = $("#dataType").val().trim();
-		var colEngNm = $("#colEngNm").val().trim();
-		var colKoreanNm = $("#colKoreanNm").val().trim();
 		
 		if(dataType == null || dataType == ''){
-			new ModalBuilder().init().alertBoby("데이터 유형을 선택해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
+			new ModalBuilder().init().alertBoby("데이터 유형을 입력해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
 			modalAlertWrap();			
 			return false;
 		}
-		
-		if(colEngNm == null || colEngNm == ''){
-			new ModalBuilder().init().alertBoby("컬럼명(ENG)을 입력해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
-			modalAlertWrap();			
-			return false;
-		}
-		
-		if(colKoreanNm == null || colKoreanNm == ''){
-			new ModalBuilder().init().alertBoby("컬럼명(KOR)을 입력해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
-			modalAlertWrap();			
-			return false;
-		}
-		
 		var dataTypeIdx = $(".dataTypeVal").length;
 		
-		html+='<tr id="dataTypeContent'+dataTypeIdx+'">';
-		html+='		<td>'+dataType+'<input type="hidden" class="dataTypeVal" value="'+dataType+'" readonly/> </td>';
-		html+='		<td>'+colEngNm+'<input type="hidden" class="colEngNmVal" value="'+colEngNm+'" readonly/> </td>';
-		html+='		<td>'+colKoreanNm+' <input type="hidden" class="colKoreanNmVal" value="'+colKoreanNm+'" readonly/> </td>';
-		html+='		<td><span onclick="deleteDataType(\''+dataTypeIdx+'\')"><img src="/statics/images/delete.png" alt="삭제" class="datamng_img"></span></td>';
-		html+='</tr>';
+		if(3 <= dataTypeIdx){
+			new ModalBuilder().init().alertBoby("데이터 유형은 최대 3개까지 입력 가능합니다.").footer(4,'확인',function(button, modal){modal.close();}).open();
+			modalAlertWrap();			
+			return false;
+		}
 		
-// 		html += '<div id="dataTypeContent'+dataTypeIdx+'" class="dataTypeContent">';
-// 		html += '<label class="is-darkgreen-btn mr8"> 컬럼명(ENG) :'+colEngNm+' <br> 컬럼명(KOR) '+colKoreanNm+'<br> 데이터유형 : '+dataType+'</label>';
-// 		html += 	'<input type="hidden" class="dataTypeVal" value="'+dataType+'" readonly/>';
-// 		html += 	'<input type="hidden" class="colEngNmVal" value="'+colEngNm+'" readonly/>';
-// 		html += 	'<input type="hidden" class="colKoreanNmVal" value="'+colKoreanNm+'" readonly/>';
-// 		html += 	'<button type="button" onclick="deleteDataType(\''+dataTypeIdx+'\')" class="mr8">삭제</button>';
-// 		html += '</div>';
-// 		if(3 <= dataTypeIdx){
-// 			new ModalBuilder().init().alertBoby("데이터 유형은 최대 3개까지 입력 가능합니다.").footer(4,'확인',function(button, modal){modal.close();}).open();
-// 			modalAlertWrap();			
-// 			return false;
-// 		}
+		html += '<div id="dataTypeContent'+dataTypeIdx+'" class="dataTypeContent">';
+		html += '<label class="is-darkgreen-btn mr8">'+dataType+'</label>';
+		html += 	'<input type="hidden" class="dataTypeVal" value="'+dataType+'" readonly/>';
+		html += 	'<button type="button" onclick="deleteDataType(\''+dataTypeIdx+'\')" class="mr8">삭제</button>';
+		html += '</div>';
 		
-		$("#metaColInfoTr").append(html);
+		$("#dataTypeWrap").append(html);
 		$("#dataType").val("");
-		$("#colEngNm").val("");
-		$("#colKoreanNm").val("");
-		$("#isNullTr").addClass('none');
 	});
 	
-// 	$("#addKeywordBtn").on('click',function(){
-// 		var html = "";
-// 		var dataKeyword = $("#dataKeyword").val().trim();
+	$("#addKeywordBtn").on('click',function(){
+		var html = "";
+		var dataKeyword = $("#dataKeyword").val().trim();
 		
-// 		if(dataKeyword == null || dataKeyword == ''){
-// 			new ModalBuilder().init().alertBoby("데이터 키워드를 입력해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
-// 			modalAlertWrap();			
-// 			return false;
-// 		}
-// 		var keywordIdx = $(".keyword").length;
+		if(dataKeyword == null || dataKeyword == ''){
+			new ModalBuilder().init().alertBoby("데이터 키워드를 입력해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
+			modalAlertWrap();			
+			return false;
+		}
+		var keywordIdx = $(".keyword").length;
 		
-// 		html += '<div id="keywordContent'+keywordIdx+'" class="keywordContent">';
-// 		html += '<label class="is-darkgreen-btn mr8">'+dataKeyword+'</label>';
-// 		html += 	'<input type="hidden" class="keyword" value="'+dataKeyword+'" readonly/>';
-// 		html += 	'<button type="button" onclick="deleteKeyword(\''+keywordIdx+'\')" class="mr8">삭제</button>';
-// 		html += '</div>';
+		html += '<div id="keywordContent'+keywordIdx+'" class="keywordContent">';
+		html += '<label class="is-darkgreen-btn mr8">'+dataKeyword+'</label>';
+		html += 	'<input type="hidden" class="keyword" value="'+dataKeyword+'" readonly/>';
+		html += 	'<button type="button" onclick="deleteKeyword(\''+keywordIdx+'\')" class="mr8">삭제</button>';
+		html += '</div>';
 		
-// 		$("#keywordWrap").append(html);
-// 		$("#dataKeyword").val("");
-// 		scrollbarCheck();
-// 	});
+		$("#keywordWrap").append(html);
+		$("#dataKeyword").val("");
+		scrollbarCheck();
+	});
 	
 	$(document).ready(function() {
 		let isClick = true;
@@ -267,27 +206,21 @@
 			if(isClick){
 				//중복클릭 방지
 				isClick = false;
-
+				
 				var tblKoreanNm = $("#tblKoreanNm").val();
 				var tblEngNm  = $("#tblEngNm").val();
 				var clschmId = $("#clschmId").val();
-// 				var rltinstId = $("#rltinstId").val();
-// 				var orgDataNm = $("#orgDataNm").val();
+				var rltinstId = $("#rltinstId").val();
+				var orgDataNm = $("#orgDataNm").val();
 				var uploadFiles = $("#uploadFiles")[0];
-				// 객체 배열 초기화
-				var metaColInfoList = new Array();
 				
 				var dataType = "";
-				var colEngNm = "";
-				var colKoreanNm = "";
-// 				var dataKeyword = "";
-// 				var collDataType = "";
+				var dataKeyword = "";
+				var collDataType = "";
 				
 				var tblDescr = $("#tblDescr").val();
 				
 				var dataTypeVal = $(".dataTypeVal");
-				var colEngNmVal = $(".colEngNmVal");
-				var colKoreanNmVal = $(".colKoreanNmVal");
 // 				var collectionType = $(".collectionType");
 				var keyword = $(".keyword");
 				
@@ -295,25 +228,13 @@
 					isClick = true;
 					return false;
 				}
-                                         
+
 				if(dataTypeVal.length == 0){
 					isClick = true;
 					new ModalBuilder().init().alertBoby("데이터 유형을 추가 해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
-					modalAlertWrap();
+					modalAlertWrap();			
 					return false;
 				} else {
-					// 배열 길이 확인
-// 					var maxLength = Math.max(dataTypeVal.length, colEngNmVal.length,colKoreanNmVal.length);
-
-// 					for (var i = 0; i < maxLength; i++) {
-// 					    var metaColInfo = {
-// 					        dataType: dataTypeVal.eq(i).val(),
-// 					        colEngNm: colEngNmVal.eq(i).val(),
-// 					        colKoreanNm : colKoreanNmVal.eq(i).val()
-// 					    };
-// 					    metaColInfoList.push(metaColInfo);
-// 					}
-					
 					for(var i = 0; i < dataTypeVal.length; i++){
 						if(dataType == ''){
 							dataType += dataTypeVal.eq(i).val();
@@ -321,37 +242,22 @@
 							dataType += ","+dataTypeVal.eq(i).val();
 						}
 					}			
-					for(var i = 0; i < colEngNmVal.length; i++){
-						if(colEngNm == ''){
-							colEngNm += colEngNmVal.eq(i).val();
-						} else {
-							colEngNm += ","+colEngNmVal.eq(i).val();
-						}
-					}
-					for(var i = 0; i < colKoreanNmVal.length; i++){
-						if(colKoreanNm == ''){
-							colKoreanNm += colKoreanNmVal.eq(i).val();
-						} else {
-							colKoreanNm += ","+colKoreanNmVal.eq(i).val();
-						}
-					}
 				}
 				
-// 				if(keyword.length == 0){
-// 					isClick = true;
-// 					new ModalBuilder().init().alertBoby("데이터 키워드를 추가 해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
-
-// 					modalAlertWrap();			
-// 					return false;
-// 				} else {
-// 					for(var i = 0; i < keyword.length; i++){
-// 						if(dataKeyword == ''){
-// 							dataKeyword += keyword.eq(i).val();
-// 						} else {
-// 							dataKeyword += ","+keyword.eq(i).val();
-// 						}
-// 					}			
-// 				}
+				if(keyword.length == 0){
+					isClick = true;
+					new ModalBuilder().init().alertBoby("데이터 키워드를 추가 해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
+					modalAlertWrap();			
+					return false;
+				} else {
+					for(var i = 0; i < keyword.length; i++){
+						if(dataKeyword == ''){
+							dataKeyword += keyword.eq(i).val();
+						} else {
+							dataKeyword += ","+keyword.eq(i).val();
+						}
+					}			
+				}
 				
 // 				if(!collectionType.is(":checked")){
 // 					isClick = true;
@@ -374,13 +280,10 @@
 				obj.tblKoreanNm = tblKoreanNm;
 				obj.tblEngNm = tblEngNm;
 				obj.clschmId = clschmId;
-// 				obj.metaColInfoList = metaColInfoList;
-// 				obj.rltinstId = rltinstId;
-				obj.strDataTypeArr = dataType;
-				obj.strColEngNmArr = colEngNm;
-				obj.strColKoreanNmArr = colKoreanNm;
-// 				obj.orgDataNm = orgDataNm;
-// 				obj.dataKeyword = dataKeyword;
+				obj.rltinstId = rltinstId;
+				obj.dataType = dataType;
+				obj.orgDataNm = orgDataNm;
+				obj.dataKeyword = dataKeyword;
 // 				obj.collDataType = collDataType;
 				obj.tblDescr = tblDescr;
 				
@@ -392,10 +295,7 @@
 						formData.append("uploadFiles",uploadFiles.files[i]);
 					}
 				}
-				
 				formData.append("metaTabInfo",new Blob([JSON.stringify(obj)], {type: "application/json"}));
-				
-				console.log(obj);
 				
 				$.ajax({
 					type : "post",
@@ -404,12 +304,12 @@
 					processData : false,
 					enctype : "multipart/form-data;charset=UTF-8",
 					dataType : "json",
-					url : "${pageContext.request.contextPath}/metadata/manage/save.ajax",
+					url : "${pageContext.request.contextPath}/metadatamng/save.ajax",
 					success : function(data) {
 						if(data.code == 200){
 							new ModalBuilder().init().successBody("메타데이터 등록을 성공 하였습니다.").footer(4,'확인',function(button, modal){
 								modal.close();
-								location.href = ${pageContext.request.contextPath}"/metadata/manage/list.do";
+								location.href = ${pageContext.request.contextPath}"/metadatamng/list.do";
 								}).open();
 							modalAlertWrap();
 						} else {

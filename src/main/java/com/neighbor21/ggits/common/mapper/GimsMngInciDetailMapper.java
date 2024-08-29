@@ -8,7 +8,6 @@ import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
 
 import com.neighbor21.ggits.common.dto.MapMonitoringLinkDataDTO;
 import com.neighbor21.ggits.common.entity.GimsMngInciDetail;
-import org.postgresql.util.PSQLException;
 
 @Mapper
 public interface GimsMngInciDetailMapper {
@@ -22,9 +21,18 @@ public interface GimsMngInciDetailMapper {
 	  * @return
 	  */
 	public List<GimsMngInciDetail> findAllWarningList(Map<String,Object> paramMap);
+	
+	/**
+	 * @Method Name : findAllDailyWarningList
+	 * @작성일 : 2023. 9. 19.
+	 * @작성자 : NK.KIM
+	 * @Method 설명 : 일일 돌발 이력 목록 조회
+	 * @param paramMap
+	 * @return
+	 */
+	public List<GimsMngInciDetail> findAllDailyWarningList(Map<String,Object> paramMap);
 
-
-	public List<GimsMngInciDetail> findAllDailyWarningAlarmList() throws PSQLException;
+	public List<GimsMngInciDetail> findAllDailyWarningAlarmList();
 
 	/**
 	 * @Method Name : findTop3GimsMngInciDetailByBeginDateAndEndDate
@@ -96,9 +104,7 @@ public interface GimsMngInciDetailMapper {
 	 * 맵에 돌발상황 마커를 그리기 위한 쿼리
 	 * @return
 	 */
-	public List<GimsMngInciDetail> findAllWarningListForMapMarker() throws PSQLException;
-
-	public List<GimsMngInciDetail> findAllUTICWarningListForMapMarker() throws PSQLException;
+	public List<GimsMngInciDetail> findAllWarningListForMapMarker();
 	
 	/**
 	  * @Method Name : findAllWarningListForList
@@ -128,14 +134,4 @@ public interface GimsMngInciDetailMapper {
 	  * @return
 	  */
 	public MapMonitoringLinkDataDTO findOneDataCntForMonitoring();
-
-   /**
-    * @Method Name : findWarningByMnginstcd
-    * @작성일 : 2023. 01. 04.
-    * @작성자 : KY.LEE
-    * @Method 설명 : 모니터링 대시보드 -> 돌발 수집원별 수
-    */
-	List<GimsMngInciDetail> findWarningByMnginstcd();
-
-	List<GimsMngInciDetail> findAllWarningInfoToday();
 }

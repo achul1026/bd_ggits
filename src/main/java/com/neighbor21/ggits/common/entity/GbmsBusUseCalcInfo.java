@@ -21,8 +21,6 @@ public class GbmsBusUseCalcInfo {
 
     private String routeTy;
     private String routeId;
-    private String districtGnm;
-    private String districtSnm;
 
     public String getClctYmd() {
         return clctYmd;
@@ -173,21 +171,5 @@ public class GbmsBusUseCalcInfo {
 
     public void setUserEtc(Long userEtc) {
         this.userEtc = userEtc;
-    }
-
-    public String getDistrictGnm() {
-        return districtGnm;
-    }
-
-    public void setDistrictGnm(String districtGnm) {
-        this.districtGnm = districtGnm;
-    }
-
-    public String getDistrictSnm() {
-        return districtSnm;
-    }
-
-    public void setDistrictSnm(String districtSnm) {
-        this.districtSnm = districtSnm;
     }
 }

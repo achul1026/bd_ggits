@@ -12,7 +12,7 @@
 		<div class="tab_box_content map_movement_status map_movement_status1">
 			<div class="unex_history" data-mapx="<c:out value='${emergencyList.currentlat}'/>" data-mapy="<c:out value='${emergencyList.currentlng}'/>" data-serviceid="<c:out value='${emergencyList.serviceid}'/>" onclick="fnEmergencyEvent(this);">
 				<div class="<c:out value='${emergencyList.emrgCurSttsCd eq "CUS001" ? "blue" : "red"}'/> unex_title" data-check-serviceid="<c:out value='${emergencyList.serviceid}'/>">
-					<h3>[<c:out value='${emergencyList.emrgCurSttsCd eq "CUS001" ? "이동완료" : "이동중"}'/>] <c:out value='${emergencyList.evno}'/> <c:out value='${emergencyList.servicename}'/></h3>
+					<h3>[<c:out value='${emergencyList.emrgCurSttsCd eq "CUS001" ? "이동완료" : "이동중"}'/>] <c:out value='${emergencyList.evno}'/></h3>
 				</div>
 			</div>
 			<div class="<c:out value='${emergencyList.emrgCurSttsCd eq "CUS001" ? "blue" : "red"}'/> unex_content">
@@ -31,8 +31,6 @@
 							</c:otherwise>
 						</c:choose>
 					</li>
-					<li>운행단축시간  : <c:out value='${emergencyList.timeDifference}'/></li>
-					<li>소속기관  : <c:out value='${emergencyList.firename}'/></li>
 				</ul>
 			</div>
 		</div>
@@ -43,11 +41,8 @@
 <script>
 
 $(function() {
-
+	
 	dataTimer = setInterval( function () {
-		if($("#emergencyDiv").length === 0){
-			return;
-		}
         $.ajax ({
             "url" : "${pageContext.request.contextPath}/map/monitoring/emergency/M_EMERGENCY_001/data.ajax",
             cache : false,
@@ -85,19 +80,17 @@ $(function() {
             		html += '<div class="tab_box_content map_movement_status map_movement_status1">'+
 				            			'<div class="unex_history" data-mapx="'+item.currentlat+'" data-mapy="'+item.currentlng+'" data-serviceid="'+item.serviceid+'" onclick="fnEmergencyEvent(this);">'+
 				    				'<div class="'+curSttsClass+' unex_title '+activeClass+'" data-check-serviceid="'+item.serviceid+'">'+
-				    					'<h3>['+curSttsText+'] '+item.evno+' '+item.servicename+' </h3>'+
+				    					'<h3>['+curSttsText+'] '+item.evno+'</h3>'+
 				    				'</div>'+
 				    			'</div>'+
 				    			'<div class="'+curSttsClass+' unex_content" '+addStyle+'>'+
 				    				'<ul>'+
 				    					'<li>['+curSttsText+'] : '+item.evno+'</li>'+
-										'<li>위치 : '+item.servicename+' </li>'+
 				    					'<li>출발시간 : '+dateFormatHH24MI(item.startDate)+' </li>'+
 				    					'<li>도착예측시간 : '+dateFormatHH24MI(item.predictedArrivalDate)+' </li>'+
 				    					'<li>예상운행시간 : '+item.arrivaltimeFormat+
-				    					'<li>실제도착시간 : '+arrivalDate+'</li>'+
-				    					'<li>운행단축시간 : '+item.timeDifference+'</li>'+
-				    					'<li>소속기관 : '+item.firename+'</li>'+
+				    					'<li>실제도착시간 : '+arrivalDate+
+				    					'</li>'+
 				    				'</ul>'+
 				    			'</div>'+
 				    		'</div>';
@@ -162,45 +155,11 @@ $(function() {
 		            routeFeatures.push(f);
 		            routeFeaturesByServiceId.push(f);
 		        }
-				let arrivalPopup = `<li>${result.data.servicename} 종료지점</li>`;
-				let arrivalObj = {
-					'type': 'Feature',
-					'properties' : {
-						'type' : 'loc',
-						'description' : arrivalPopup,
-						'icon' : "end_icon"
-					},
-					'geometry': {
-						'type': 'Point',
-						'coordinates': [result.data.arrivallng, result.data.arrivallat]
-					}
-				}
-				let startObj = {
-					'type': 'Feature',
-					'properties': {
-						'type': 'loc',
-						'icon': "emerg_start_icon"
-					},
-					'geometry': {
-						'type': 'Point',
-						'coordinates': [result.data.currentlng, result.data.currentlat]
-					}
-				};
-				routeFeaturesByServiceId.push(arrivalObj);
-				routeFeatures.push(arrivalObj);
-				routeFeaturesByServiceId.push(startObj);
-				routeFeatures.push(startObj);
 		        monitoringEmergencyBoundBox[result.data.serviceid] = {};
 		        const routeFeatureCollectionByServiceId = mapUtil.wrapFeatureCollection(routeFeaturesByServiceId);
 		        monitoringEmergencyBoundBox[result.data.serviceid].bbox = mapUtil.getBBOX(routeFeatureCollectionByServiceId.featureCollection);
 		        
 		        const source = GITS_ENV.LAYER.EMERGENCY+"_TMP";
-
-				if(__Map.getLayer(source)) __Map.removeLayer(source);
-				if(__Map.getLayer(source+"_POINT")) __Map.removeLayer(source+"_POINT");
-				if(__Map.getLayer(source+"_LOC")) __Map.removeLayer(source+"_LOC");
-				if(__Map.getSource(source)) __Map.removeSource(source);
-
 		        let routeRoadLayer = {
 	                    'id': source ,
 	                    'type': 'line',
@@ -231,27 +190,7 @@ $(function() {
 	                    filter : ["==", 'type', "Point"]
 	                }
 
-				let arrivalLayer = {
-					'id': source+"_LOC",
-					'type': 'symbol',
-					'source': source,
-					'maxzoom': 22,
-					'minzoom': 8,
-					'layout': {
-						'icon-allow-overlap': true,
-						'icon-image': ['get', 'icon'],
-						"icon-size": [
-							'interpolate',
-							['linear'],
-							['zoom'],
-							10, 0.4,
-							15, 0.4
-						]
-					},
-					filter : ['has', 'icon']
-				}
-
-	                map.control.addExpertSourceAndLayer(source, {}, routeFeatureCollectionByServiceId.featureCollection, [routeRoadLayer,pointLayer,arrivalLayer]);
+	                map.control.addExpertSourceAndLayer(source, {}, routeFeatureCollectionByServiceId, [routeRoadLayer,pointLayer]);
 		        
 				__Map.fitBounds(monitoringEmergencyBoundBox[result.data.serviceid].bbox, {padding: 100});
 			}

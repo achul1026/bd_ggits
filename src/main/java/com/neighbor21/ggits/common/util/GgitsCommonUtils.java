@@ -351,30 +351,6 @@ public class GgitsCommonUtils {
 		
 		return isDateChk;
 	}
-	
-	/**
-	  * @Method Name : 날짜 변환 String -> String yyyy-MM-dd
-	  * @작성일 : 2023.12. 08.
-	  * @작성자 : KY.LEE
-	  * @Method 설명 : 데이트 포맷 변경
-	  * @param String dateStr,String beforePattern, String afterPattern
-	  * @return String
-	  * @throws ParseException
-	  */
-	public static String formatDate(String dateStr,String beforePattern, String afterPattern) throws ParseException {
-		
-		if(GgitsCommonUtils.isNull(dateStr) || GgitsCommonUtils.isNull(beforePattern) || GgitsCommonUtils.isNull(afterPattern)) {
-			return null;
-		}
-		
-		SimpleDateFormat sdf = new SimpleDateFormat(beforePattern);
-		SimpleDateFormat sdf2 = new SimpleDateFormat(afterPattern);
-		
-		Date formatDate = sdf.parse(dateStr);
-		String newDateStr = sdf2.format(formatDate);
-		
-		return newDateStr;
-	}
 	/**
 	  * @Method Name : jsonObjectToMap
 	  * @작성일 : 2023.12. 08.

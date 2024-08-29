@@ -4,7 +4,6 @@
  * @constructor
  */
 const CM_BusStation = async function(searchOption = ''){
-    let so = self.util.convertParamToObject(searchOption);
     let list = await self.util.getJsonFormApi("/monitoring/getBusStationList.ajax?"+searchOption);
     let features = [];
     for(const station of list) {
@@ -32,34 +31,5 @@ const CM_BusStation = async function(searchOption = ''){
         obj.properties.icon = "bus_station"
         features.push(obj);
     }
-    let collection = self.util.wrapFeatureCollection(features);
-    /*if(so.routeId && so.directLine) {
-        try {
-
-            const bbox = self.util.getBBOX(collection);
-            console.log("bbox",bbox);
-            let stations = list.sort(function (a, b) {
-                return parseInt(a.staOrder) - parseInt(b.staOrder)
-            });
-            let startPoint = [stations[0].mapX, stations[0].mapY];
-            let endPoint = [stations[stations.length-1].mapX, stations[stations.length-1].mapY];
-            const directLineObj = {
-                'type': 'Feature',
-                'properties': {
-                    'directLine' : true
-                },
-                'geometry': {
-                    'type': "LineString",
-                    'coordinates': [
-                        startPoint,endPoint
-                    ]
-                }
-            }
-            features.push(directLineObj);
-        }catch(e) {
-            console.error("기종점 라인생성 실패");
-        }
-    }*/
-
-    return collection;
+    return self.util.wrapFeatureCollection(features);
 }

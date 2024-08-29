@@ -5,12 +5,6 @@
  */
 const BD_Public_Transfer_Usage_By_St_End = async function(searchOption = ''){
     let list = await self.util.getJsonFormApi("/bigdata/getPublicTransferStartEndUsage.ajax?"+searchOption);
-    if(list?.noLogin){
-        return {
-            error : true,
-            noLogin : true
-        }
-    }
     if(list.length === 0){
         return {
             error : true,

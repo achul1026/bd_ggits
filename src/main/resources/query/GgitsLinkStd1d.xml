@@ -58,7 +58,7 @@
 			, ROUND(SUM(ggs1.VOL) / count(ggs1.LINK_ID),2) as avgVol
 			, ROUND(SUM(ggs1.SPD) / count(ggs1.LINK_ID),2) as avgSpd
 		FROM bigdata.ext_GGITS_LINK_STD_1D ggs1
-		INNER JOIN C_GM_STD_LINK GCIL
+		INNER JOIN C_GM_STD_LINK_TMP /*todo :: _TMP 제거*/ GCIL
 			ON ggs1.LINK_ID = GCIL.LINK_ID
 		INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam
 			ON GCIL.LINK_ID  = cgslam.LINK_ID 
@@ -76,7 +76,7 @@
 				SELECT 
 				 	ggs1.LINK_ID 
 				FROM bigdata.ext_GGITS_LINK_STD_1D ggs1
-				INNER JOIN C_GM_STD_LINK GCIL
+				INNER JOIN C_GM_STD_LINK_TMP /*todo :: _TMP 제거*/ GCIL
 					ON ggs1.LINK_ID = GCIL.LINK_ID
 				INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam
 					ON GCIL.LINK_ID  = cgslam.LINK_ID 
@@ -102,7 +102,7 @@
 						, ROUND(SUM(ggs1.VOL) / COUNT(moc.CD_NM) ,2) as VOL
 					FROM
 						bigdata.ext_GGITS_LINK_STD_1D ggs1
-					INNER JOIN C_GM_STD_LINK GCIL
+					INNER JOIN C_GM_STD_LINK_TMP /*todo :: _TMP 제거*/ GCIL 
 						ON ggs1.LINK_ID = GCIL.LINK_ID
 					INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam 
 						ON GCIL.LINK_ID = cgslam.LINK_ID
@@ -136,7 +136,7 @@
 					, ROUND(SUM(ggs1.SPD) / COUNT(moc.CD_NM) ,2) SPD
 				FROM
 					bigdata.ext_GGITS_LINK_STD_1D ggs1
-				INNER JOIN C_GM_STD_LINK GCIL
+				INNER JOIN C_GM_STD_LINK_TMP /*todo :: _TMP 제거*/ GCIL 
 					ON ggs1.LINK_ID = GCIL.LINK_ID
 				INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam 
 					ON GCIL.LINK_ID = cgslam.LINK_ID
@@ -170,7 +170,7 @@
 					, MAX(ggs1.CONG_GRADE) CONG_GRADE
 				FROM
 					bigdata.ext_GGITS_LINK_STD_1D ggs1
-				INNER JOIN C_GM_STD_LINK GCIL
+				INNER JOIN C_GM_STD_LINK_TMP /*todo :: _TMP 제거*/ GCIL 
 					ON ggs1.LINK_ID = GCIL.LINK_ID
 				INNER JOIN C_GM_STD_LINK_ADSTDG_MPPG cgslam 
 					ON GCIL.LINK_ID = cgslam.LINK_ID

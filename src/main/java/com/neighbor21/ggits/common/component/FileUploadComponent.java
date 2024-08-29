@@ -21,10 +21,12 @@ import com.neighbor21.ggits.support.exception.ErrorCode;
 
 @Component
 public class FileUploadComponent {
-
+	
+	// TODO 파일 업로드 경로
 	@Value("#{commonProperties['atchFile.upload.path']}")
 	public String uploadPath;
-
+	
+	// TODO 파일 업로드 경로
 //	private final String uploadPath = Paths.get("C:", "bluedus", "upload-files").toString();
 	
 	/**
@@ -308,7 +310,7 @@ public class FileUploadComponent {
 		if(uploadFile.exists()) {
 			uploadFile.delete();
 		} else {
-//			throw new CommonException(ErrorCode.FILE_NOT_FOUND);
+			throw new CommonException(ErrorCode.FILE_NOT_FOUND);
 		}
 	}
 	

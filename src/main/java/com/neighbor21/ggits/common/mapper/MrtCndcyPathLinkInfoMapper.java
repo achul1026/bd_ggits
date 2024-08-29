@@ -15,7 +15,13 @@ public interface MrtCndcyPathLinkInfoMapper {
      * @param candRouteId
      * @return
      */
-    List<MrtCndcyPathLinkInfo> findAllByCandRouteId(@Param("btcId") String btcId, @Param("baseym") String baseym, @Param("candRouteId") String candRouteId);
+    List<MrtCndcyPathLinkInfo> findAllByCandRouteId(@Param("candRouteId") String candRouteId);
 
+    /**
+     * 후보경로 조회(geometry union)
+     * @param candRouteId
+     * @return
+     */
+    MrtCndcyPathLinkInfo findOneByCandRouteId(@Param("candRouteId") String candRouteId);
 
 }

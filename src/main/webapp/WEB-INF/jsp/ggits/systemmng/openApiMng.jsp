@@ -81,7 +81,7 @@
 			}
 		});
 	});
-
+	
 	function fnSearchList(){
 		document.getElementById('searchForm').action= "${pageContext.request.contextPath}/system/openapi/list.do";
 		document.getElementById('searchForm').submit();

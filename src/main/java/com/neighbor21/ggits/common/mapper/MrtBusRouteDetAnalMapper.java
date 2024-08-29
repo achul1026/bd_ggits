@@ -53,13 +53,4 @@ public interface MrtBusRouteDetAnalMapper {
 
 
     MrtBusRouteDetAnal findOneByRouteId(MapBigdataSearchDTO mapBigdataSearchDTO);
-
-	/*일반*/
-	List<MrtBusRouteDetAnal> findAllTop10ByCurvtAndType1();
-	/*직좌*/
-	List<MrtBusRouteDetAnal> findAllTop10ByCurvtAndType2();
-	/*마을*/
-	List<MrtBusRouteDetAnal> findAllTop10ByCurvtAndType3();
-	/*시외/공항*/
-	List<MrtBusRouteDetAnal> findAllTop10ByCurvtAndType4();
 }

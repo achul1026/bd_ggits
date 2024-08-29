@@ -7,8 +7,7 @@
 	<select class="selectBox radius result_change change-detect" name="collectType">
 		<option value="vds">VDS</option>
 		<option value="dsrc">DSRC</option>
-		<option value="smc">스마트교차로-접근로</option>
-		<option value="smc-drct-mngcd">스마트교차로-방향별</option>
+		<option value="smc">스마트교차로</option>
 	</select>
 </div>
 <div class="tab_item_box flex-center">
@@ -18,7 +17,6 @@
 		<option value="fifteenmin">15분 주기</option>
 		<option value="onehour">1시간 주기</option>
 	</select>
-	<a class="is-darkgreen-btn" href="javascript:void(0)" onclick="loadingChart()">결과보기/새로고침</a>
 </div>
 <div class="tab_box_body_wrap">
 	<div class="tab_box_chart">
@@ -30,11 +28,10 @@
 </form>
 
 <script>
-	let loadingAjax = null;
 	let dataChart = null;
 	function loadingChart(){
-		if(loadingAjax) loadingAjax.abort();
-		loadingAjax = $.ajax({
+		dataChart ? dataChart.destroy() : void(0);
+		$.ajax({
 			type : "get",
 			url : __contextPath__+"/map/monitoring/traffic/M_TRAFFIC_002/chartData.ajax",
 			data : $("#chartDataForm").serialize(),
@@ -46,22 +43,20 @@
 				$(".tab_box_chart_content.has-preloading .chart-preloading-wrap").remove();
 			},
 			success : function(data){
-				dataChart ? dataChart.destroy() : void(0);
 				$(".tab_box_chart_content.has-preloading .chart-preloading-wrap").remove();
 				if(data.length === 0) {
 					$(".tab_box_chart_content.has-preloading").append(GITS_ENV.UI.CHART_PRELOADING("데이터를 수집중입니다. 잠시 후 접속해주세요."));
 					return;
 				}
-                let sggGroupData = data.reduce((acc, curr) => {
-					const { mngInstCd } = curr;
-					if (acc[mngInstCd]) acc[mngInstCd].push(curr);
-					else acc[mngInstCd] = [curr];
-					return acc;
-				}, {});
+				let sggGroupData = data.reduce((groups, item) => {
+					const group = (groups[item.sggCd+"0"] || []);
+					group.push(item);
+					groups[item.sggCd+"0"] = group;
+					return groups;
+				});
 				let timeLabel = []
 				data.forEach((item) => {
-					let onlytime = item.time.substring(11, 16);
-					if(timeLabel.indexOf(onlytime) == -1) timeLabel.push(onlytime);
+					if(timeLabel.indexOf(item.time) == -1) timeLabel.push(item.time);
 				});
 				timeLabel = timeLabel.sort(function(d1, d2){
 					const d1Time = new Date(d1).getTime();
@@ -72,10 +67,10 @@
 				let dataKey = "avgSpeed";
 				for(const sggNm in GITS_ENV.SGG_INFO){
 					const staticSggInfo = GITS_ENV.SGG_INFO[sggNm];
-					if(typeof sggGroupData[staticSggInfo.MNGCD] !== "undefined") {
+					if(typeof sggGroupData[staticSggInfo.CODE] !== "undefined") {
 						let data = [];
 						for(const time of timeLabel) {
-							const d = sggGroupData[staticSggInfo.MNGCD].find((d) => d['time'].substring(11, 16) === time);
+							const d = sggGroupData[staticSggInfo.CODE].find((d) => d['time'] === time);
 							if(d) {
 								data.push(d[dataKey]);
 							}else{
@@ -109,7 +104,6 @@
 			}
 		})
 	}
-	// loadingChart();
-	$(".tab_box_chart_content.has-preloading").append(GITS_ENV.UI.CHART_PRELOADING("결과보기/새로고침 버튼을 눌러주세요."));
-	/*$(".change-detect").change(loadingChart);*/
+	loadingChart();
+	$(".change-detect").change(loadingChart);
 </script>

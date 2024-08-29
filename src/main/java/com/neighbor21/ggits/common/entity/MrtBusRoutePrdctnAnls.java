@@ -1,146 +1,111 @@
 package com.neighbor21.ggits.common.entity;
-
 public class MrtBusRoutePrdctnAnls {
-    private String baseym;        //기준년월
-    private String btcId;        //id
-    private String btcDt;        //일자
-    private java.sql.Time elTm;        //수행시간
-    private String routeId;        //노선id
-    private String routeNm;        //노선명
-    private String etlDt;        //etl 일시
+    private String    baseym;        //기준년월
+    private String    btcId;        //id
+    private String    btcDt;        //일자
+    private java.sql.Time    elTm;        //수행시간
+    private String    routeId;        //노선id
+    private String    routeNm;        //노선명
+    private String    etlDt;        //etl 일시
+    
+	private String candRouteId;		//  후보경로 아이디
+	private long score;				// 평가 점수
+	private long length;			// 총거리
+	private long lengthRatio;		// 굴곡도
+	
 
-    private String candRouteId;        //  후보경로 아이디
-    private long score;                // 평가 점수
-    private long length;            // 총거리
-    private Double lengthRatio;        // 굴곡도
-    private Double scoreImprv;
-    private Double lengthVar;
-    private Long numPsngr;
-    private Long numPsngrVar;
+  public String getBaseym() {
+    return baseym;
+  }
 
-    public String getBaseym() {
-        return baseym;
-    }
-
-    public void setBaseym(String baseym) {
-        this.baseym = baseym;
-    }
+  public void setBaseym(String baseym) {
+    this.baseym = baseym;
+  }
 
 
-    public String getBtcId() {
-        return btcId;
-    }
+  public String getBtcId() {
+    return btcId;
+  }
 
-    public void setBtcId(String btcId) {
-        this.btcId = btcId;
-    }
-
-
-    public String getBtcDt() {
-        return btcDt;
-    }
-
-    public void setBtcDt(String btcDt) {
-        this.btcDt = btcDt;
-    }
+  public void setBtcId(String btcId) {
+    this.btcId = btcId;
+  }
 
 
-    public java.sql.Time getElTm() {
-        return elTm;
-    }
+  public String getBtcDt() {
+    return btcDt;
+  }
 
-    public void setElTm(java.sql.Time elTm) {
-        this.elTm = elTm;
-    }
-
-
-    public String getRouteId() {
-        return routeId;
-    }
-
-    public void setRouteId(String routeId) {
-        this.routeId = routeId;
-    }
+  public void setBtcDt(String btcDt) {
+    this.btcDt = btcDt;
+  }
 
 
-    public String getRouteNm() {
-        return routeNm;
-    }
+  public java.sql.Time getElTm() {
+    return elTm;
+  }
 
-    public void setRouteNm(String routeNm) {
-        this.routeNm = routeNm;
-    }
+  public void setElTm(java.sql.Time elTm) {
+    this.elTm = elTm;
+  }
 
 
-    public String getEtlDt() {
-        return etlDt;
-    }
+  public String getRouteId() {
+    return routeId;
+  }
 
-    public void setEtlDt(String etlDt) {
-        this.etlDt = etlDt;
-    }
+  public void setRouteId(String routeId) {
+    this.routeId = routeId;
+  }
 
-    public String getCandRouteId() {
-        return candRouteId;
-    }
 
-    public void setCandRouteId(String candRouteId) {
-        this.candRouteId = candRouteId;
-    }
+  public String getRouteNm() {
+    return routeNm;
+  }
 
-    public long getScore() {
-        return score;
-    }
+  public void setRouteNm(String routeNm) {
+    this.routeNm = routeNm;
+  }
 
-    public void setScore(long score) {
-        this.score = score;
-    }
 
-    public long getLength() {
-        return length;
-    }
+  public String getEtlDt() {
+    return etlDt;
+  }
 
-    public void setLength(long length) {
-        this.length = length;
-    }
+  public void setEtlDt(String etlDt) {
+    this.etlDt = etlDt;
+  }
 
-    public Double getLengthRatio() {
-        return lengthRatio;
-    }
+public String getCandRouteId() {
+	return candRouteId;
+}
 
-    public void setLengthRatio(Double lengthRatio) {
-        this.lengthRatio = lengthRatio;
-    }
+public void setCandRouteId(String candRouteId) {
+	this.candRouteId = candRouteId;
+}
 
-    public Double getScoreImprv() {
-        return scoreImprv;
-    }
+public long getScore() {
+	return score;
+}
 
-    public void setScoreImprv(Double scoreImprv) {
-        this.scoreImprv = scoreImprv;
-    }
+public void setScore(long score) {
+	this.score = score;
+}
 
-    public Double getLengthVar() {
-        return lengthVar;
-    }
+public long getLength() {
+	return length;
+}
 
-    public void setLengthVar(Double lengthVar) {
-        this.lengthVar = lengthVar;
-    }
+public void setLength(long length) {
+	this.length = length;
+}
 
-    public Long getNumPsngr() {
-        return numPsngr;
-    }
+public long getLengthRatio() {
+	return lengthRatio;
+}
 
-    public void setNumPsngr(Long numPsngr) {
-        this.numPsngr = numPsngr;
-    }
+public void setLengthRatio(long lengthRatio) {
+	this.lengthRatio = lengthRatio;
+}
 
-    public Long getNumPsngrVar() {
-        return numPsngrVar;
-    }
-
-    public void setNumPsngrVar(Long numPsngrVar) {
-        this.numPsngrVar = numPsngrVar;
-    }
 }

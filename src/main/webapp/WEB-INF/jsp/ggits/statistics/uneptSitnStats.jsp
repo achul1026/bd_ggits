@@ -81,9 +81,9 @@
 		                            <li>
 		                            	<input type="text" class="end_date_picker input_same input_picker" name="endDt" id="endDt" placeholder="날짜를 선택해주세요." autocomplete="off">
 		                            </li>
-<!-- 		                            <li> -->
-<!-- 		                            	<select class="selectBox selectTime" name="endTime" id="endTime"></select> -->
-<!-- 		                            </li> -->
+		                            <li>
+		                            	<select class="selectBox selectTime" name="endTime" id="endTime"></select>
+		                            </li>
                                 </ul>
                             </div>
                         </div>
@@ -220,8 +220,8 @@
 		var sigunCdId = '<c:out value="${searchOption.sigunCdId}"/>';
 		var strDt = '<c:out value="${searchOption.strDt}"/>';
 		var endDt = '<c:out value="${searchOption.endDt}"/>';
-// 		var strTime = '<c:out value="${searchOption.startTime}"/>';
-// 		var endTime = '<c:out value="${searchOption.endTime}"/>';
+		var strTime = '<c:out value="${searchOption.startTime}"/>';
+		var endTime = '<c:out value="${searchOption.endTime}"/>';
 		var searchContent = '<c:out value="${searchOption.searchContent}"/>';
 		var dayOfTheWeekStr = '<c:out value="${searchOption.dayOfTheWeekStr}"/>';
 		var selInciCate = '<c:out value="${searchOption.selInciCate}"/>'
@@ -236,12 +236,12 @@
 		if(endDt != null && endDt != ''){
 			$("#endDt").val(endDt.substring(0,10));
 		}
-// 		if(strTime != null && strTime != ''){
-// 			$("#startTime").val(strTime).prop("selected",true);
-// 		}
-// 		if(endTime != null && endTime != ''){
-// 			$("#endTime").val(endTime).prop("selected",true);
-// 		}
+		if(strTime != null && strTime != ''){
+			$("#startTime").val(strTime).prop("selected",true);
+		}
+		if(endTime != null && endTime != ''){
+			$("#endTime").val(endTime).prop("selected",true);
+		}
 		if(selInciCate != null && selInciCate != ''){
 			$(".selInciCate").val(selInciCate).prop("selected",true);
 		}

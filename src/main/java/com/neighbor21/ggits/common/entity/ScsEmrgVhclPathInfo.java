@@ -22,12 +22,6 @@ public class ScsEmrgVhclPathInfo {
 	private Timestamp    predictedArrivalDate; // 예측 도착 시간    
 	private Timestamp    arrivalDate;
 	private String routeGeojson;
-	private String timeDifference;
-
-	private Double startlat;
-	private Double startlng;
-	
-	private String firename;
 	
 	public String getServiceid() {
 		return serviceid;
@@ -172,36 +166,5 @@ public class ScsEmrgVhclPathInfo {
 	public void setRouteGeojson(String routeGeojson) {
 		this.routeGeojson = routeGeojson;
 	}
-
-	public String getTimeDifference() {
-		return timeDifference;
-	}
-
-	public void setTimeDifference(String timeDifference) {
-		this.timeDifference = timeDifference;
-	}
-
-	public Double getStartlat() {
-		return startlat;
-	}
-
-	public void setStartlat(Double startlat) {
-		this.startlat = startlat;
-	}
-
-	public Double getStartlng() {
-		return startlng;
-	}
-
-	public void setStartlng(Double startlng) {
-		this.startlng = startlng;
-	}
-
-	public String getFirename() {
-		return firename;
-	}
-
-	public void setFirename(String firename) {
-		this.firename = firename;
-	}
+	
 }

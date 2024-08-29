@@ -70,7 +70,7 @@
      <select id="findOneLTcSrvrLogInfoByLogId" parameterType="String" resultType="lTcSrvrLogInfo">
      	SELECT
      		ltsli.LOG_ID
-     		, TO_CHAR(ltsli.OCCUR_DT,'YYYY-MM-DD HH24:MI:SS') AS OCCUR_DT_STR
+     		, TO_CHAR(ltsli.OCCUR_DT,'YYYY-MM-DD') AS OCCUR_DT_STR
      		, ltsli.LOG_TYPE
      		, ltsli.SESN_ID
      		, ltsli.LGN_IP
@@ -88,7 +88,7 @@
 			ltsli.SRVR_ID,
 			ltsli.SESN_ID,
 			ltsli.LGN_IP,
-			TO_CHAR(ltsli.OCCUR_DT,'YYYY-MM-DD HH24:MI:SS') AS OCCUR_DT_STR,
+			TO_CHAR(ltsli.OCCUR_DT,'YYYY-MM-DD') AS OCCUR_DT_STR,
 			ltsli.LOG_TYPE,
 			moc.CD_NM
 		FROM L_TC_SRVR_LOG_INFO ltsli

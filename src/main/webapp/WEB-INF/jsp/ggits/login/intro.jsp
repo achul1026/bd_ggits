@@ -1,5 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
 <section class="login_container">
@@ -22,7 +21,8 @@
 								(돌발정보 시스템)
 							</div>
 							<div class="intro-button">
-								<a href="https://gims.gg.go.kr/">바로가기 <i></i></a>
+								<a href="">바로가기 <i></i></a>
+								
 							</div>
 						</div>
 					</c:if>
@@ -33,10 +33,10 @@
 							</div>
 							<div class="intro-text">
 								빅데이터<br>
-								분석 플랫폼
+								분석 플렛폼
 							</div>
 							<div class="intro-button">
-								<a href="${pageContext.request.contextPath}/monitoring/dashboard.do">바로가기 <i></i></a>
+								<a href="${pageContext.request.contextPath}/monitoring.do">바로가기 <i></i></a>
 							</div>
 						</div>
 					</c:if>
@@ -50,7 +50,7 @@
 								및 이동 현황
 							</div>
 							<div class="intro-button">
-								<a href="http://ggdata.gg.go.kr:3010">바로가기 <i></i></a>
+								<a href="">바로가기 <i></i></a>
 							</div>
 						</div>
 					</c:if>
@@ -64,19 +64,7 @@
 								리포트
 							</div>
 							<div class="intro-button">
-								<div class="intro-select">
-									<button>
-										<span class="label">선택하기</span> <i class="intro-select-icon"></i>
-									</button>
-								  <ul class="optionList">
-								    <li class="optionItem">
-								    	<a href="https://vtc.gg.go.kr/">Daisy 교통 센터용</a>
-								    </li>
-								    <li class="optionItem">
-								    	<a href="https://vti.gg.go.kr/">Daisy 시군구</a>
-								    </li>
-								  </ul>
-								</div>
+								<a href="http://192.168.14.132">바로가기 <i></i></a>
 							</div>
 						</div>
 					</c:if>
@@ -96,16 +84,16 @@
 									</button>
 								  <ul class="optionList">
 								    <li class="optionItem">
-								    	<a href="https://ggphy.gg.go.kr/">Python</a>
+								    	<a href="">파이썬</a>
 								    </li>
 								    <li class="optionItem">
-								    	<a href="https://znote.gg.go.kr/">Zupiter</a>
+								    	<a href="">쥬피터</a>
 								    </li>
 								   <li class="optionItem">
-								    	<a href="https://zep.gg.go.kr/">Zeplin</a>
+								    	<a href="">제플린</a>
 								    </li>
 								    <li class="optionItem">
-								    	<a href="https://rst.gg.go.kr/">R studio</a>
+								    	<a href="">R</a>
 								    </li>
 								  </ul>
 								</div>
@@ -122,7 +110,7 @@
 								제어 시스템
 							</div>
 							<div class="intro-button">
-								<a href="http://gims.gg.go.kr/">바로가기 <i></i></a>
+								<a href="">바로가기 <i></i></a>
 							</div>
 						</div>
 					</c:if>
@@ -130,6 +118,8 @@
 			</div>
 		</div>
 	</div>
+	
+	
 </section>
 <button type="button" id="bkdoorBtn" style="position:fixed;left:0;top:0;width:50px;height:50px;z-index:10"></button>
 <form action="${pageContext.request.contextPath}/login.do" id="loginForm" name="loginForm" method="POST">

@@ -44,7 +44,6 @@
 <c:if test="${authCd eq 'AUC000'}">
 	<div class="flex-end mt16 mb16" id="trafficDownload">  
 	    <div class="btn_search_wrap">
-			<a href="${pageContext.request.contextPath}/statistics/traffic/database/impact/list.do" class="is-darkgreen-btn mr8">목록</a>
 	        <button type="button" class="is-darkgreen-btn mr8" onclick="location.href='${pageContext.request.contextPath}/statistics/traffic/database/impact/download.do?ipcssMngNo=<c:out value='${ipcssMngNo}'/>'">일괄 다운로드</button>
 	        <button type="button" class="is-darkgreen-btn" id="upload_btn">수정하기</button>
 	    </div>

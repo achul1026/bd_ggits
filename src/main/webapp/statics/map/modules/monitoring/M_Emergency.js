@@ -45,20 +45,6 @@ const M_Emergency = async function(){
                 'coordinates': [info.arrivallng, info.arrivallat]
             }
         });
-        if(info.startlng && info.startlat) {
-            features.push({
-                'type': 'Feature',
-                'properties': {
-                    'type': 'loc',
-                    'icon': "emerg_start_icon",
-                    'description' : carPopup,
-                },
-                'geometry': {
-                    'type': 'Point',
-                    'coordinates': [info.startlng, info.startlat]
-                }
-            });
-        }
         let routeGeoJson = JSON.parse(info.routeGeojson);
         let routeFeaturesByServiceId = [];
         for(const geometry of routeGeoJson.geometries) {
@@ -83,10 +69,10 @@ const M_Emergency = async function(){
     let alertTargetCoordinatesString = [];
     for(const info of dangerVehicleList) {
         let carPopup = `
-                    <li class="popup_item">차량번호 : <span>${info.vhclRegistNo}</span></li>
-                    <li class="popup_item">발생일시 : <span>${info.mapOccurDtFormat}</span></li>
-                    <li class="popup_item">위험물명 : <span>${info.dggdNm}</span></li>
-                    <li class="popup_item">현재속도 : <span>${info.speed} km/h</span></li>`;
+                    <li>차량번호 : <span>${info.vhclRegistNo}</span></li>
+                    <li>발생일시 : <span>${info.mapOccurDtFormat}</span></li>
+                    <li>위험물명 : <span>${info.dggdNm}</span></li>
+                    <li>현재속도 : <span>${info.speed} km/h</span></li>`;
         features.push({
             'type': 'Feature',
             'properties' : {
@@ -101,7 +87,7 @@ const M_Emergency = async function(){
             }
         });
         if(info.targetLon && info.targetLat && alertTargetCoordinatesString.indexOf(info.targetLon+"|"+info.targetLat) < 0) {
-            let alertAreaFeature = turf.circle([info.targetLon,info.targetLat], 3);
+            let alertAreaFeature = turf.circle([info.targetLon,info.targetLat], 1);
             alertAreaFeature.properties = {
                 'alertArea' : true
             }

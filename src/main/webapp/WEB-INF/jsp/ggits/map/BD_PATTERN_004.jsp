@@ -5,17 +5,45 @@
     <div class="original_box clearfix">
     	<form id="searchForm" class="result_change">
     		<input type="hidden" name="pageType" value="<c:out value='${type}'/>">
-			<div class="tab_item_box">
-				<div class="flex-center">
-					<h5 class="tab_item_title">날짜<span class="required-alert">*</span></h5>
-					<select class="selectBox radius" name="startDate" id="startDate">
-						<c:forEach var="yearsList" items="${yearsList}" varStatus="status">
-							<option value="<c:out value='${yearsList.year}'/>"><c:out value='${yearsList.yearnm}'/></option>
-						</c:forEach>
-					</select>
+	        <div class="tab_item_box flex-center">
+	            <h5 class="tab_item_title">연도별</h5>
+	            <select class="selectBox radius" name="searchYear">
+	                <option value="searchAllYear">전체</option>
+	           	<c:forEach var="yearsList" items="${yearsList}">
+	                <option value="<c:out value='${yearsList.year}'/>"><c:out value='${yearsList.year}'/>년</option>
+	           	</c:forEach>
+	            </select>
+	        </div>
+	        <div class="tab_item_box">
+	            <div class="flex-center">
+	                <h5 class="tab_item_title">기간</h5>
+	                <label class="group_btn_item is-dark-btn radius inpd is-darkgreen-btn"><input type="checkbox" class="none" name="searchPeriod" value="weekday" checked="checked">평일</label>
+	                <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" class="none" name="searchPeriod" value="weekend">주말</label>
+	                <label class="group_btn_item is-dark-btn radius inpd direct"><input type="checkbox" class="none" name="searchPeriod" value="directDate">직접입력</label>
+	            </div>
+	            <div class="calendar direct_time none" id="directDate">
+		            <input type="text" class="date_picker input_same mr8 input_picker" name="startDate" placeholder="날짜를 선택해주세요." autocomplete="off">
+		            ~
+		            <div class="end_calendar_box">
+						<div class="date_picker_block"></div>								            
+			            <input type="text" class="end_date_picker input_same mr8 ml8 input_picker" name="endDate" placeholder="날짜를 선택해주세요." autocomplete="off">
+		            </div>		            
 				</div>
-			</div>
-	        <%--<div class="tab_item_box flex-center">
+	        </div>
+	        <div class="tab_item_box">
+	            <div class="flex-center">
+	                <h5 class="tab_item_title">시간</h5>
+	                <label class="group_btn_item is-dark-btn radius inpd is-darkgreen-btn"><input type="checkbox" class="none" name="searchTime" value="workingTime" checked="checked">출근 <span class="group_btn_span">(06시~10시)</span></label>
+	                <label class="group_btn_item is-dark-btn radius inpd"><input type="checkbox" class="none" name="searchTime" value="workingEndTime">퇴근 <span class="group_btn_span">(17시~20시)</span></label>
+	                <label class="group_btn_item is-dark-btn radius inpd direct"><input type="checkbox" class="none" name="searchTime" value="directTime">시간 설정</label>
+	            </div>
+	            <div class="calendar direct_time none" id="directTime">
+					<select class="selectBox selectTime" name="startTime" id="startTime"></select>
+	                ~
+					<select class="selectBox selectTime ml8" name="endTime" id="endTime"></select>
+	            </div>
+	        </div>
+	        <div class="tab_item_box flex-center">
 	            <h5 class="tab_item_title">지역별</h5>
 	            <select class="selectBox radius" name="searchLocation">
 	                <option value="searchAllLocation">전체 지역</option>
@@ -23,17 +51,12 @@
 	                	<option value="<c:out value='${sggCdList.cdId}'/>"><c:out value='${sggCdList.cdNm}'/></option>
 					</c:forEach>
 	            </select>
-	        </div>--%>
+	        </div>
 	        <div class="tab_item_box flex-center">
 	            <h5 class="tab_item_title">도로<span class="required-alert">*</span></h5>
 	            <div class="road_rank_list_box">
 		            <button type="button" class="is-dark-btn road_all_selector radius is-darkgreen-btn" id="searchAllRoadRankBtn">전체선택/해제</button>
-					<label class="road_item is-dark-btn radius inpd is-darkgreen-btn"><input type="checkbox" class="none" name="roadRank" value="고속국도" checked="checked">고속국도</label>
-					<label class="road_item is-dark-btn radius inpd is-darkgreen-btn"><input type="checkbox" class="none" name="roadRank" value="도시고속국도" checked="checked">도시고속국도</label>
-					<label class="road_item is-dark-btn radius inpd is-darkgreen-btn"><input type="checkbox" class="none" name="roadRank" value="일반국도" checked="checked">일반국도</label>
-					<label class="road_item is-dark-btn radius inpd is-darkgreen-btn"><input type="checkbox" class="none" name="roadRank" value="지방도" checked="checked">지방도</label>
-					<label class="road_item is-dark-btn radius inpd is-darkgreen-btn mt8"><input type="checkbox" class="none" name="roadRank" value="시군도" checked="checked">시군도</label>
-					<input type="hidden" id="searchRoadRank" name="searchRoadRank"/>
+		            <c:import url="/WEB-INF/jsp/ggits/common/modalRoadRankList.jsp" />
 	            </div>
 	        </div>
         </form>
@@ -45,6 +68,9 @@
 
 <script>
 	gisCheckInit();
+	datePickerInit();
+	dateTiemInit();
+	
 	settingBigdataSearchParam("BD_PATTERN_004");
 	
 	$("#searchAllRoadRankBtn").on("click",function(){
@@ -64,13 +90,6 @@
 	});
 	
 	function trafficResultEvent(){
-		let startDate = $("select[name='startDate']").val();
-		if(isNull(startDate) || startDate == ''){
-			new ModalBuilder().init().alertBoby("날짜를 선택해주세요.").footer(4,'확인',function(button, modal){modal.close();}).open();
-			modalAlertWrap();
-			return false;
-		}
-
 		var roadRank = $("input[name='roadRank']");
 		var roadRankCheckedVal = roadRank.is(":checked");
 		if(!roadRankCheckedVal){
@@ -89,30 +108,35 @@
 			}
 		})
 		$("#searchRoadRank").val(roadRankVal);
-
+		
+		/*var crossroadsType = $("input[name='searchCrossroadsType']:checked").val();
+		if(crossroadsType == 'map'){
+			var mapNodeIdList = __Map.querySourceFeatures("GITS_NODE", {sourceLayer : "ggits_node", filter: ["==", "NODE_TYPE", "101"]}).map(item => { return item.id});
+			$("#searchCrossroadsNodeId").val(mapNodeIdList);
+		}*/
 		var searchForm = $("#searchForm").serialize();
 		bigdataSearchForm = $("#searchForm").serializeObject();
-        window.map.bigdata.getPatternTrafficCongDestiny(searchForm);
+        window.map.bigdata.getPatternTrafficQuantity(searchForm);
         
         //범례
         var remarksItem =$(`
     	        <div class="remarks_container">
     		        <div class="remarks_title_box">
-    		            <h6 class="remarks_title">범례 - 정체구간</h6>
+    		            <h6 class="remarks_title">범례 - 혼잡강도</h6>
     		        </div>
     	        	<div class="remarks_wrap">
     	            	<div>
     		                <ul class="check_line_container">
-	                            <li class="check_line_box remarks-red">정체</li>
-								<li class="check_line_box remarks-orange">지체(서행)</li>
-								<li class="check_line_box remarks-green">원활</li>
+	                            <li class="check_line_box remarks-red">97-100 이하</li>
+		                        <li class="check_line_box remarks-orange">63 - 97 이하</li>
+		                        <li class="check_line_box remarks-light-orange">34 - 63 이하</li>
+		                        <li class="check_line_box remarks-light-green">13 - 34 이하</li>
+		                        <li class="check_line_box remarks-green">0 - 13 이하</li>
     		                </ul>
     	            	</div>
-    		            <div class="unit">단위 : 소통등급 / 수집원 : GITS<br/>
-						<a href='javascript:void(0)' style="text-decoration: underline;color:white;" onclick="openSvcCongestionCalcInfo()">집계 데이터 정보</a></div>
+    		            <div class="unit">단위 : (%)</div>
     	        	</div>
-    	    	</div>`);
-			$('#map-container').find(".remarks_container").remove();
+    	    	</div>`)        
             $('#map-container').append(remarksItem);
             legendToggle();
             

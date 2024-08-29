@@ -100,9 +100,6 @@ public class MenuMngController {
 		
 	  try {
    		 menuMngService.saveMainMenu(mOpMenu);
-   		 
-		  //기존 메뉴값 재세팅
-//	  	  menuMngService.removeMenuSession();
    	 } catch(SQLException e) {
    		return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST , "메뉴 등록중 오류가 발생했습니다.");
 	 }
@@ -131,9 +128,6 @@ public class MenuMngController {
  		
 	  try {
   		 menuMngService.updateMainMenu(mOpMenu);
-  		 
-  		 //기존 메뉴값 재세팅
-//  		menuMngService.removeMenuSession();
   	 } catch(SQLException e) {
     	return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST , "메뉴 수정중 오류가 발생했습니다.");
 	 }
@@ -163,9 +157,6 @@ public class MenuMngController {
 	  
 	  try {
 		  menuMngService.updateSubMenu(mOpMenu);
-		  
-		  //기존 메뉴값 재세팅
-//	  	  menuMngService.removeMenuSession();
 	  } catch(SQLException e) {
 		  return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST , "메뉴 수정중 오류가 발생했습니다.");
 	  }
@@ -211,9 +202,6 @@ public class MenuMngController {
 	  MOpMenu mOpMenu = new MOpMenu();
 	  try {
 		  mOpMenu = menuMngService.saveSubMenu(paramMap);
-		  
-		  //기존 메뉴값 재세팅
-//	  	  menuMngService.removeMenuSession();
   	 } catch(SQLException e) {
   		 return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST , "하위 메뉴 등록중 오류가 발생했습니다.");
 	 }
@@ -238,9 +226,6 @@ public class MenuMngController {
 		
 	try {
   		mOpMenuMapper.deleteMOpMenuByMenuId(menuId);
-  		
-		//기존 메뉴값 재세팅
-//	    menuMngService.removeMenuSession();
   	} catch (SQLException e) {
   		return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST ,"하위 메뉴 삭제중 오류가 발생했습니다.");
 	}
@@ -269,9 +254,6 @@ public class MenuMngController {
 			  return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST ,"하위 메뉴가 존재하여 상위 메뉴를 삭제 할 수 없습니다.");
 		  } else {
 			  mOpMenuMapper.deleteMOpMenuByMenuId(menuId);
-			  
-			  //기존 메뉴값 재세팅
-//		  	  menuMngService.removeMenuSession();
 		  }
 	  } catch (SQLException e) {
 		  return CommonResponse.ResponseCodeAndMessage(HttpStatus.BAD_REQUEST ,"메뉴 삭제중 오류가 발생했습니다.");

@@ -24,7 +24,7 @@
 								<li class="modal_layout_item"><input type="checkbox" id="menu1-1"><label for="menu1-1">돌발현황</label></li>
 								<li class="modal_layout_item"><input type="checkbox" id="menu1-2"><label for="menu1-2">주요 정체 구간</label></li>
 								<li class="modal_layout_item"><input type="checkbox" id="menu1-3"><label for="menu1-3">시내버스 운행 현황</label></li>
-								<li class="modal_layout_item"><input type="checkbox" id="menu1-4"><label for="menu1-4">광역 긴급차량 운행 현황</label></li>
+								<li class="modal_layout_item"><input type="checkbox" id="menu1-4"><label for="menu1-4">긴급차량 운행 현황</label></li>
 								<li class="modal_layout_item"><input type="checkbox" id="menu1-5"><label for="menu1-5">시간대별 누적 교통량</label></li>
 								<li class="modal_layout_item"><input type="checkbox" id="menu1-6"><label for="menu1-6">시긴대별 평균 통행 속도</label></li>
 								<li class="modal_layout_item"><input type="checkbox" id="menu1-7"><label for="menu1-7">교차로 및 구간 소통 정보</label></li>
@@ -41,7 +41,7 @@
 							<ul class="pd16">
 								<li class="modal_layout_item"><input type="checkbox" id="menu2-1"><label for="menu2-1">교통량</label></li>
 								<li class="modal_layout_item"><input type="checkbox" id="menu2-2"><label for="menu2-2">돌발현황</label></li>
-								<li class="modal_layout_item"><input type="checkbox" id="menu2-3"><label for="menu2-3">광역 긴급차량 운행</label></li>
+								<li class="modal_layout_item"><input type="checkbox" id="menu2-3"><label for="menu2-3">긴급차량 운행</label></li>
 							</ul>						
 						</div>
 					</div>
@@ -74,7 +74,7 @@
 								<li class="modal_layout_item"><input type="checkbox" id="menu1-1"><label for="menu1-1">돌발현황</label></li>
 								<li class="modal_layout_item"><input type="checkbox" id="menu1-2"><label for="menu1-2">주요 정체 구간</label></li>
 								<li class="modal_layout_item"><input type="checkbox" id="menu1-3"><label for="menu1-3">시내버스 운행 현황</label></li>
-								<li class="modal_layout_item"><input type="checkbox" id="menu1-4"><label for="menu1-4">광역 긴급차량 운행 현황</label></li>
+								<li class="modal_layout_item"><input type="checkbox" id="menu1-4"><label for="menu1-4">긴급차량 운행 현황</label></li>
 								<li class="modal_layout_item"><input type="checkbox" id="menu1-5"><label for="menu1-5">시간대별 누적 교통량</label></li>
 								<li class="modal_layout_item"><input type="checkbox" id="menu1-6"><label for="menu1-6">시긴대별 평균 통행 속도</label></li>
 								<li class="modal_layout_item"><input type="checkbox" id="menu1-7"><label for="menu1-7">교차로 및 구간 소통 정보</label></li>
@@ -91,7 +91,7 @@
 							<ul class="pd16">
 								<li class="modal_layout_item"><input type="checkbox" id="menu2-1"><label for="menu2-1">교통량</label></li>
 								<li class="modal_layout_item"><input type="checkbox" id="menu2-2"><label for="menu2-2">돌발현황</label></li>
-								<li class="modal_layout_item"><input type="checkbox" id="menu2-3"><label for="menu2-3">광역 긴급차량 운행</label></li>
+								<li class="modal_layout_item"><input type="checkbox" id="menu2-3"><label for="menu2-3">긴급차량 운행</label></li>
 							</ul>						
 						</div>
 					</div>
@@ -124,7 +124,7 @@
 								<li class="modal_layout_item"><input type="checkbox" id="menu1-1"><label for="menu1-1">돌발현황</label></li>
 								<li class="modal_layout_item"><input type="checkbox" id="menu1-2"><label for="menu1-2">주요 정체 구간</label></li>
 								<li class="modal_layout_item"><input type="checkbox" id="menu1-3"><label for="menu1-3">시내버스 운행 현황</label></li>
-								<li class="modal_layout_item"><input type="checkbox" id="menu1-4"><label for="menu1-4">광역 긴급차량 운행 현황</label></li>
+								<li class="modal_layout_item"><input type="checkbox" id="menu1-4"><label for="menu1-4">긴급차량 운행 현황</label></li>
 								<li class="modal_layout_item"><input type="checkbox" id="menu1-5"><label for="menu1-5">시간대별 누적 교통량</label></li>
 								<li class="modal_layout_item"><input type="checkbox" id="menu1-6"><label for="menu1-6">시긴대별 평균 통행 속도</label></li>
 								<li class="modal_layout_item"><input type="checkbox" id="menu1-7"><label for="menu1-7">교차로 및 구간 소통 정보</label></li>
@@ -141,7 +141,7 @@
 							<ul class="pd16">
 								<li class="modal_layout_item"><input type="checkbox" id="menu2-1"><label for="menu2-1">교통량</label></li>
 								<li class="modal_layout_item"><input type="checkbox" id="menu2-2"><label for="menu2-2">돌발현황</label></li>
-								<li class="modal_layout_item"><input type="checkbox" id="menu2-3"><label for="menu2-3">광역 긴급차량 운행</label></li>
+								<li class="modal_layout_item"><input type="checkbox" id="menu2-3"><label for="menu2-3">긴급차량 운행</label></li>
 							</ul>						
 						</div>
 					</div>
